@@ -74,8 +74,16 @@
             background: #495057;
         }
 
+        .botao-secundario:hover:not(:disabled) {
+            background: #343a40;
+        }
+
         .botao-verde {
             background: #198754;
+        }
+
+        .botao-verde:hover:not(:disabled) {
+            background: #146c43;
         }
 
         .status-jogo {
@@ -131,6 +139,10 @@
             border-radius: 8px;
         }
 
+        .btn-opcao:hover:not(:disabled) {
+            background: #495057;
+        }
+
         .resumo-resultado {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -143,6 +155,13 @@
             background: #f8f9fa;
             border-radius: 6px;
             padding: 10px;
+        }
+
+        .linha-filtros {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 12px;
         }
 
         .abas-filtro {
@@ -166,13 +185,6 @@
             color: #fff;
         }
 
-        .linha-filtros {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
         .tabela-container {
             overflow-x: auto;
             margin-top: 14px;
@@ -180,7 +192,7 @@
 
         table {
             width: 100%;
-            min-width: 620px;
+            min-width: 520px;
             border-collapse: collapse;
             font-size: 14px;
         }
@@ -355,7 +367,6 @@
                     <tr>
                         <th>Pos.</th>
                         <th>Nome</th>
-                        <th>Turma</th>
                         <th>Pontos</th>
                         <th>Acertos</th>
                         <th>Tempo</th>
@@ -435,7 +446,6 @@
             pontuacaoPorPergunta = [];
 
             document.getElementById("titulo-jogo").innerText = MODALIDADES[modalidadeAtual].nome;
-
             mostrarTela("tela-jogo");
             proximaPergunta();
         }
@@ -454,7 +464,6 @@
 
             const fatorA = sortearItem(MODALIDADES[modalidadeAtual].fatores);
             const fatorB = Math.floor(Math.random() * 11);
-
             respostaCorreta = fatorA * fatorB;
 
             document.getElementById("pergunta").innerText = `${fatorA} x ${fatorB} = ?`;
@@ -492,10 +501,8 @@
             let tempoRestante = TEMPO_MAXIMO;
 
             clearInterval(temporizadorInterval);
-
             temporizadorInterval = setInterval(() => {
                 tempoRestante -= 100;
-
                 const porcentagem = Math.max((tempoRestante / TEMPO_MAXIMO) * 100, 0);
                 progresso.style.width = `${porcentagem}%`;
 
@@ -505,7 +512,6 @@
             }, 100);
 
             clearTimeout(temporizadorTimeout);
-
             temporizadorTimeout = setTimeout(() => {
                 processarResposta(0, false);
             }, TEMPO_MAXIMO);
@@ -571,8 +577,8 @@
                 data: new Date().toISOString()
             };
 
-            salvarResultado(resultado);
-            preencherResultado(resultado);
+            const resultadoSalvo = salvarResultado(resultado);
+            preencherResultado(resultadoSalvo);
             mostrarTela("tela-resultado");
         }
 
@@ -635,7 +641,7 @@
             }
 
             if (ranking.length === 0) {
-                tabelaRanking.innerHTML = '<tr><td class="sem-registros" colspan="7">Nenhum resultado registrado ainda.</td></tr>';
+                tabelaRanking.innerHTML = '<tr><td class="sem-registros" colspan="6">Nenhum resultado registrado ainda.</td></tr>';
                 return;
             }
 
@@ -647,7 +653,6 @@
                     <tr>
                         <td>${index + 1}º</td>
                         <td>${escaparHtml(item.nome)}</td>
-                        <td>${item.turma}</td>
                         <td>${item.pontos}</td>
                         <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
                         <td>${item.tempoMedio.toFixed(2)}s</td>
@@ -701,8 +706,22 @@
 
         function salvarResultado(resultado) {
             const ranking = obterRanking();
-            ranking.push(resultado);
+
+            const indiceExistente = ranking.findIndex((item) =>
+                item.turma === resultado.turma &&
+                item.modalidade === resultado.modalidade &&
+                normalizarNome(item.nome) === normalizarNome(resultado.nome)
+            );
+
+            if (indiceExistente === -1) {
+                ranking.push(resultado);
+            } else if (compararResultados(resultado, ranking[indiceExistente]) < 0) {
+                ranking[indiceExistente] = resultado;
+            }
+
             localStorage.setItem(CHAVE_RANKING, JSON.stringify(ranking));
+
+            return indiceExistente === -1 ? resultado : ranking[indiceExistente];
         }
 
         function obterRanking() {
@@ -750,6 +769,10 @@
             const div = document.createElement("div");
             div.innerText = texto;
             return div.innerHTML;
+        }
+
+        function normalizarNome(nome) {
+            return nome.trim().toLowerCase().replace(/\s+/g, " ");
         }
 
         function reiniciarJogo() {
