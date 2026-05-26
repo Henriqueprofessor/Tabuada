@@ -5,36 +5,190 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copa da Tabuada - C. E. Ismael Branco</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; color: #222; margin: 0; padding: 16px; text-align: center; }
-        .card { background: #fff; max-width: 520px; margin: 16px auto; padding: 24px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            color: #222;
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .card {
+            background: #fff;
+            max-width: 520px;
+            margin: 16px auto;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
         .hidden { display: none; }
+
         h1, h2, h3, p { margin-top: 0; }
-        .subtitulo { color: #555; line-height: 1.4; }
-        label { display: block; text-align: left; font-weight: bold; margin-top: 12px; }
-        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
-        button { background: #0066cc; color: #fff; border: none; cursor: pointer; font-weight: bold; }
+
+        .subtitulo {
+            color: #555;
+            line-height: 1.4;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+
+        input, button, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #0066cc;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         button:hover:not(:disabled) { background: #004f9f; }
         button:disabled { cursor: not-allowed; opacity: 0.65; }
+
         .botao-secundario { background: #495057; }
         .botao-verde { background: #198754; }
-        .status-jogo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-weight: bold; color: #555; margin-bottom: 12px; text-align: left; }
-        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 8px; }
-        #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-        #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
-        #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; color: #222; }
-        .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .btn-opcao { background: #6c757d; padding: 14px; font-size: 20px; border-radius: 8px; }
-        .resumo-resultado { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; text-align: left; }
-        .resumo-resultado div { background: #f8f9fa; border-radius: 6px; padding: 10px; }
-        .linha-filtros { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
-        .abas-filtro { display: flex; gap: 6px; margin-top: 12px; }
-        .aba { flex: 1; padding: 10px 8px; font-size: 13px; background: #e9ecef; border: none; color: #222; border-radius: 6px; }
-        .aba.ativa { background: #0066cc; color: #fff; }
-        .tabela-container { overflow-x: auto; margin-top: 14px; }
-        table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 14px; }
-        th, td { padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: left; vertical-align: top; }
+
+        .status-jogo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .status-jogo span {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        #barra-tempo {
+            width: 100%;
+            height: 16px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        #progresso {
+            width: 100%;
+            height: 100%;
+            background: #198754;
+            transition: width 0.1s linear;
+        }
+
+        #pergunta {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #222;
+        }
+
+        .lista-opcoes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-opcao {
+            background: #6c757d;
+            padding: 14px;
+            font-size: 20px;
+            border-radius: 8px;
+        }
+
+        .resumo-resultado {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 16px 0;
+            text-align: left;
+        }
+
+        .resumo-resultado div {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .linha-filtros {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .abas-filtro {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .aba {
+            flex: 1;
+            padding: 10px 8px;
+            font-size: 13px;
+            background: #e9ecef;
+            border: none;
+            color: #222;
+            border-radius: 6px;
+        }
+
+        .aba.ativa {
+            background: #0066cc;
+            color: #fff;
+        }
+
+        .tabela-container {
+            overflow-x: auto;
+            margin-top: 14px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 520px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+
         th { background: #f8f9fa; }
-        .tag { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: bold; color: #fff; white-space: nowrap; }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+        }
+
         .tag-classificado { background: #198754; }
         .tag-reserva { background: #fd7e14; }
         .tag-participante { background: #6c757d; }
@@ -84,7 +238,6 @@
 
     <div id="tela-jogo" class="card hidden">
         <h2 id="titulo-jogo">Classificatória</h2>
-
         <div class="status-jogo">
             <span id="info-pergunta">Pergunta: 1 / 20</span>
             <span id="info-pontos">Pontos: 0</span>
@@ -160,6 +313,7 @@
                     <tr>
                         <th>Pos.</th>
                         <th>Nome</th>
+                        <th id="coluna-turma">Turma</th>
                         <th>Pontos</th>
                         <th>Acertos</th>
                         <th>Tempo</th>
@@ -294,7 +448,6 @@
 
         function iniciarCronometro() {
             tempoInicio = performance.now();
-
             const progresso = document.getElementById("progresso");
             progresso.style.width = "100%";
             progresso.style.background = "#198754";
@@ -319,9 +472,7 @@
         }
 
         function verificarResposta(botaoClicado) {
-            if (!perguntaEmAberto) {
-                return;
-            }
+            if (!perguntaEmAberto) return;
 
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
@@ -431,6 +582,8 @@
             const turma = document.getElementById("filtro-turma").value;
             const tabelaRanking = document.getElementById("tabela-ranking");
 
+            document.getElementById("coluna-turma").classList.toggle("hidden", tipoRankingAtual !== "global");
+
             let ranking;
             let rankingCompletoDaModalidade = [];
 
@@ -445,7 +598,8 @@
             }
 
             if (ranking.length === 0) {
-                tabelaRanking.innerHTML = '<tr><td class="sem-registros" colspan="6">Nenhum resultado registrado ainda.</td></tr>';
+                const totalColunas = tipoRankingAtual === "global" ? 7 : 6;
+                tabelaRanking.innerHTML = `<tr><td class="sem-registros" colspan="${totalColunas}">Nenhum resultado registrado ainda.</td></tr>`;
                 return;
             }
 
@@ -457,6 +611,7 @@
                     <tr>
                         <td>${index + 1}º</td>
                         <td>${escaparHtml(item.nome)}</td>
+                        ${tipoRankingAtual === "global" ? `<td>${item.turma}</td>` : ""}
                         <td>${item.pontos}</td>
                         <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
                         <td>${item.tempoMedio.toFixed(2)}s</td>
@@ -493,14 +648,8 @@
         }
 
         function obterStatusPorPosicao(posicao) {
-            if (posicao >= 1 && posicao <= 4) {
-                return "Classificado";
-            }
-
-            if (posicao >= 5 && posicao <= 6) {
-                return "Reserva";
-            }
-
+            if (posicao >= 1 && posicao <= 4) return "Classificado";
+            if (posicao >= 5 && posicao <= 6) return "Reserva";
             return "Participante";
         }
 
@@ -536,6 +685,7 @@
                 const snapshot = await database.ref(CAMINHO_RANKING_FIREBASE).once("value");
                 const dados = snapshot.val() || {};
                 const rankingOnline = Object.values(dados);
+
                 localStorage.setItem(CHAVE_RANKING, JSON.stringify(rankingOnline));
                 return rankingOnline;
             } catch (erro) {
