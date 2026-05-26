@@ -221,3 +221,32 @@
             tabela.innerHTML = "";
 
             if (filtroAtual === "pontos") {
+                colunaCriterio.innerText = "Pontos Total";
+                ranking.sort((a, b) => b.pontos - a.pontos);
+            } else {
+                colunaCriterio.innerText = "Tempo Médio";
+                ranking.sort((a, b) => a.tempoMedio - b.tempoMedio);
+            }
+
+            ranking.slice(0, 5).forEach((aluno, index) => {
+                const dadoExibido = filtroAtual === "pontos" ? `${aluno.pontos} pts` : `${aluno.tempoMedio.toFixed(2)}s`;
+                const linha = `<tr>
+                    <td>${index + 1}º</td>
+                    <td>${aluno.nome}</td>
+                    <td>${dadoExibido}</td>
+                </tr>`;
+                tabela.innerHTML += linha;
+            });
+        }
+
+        function reiniciarJogo() {
+            document.getElementById('tela-ranking').classList.add('hidden');
+            document.getElementById('tela-registro').classList.remove('hidden');
+            document.getElementById('nome-aluno').value = "";
+            filtroAtual = "pontos";
+            document.getElementById('btn-filtro-pontos').classList.add('ativa');
+            document.getElementById('btn-filtro-velocidade').classList.remove('ativa');
+        }
+    </script>
+</body>
+</html>
