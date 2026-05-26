@@ -3,57 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maratona da Tabuada Especifica</title>
+    <title>Copa da Tabuada - C. E. Ismael Branco</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; text-align: center; padding: 20px; }
-        .card { background: white; max-width: 450px; margin: 20px auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .hidden { display: none; }
-        input, button, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover:not(:disabled) { background: #0056b3; }
-        button:disabled { cursor: not-allowed; opacity: 0.65; }
-        #barra-tempo { width: 100%; height: 15px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
-        #progresso { width: 100%; height: 100%; background: #28a745; transition: width 0.1s linear; }
-        #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; color: #333; }
-        .status-jogo { display: flex; justify-content: space-between; gap: 12px; font-weight: bold; color: #555; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background: #f8f9fa; }
-        .abas-filtro { display: flex; gap: 5px; margin-top: 15px; }
-        .aba { flex: 1; padding: 8px; font-size: 13px; background: #e0e0e0; border: none; color: #333; border-radius: 4px; }
-        .aba.ativa { background: #007bff; color: white; }
-        .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .btn-opcao { background: #6c757d; padding: 14px; font-size: 18px; border-radius: 8px; font-weight: bold; width: 100%; border: none; color: white; cursor: pointer; }
-        .btn-opcao:hover:not(:disabled) { background: #495057; }
-        .sem-registros { color: #666; text-align: center; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            color: #222;
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .card {
+            background: #fff;
+            max-width: 520px;
+            margin: 16px auto;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h1, h2, h3, p {
+            margin-top: 0;
+        }
+
+        .subtitulo {
+            color: #555;
+            line-height: 1.4;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+
+        input, button, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #0066cc;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover:not(:disabled) {
+            background: #004f9f;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+
+        .botao-secundario {
+            background: #495057;
+        }
+
+        .botao-verde {
+            background: #198754;
+        }
+
+        .status-jogo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .status-jogo span {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        #barra-tempo {
+            width: 100%;
+            height: 16px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        #progresso {
+            width: 100%;
+            height: 100%;
+            background: #198754;
+            transition: width 0.1s linear;
+        }
+
+        #pergunta {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #222;
+        }
+
+        .lista-opcoes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-opcao {
+            background: #6c757d;
+            padding: 14px;
+            font-size: 20px;
+            border-radius: 8px;
+        }
+
+        .resumo-resultado {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 16px 0;
+            text-align: left;
+        }
+
+        .resumo-resultado div {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .abas-filtro {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .aba {
+            flex: 1;
+            padding: 10px 8px;
+            font-size: 13px;
+            background: #e9ecef;
+            border: none;
+            color: #222;
+            border-radius: 6px;
+        }
+
+        .aba.ativa {
+            background: #0066cc;
+            color: #fff;
+        }
+
+        .linha-filtros {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tabela-container {
+            overflow-x: auto;
+            margin-top: 14px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 620px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8f9fa;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .tag-classificado {
+            background: #198754;
+        }
+
+        .tag-reserva {
+            background: #fd7e14;
+        }
+
+        .tag-participante {
+            background: #6c757d;
+        }
+
+        .sem-registros {
+            color: #666;
+            text-align: center;
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            #pergunta {
+                font-size: 36px;
+            }
+
+            .status-jogo,
+            .resumo-resultado {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="tela-registro" class="card">
-        <h2>Maratona da Tabuada</h2>
-        <p>Escolha qual tabuada voce quer treinar hoje:</p>
-        <input type="text" id="nome-aluno" placeholder="Digite seu nome (Ex: Joao Silva)">
+        <h1>Copa da Tabuada</h1>
+        <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
 
-        <label for="selecao-tabuada" style="display:block; text-align:left; font-weight:bold; margin-top:10px;">Treinar Tabuada do:</label>
-        <select id="selecao-tabuada">
-            <option value="2">Tabuada do 2</option>
-            <option value="3">Tabuada do 3</option>
-            <option value="4">Tabuada do 4</option>
-            <option value="5">Tabuada do 5</option>
-            <option value="6">Tabuada do 6</option>
-            <option value="7">Tabuada do 7</option>
-            <option value="8">Tabuada do 8</option>
-            <option value="9">Tabuada do 9</option>
+        <label for="nome-aluno">Nome completo</label>
+        <input type="text" id="nome-aluno" placeholder="Ex: Maria Eduarda">
+
+        <label for="turma-aluno">Turma</label>
+        <select id="turma-aluno">
+            <option value="">Selecione a turma</option>
+            <option value="901">901</option>
+            <option value="1001">1001</option>
+            <option value="1002">1002</option>
+            <option value="1003">1003</option>
+            <option value="1004">1004</option>
+            <option value="2001">2001</option>
+            <option value="2002">2002</option>
+            <option value="2003">2003</option>
+            <option value="3001">3001</option>
+            <option value="3002">3002</option>
         </select>
 
-        <button onclick="registrarAluno()">Iniciar Desafio</button>
+        <label for="modalidade-tabuada">Modalidade</label>
+        <select id="modalidade-tabuada">
+            <option value="2-5">Tabuadas do 2 ao 5</option>
+            <option value="6-9">Tabuadas do 6 ao 9</option>
+            <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
+        </select>
+
+        <button onclick="registrarAluno()">Iniciar Classificatória</button>
+        <button class="botao-secundario" onclick="abrirRankings()">Ver Rankings</button>
     </div>
 
     <div id="tela-jogo" class="card hidden">
+        <h2 id="titulo-jogo">Classificatória</h2>
+
         <div class="status-jogo">
-            <span id="info-pergunta">Pergunta: 1 / 10</span>
+            <span id="info-pergunta">Pergunta: 1 / 20</span>
             <span id="info-pontos">Pontos: 0</span>
+            <span id="info-acertos">Acertos: 0</span>
+            <span id="info-sequencia">Sequência: 0</span>
         </div>
+
         <div id="barra-tempo"><div id="progresso"></div></div>
         <div id="pergunta">X x Y = ?</div>
 
@@ -66,66 +299,144 @@
         </div>
     </div>
 
-    <div id="tela-ranking" class="card hidden">
-        <h2 id="titulo-ranking">Ranking - Tabuada do X</h2>
+    <div id="tela-resultado" class="card hidden">
+        <h2>Resultado Individual</h2>
         <p id="feedback-pontos"></p>
 
-        <div class="abas-filtro">
-            <button class="aba ativa" id="btn-filtro-pontos" onclick="mudarFiltro('pontos')">Maior Pontuacao</button>
-            <button class="aba" id="btn-filtro-velocidade" onclick="mudarFiltro('velocidade')">Mais Rapido</button>
+        <div class="resumo-resultado">
+            <div><strong>Turma:</strong> <span id="resumo-turma"></span></div>
+            <div><strong>Modalidade:</strong> <span id="resumo-modalidade"></span></div>
+            <div><strong>Pontuação:</strong> <span id="resumo-pontos"></span></div>
+            <div><strong>Acertos:</strong> <span id="resumo-acertos"></span></div>
+            <div><strong>Erros:</strong> <span id="resumo-erros"></span></div>
+            <div><strong>Tempo médio:</strong> <span id="resumo-tempo"></span></div>
+            <div><strong>Maior sequência:</strong> <span id="resumo-sequencia"></span></div>
+            <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Posicao</th>
-                    <th>Nome</th>
-                    <th id="coluna-criterio">Pontos Total</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-ranking"></tbody>
-        </table>
+        <button onclick="abrirRankings()">Ver Rankings</button>
+        <button class="botao-verde" onclick="reiniciarJogo()">Novo Aluno</button>
+    </div>
 
-        <button onclick="reiniciarJogo()" style="background: #28a745; margin-top: 20px;">Jogar Novamente</button>
+    <div id="tela-ranking" class="card hidden">
+        <h2>Rankings da Copa</h2>
+
+        <div class="abas-filtro">
+            <button class="aba ativa" id="btn-ranking-turma" onclick="mudarTipoRanking('turma')">Por Turma</button>
+            <button class="aba" id="btn-ranking-global" onclick="mudarTipoRanking('global')">Global Top 100</button>
+        </div>
+
+        <div class="linha-filtros">
+            <select id="filtro-modalidade" onchange="renderizarRanking()">
+                <option value="2-5">Tabuadas do 2 ao 5</option>
+                <option value="6-9">Tabuadas do 6 ao 9</option>
+                <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
+            </select>
+
+            <select id="filtro-turma" onchange="renderizarRanking()">
+                <option value="901">901</option>
+                <option value="1001">1001</option>
+                <option value="1002">1002</option>
+                <option value="1003">1003</option>
+                <option value="1004">1004</option>
+                <option value="2001">2001</option>
+                <option value="2002">2002</option>
+                <option value="2003">2003</option>
+                <option value="3001">3001</option>
+                <option value="3002">3002</option>
+            </select>
+        </div>
+
+        <h3 id="titulo-ranking">Ranking</h3>
+
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pos.</th>
+                        <th>Nome</th>
+                        <th>Turma</th>
+                        <th>Pontos</th>
+                        <th>Acertos</th>
+                        <th>Tempo</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-ranking"></tbody>
+            </table>
+        </div>
+
+        <button class="botao-verde" onclick="reiniciarJogo()">Novo Aluno</button>
     </div>
 
     <script>
         let alunoAtual = "";
-        let tabuadaSelecionada = 2;
-        let numAleatorio;
+        let turmaAtual = "";
+        let modalidadeAtual = "2-5";
+        let perguntaAtual = 0;
+        let pontosAcumulados = 0;
+        let acertos = 0;
+        let erros = 0;
+        let sequenciaAtual = 0;
+        let maiorSequencia = 0;
+        let temposRespostasCorretas = [];
+        let pontuacaoPorPergunta = [];
         let respostaCorreta;
         let tempoInicio;
         let temporizadorInterval;
         let temporizadorTimeout;
         let perguntaEmAberto = false;
+        let tipoRankingAtual = "turma";
 
-        let perguntaAtual = 0;
-        let pontosAcumulados = 0;
-        let temposRespostasCorretas = [];
-        let filtroAtual = "pontos";
+        const TOTAL_PERGUNTAS = 20;
+        const TEMPO_MAXIMO = 10000;
+        const CHAVE_RANKING = "rankingCopaTabuadaIsmaelBranco";
 
-        const TOTAL_PERGUNTAS = 10;
-        const TEMPO_MAXIMO = 7000;
-        const CHAVE_RANKING = "rankingTabuada";
+        const MODALIDADES = {
+            "2-5": {
+                nome: "Tabuadas do 2 ao 5",
+                fatores: [2, 3, 4, 5]
+            },
+            "6-9": {
+                nome: "Tabuadas do 6 ao 9",
+                fatores: [6, 7, 8, 9]
+            },
+            "0-10": {
+                nome: "Completa - Tabuadas do 0 ao 10",
+                fatores: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            }
+        };
 
         function registrarAluno() {
             const inputNome = document.getElementById("nome-aluno").value.trim();
+            const inputTurma = document.getElementById("turma-aluno").value;
 
             if (!inputNome) {
-                alert("Por favor, digite seu nome!");
+                alert("Por favor, digite o nome do aluno.");
+                return;
+            }
+
+            if (!inputTurma) {
+                alert("Por favor, selecione a turma.");
                 return;
             }
 
             alunoAtual = inputNome;
-            tabuadaSelecionada = parseInt(document.getElementById("selecao-tabuada").value, 10);
+            turmaAtual = inputTurma;
+            modalidadeAtual = document.getElementById("modalidade-tabuada").value;
 
             perguntaAtual = 0;
             pontosAcumulados = 0;
+            acertos = 0;
+            erros = 0;
+            sequenciaAtual = 0;
+            maiorSequencia = 0;
             temposRespostasCorretas = [];
+            pontuacaoPorPergunta = [];
 
-            document.getElementById("tela-registro").classList.add("hidden");
-            document.getElementById("tela-jogo").classList.remove("hidden");
+            document.getElementById("titulo-jogo").innerText = MODALIDADES[modalidadeAtual].nome;
 
+            mostrarTela("tela-jogo");
             proximaPergunta();
         }
 
@@ -139,14 +450,14 @@
 
             perguntaEmAberto = true;
             alternarBotoesResposta(false);
+            atualizarStatusJogo();
 
-            document.getElementById("info-pergunta").innerText = `Pergunta: ${perguntaAtual} / ${TOTAL_PERGUNTAS}`;
-            document.getElementById("info-pontos").innerText = `Pontos: ${pontosAcumulados}`;
+            const fatorA = sortearItem(MODALIDADES[modalidadeAtual].fatores);
+            const fatorB = Math.floor(Math.random() * 11);
 
-            numAleatorio = Math.floor(Math.random() * 10) + 1;
-            respostaCorreta = tabuadaSelecionada * numAleatorio;
+            respostaCorreta = fatorA * fatorB;
 
-            document.getElementById("pergunta").innerText = `${tabuadaSelecionada} x ${numAleatorio} = ?`;
+            document.getElementById("pergunta").innerText = `${fatorA} x ${fatorB} = ?`;
 
             gerarOpcoesResposta();
             iniciarCronometro();
@@ -156,19 +467,17 @@
             const opcoes = [respostaCorreta];
 
             while (opcoes.length < 5) {
-                const variacao = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+                const variacao = Math.floor(Math.random() * 11) - 5;
                 const opcaoFalsa = respostaCorreta + variacao;
 
-                if (opcaoFalsa > 0 && !opcoes.includes(opcaoFalsa)) {
+                if (opcaoFalsa >= 0 && variacao !== 0 && !opcoes.includes(opcaoFalsa)) {
                     opcoes.push(opcaoFalsa);
                 }
             }
 
-            opcoes.sort(() => Math.random() - 0.5);
+            opcoes.sort((a, b) => a - b);
 
-            const botoes = document.querySelectorAll(".btn-opcao");
-
-            botoes.forEach((botao, index) => {
+            document.querySelectorAll(".btn-opcao").forEach((botao, index) => {
                 botao.innerText = opcoes[index];
             });
         }
@@ -178,7 +487,7 @@
 
             const progresso = document.getElementById("progresso");
             progresso.style.width = "100%";
-            progresso.style.background = "#28a745";
+            progresso.style.background = "#198754";
 
             let tempoRestante = TEMPO_MAXIMO;
 
@@ -198,7 +507,7 @@
             clearTimeout(temporizadorTimeout);
 
             temporizadorTimeout = setTimeout(() => {
-                processarResposta(0);
+                processarResposta(0, false);
             }, TEMPO_MAXIMO);
         }
 
@@ -210,23 +519,16 @@
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
-            perguntaEmAberto = false;
-            alternarBotoesResposta(true);
-
             const tempoFim = performance.now();
             const respostaAluno = parseInt(botaoClicado.innerText, 10);
             const tempoGasto = (tempoFim - tempoInicio) / 1000;
+            const acertou = respostaAluno === respostaCorreta && tempoGasto <= TEMPO_MAXIMO / 1000;
+            const pontos = acertou ? Math.round(((TEMPO_MAXIMO / 1000) - tempoGasto) * 100) : 0;
 
-            if (respostaAluno === respostaCorreta && tempoGasto <= TEMPO_MAXIMO / 1000) {
-                const pontosDestaRodada = Math.round(((TEMPO_MAXIMO / 1000) - tempoGasto) * 100);
-                temposRespostasCorretas.push(tempoGasto);
-                processarResposta(pontosDestaRodada);
-            } else {
-                processarResposta(0);
-            }
+            processarResposta(pontos, acertou, tempoGasto);
         }
 
-        function processarResposta(pontosGanhos) {
+        function processarResposta(pontosGanhos, acertou, tempoGasto) {
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
@@ -234,7 +536,19 @@
             alternarBotoesResposta(true);
 
             pontosAcumulados += pontosGanhos;
+            pontuacaoPorPergunta.push(pontosGanhos);
 
+            if (acertou) {
+                acertos++;
+                sequenciaAtual++;
+                maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
+                temposRespostasCorretas.push(tempoGasto);
+            } else {
+                erros++;
+                sequenciaAtual = 0;
+            }
+
+            atualizarStatusJogo();
             setTimeout(proximaPergunta, 250);
         }
 
@@ -242,32 +556,147 @@
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
-            document.getElementById("tela-jogo").classList.add("hidden");
-            document.getElementById("tela-ranking").classList.remove("hidden");
-            document.getElementById("titulo-ranking").innerText = `Ranking - Tabuada do ${tabuadaSelecionada}`;
+            const tempoMedio = calcularTempoMedio();
 
-            let tempoMedio = TEMPO_MAXIMO / 1000;
+            const resultado = {
+                nome: alunoAtual,
+                turma: turmaAtual,
+                modalidade: modalidadeAtual,
+                pontos: pontosAcumulados,
+                acertos: acertos,
+                erros: erros,
+                tempoMedio: tempoMedio,
+                maiorSequencia: maiorSequencia,
+                pontuacaoPorPergunta: pontuacaoPorPergunta,
+                data: new Date().toISOString()
+            };
 
-            if (temposRespostasCorretas.length > 0) {
-                const somaTempos = temposRespostasCorretas.reduce((a, b) => a + b, 0);
-                tempoMedio = somaTempos / temposRespostasCorretas.length;
-            }
+            salvarResultado(resultado);
+            preencherResultado(resultado);
+            mostrarTela("tela-resultado");
+        }
 
-            const acertos = temposRespostasCorretas.length;
+        function preencherResultado(resultado) {
+            const rankingTurma = obterRankingOrdenado(resultado.modalidade, resultado.turma);
+            const posicao = rankingTurma.findIndex((item) => item.data === resultado.data) + 1;
+            const status = obterStatusPorPosicao(posicao);
 
             document.getElementById("feedback-pontos").innerText =
-                `${alunoAtual}, voce fez ${pontosAcumulados} pontos e acertou ${acertos} de ${TOTAL_PERGUNTAS}.`;
+                `${resultado.nome}, você concluiu a classificatória da Copa da Tabuada.`;
 
-            salvarResultado({
-                nome: alunoAtual,
-                tabuada: tabuadaSelecionada,
-                pontos: pontosAcumulados,
-                tempoMedio: tempoMedio,
-                acertos: acertos,
-                data: new Date().toISOString()
-            });
+            document.getElementById("resumo-turma").innerText = resultado.turma;
+            document.getElementById("resumo-modalidade").innerText = MODALIDADES[resultado.modalidade].nome;
+            document.getElementById("resumo-pontos").innerText = `${resultado.pontos} pts`;
+            document.getElementById("resumo-acertos").innerText = `${resultado.acertos}/${TOTAL_PERGUNTAS}`;
+            document.getElementById("resumo-erros").innerText = resultado.erros;
+            document.getElementById("resumo-tempo").innerText = `${resultado.tempoMedio.toFixed(2)}s`;
+            document.getElementById("resumo-sequencia").innerText = resultado.maiorSequencia;
+            document.getElementById("resumo-status").innerHTML = criarTagStatus(status);
 
-            mudarFiltro(filtroAtual);
+            document.getElementById("filtro-modalidade").value = resultado.modalidade;
+            document.getElementById("filtro-turma").value = resultado.turma;
+
+            tipoRankingAtual = "turma";
+            atualizarAbasRanking();
+        }
+
+        function abrirRankings() {
+            mostrarTela("tela-ranking");
+            renderizarRanking();
+        }
+
+        function mudarTipoRanking(tipo) {
+            tipoRankingAtual = tipo;
+            atualizarAbasRanking();
+            renderizarRanking();
+        }
+
+        function atualizarAbasRanking() {
+            document.getElementById("btn-ranking-turma").classList.toggle("ativa", tipoRankingAtual === "turma");
+            document.getElementById("btn-ranking-global").classList.toggle("ativa", tipoRankingAtual === "global");
+            document.getElementById("filtro-turma").classList.toggle("hidden", tipoRankingAtual === "global");
+        }
+
+        function renderizarRanking() {
+            atualizarAbasRanking();
+
+            const modalidade = document.getElementById("filtro-modalidade").value;
+            const turma = document.getElementById("filtro-turma").value;
+            const tabelaRanking = document.getElementById("tabela-ranking");
+
+            let ranking;
+
+            if (tipoRankingAtual === "global") {
+                ranking = obterRankingOrdenado(modalidade).slice(0, 100);
+                document.getElementById("titulo-ranking").innerText = `Top 100 Global - ${MODALIDADES[modalidade].nome}`;
+            } else {
+                ranking = obterRankingOrdenado(modalidade, turma);
+                document.getElementById("titulo-ranking").innerText = `Turma ${turma} - ${MODALIDADES[modalidade].nome}`;
+            }
+
+            if (ranking.length === 0) {
+                tabelaRanking.innerHTML = '<tr><td class="sem-registros" colspan="7">Nenhum resultado registrado ainda.</td></tr>';
+                return;
+            }
+
+            tabelaRanking.innerHTML = ranking.map((item, index) => {
+                const posicaoNaTurma = obterPosicaoNaTurma(item);
+                const status = obterStatusPorPosicao(posicaoNaTurma);
+
+                return `
+                    <tr>
+                        <td>${index + 1}º</td>
+                        <td>${escaparHtml(item.nome)}</td>
+                        <td>${item.turma}</td>
+                        <td>${item.pontos}</td>
+                        <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
+                        <td>${item.tempoMedio.toFixed(2)}s</td>
+                        <td>${criarTagStatus(status)}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function obterRankingOrdenado(modalidade, turma) {
+            return obterRanking()
+                .filter((item) => item.modalidade === modalidade)
+                .filter((item) => !turma || item.turma === turma)
+                .sort(compararResultados);
+        }
+
+        function compararResultados(a, b) {
+            return b.pontos - a.pontos ||
+                b.acertos - a.acertos ||
+                a.tempoMedio - b.tempoMedio ||
+                a.erros - b.erros ||
+                b.maiorSequencia - a.maiorSequencia;
+        }
+
+        function obterPosicaoNaTurma(resultado) {
+            const rankingTurma = obterRankingOrdenado(resultado.modalidade, resultado.turma);
+            return rankingTurma.findIndex((item) => item.data === resultado.data) + 1;
+        }
+
+        function obterStatusPorPosicao(posicao) {
+            if (posicao >= 1 && posicao <= 4) {
+                return "Classificado";
+            }
+
+            if (posicao >= 5 && posicao <= 6) {
+                return "Reserva";
+            }
+
+            return "Participante";
+        }
+
+        function criarTagStatus(status) {
+            const classe = status === "Classificado"
+                ? "tag-classificado"
+                : status === "Reserva"
+                    ? "tag-reserva"
+                    : "tag-participante";
+
+            return `<span class="tag ${classe}">${status}</span>`;
         }
 
         function salvarResultado(resultado) {
@@ -284,53 +713,36 @@
             }
         }
 
-        function mudarFiltro(filtro) {
-            filtroAtual = filtro;
-
-            document.getElementById("btn-filtro-pontos").classList.toggle("ativa", filtro === "pontos");
-            document.getElementById("btn-filtro-velocidade").classList.toggle("ativa", filtro === "velocidade");
-            document.getElementById("coluna-criterio").innerText = filtro === "pontos" ? "Pontos Total" : "Tempo Medio";
-
-            renderizarRanking();
-        }
-
-        function renderizarRanking() {
-            const tabelaRanking = document.getElementById("tabela-ranking");
-
-            const ranking = obterRanking()
-                .filter((item) => item.tabuada === tabuadaSelecionada)
-                .sort((a, b) => {
-                    if (filtroAtual === "velocidade") {
-                        return a.tempoMedio - b.tempoMedio || b.pontos - a.pontos;
-                    }
-
-                    return b.pontos - a.pontos || a.tempoMedio - b.tempoMedio;
-                })
-                .slice(0, 10);
-
-            if (ranking.length === 0) {
-                tabelaRanking.innerHTML = '<tr><td class="sem-registros" colspan="3">Nenhum resultado ainda.</td></tr>';
-                return;
+        function calcularTempoMedio() {
+            if (temposRespostasCorretas.length === 0) {
+                return TEMPO_MAXIMO / 1000;
             }
 
-            tabelaRanking.innerHTML = ranking.map((item, index) => {
-                const criterio = filtroAtual === "pontos"
-                    ? `${item.pontos} pts`
-                    : `${item.tempoMedio.toFixed(2)}s`;
+            const soma = temposRespostasCorretas.reduce((total, tempo) => total + tempo, 0);
+            return soma / temposRespostasCorretas.length;
+        }
 
-                return `
-                    <tr>
-                        <td>${index + 1}o</td>
-                        <td>${escaparHtml(item.nome)}</td>
-                        <td>${criterio}</td>
-                    </tr>
-                `;
-            }).join("");
+        function atualizarStatusJogo() {
+            document.getElementById("info-pergunta").innerText =
+                `Pergunta: ${Math.min(perguntaAtual, TOTAL_PERGUNTAS)} / ${TOTAL_PERGUNTAS}`;
+            document.getElementById("info-pontos").innerText = `Pontos: ${pontosAcumulados}`;
+            document.getElementById("info-acertos").innerText = `Acertos: ${acertos}`;
+            document.getElementById("info-sequencia").innerText = `Sequência: ${sequenciaAtual}`;
         }
 
         function alternarBotoesResposta(desativado) {
             document.querySelectorAll(".btn-opcao").forEach((botao) => {
                 botao.disabled = desativado;
+            });
+        }
+
+        function sortearItem(lista) {
+            return lista[Math.floor(Math.random() * lista.length)];
+        }
+
+        function mostrarTela(idTela) {
+            ["tela-registro", "tela-jogo", "tela-resultado", "tela-ranking"].forEach((id) => {
+                document.getElementById(id).classList.toggle("hidden", id !== idTela);
             });
         }
 
@@ -341,14 +753,11 @@
         }
 
         function reiniciarJogo() {
-            document.getElementById("tela-ranking").classList.add("hidden");
-            document.getElementById("tela-registro").classList.remove("hidden");
+            clearInterval(temporizadorInterval);
+            clearTimeout(temporizadorTimeout);
+
             document.getElementById("nome-aluno").value = "";
-
-            filtroAtual = "pontos";
-
-            document.getElementById("btn-filtro-pontos").classList.add("ativa");
-            document.getElementById("btn-filtro-velocidade").classList.remove("ativa");
+            mostrarTela("tela-registro");
         }
     </script>
 </body>
