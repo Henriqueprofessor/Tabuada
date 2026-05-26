@@ -3,39 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maratona da Tabuada Específica ⏱️</title>
+    <title>Maratona da Tabuada Especifica</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f0f2f5; text-align: center; padding: 20px; }
         .card { background: white; max-width: 450px; margin: 20px auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         input, button, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0056b3; }
+        button:hover:not(:disabled) { background: #0056b3; }
+        button:disabled { cursor: not-allowed; opacity: 0.65; }
         #barra-tempo { width: 100%; height: 15px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
         #progresso { width: 100%; height: 100%; background: #28a745; transition: width 0.1s linear; }
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; color: #333; }
-        .status-jogo { display: flex; justify-content: space-between; font-weight: bold; color: #555; margin-bottom: 10px; }
+        .status-jogo { display: flex; justify-content: space-between; gap: 12px; font-weight: bold; color: #555; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
         th { background: #f8f9fa; }
         .abas-filtro { display: flex; gap: 5px; margin-top: 15px; }
         .aba { flex: 1; padding: 8px; font-size: 13px; background: #e0e0e0; border: none; color: #333; border-radius: 4px; }
         .aba.ativa { background: #007bff; color: white; }
-        
-        /* Layout Adaptado para 5 Opções Fáceis de Clicar */
         .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .btn-opcao { background: #6c757d; padding: 14px; font-size: 18px; border-radius: 8px; font-weight: bold; width: 100%; border: none; color: white; cursor: pointer; }
-        .btn-opcao:hover { background: #495057; }
+        .btn-opcao:hover:not(:disabled) { background: #495057; }
+        .sem-registros { color: #666; text-align: center; }
     </style>
 </head>
 <body>
-
-    <!-- TELA 1: CADASTRO DO ALUNO E ESCOLHA DA TABUADA -->
     <div id="tela-registro" class="card">
-        <h2>Maratona da Tabuada 🏆</h2>
-        <p>Escolha qual tabuada você quer treinar hoje:</p>
-        <input type="text" id="nome-aluno" placeholder="Digite seu nome (Ex: João Silva)">
-        
+        <h2>Maratona da Tabuada</h2>
+        <p>Escolha qual tabuada voce quer treinar hoje:</p>
+        <input type="text" id="nome-aluno" placeholder="Digite seu nome (Ex: Joao Silva)">
+
         <label for="selecao-tabuada" style="display:block; text-align:left; font-weight:bold; margin-top:10px;">Treinar Tabuada do:</label>
         <select id="selecao-tabuada">
             <option value="2">Tabuada do 2</option>
@@ -51,16 +49,14 @@
         <button onclick="registrarAluno()">Iniciar Desafio</button>
     </div>
 
-    <!-- TELA 2: O JOGO (5 OPÇÕES) -->
     <div id="tela-jogo" class="card hidden">
         <div class="status-jogo">
             <span id="info-pergunta">Pergunta: 1 / 10</span>
             <span id="info-pontos">Pontos: 0</span>
         </div>
         <div id="barra-tempo"><div id="progresso"></div></div>
-        <div id="pergunta">X × Y = ?</div>
-        
-        <!-- Lista vertical com as 5 opções de botões -->
+        <div id="pergunta">X x Y = ?</div>
+
         <div class="lista-opcoes">
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
@@ -70,36 +66,39 @@
         </div>
     </div>
 
-    <!-- TELA 3: RANKING FINAL DA TABUADA SELECIONADA -->
     <div id="tela-ranking" class="card hidden">
         <h2 id="titulo-ranking">Ranking - Tabuada do X</h2>
         <p id="feedback-pontos"></p>
-        
-        <!-- Filtros do Ranking -->
+
         <div class="abas-filtro">
-            <button class="aba ativa" id="btn-filtro-pontos" onclick="mudarFiltro('pontos')">Maior Pontuação</button>
-            <button class="aba" id="btn-filtro-velocidade" onclick="mudarFiltro('velocidade')">Mais Rápido (Tempo)</button>
+            <button class="aba ativa" id="btn-filtro-pontos" onclick="mudarFiltro('pontos')">Maior Pontuacao</button>
+            <button class="aba" id="btn-filtro-velocidade" onclick="mudarFiltro('velocidade')">Mais Rapido</button>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th>Posição</th>
+                    <th>Posicao</th>
                     <th>Nome</th>
                     <th id="coluna-criterio">Pontos Total</th>
                 </tr>
             </thead>
             <tbody id="tabela-ranking"></tbody>
         </table>
+
         <button onclick="reiniciarJogo()" style="background: #28a745; margin-top: 20px;">Jogar Novamente</button>
     </div>
 
     <script>
         let alunoAtual = "";
         let tabuadaSelecionada = 2;
-        let numAleatorio, respostaCorreta;
-        let tempoInicio, temporizadorInterval, temporizadorTimeout;
-        
+        let numAleatorio;
+        let respostaCorreta;
+        let tempoInicio;
+        let temporizadorInterval;
+        let temporizadorTimeout;
+        let perguntaEmAberto = false;
+
         let perguntaAtual = 0;
         let pontosAcumulados = 0;
         let temposRespostasCorretas = [];
@@ -107,61 +106,68 @@
 
         const TOTAL_PERGUNTAS = 10;
         const TEMPO_MAXIMO = 7000;
+        const CHAVE_RANKING = "rankingTabuada";
 
         function registrarAluno() {
-            const inputNome = document.getElementById('nome-aluno').value.trim();
-            if (!inputNome) return alert("Por favor, digite seu nome!");
-            
+            const inputNome = document.getElementById("nome-aluno").value.trim();
+
+            if (!inputNome) {
+                alert("Por favor, digite seu nome!");
+                return;
+            }
+
             alunoAtual = inputNome;
-            tabuadaSelecionada = parseInt(document.getElementById('selecao-tabuada').value);
-            
+            tabuadaSelecionada = parseInt(document.getElementById("selecao-tabuada").value, 10);
+
             perguntaAtual = 0;
             pontosAcumulados = 0;
             temposRespostasCorretas = [];
 
-            document.getElementById('tela-registro').classList.add('hidden');
-            document.getElementById('tela-jogo').classList.remove('hidden');
+            document.getElementById("tela-registro").classList.add("hidden");
+            document.getElementById("tela-jogo").classList.remove("hidden");
+
             proximaPergunta();
         }
 
         function proximaPergunta() {
             perguntaAtual++;
-            
+
             if (perguntaAtual > TOTAL_PERGUNTAS) {
                 finalizarCircuito();
                 return;
             }
 
-            document.getElementById('info-pergunta').innerText = `Pergunta: ${perguntaAtual} / ${TOTAL_PERGUNTAS}`;
-            document.getElementById('info-pontos').innerText = `Pontos: ${pontosAcumulados}`;
+            perguntaEmAberto = true;
+            alternarBotoesResposta(false);
+
+            document.getElementById("info-pergunta").innerText = `Pergunta: ${perguntaAtual} / ${TOTAL_PERGUNTAS}`;
+            document.getElementById("info-pontos").innerText = `Pontos: ${pontosAcumulados}`;
 
             numAleatorio = Math.floor(Math.random() * 10) + 1;
             respostaCorreta = tabuadaSelecionada * numAleatorio;
 
-            document.getElementById('pergunta').innerText = `${tabuadaSelecionada} × ${numAleatorio} = ?`;
-            
+            document.getElementById("pergunta").innerText = `${tabuadaSelecionada} x ${numAleatorio} = ?`;
+
             gerarOpcoesResposta();
             iniciarCronometro();
         }
 
         function gerarOpcoesResposta() {
-            let opcoes = [respostaCorreta];
-            
-            // Agora gera 4 respostas falsas coerentes com a tabuada
+            const opcoes = [respostaCorreta];
+
             while (opcoes.length < 5) {
-                let variacao = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
-                let opcaoFalsa = respostaCorreta + variacao;
-                
+                const variacao = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+                const opcaoFalsa = respostaCorreta + variacao;
+
                 if (opcaoFalsa > 0 && !opcoes.includes(opcaoFalsa)) {
                     opcoes.push(opcaoFalsa);
                 }
             }
-            
-            // Embaralha o array para a resposta certa mudar sempre de posição
+
             opcoes.sort(() => Math.random() - 0.5);
-            
-            // Atribui os valores aos 5 botões na tela
-            const botoes = document.querySelectorAll('.btn-opcao');
+
+            const botoes = document.querySelectorAll(".btn-opcao");
+
             botoes.forEach((botao, index) => {
                 botao.innerText = opcoes[index];
             });
@@ -169,36 +175,50 @@
 
         function iniciarCronometro() {
             tempoInicio = performance.now();
-            const progresso = document.getElementById('progresso');
+
+            const progresso = document.getElementById("progresso");
             progresso.style.width = "100%";
             progresso.style.background = "#28a745";
 
             let tempoRestante = TEMPO_MAXIMO;
-            
+
             clearInterval(temporizadorInterval);
+
             temporizadorInterval = setInterval(() => {
                 tempoRestante -= 100;
-                const porcentagem = (tempoRestante / TEMPO_MAXIMO) * 100;
+
+                const porcentagem = Math.max((tempoRestante / TEMPO_MAXIMO) * 100, 0);
                 progresso.style.width = `${porcentagem}%`;
-                if (porcentagem < 40) progresso.style.background = "#dc3545";
+
+                if (porcentagem < 40) {
+                    progresso.style.background = "#dc3545";
+                }
             }, 100);
 
             clearTimeout(temporizadorTimeout);
+
             temporizadorTimeout = setTimeout(() => {
-                 processarResposta(0);
+                processarResposta(0);
             }, TEMPO_MAXIMO);
         }
 
         function verificarResposta(botaoClicado) {
+            if (!perguntaEmAberto) {
+                return;
+            }
+
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
+            perguntaEmAberto = false;
+            alternarBotoesResposta(true);
+
             const tempoFim = performance.now();
-            const respostaAluno = parseInt(botaoClicado.innerText);
+            const respostaAluno = parseInt(botaoClicado.innerText, 10);
             const tempoGasto = (tempoFim - tempoInicio) / 1000;
 
-            if (respostaAluno === respostaCorreta && tempoGasto <= 7) {
-                const pontosDestaRodada = Math.round((7 - tempoGasto) * 100);
+            if (respostaAluno === respostaCorreta && tempoGasto <= TEMPO_MAXIMO / 1000) {
+                const pontosDestaRodada = Math.round(((TEMPO_MAXIMO / 1000) - tempoGasto) * 100);
                 temposRespostasCorretas.push(tempoGasto);
                 processarResposta(pontosDestaRodada);
             } else {
@@ -207,25 +227,128 @@
         }
 
         function processarResposta(pontosGanhos) {
+            clearInterval(temporizadorInterval);
+            clearTimeout(temporizadorTimeout);
+
+            perguntaEmAberto = false;
+            alternarBotoesResposta(true);
+
             pontosAcumulados += pontosGanhos;
-            proximaPergunta();
+
+            setTimeout(proximaPergunta, 250);
         }
 
         function finalizarCircuito() {
-            document.getElementById('tela-jogo').classList.add('hidden');
-            document.getElementById('tela-ranking').classList.remove('hidden');
-            document.getElementById('titulo-ranking').innerText = `Ranking - Tabuada do ${tabuadaSelecionada}`;
+            clearInterval(temporizadorInterval);
+            clearTimeout(temporizadorTimeout);
 
-            let tempoMedio = 7; 
-            if(temposRespostasCorretas.length > 0) {
+            document.getElementById("tela-jogo").classList.add("hidden");
+            document.getElementById("tela-ranking").classList.remove("hidden");
+            document.getElementById("titulo-ranking").innerText = `Ranking - Tabuada do ${tabuadaSelecionada}`;
+
+            let tempoMedio = TEMPO_MAXIMO / 1000;
+
+            if (temposRespostasCorretas.length > 0) {
                 const somaTempos = temposRespostasCorretas.reduce((a, b) => a + b, 0);
+                tempoMedio = somaTempos / temposRespostasCorretas.length;
+            }
+
+            const acertos = temposRespostasCorretas.length;
+
+            document.getElementById("feedback-pontos").innerText =
+                `${alunoAtual}, voce fez ${pontosAcumulados} pontos e acertou ${acertos} de ${TOTAL_PERGUNTAS}.`;
+
+            salvarResultado({
+                nome: alunoAtual,
+                tabuada: tabuadaSelecionada,
+                pontos: pontosAcumulados,
+                tempoMedio: tempoMedio,
+                acertos: acertos,
+                data: new Date().toISOString()
+            });
+
+            mudarFiltro(filtroAtual);
+        }
+
+        function salvarResultado(resultado) {
+            const ranking = obterRanking();
+            ranking.push(resultado);
+            localStorage.setItem(CHAVE_RANKING, JSON.stringify(ranking));
+        }
+
+        function obterRanking() {
+            try {
+                return JSON.parse(localStorage.getItem(CHAVE_RANKING)) || [];
+            } catch (erro) {
+                return [];
+            }
+        }
+
+        function mudarFiltro(filtro) {
+            filtroAtual = filtro;
+
+            document.getElementById("btn-filtro-pontos").classList.toggle("ativa", filtro === "pontos");
+            document.getElementById("btn-filtro-velocidade").classList.toggle("ativa", filtro === "velocidade");
+            document.getElementById("coluna-criterio").innerText = filtro === "pontos" ? "Pontos Total" : "Tempo Medio";
+
+            renderizarRanking();
+        }
+
+        function renderizarRanking() {
+            const tabelaRanking = document.getElementById("tabela-ranking");
+
+            const ranking = obterRanking()
+                .filter((item) => item.tabuada === tabuadaSelecionada)
+                .sort((a, b) => {
+                    if (filtroAtual === "velocidade") {
+                        return a.tempoMedio - b.tempoMedio || b.pontos - a.pontos;
+                    }
+
+                    return b.pontos - a.pontos || a.tempoMedio - b.tempoMedio;
+                })
+                .slice(0, 10);
+
+            if (ranking.length === 0) {
+                tabelaRanking.innerHTML = '<tr><td class="sem-registros" colspan="3">Nenhum resultado ainda.</td></tr>';
+                return;
+            }
+
+            tabelaRanking.innerHTML = ranking.map((item, index) => {
+                const criterio = filtroAtual === "pontos"
+                    ? `${item.pontos} pts`
+                    : `${item.tempoMedio.toFixed(2)}s`;
+
+                return `
+                    <tr>
+                        <td>${index + 1}o</td>
+                        <td>${escaparHtml(item.nome)}</td>
+                        <td>${criterio}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function alternarBotoesResposta(desativado) {
+            document.querySelectorAll(".btn-opcao").forEach((botao) => {
+                botao.disabled = desativado;
+            });
+        }
+
+        function escaparHtml(texto) {
+            const div = document.createElement("div");
+            div.innerText = texto;
+            return div.innerHTML;
+        }
+
         function reiniciarJogo() {
-            document.getElementById('tela-ranking').classList.add('hidden');
-            document.getElementById('tela-registro').classList.remove('hidden');
-            document.getElementById('nome-aluno').value = "";
+            document.getElementById("tela-ranking").classList.add("hidden");
+            document.getElementById("tela-registro").classList.remove("hidden");
+            document.getElementById("nome-aluno").value = "";
+
             filtroAtual = "pontos";
-            document.getElementById('btn-filtro-pontos').classList.add('ativa');
-            document.getElementById('btn-filtro-velocidade').classList.remove('ativa');
+
+            document.getElementById("btn-filtro-pontos").classList.add("ativa");
+            document.getElementById("btn-filtro-velocidade").classList.remove("ativa");
         }
     </script>
 </body>
