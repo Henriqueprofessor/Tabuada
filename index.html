@@ -21,6 +21,11 @@
         .abas-filtro { display: flex; gap: 5px; margin-top: 15px; }
         .aba { flex: 1; padding: 8px; font-size: 13px; background: #e0e0e0; border: none; color: #333; border-radius: 4px; }
         .aba.ativa { background: #007bff; color: white; }
+        
+        /* Layout Adaptado para 5 Opções Fáceis de Clicar */
+        .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .btn-opcao { background: #6c757d; padding: 14px; font-size: 18px; border-radius: 8px; font-weight: bold; width: 100%; border: none; color: white; cursor: pointer; }
+        .btn-opcao:hover { background: #495057; }
     </style>
 </head>
 <body>
@@ -46,7 +51,7 @@
         <button onclick="registrarAluno()">Iniciar Desafio</button>
     </div>
 
-    <!-- TELA 2: O JOGO (CIRCUITO) -->
+    <!-- TELA 2: O JOGO (5 OPÇÕES) -->
     <div id="tela-jogo" class="card hidden">
         <div class="status-jogo">
             <span id="info-pergunta">Pergunta: 1 / 10</span>
@@ -54,8 +59,15 @@
         </div>
         <div id="barra-tempo"><div id="progresso"></div></div>
         <div id="pergunta">X × Y = ?</div>
-        <input type="number" id="resposta" placeholder="Sua resposta..." autocomplete="off">
-        <button onclick="verificarResposta()">Responder (Enter)</button>
+        
+        <!-- Lista vertical com as 5 opções de botões -->
+        <div class="lista-opcoes">
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+        </div>
     </div>
 
     <!-- TELA 3: RANKING FINAL DA TABUADA SELECIONADA -->
@@ -96,10 +108,6 @@
         const TOTAL_PERGUNTAS = 10;
         const TEMPO_MAXIMO = 7000;
 
-        document.getElementById('resposta').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') verificarResposta();
-        });
-
         function registrarAluno() {
             const inputNome = document.getElementById('nome-aluno').value.trim();
             if (!inputNome) return alert("Por favor, digite seu nome!");
@@ -131,10 +139,32 @@
             respostaCorreta = tabuadaSelecionada * numAleatorio;
 
             document.getElementById('pergunta').innerText = `${tabuadaSelecionada} × ${numAleatorio} = ?`;
-            document.getElementById('resposta').value = "";
-            document.getElementById('resposta').focus();
-
+            
+            gerarOpcoesResposta();
             iniciarCronometro();
+        }
+
+        function gerarOpcoesResposta() {
+            let opcoes = [respostaCorreta];
+            
+            // Agora gera 4 respostas falsas coerentes com a tabuada
+            while (opcoes.length < 5) {
+                let variacao = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+                let opcaoFalsa = respostaCorreta + variacao;
+                
+                if (opcaoFalsa > 0 && !opcoes.includes(opcaoFalsa)) {
+                    opcoes.push(opcaoFalsa);
+                }
+            }
+            
+            // Embaralha o array para a resposta certa mudar sempre de posição
+            opcoes.sort(() => Math.random() - 0.5);
+            
+            // Atribui os valores aos 5 botões na tela
+            const botoes = document.querySelectorAll('.btn-opcao');
+            botoes.forEach((botao, index) => {
+                botao.innerText = opcoes[index];
+            });
         }
 
         function iniciarCronometro() {
@@ -159,12 +189,12 @@
             }, TEMPO_MAXIMO);
         }
 
-        function verificarResposta() {
+        function verificarResposta(botaoClicado) {
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
             const tempoFim = performance.now();
-            const respostaAluno = parseInt(document.getElementById('resposta').value);
+            const respostaAluno = parseInt(botaoClicado.innerText);
             const tempoGasto = (tempoFim - tempoInicio) / 1000;
 
             if (respostaAluno === respostaCorreta && tempoGasto <= 7) {
@@ -189,56 +219,6 @@
             let tempoMedio = 7; 
             if(temposRespostasCorretas.length > 0) {
                 const somaTempos = temposRespostasCorretas.reduce((a, b) => a + b, 0);
-                tempoMedio = somaTempos / temposRespostasCorretas.length;
-            }
-            
-            document.getElementById('feedback-pontos').innerText = `Parabéns, ${alunoAtual}!\nVocê fez ${pontosAcumulados} pontos.\nTempo médio de acerto: ${tempoMedio.toFixed(2)}s`;
-
-            salvarPontuacao(alunoAtual, pontosAcumulados, tempoMedio, tabuadaSelecionada);
-            exibirRanking();
-        }
-
-        function salvarPontuacao(nome, pontos, tempoMedio, tabuada) {
-            const chaveRanking = `rankingTabuada_${tabuada}`;
-            let ranking = JSON.parse(localStorage.getItem(chaveRanking)) || [];
-            
-            ranking.push({ nome: nome, pontos: pontos, tempoMedio: tempoMedio });
-            localStorage.setItem(chaveRanking, JSON.stringify(ranking));
-        }
-
-        function mudarFiltro(novoFiltro) {
-            filtroAtual = novoFiltro;
-            document.getElementById('btn-filtro-pontos').classList.toggle('ativa', filtroAtual === 'pontos');
-            document.getElementById('btn-filtro-velocidade').classList.toggle('ativa', filtroAtual === 'velocidade');
-            exibirRanking();
-        }
-
-        function exibirRanking() {
-            const chaveRanking = `rankingTabuada_${tabuadaSelecionada}`;
-            let ranking = JSON.parse(localStorage.getItem(chaveRanking)) || [];
-            const tabela = document.getElementById('tabela-ranking');
-            const colunaCriterio = document.getElementById('coluna-criterio');
-            tabela.innerHTML = "";
-
-            if (filtroAtual === "pontos") {
-                colunaCriterio.innerText = "Pontos Total";
-                ranking.sort((a, b) => b.pontos - a.pontos);
-            } else {
-                colunaCriterio.innerText = "Tempo Médio";
-                ranking.sort((a, b) => a.tempoMedio - b.tempoMedio);
-            }
-
-            ranking.slice(0, 5).forEach((aluno, index) => {
-                const dadoExibido = filtroAtual === "pontos" ? `${aluno.pontos} pts` : `${aluno.tempoMedio.toFixed(2)}s`;
-                const linha = `<tr>
-                    <td>${index + 1}º</td>
-                    <td>${aluno.nome}</td>
-                    <td>${dadoExibido}</td>
-                </tr>`;
-                tabela.innerHTML += linha;
-            });
-        }
-
         function reiniciarJogo() {
             document.getElementById('tela-ranking').classList.add('hidden');
             document.getElementById('tela-registro').classList.remove('hidden');
