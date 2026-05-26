@@ -90,8 +90,8 @@
         
         let perguntaAtual = 0;
         let pontosAcumulados = 0;
-        let temposRespostasCorretas = []; // Guarda os tempos para calcular a velocidade média
-        let filtroAtual = "pontos"; // Pode ser 'pontos' ou 'velocidade'
+        let temposRespostasCorretas = [];
+        let filtroAtual = "pontos";
 
         const TOTAL_PERGUNTAS = 10;
         const TEMPO_MAXIMO = 7000;
@@ -127,8 +127,6 @@
             document.getElementById('info-pergunta').innerText = `Pergunta: ${perguntaAtual} / ${TOTAL_PERGUNTAS}`;
             document.getElementById('info-pontos').innerText = `Pontos: ${pontosAcumulados}`;
 
-            // O primeiro número é sempre a tabuada fixa escolhida pelo aluno
-            // O segundo número varia aleatoriamente de 1 a 10
             numAleatorio = Math.floor(Math.random() * 10) + 1;
             respostaCorreta = tabuadaSelecionada * numAleatorio;
 
@@ -157,7 +155,7 @@
 
             clearTimeout(temporizadorTimeout);
             temporizadorTimeout = setTimeout(() => {
-                 processarResposta(0, 7); // Estourou o tempo, computa 7 segundos gastos
+                 processarResposta(0);
             }, TEMPO_MAXIMO);
         }
 
@@ -171,7 +169,7 @@
 
             if (respostaAluno === respostaCorreta && tempoGasto <= 7) {
                 const pontosDestaRodada = Math.round((7 - tempoGasto) * 100);
-                temposRespostasCorretas.push(tempoGasto); // Registra o tempo do acerto
+                temposRespostasCorretas.push(tempoGasto);
                 processarResposta(pontosDestaRodada);
             } else {
                 processarResposta(0);
@@ -188,7 +186,6 @@
             document.getElementById('tela-ranking').classList.remove('hidden');
             document.getElementById('titulo-ranking').innerText = `Ranking - Tabuada do ${tabuadaSelecionada}`;
 
-            // Calcula a média de velocidade apenas das respostas certas
             let tempoMedio = 7; 
             if(temposRespostasCorretas.length > 0) {
                 const somaTempos = temposRespostasCorretas.reduce((a, b) => a + b, 0);
@@ -202,7 +199,6 @@
         }
 
         function salvarPontuacao(nome, pontos, tempoMedio, tabuada) {
-            // Chave dinâmica baseada na tabuada jogada (ex: 'rankingTabuada_5')
             const chaveRanking = `rankingTabuada_${tabuada}`;
             let ranking = JSON.parse(localStorage.getItem(chaveRanking)) || [];
             
@@ -213,3 +209,15 @@
         function mudarFiltro(novoFiltro) {
             filtroAtual = novoFiltro;
             document.getElementById('btn-filtro-pontos').classList.toggle('ativa', filtroAtual === 'pontos');
+            document.getElementById('btn-filtro-velocidade').classList.toggle('ativa', filtroAtual === 'velocidade');
+            exibirRanking();
+        }
+
+        function exibirRanking() {
+            const chaveRanking = `rankingTabuada_${tabuadaSelecionada}`;
+            let ranking = JSON.parse(localStorage.getItem(chaveRanking)) || [];
+            const tabela = document.getElementById('tabela-ranking');
+            const colunaCriterio = document.getElementById('coluna-criterio');
+            tabela.innerHTML = "";
+
+            if (filtroAtual === "pontos") {
