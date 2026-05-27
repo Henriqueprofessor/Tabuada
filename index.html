@@ -136,12 +136,14 @@
         .temporizador.urgente { color: #dc3545; animation: pulse 0.5s ease-in-out infinite; }
         .waiting-message { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; }
         .placar-rodadas { display: flex; justify-content: center; gap: 30px; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+        .vitorias { font-size: 28px; font-weight: bold; color: #ffc107; }
+        .rodada-detalhe { font-size: 12px; color: #666; margin-top: 5px; }
 
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         #coluna-status.hidden, #coluna-turma.hidden { display: none; }
 
         .historico-duelos {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             margin-top: 15px;
             font-size: 12px;
@@ -152,6 +154,11 @@
         }
         .historico-duelos th, .historico-duelos td {
             padding: 6px 4px;
+        }
+        .detalhes-duelo {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
         }
         .aviso-orientacao {
             background: #fff3cd;
@@ -266,13 +273,23 @@
     <div id="tela-config-multi" class="card hidden">
         <h2>👥 Multiplayer Local</h2>
         
-        <!-- AVISO DE ORIENTAÇÃO -->
         <div class="aviso-orientacao">
             <div class="icone">📱🔄</div>
             <div class="texto">
                 <strong>⚠️ ATENÇÃO!</strong><br>
                 Para melhor experiência, <strong>vire o celular na horizontal (modo paisagem/deitado)</strong>.<br>
                 Os botões ficarão maiores e mais fáceis de apertar!
+            </div>
+        </div>
+        
+        <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;">
+            <div class="icone">🏆📊</div>
+            <div class="texto">
+                <strong>📋 REGRAS DO DUELO:</strong><br>
+                • Cada RODADA tem <strong>10 perguntas</strong><br>
+                • Vence a rodada quem fizer <strong>mais pontos</strong><br>
+                • Critério de desempate: mais acertos → menor tempo médio<br>
+                • O duelo é <strong>melhor de 5 rodadas</strong> (quem vencer 3 primeiro)
             </div>
         </div>
         
@@ -327,14 +344,17 @@
                 </div>
             </div>
         </div>
+        
         <div class="placar-rodadas">
-            <div>📊 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div>
+            <div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div>
         </div>
+        
         <div class="round-info">
-            <div>Rodada: <span id="rodada-atual">1</span> de <span id="total-rodadas">10</span></div>
+            <div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div>
             <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
             <div id="temporizador" class="temporizador">⏱️ 5.0s</div>
         </div>
+        
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
         <button onclick="reiniciarMultiplayer()" class="botao-secundario">🚪 Sair do Duelo</button>
     </div>
@@ -370,7 +390,7 @@
             <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
         </select>
         <h3 id="titulo-ranking">Ranking</h3>
-        <div class="tabela-container"><tr><thead><tr><th>Pos.</th><th>Nome</th><th id="coluna-turma">Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th id="coluna-status">Status</th></tr></thead><tbody id="tabela-ranking"></tbody></table></div>
+        <div class="tabela-container"><table><thead><tr><th>Pos.</th><th>Nome</th><th id="coluna-turma">Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th id="coluna-status">Status</th></tr></thead><tbody id="tabela-ranking"></tbody></table></div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
 
@@ -470,7 +490,7 @@
             "0-10": { nome: "Completa - Tabuadas do 0 ao 10", fatores: [0,1,2,3,4,5,6,7,8,9,10] }
         };
 
-        // LISTA DE CONQUISTAS
+        // CONQUISTAS
         const CONQUISTAS = [
             { icone: "🏆", nome: "Mestre da Tabuada", descricao: "17.000+ pontos", criterio: (r) => r.pontos >= 17000 },
             { icone: "📚", nome: "Domínio Total", descricao: "20/20 acertos", criterio: (r) => r.acertos === 20 },
@@ -495,8 +515,20 @@
         let alunosData=[], alunosFiltrados=[];
 
         // VARIÁVEIS MULTIPLAYER
-        let multiJogadores = [{id:1,nome:"",pontos:0,vitorias:0,bloqueado:false},{id:2,nome:"",pontos:0,vitorias:0,bloqueado:false}];
-        let multiModalidade="0-10", multiRodada=0, totalRodadas=10, multiPergunta={}, multiTempo=5, multiTimer=null, multiAtivo=false;
+        let multiJogadores = [
+            { id:1, nome:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false },
+            { id:2, nome:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false }
+        ];
+        let multiModalidade="0-10";
+        let rodadaAtual=1;
+        let perguntaRodadaAtual=1;
+        let totalRodadas=5;
+        let perguntasPorRodada=10;
+        let multiPergunta={};
+        let multiTempo=5;
+        let multiTimer=null;
+        let multiAtivo=false;
+        let historicoRodadas = [];
 
         function mostrarToast(msg) { let t=document.getElementById("toast-pontuacao"); t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); }
         function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
@@ -511,7 +543,7 @@
         }
 
         // ========== HISTÓRICO DE DUELOS ==========
-        async function salvarDuelo(vencedor, perdedor, vitoriasVencedor, vitoriasPerdedor, modalidade, rodadas) {
+        async function salvarDuelo(vencedor, perdedor, vitoriasVencedor, vitoriasPerdedor, modalidade, rodadas, historicoRodadasDetalhe) {
             let duelo = {
                 data: new Date().toISOString(),
                 vencedor: vencedor,
@@ -519,7 +551,8 @@
                 placar: `${vitoriasVencedor} x ${vitoriasPerdedor}`,
                 modalidade: MODALIDADES[modalidade]?.nome || modalidade,
                 rodadas: rodadas,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                detalhesRodadas: historicoRodadasDetalhe
             };
             
             try {
@@ -548,10 +581,25 @@
             if(historico.length === 0) {
                 container.innerHTML = "<p>Nenhum duelo registrado ainda.</p>";
             } else {
-                let html = '<table><thead><tr><th>Data</th><th>Vencedor</th><th>Placar</th><th>Perdedor</th><th>Modalidade</th><th>Rodadas</th></tr></thead><tbody>';
+                let html = '<table><thead><tr><th>Data</th><th>Vencedor</th><th>Placar</th><th>Perdedor</th><th>Modalidade</th><th>Detalhes</th></tr></thead><tbody>';
                 historico.forEach(d => {
                     let data = new Date(d.data).toLocaleString();
-                    html += `<tr><td>${data}</td><td><strong>${d.vencedor}</strong></td><td>${d.placar}</td><td>${d.perdedor}</td><td>${d.modalidade}</td><td>${d.rodadas}</td></tr>`;
+                    let detalhesHtml = '';
+                    if(d.detalhesRodadas && d.detalhesRodadas.length > 0) {
+                        detalhesHtml = '<div class="detalhes-duelo">';
+                        d.detalhesRodadas.forEach((r, idx) => {
+                            detalhesHtml += `Rodada ${idx+1}: ${r.vencedor} (${r.placar})<br>`;
+                        });
+                        detalhesHtml += '</div>';
+                    }
+                    html += `<tr>
+                        <td style="text-align:center">${data}</td>
+                        <td style="text-align:center"><strong>${d.vencedor}</strong></td>
+                        <td style="text-align:center">${d.placar}</td>
+                        <td style="text-align:center">${d.perdedor}</td>
+                        <td style="text-align:center">${d.modalidade}</td>
+                        <td>${detalhesHtml}</td>
+                    </tr>`;
                 });
                 html += '</tbody></table>';
                 container.innerHTML = html;
@@ -559,9 +607,7 @@
             document.getElementById("painel-historico-duelos").classList.remove("hidden");
         }
         
-        function fecharHistoricoDuelos() {
-            document.getElementById("painel-historico-duelos").classList.add("hidden");
-        }
+        function fecharHistoricoDuelos() { document.getElementById("painel-historico-duelos").classList.add("hidden"); }
         
         function limparHistoricoDuelos() {
             if(confirm("⚠️ Tem certeza que deseja limpar TODO o histórico de duelos? Esta ação é irreversível!")) {
@@ -783,142 +829,305 @@
             multiModalidade = document.getElementById("multi-modalidade").value;
             multiJogadores[0].nome=n1; multiJogadores[1].nome=n2;
             multiJogadores[0].vitorias=0; multiJogadores[1].vitorias=0;
-            multiRodada=0; multiAtivo=true;
+            rodadaAtual=1;
+            perguntaRodadaAtual=1;
+            historicoRodadas = [];
+            multiAtivo=true;
+            
             document.getElementById("player1-name").innerText=n1;
             document.getElementById("player2-name").innerText=n2;
             document.getElementById("rodadas-player1").innerText="0";
             document.getElementById("rodadas-player2").innerText="0";
             document.getElementById("player1-vitorias").innerText="0";
             document.getElementById("player2-vitorias").innerText="0";
+            document.getElementById("rodada-atual").innerText="1";
+            document.getElementById("pergunta-rodada").innerText="1";
+            
             mostrarTela("tela-multiplayer");
-            proximaRodadaMulti();
+            iniciarRodada();
         }
-
-        function proximaRodadaMulti() {
+        
+        function iniciarRodada() {
             if(!multiAtivo) return;
-            multiRodada++;
-            if(multiJogadores[0].vitorias>=3 || multiJogadores[1].vitorias>=3 || multiRodada>totalRodadas){
-                finalizarMultiplayer();
+            
+            // Resetar dados da rodada
+            multiJogadores[0].pontosRodada = 0;
+            multiJogadores[1].pontosRodada = 0;
+            multiJogadores[0].acertosRodada = 0;
+            multiJogadores[1].acertosRodada = 0;
+            multiJogadores[0].temposRodada = [];
+            multiJogadores[1].temposRodada = [];
+            multiJogadores[0].bloqueado = false;
+            multiJogadores[1].bloqueado = false;
+            
+            document.getElementById("player1-pontos").innerText = "0";
+            document.getElementById("player2-pontos").innerText = "0";
+            
+            perguntaRodadaAtual = 1;
+            document.getElementById("pergunta-rodada").innerText = "1";
+            document.getElementById("rodada-atual").innerText = rodadaAtual;
+            
+            proximaPerguntaMulti();
+        }
+        
+        function proximaPerguntaMulti() {
+            if(!multiAtivo) return;
+            
+            if(perguntaRodadaAtual > perguntasPorRodada) {
+                // Fim da rodada - determinar vencedor
+                finalizarRodada();
                 return;
             }
-            multiJogadores[0].pontos=0; multiJogadores[1].pontos=0;
-            multiJogadores[0].bloqueado=false; multiJogadores[1].bloqueado=false;
-            document.getElementById("player1-pontos").innerText="0";
-            document.getElementById("player2-pontos").innerText="0";
-            document.getElementById("rodada-atual").innerText=multiRodada;
-            document.getElementById("total-rodadas").innerText=totalRodadas;
-            let fatores=MODALIDADES[multiModalidade].fatores;
-            let fA=sortearItem(fatores), fB=Math.floor(Math.random()*11);
-            let resp=fA*fB;
-            let ops=[resp];
+            
+            multiJogadores[0].bloqueado = false;
+            multiJogadores[1].bloqueado = false;
+            
+            // Gerar pergunta
+            let fatores = MODALIDADES[multiModalidade].fatores;
+            let fA = sortearItem(fatores), fB = Math.floor(Math.random()*11);
+            let resp = fA*fB;
+            let ops = [resp];
             while(ops.length<3){
-                let v=Math.floor(Math.random()*11)-5;
-                let o=resp+v;
+                let v = Math.floor(Math.random()*11)-5;
+                let o = resp+v;
                 if(o>=0 && !ops.includes(o)) ops.push(o);
             }
             ops.sort((a,b)=>a-b);
             multiPergunta = { texto:`${fA} x ${fB}`, resposta:resp, opcoes:ops };
             document.getElementById("pergunta-multiplayer").innerHTML = `${multiPergunta.texto} = ?`;
-            let b1=document.querySelectorAll("#player1-opcoes .player-option");
-            let b2=document.querySelectorAll("#player2-opcoes .player-option");
-            ops.forEach((opt,i)=>{ if(b1[i]) b1[i].innerText=opt; if(b2[i]) b2[i].innerText=opt; b1[i].disabled=false; b2[i].disabled=false; b1[i].classList.remove("correct","wrong"); b2[i].classList.remove("correct","wrong"); });
+            
+            // Atualizar botões
+            let b1 = document.querySelectorAll("#player1-opcoes .player-option");
+            let b2 = document.querySelectorAll("#player2-opcoes .player-option");
+            ops.forEach((opt,i)=>{
+                if(b1[i]){ b1[i].innerText=opt; b1[i].disabled=false; b1[i].classList.remove("correct","wrong"); }
+                if(b2[i]){ b2[i].innerText=opt; b2[i].disabled=false; b2[i].classList.remove("correct","wrong"); }
+            });
+            
             iniciarTimerMulti();
         }
-
+        
         function iniciarTimerMulti() {
             if(multiTimer) clearInterval(multiTimer);
             multiTempo=5;
-            let timerDiv=document.getElementById("temporizador");
-            timerDiv.innerText="⏱️ 5.0s";
+            let timerDiv = document.getElementById("temporizador");
+            timerDiv.innerText = "⏱️ 5.0s";
             timerDiv.classList.remove("urgente");
-            multiTimer=setInterval(()=>{
-                multiTempo-=0.1;
-                timerDiv.innerText=`⏱️ ${multiTempo.toFixed(1)}s`;
-                if(multiTempo<=1) timerDiv.classList.add("urgente");
-                if(multiTempo<=0){
+            multiTimer = setInterval(()=>{
+                multiTempo -= 0.1;
+                timerDiv.innerText = `⏱️ ${multiTempo.toFixed(1)}s`;
+                if(multiTempo <= 1) timerDiv.classList.add("urgente");
+                if(multiTempo <= 0){
                     clearInterval(multiTimer);
-                    processarFimRodadaMulti();
+                    processarFimPerguntaMulti();
                 }
             },100);
         }
-
+        
         function responderMultiplayer(jogador, idx) {
             let j = multiJogadores[jogador-1];
             if(j.bloqueado || !multiAtivo) return;
+            
             let opcao = multiPergunta.opcoes[idx];
             let acertou = (opcao === multiPergunta.resposta);
             let tempoGasto = 5 - multiTempo;
+            
             if(acertou){
                 let pts = Math.round((tempoGasto+1)*100);
-                j.pontos = pts;
-                document.getElementById(`player${jogador}-pontos`).innerText = pts;
+                j.pontosRodada += pts;
+                j.acertosRodada++;
+                j.temposRodada.push(tempoGasto);
+                document.getElementById(`player${jogador}-pontos`).innerText = j.pontosRodada;
                 let btns = document.querySelectorAll(`#player${jogador}-opcoes .player-option`);
                 if(btns[idx]) btns[idx].classList.add("correct");
+                mostrarToast(`${j.nome} acertou! +${pts} pts`);
             } else {
-                j.pontos = 0;
-                document.getElementById(`player${jogador}-pontos`).innerText = "0";
                 let btns = document.querySelectorAll(`#player${jogador}-opcoes .player-option`);
                 if(btns[idx]) btns[idx].classList.add("wrong");
+                mostrarToast(`❌ ${j.nome} errou! A resposta correta é ${multiPergunta.resposta}`);
             }
+            
             j.bloqueado = true;
             document.querySelectorAll(`#player${jogador}-opcoes .player-option`).forEach(b=>b.disabled=true);
+            
             if(multiJogadores[0].bloqueado && multiJogadores[1].bloqueado){
                 clearInterval(multiTimer);
-                processarFimRodadaMulti();
+                processarFimPerguntaMulti();
             }
         }
-
-        function processarFimRodadaMulti() {
+        
+        function processarFimPerguntaMulti() {
             if(!multiAtivo) return;
-            if(!multiJogadores[0].bloqueado){ multiJogadores[0].pontos=0; multiJogadores[0].bloqueado=true; }
-            if(!multiJogadores[1].bloqueado){ multiJogadores[1].pontos=0; multiJogadores[1].bloqueado=true; }
-            let vencedor = null;
-            if(multiJogadores[0].pontos > multiJogadores[1].pontos) vencedor = multiJogadores[0];
-            else if(multiJogadores[1].pontos > multiJogadores[0].pontos) vencedor = multiJogadores[1];
-            if(vencedor){
-                vencedor.vitorias++;
-                document.getElementById("rodadas-player1").innerText = multiJogadores[0].vitorias;
-                document.getElementById("rodadas-player2").innerText = multiJogadores[1].vitorias;
-                document.getElementById("player1-vitorias").innerText = multiJogadores[0].vitorias;
-                document.getElementById("player2-vitorias").innerText = multiJogadores[1].vitorias;
+            
+            // Se alguém não respondeu, considerar como erro
+            if(!multiJogadores[0].bloqueado){
+                multiJogadores[0].bloqueado = true;
+                let btns = document.querySelectorAll("#player1-opcoes .player-option");
+                btns.forEach(b=>b.disabled=true);
             }
-            setTimeout(()=>{ if(multiAtivo) proximaRodadaMulti(); },1500);
+            if(!multiJogadores[1].bloqueado){
+                multiJogadores[1].bloqueado = true;
+                let btns = document.querySelectorAll("#player2-opcoes .player-option");
+                btns.forEach(b=>b.disabled=true);
+            }
+            
+            perguntaRodadaAtual++;
+            document.getElementById("pergunta-rodada").innerText = perguntaRodadaAtual;
+            
+            setTimeout(()=>{
+                if(multiAtivo) proximaPerguntaMulti();
+            }, 1000);
         }
-
+        
+        function finalizarRodada() {
+            let p1 = multiJogadores[0];
+            let p2 = multiJogadores[1];
+            
+            let tempoMedio1 = p1.temposRodada.length ? p1.temposRodada.reduce((a,b)=>a+b,0)/p1.temposRodada.length : 10;
+            let tempoMedio2 = p2.temposRodada.length ? p2.temposRodada.reduce((a,b)=>a+b,0)/p2.temposRodada.length : 10;
+            
+            let vencedorRodada = null;
+            let placarRodada = "";
+            
+            if(p1.pontosRodada > p2.pontosRodada) {
+                vencedorRodada = p1;
+                p1.vitorias++;
+                placarRodada = `${p1.pontosRodada} x ${p2.pontosRodada}`;
+                mostrarToast(`🏆 ${p1.nome} venceu a rodada ${rodadaAtual}!`);
+            } else if(p2.pontosRodada > p1.pontosRodada) {
+                vencedorRodada = p2;
+                p2.vitorias++;
+                placarRodada = `${p2.pontosRodada} x ${p1.pontosRodada}`;
+                mostrarToast(`🏆 ${p2.nome} venceu a rodada ${rodadaAtual}!`);
+            } else {
+                // Critério de desempate: mais acertos
+                if(p1.acertosRodada > p2.acertosRodada) {
+                    vencedorRodada = p1;
+                    p1.vitorias++;
+                    placarRodada = `${p1.pontosRodada} x ${p2.pontosRodada} (desempate: ${p1.acertosRodada} x ${p2.acertosRodada} acertos)`;
+                    mostrarToast(`🏆 ${p1.nome} venceu a rodada ${rodadaAtual} por desempate!`);
+                } else if(p2.acertosRodada > p1.acertosRodada) {
+                    vencedorRodada = p2;
+                    p2.vitorias++;
+                    placarRodada = `${p2.pontosRodada} x ${p1.pontosRodada} (desempate: ${p2.acertosRodada} x ${p1.acertosRodada} acertos)`;
+                    mostrarToast(`🏆 ${p2.nome} venceu a rodada ${rodadaAtual} por desempate!`);
+                } else {
+                    // Segundo desempate: menor tempo médio
+                    if(tempoMedio1 < tempoMedio2) {
+                        vencedorRodada = p1;
+                        p1.vitorias++;
+                        placarRodada = `${p1.pontosRodada} x ${p2.pontosRodada} (desempate: ${tempoMedio1.toFixed(2)}s x ${tempoMedio2.toFixed(2)}s)`;
+                        mostrarToast(`🏆 ${p1.nome} venceu a rodada ${rodadaAtual} por desempate de tempo!`);
+                    } else if(tempoMedio2 < tempoMedio1) {
+                        vencedorRodada = p2;
+                        p2.vitorias++;
+                        placarRodada = `${p2.pontosRodada} x ${p1.pontosRodada} (desempate: ${tempoMedio2.toFixed(2)}s x ${tempoMedio1.toFixed(2)}s)`;
+                        mostrarToast(`🏆 ${p2.nome} venceu a rodada ${rodadaAtual} por desempate de tempo!`);
+                    } else {
+                        placarRodada = `${p1.pontosRodada} x ${p2.pontosRodada} (EMPATE PERFEITO!)`;
+                        mostrarToast(`🤝 Empate na rodada ${rodadaAtual}!`);
+                    }
+                }
+            }
+            
+            // Registrar histórico da rodada
+            historicoRodadas.push({
+                numero: rodadaAtual,
+                vencedor: vencedorRodada ? vencedorRodada.nome : "Empate",
+                placar: placarRodada,
+                pontos1: p1.pontosRodada,
+                pontos2: p2.pontosRodada,
+                acertos1: p1.acertosRodada,
+                acertos2: p2.acertosRodada
+            });
+            
+            // Atualizar placar
+            document.getElementById("rodadas-player1").innerText = p1.vitorias;
+            document.getElementById("rodadas-player2").innerText = p2.vitorias;
+            document.getElementById("player1-vitorias").innerText = p1.vitorias;
+            document.getElementById("player2-vitorias").innerText = p2.vitorias;
+            
+            // Verificar se alguém venceu o duelo (3 vitórias)
+            if(p1.vitorias >= 3 || p2.vitorias >= 3 || rodadaAtual >= totalRodadas) {
+                finalizarMultiplayer();
+            } else {
+                rodadaAtual++;
+                setTimeout(()=>{ iniciarRodada(); }, 2000);
+            }
+        }
+        
         async function finalizarMultiplayer() {
-            multiAtivo=false;
+            multiAtivo = false;
             if(multiTimer) clearInterval(multiTimer);
+            
             let vencedor = null;
             let perdedor = null;
-            if(multiJogadores[0].vitorias>=3) vencedor = multiJogadores[0];
-            else if(multiJogadores[1].vitorias>=3) vencedor = multiJogadores[1];
             
+            if(multiJogadores[0].vitorias >= 3) {
+                vencedor = multiJogadores[0];
+                perdedor = multiJogadores[1];
+            } else if(multiJogadores[1].vitorias >= 3) {
+                vencedor = multiJogadores[1];
+                perdedor = multiJogadores[0];
+            } else {
+                // Empate no duelo - verificar quem tem mais vitórias
+                if(multiJogadores[0].vitorias > multiJogadores[1].vitorias) {
+                    vencedor = multiJogadores[0];
+                    perdedor = multiJogadores[1];
+                } else if(multiJogadores[1].vitorias > multiJogadores[0].vitorias) {
+                    vencedor = multiJogadores[1];
+                    perdedor = multiJogadores[0];
+                }
+            }
+            
+            await salvarDuelo(
+                vencedor ? vencedor.nome : "EMPATE",
+                perdedor ? perdedor.nome : `${multiJogadores[0].nome} vs ${multiJogadores[1].nome}`,
+                multiJogadores[0].vitorias,
+                multiJogadores[1].vitorias,
+                multiModalidade,
+                rodadaAtual,
+                historicoRodadas
+            );
+            
+            let titulo = "", conteudo = "";
             if(vencedor) {
-                perdedor = vencedor.id === 1 ? multiJogadores[1] : multiJogadores[0];
-                await salvarDuelo(vencedor.nome, perdedor.nome, vencedor.vitorias, perdedor.vitorias, multiModalidade, multiRodada);
+                titulo = `🏆 ${vencedor.nome} é o CAMPEÃO! 🏆`;
+                conteudo = `<div style="font-size:48px">🏆👑🏆</div>
+                           <div style="font-size:24px; margin-bottom:20px;">${vencedor.nome} venceu o duelo!</div>
+                           <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
+                               <strong>📊 Placar Final:</strong><br>
+                               ${multiJogadores[0].nome}: ${multiJogadores[0].vitorias} vitórias<br>
+                               ${multiJogadores[1].nome}: ${multiJogadores[1].vitorias} vitórias<br><br>
+                               <strong>🏅 Rodadas disputadas:</strong> ${rodadaAtual} de ${totalRodadas}
+                           </div>
+                           <div style="margin-top:15px; font-size:12px; color:#666;">✅ Duelo registrado no histórico!</div>`;
             } else {
-                await salvarDuelo("EMPATE", `${multiJogadores[0].nome} vs ${multiJogadores[1].nome}`, multiJogadores[0].vitorias, multiJogadores[1].vitorias, multiModalidade, multiRodada);
+                titulo = "🤝 DUELO EMPATADO! 🤝";
+                conteudo = `<div style="font-size:48px">🤝🤝🤝</div>
+                           <div style="font-size:24px; margin-bottom:20px;">Duelo terminou empatado!</div>
+                           <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
+                               <strong>📊 Placar Final:</strong><br>
+                               ${multiJogadores[0].nome}: ${multiJogadores[0].vitorias} vitórias<br>
+                               ${multiJogadores[1].nome}: ${multiJogadores[1].vitorias} vitórias
+                           </div>
+                           <div style="margin-top:15px; font-size:12px; color:#666;">✅ Duelo registrado no histórico!</div>`;
             }
             
-            let titulo="",conteudo="";
-            if(vencedor){
-                titulo=`🏆 ${vencedor.nome} é o CAMPEÃO! 🏆`;
-                conteudo=`<div style="font-size:48px">🏆👑🏆</div><div>${vencedor.nome} venceu com ${vencedor.vitorias} vitórias!</div>
-                        <div style="margin-top:20px">📊 ${multiJogadores[0].nome}: ${multiJogadores[0].vitorias} x ${multiJogadores[1].vitorias} :${multiJogadores[1].nome}</div>
-                        <div style="margin-top:10px; font-size:12px; color:#666;">✅ Duelo registrado no histórico!</div>`;
-            } else {
-                titulo="🤝 EMPATE! 🤝";
-                conteudo=`<div>Duelo empatado!</div><div style="margin-top:20px">📊 ${multiJogadores[0].nome}: ${multiJogadores[0].vitorias} x ${multiJogadores[1].vitorias} :${multiJogadores[1].nome}</div>
-                        <div style="margin-top:10px; font-size:12px; color:#666;">✅ Duelo registrado no histórico!</div>`;
-            }
-            document.getElementById("resultado-titulo-multi").innerHTML=titulo;
-            document.getElementById("resultado-conteudo-multi").innerHTML=conteudo;
+            document.getElementById("resultado-titulo-multi").innerHTML = titulo;
+            document.getElementById("resultado-conteudo-multi").innerHTML = conteudo;
             mostrarTela("tela-resultado-multi");
         }
+        
+        function reiniciarMultiplayer() {
+            if(confirm("Sair do duelo?")){
+                multiAtivo=false;
+                if(multiTimer) clearInterval(multiTimer);
+                mostrarTela("tela-inicial");
+            }
+        }
 
-        function reiniciarMultiplayer() { if(confirm("Sair do duelo?")){ multiAtivo=false; if(multiTimer) clearInterval(multiTimer); mostrarTela("tela-inicial"); } }
-
-        // ========== RANKINGS E FIREBASE ==========
+        // ========== RANKINGS ==========
         async function obterRanking() {
             let local = JSON.parse(localStorage.getItem("rankingCEIB")||"[]");
             try{
@@ -932,56 +1141,40 @@
             }catch(e){ return local; }
         }
         
-        // Função para obter ranking com apenas o melhor resultado por aluno
         async function obterRankingPorPontos(modalidade, turma=null){
             let rank = await obterRanking();
             let filt = rank.filter(r=>r.modalidade===modalidade);
             if(turma) filt = filt.filter(r=>r.turma===turma);
-            
-            // Agrupar por aluno e manter a melhor pontuação
             let mapa = new Map();
             filt.forEach(r => {
                 let chave = `${r.nome}|${r.turma}`;
-                if(!mapa.has(chave) || r.pontos > mapa.get(chave).pontos) {
-                    mapa.set(chave, r);
-                }
+                if(!mapa.has(chave) || r.pontos > mapa.get(chave).pontos) mapa.set(chave, r);
             });
-            let resultado = Array.from(mapa.values());
-            return resultado.sort((a,b)=>b.pontos-a.pontos);
+            return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
         }
         
         async function obterRankingPorPrecisao(modalidade, turma=null){
             let rank = await obterRanking();
             let filt = rank.filter(r=>r.modalidade===modalidade);
             if(turma) filt = filt.filter(r=>r.turma===turma);
-            
-            // Agrupar por aluno e manter o melhor desempenho em acertos
             let mapa = new Map();
             filt.forEach(r => {
                 let chave = `${r.nome}|${r.turma}`;
-                if(!mapa.has(chave) || r.acertos > mapa.get(chave).acertos) {
-                    mapa.set(chave, r);
-                }
+                if(!mapa.has(chave) || r.acertos > mapa.get(chave).acertos) mapa.set(chave, r);
             });
-            let resultado = Array.from(mapa.values());
-            return resultado.sort((a,b)=>b.acertos-a.acertos || a.tempoMedio-b.tempoMedio);
+            return Array.from(mapa.values()).sort((a,b)=>b.acertos-a.acertos || a.tempoMedio-b.tempoMedio);
         }
         
         async function obterRankingPorVelocidade(modalidade, turma=null){
             let rank = await obterRanking();
             let filt = rank.filter(r=>r.modalidade===modalidade && r.acertos>=15);
             if(turma) filt = filt.filter(r=>r.turma===turma);
-            
-            // Agrupar por aluno e manter o melhor tempo (menor)
             let mapa = new Map();
             filt.forEach(r => {
                 let chave = `${r.nome}|${r.turma}`;
-                if(!mapa.has(chave) || r.tempoMedio < mapa.get(chave).tempoMedio) {
-                    mapa.set(chave, r);
-                }
+                if(!mapa.has(chave) || r.tempoMedio < mapa.get(chave).tempoMedio) mapa.set(chave, r);
             });
-            let resultado = Array.from(mapa.values());
-            return resultado.sort((a,b)=>a.tempoMedio-b.tempoMedio || b.acertos-a.acertos);
+            return Array.from(mapa.values()).sort((a,b)=>a.tempoMedio-b.tempoMedio || b.acertos-a.acertos);
         }
         
         async function salvarResultado(res){
@@ -1177,12 +1370,11 @@
             let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
                 html += `<tr><td><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}"></td>
-                         <td style="text-align:center">${a.turma}</td>
-                         <td>${MODALIDADES[a.modalidade]?.nome}</td>
-                         <td style="text-align:center">${a.pontos}</td>
-                         <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
-                         <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                        </tr>`;
+                        <td style="text-align:center">${a.turma}</td>
+                        <td>${MODALIDADES[a.modalidade]?.nome}</td>
+                        <td style="text-align:center">${a.pontos}</td>
+                        <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
+                        <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
             });
             html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
