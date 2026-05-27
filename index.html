@@ -357,11 +357,18 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
+            cursor: help;
+            transition: transform 0.2s;
+        }
+
+        .conquista-card:hover {
+            transform: scale(1.05);
         }
 
         .conquista-card.desbloqueada {
             background: #ffc107;
             color: #000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
         .estatistica-destaque {
@@ -403,7 +410,6 @@
             display: none;
         }
 
-        /* Estilos para a lista de alunos */
         .alunos-table {
             width: 100%;
             font-size: 13px;
@@ -430,7 +436,7 @@
             font-size: 11px;
             margin: 2px;
         }
-        .btn-excluir { background: #dc3545; }
+        .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .btn-excluir:hover { background: #bb2d3b; }
 
         @media (max-width: 520px) {
@@ -531,6 +537,8 @@
             <div><strong>Maior sequência:</strong> <span id="resumo-sequencia"></span></div>
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
+
+        <div id="novas-conquistas" style="background: #e7f5ff; border-radius: 12px; padding: 12px; margin: 16px 0; text-align: center;"></div>
 
         <div id="mapa-tabuadas-container"></div>
 
@@ -633,7 +641,7 @@
                 <div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div>
             </div>
 
-            <h3>🏅 Conquistas</h3>
+            <h3>🏅 Minhas Conquistas</h3>
             <div id="perfil-conquistas" class="conquistas-grid"></div>
 
             <h3>🗺️ Mapa de Tabuadas</h3>
@@ -714,7 +722,6 @@
                     </select>
                 </div>
                 <div id="lista-alunos-container" style="max-height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px;">
-                    <!-- Lista será preenchida aqui -->
                 </div>
                 <div style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;">
                     <button onclick="excluirDuplicatasAutomatico()" class="botao-forcar" style="background: #fd7e14;">🔧 Auto-limpar Duplicatas</button>
@@ -741,6 +748,7 @@
         let sequenciaAtual = 0;
         let maiorSequencia = 0;
         let temposRespostasCorretas = [];
+        let temposRespostas = [];
         let respostaCorreta;
         let tempoInicio;
         let temporizadorInterval;
@@ -761,6 +769,66 @@
         const SENHA_PROFESSOR = "ceib2026";
         const CHAVE_RANKING = "rankingCopaTabuadaIsmaelBranco";
         const CAMINHO_RANKING_FIREBASE = "resultados";
+
+        // Lista de todas as conquistas possíveis
+        const CONQUISTAS = {
+            // Domínio (4)
+            "Mestre da Tabuada": { icone: "🏆", descricao: "17.000+ pontos em uma partida", criterio: (r) => r.pontos >= 17000 },
+            "Domínio Total": { icone: "📚", descricao: "100% de aproveitamento (20/20 acertos)", criterio: (r) => r.acertos === 20 },
+            "Explorador de Tabuadas": { icone: "🗺️", descricao: "100% em todas as tabuadas da modalidade", criterio: (r) => r.desempenhoTabuadas && Object.values(r.desempenhoTabuadas).every(d => d.acertos === d.total && d.total > 0) },
+            "Precisão Absoluta": { icone: "🎯", descricao: "Acertar todas as perguntas (20/20)", criterio: (r) => r.acertos === 20 },
+            // Velocidade (3)
+            "Velocidade Relâmpago": { icone: "🚀", descricao: "Tempo médio < 1.2s (com ≥15 acertos)", criterio: (r) => r.acertos >= 15 && r.tempoMedio < 1.2 },
+            "Truque de Mestre": { icone: "⚡", descricao: "Tempo médio < 1.0s (com ≥18 acertos)", criterio: (r) => r.acertos >= 18 && r.tempoMedio < 1.0 },
+            "Resposta Rápida": { icone: "🏃", descricao: "5 respostas corretas em menos de 1s", criterio: (r) => r.temposRapidos && r.temposRapidos >= 5 },
+            // Sequência (3)
+            "Boa Sequência": { icone: "📈", descricao: "10 acertos consecutivos", criterio: (r) => r.maiorSequencia >= 10 },
+            "Sequência Perfeita": { icone: "⚡", descricao: "20 acertos consecutivos", criterio: (r) => r.maiorSequencia === 20 },
+            "Em Chamas": { icone: "🔥", descricao: "15 acertos consecutivos", criterio: (r) => r.maiorSequencia >= 15 },
+            // Dedicação (5)
+            "Primeira Vitória": { icone: "🆕", descricao: "Completar a primeira partida", criterio: (r, historico) => historico.length === 1 },
+            "Treinador Dedicado": { icone: "📚", descricao: "5 ou mais partidas realizadas", criterio: (r, historico) => historico.length >= 5 },
+            "Veterano": { icone: "🎓", descricao: "10 ou mais partidas realizadas", criterio: (r, historico) => historico.length >= 10 },
+            "Lenda da Tabuada": { icone: "👑", descricao: "20 ou mais partidas realizadas", criterio: (r, historico) => historico.length >= 20 },
+            "Colecionador": { icone: "🏅", descricao: "Desbloquear 5 conquistas diferentes", criterio: (r, historico, conquistas) => conquistas.length >= 5 },
+            // Modalidade (3)
+            "Mestre do 2 ao 5": { icone: "🟢", descricao: "20/20 acertos na modalidade 2-5", criterio: (r) => r.modalidade === "2-5" && r.acertos === 20 },
+            "Mestre do 6 ao 9": { icone: "🟡", descricao: "20/20 acertos na modalidade 6-9", criterio: (r) => r.modalidade === "6-9" && r.acertos === 20 },
+            "Mestre Completo": { icone: "🔴", descricao: "20/20 acertos na modalidade 0-10", criterio: (r) => r.modalidade === "0-10" && r.acertos === 20 },
+            // Ranking (4)
+            "Bronze": { icone: "🥉", descricao: "Ficar entre os 4 primeiros da turma", criterio: (r, historico, conquistas, posicao) => posicao <= 4 },
+            "Prata": { icone: "🥈", descricao: "Ficar em 2º lugar na turma", criterio: (r, historico, conquistas, posicao) => posicao === 2 },
+            "Ouro": { icone: "🥇", descricao: "Ficar em 1º lugar na turma", criterio: (r, historico, conquistas, posicao) => posicao === 1 },
+            "Campeão": { icone: "👑", descricao: "Ficar em 1º lugar no ranking global", criterio: async (r, historico, conquistas, posicao, posGlobal) => posGlobal === 1 },
+            // Bom humor / Zoação saudável (10)
+            "Tartaruga Ninja": { icone: "🐢", descricao: "Completar a partida mesmo com menos de 5 acertos", criterio: (r) => r.acertos < 5 },
+            "Rei do Chute": { icone: "🎲", descricao: "Acertar 3 perguntas seguidas em menos de 0.8s", criterio: (r) => r.temposMuitoRapidos && r.temposMuitoRapidos >= 3 },
+            "Sorte de Principiante": { icone: "🍀", descricao: "Acertar a primeira pergunta da partida", criterio: (r) => r.acertouPrimeira === true },
+            "Deu o Gás no Final": { icone: "📉", descricao: "Acertar as 3 últimas após errar as 5 primeiras", criterio: (r) => r.recuperacaoFinal === true },
+            "Faxina nos Erros": { icone: "🧹", descricao: "Acertar 5 seguidas depois de um erro", criterio: (r) => r.recuperacaoSequencia && r.recuperacaoSequencia >= 5 },
+            "Coringa": { icone: "🎭", descricao: "Acertar todas de uma tabuada difícil (7,8,9)", criterio: (r) => r.tabuadaDificilCompleta === true },
+            "Bambu": { icone: "🌱", descricao: "Melhorar a pontuação em 30% em relação à anterior", criterio: (r, historico) => historico.length >= 2 && (r.pontos / historico[historico.length-2].pontos) >= 1.3 },
+            "Queda Livre": { icone: "🪂", descricao: "Errar as 3 primeiras perguntas", criterio: (r) => r.errouPrimeiras >= 3 },
+            "Reinvenção": { icone: "🔄", descricao: "Pontuação 50% melhor que a pior partida", criterio: (r, historico) => historico.length >= 2 && r.pontos >= Math.min(...historico.map(h => h.pontos)) * 1.5 },
+            "Passo de Formiga": { icone: "🐜", descricao: "Aumentar acertos em 1 em relação à anterior", criterio: (r, historico) => historico.length >= 2 && (r.acertos - (historico[historico.length-2]?.acertos || 0)) >= 1 },
+            // Esforço e Superação (5)
+            "Persistente": { icone: "🏋️", descricao: "Jogar 3 vezes mesmo sem melhorar", criterio: (r, historico) => historico.length >= 3 && r.pontos <= Math.max(...historico.slice(0, -1).map(h => h.pontos)) },
+            "Madrugador": { icone: "⏰", descricao: "Jogar antes das 8h", criterio: (r) => new Date(r.data).getHours() < 8 },
+            "Corujão": { icone: "🌙", descricao: "Jogar depois das 22h", criterio: (r) => new Date(r.data).getHours() >= 22 },
+            "Aluno Nota 10... em Esforço": { icone: "📖", descricao: "5 partidas com <10 acertos, sem desistir", criterio: (r, historico) => historico.filter(h => h.acertos < 10).length >= 5 },
+            "Quase lá": { icone: "🎯", descricao: "Acertar 18 mas errar as 2 últimas", criterio: (r) => r.acertos === 18 && r.errosFinais === 2 },
+            // Humor leve (5)
+            "Palhaço da Turma": { icone: "🎪", descricao: "Errar a mesma pergunta 3 vezes", criterio: (r) => r.mesmoErroRepetido && r.mesmoErroRepetido >= 3 },
+            "Bicho Preguiça": { icone: "🐌", descricao: "Demorar mais de 8s em cada resposta", criterio: (r) => r.tempoMedio > 8 },
+            "Tá em Casa?": { icone: "📞", descricao: "Errar uma pergunta de tabuada do 2", criterio: (r) => r.errouTabuada2 === true },
+            "Mão de Ouro": { icone: "🎲", descricao: "Acertar 5 respostas em menos de 0.5s", criterio: (r) => r.temposExtremos && r.temposExtremos >= 5 },
+            "Detetive": { icone: "🕵️", descricao: "Acertar pergunta que errou na partida anterior", criterio: (r, historico) => historico.length >= 2 && r.acertouPerguntaAnterior === true },
+            // Evolução (4)
+            "Evolução Pokémon": { icone: "📊", descricao: "Aumentar pontuação em 500 pontos", criterio: (r, historico) => historico.length >= 2 && (r.pontos - (historico[historico.length-2]?.pontos || 0)) >= 500 },
+            "Metamorfose": { icone: "🐛➡️🦋", descricao: "Melhorar de Participante para Classificado", criterio: (r, historico, conquistas, posicao) => posicao <= 4 && (historico.length >= 2 && historico.slice(0, -1).some(h => h.posicao > 4)) },
+            "Subindo no Pódio": { icone: "🥉➡️🥇", descricao: "Subir 3 posições no ranking", criterio: (r, historico) => historico.length >= 2 && ((historico[historico.length-2]?.posicao || 99) - r.posicao) >= 3 },
+            "Crescimento Acelerado": { icone: "📈", descricao: "Dobrar a pontuação em relação à primeira", criterio: (r, historico) => historico.length >= 2 && r.pontos >= (historico[0]?.pontos || 0) * 2 }
+        };
 
         const firebaseConfig = {
             apiKey: "AIzaSyCSs7aCPTYSebSG6UHSSCMA76p-ZGit9Xc",
@@ -788,7 +856,7 @@
             toast.style.opacity = "1";
             setTimeout(() => {
                 toast.style.opacity = "0";
-            }, 2000);
+            }, 3000);
         }
 
         function sortearItem(lista) {
@@ -830,6 +898,40 @@
             });
         }
 
+        // ==================== SISTEMA DE CONQUISTAS ====================
+        function calcularConquitas(resultado, historicoAluno, posicaoTurma, posicaoGlobal) {
+            const conquistasObtidas = [];
+            
+            for (const [nome, config] of Object.entries(CONQUISTAS)) {
+                try {
+                    let criterioAtendido = false;
+                    if (nome === "Campeão") {
+                        criterioAtendido = posicaoGlobal === 1;
+                    } else if (["Bronze", "Prata", "Ouro"].includes(nome)) {
+                        if (nome === "Bronze" && posicaoTurma <= 4) criterioAtendido = true;
+                        else if (nome === "Prata" && posicaoTurma === 2) criterioAtendido = true;
+                        else if (nome === "Ouro" && posicaoTurma === 1) criterioAtendido = true;
+                    } else if (typeof config.criterio === "function") {
+                        if (config.criterio.length === 1) {
+                            criterioAtendido = config.criterio(resultado);
+                        } else if (config.criterio.length === 2) {
+                            criterioAtendido = config.criterio(resultado, historicoAluno);
+                        } else if (config.criterio.length === 3) {
+                            criterioAtendido = config.criterio(resultado, historicoAluno, conquistasObtidas);
+                        } else {
+                            criterioAtendido = config.criterio(resultado, historicoAluno, conquistasObtidas, posicaoTurma);
+                        }
+                    }
+                    
+                    if (criterioAtendido) {
+                        conquistasObtidas.push({ nome, icone: config.icone, descricao: config.descricao });
+                    }
+                } catch(e) { console.warn(`Erro ao verificar conquista ${nome}:`, e); }
+            }
+            
+            return conquistasObtidas;
+        }
+
         // ==================== PERFIL DO ALUNO ====================
         function abrirPerfil() {
             mostrarTela("tela-perfil");
@@ -851,7 +953,7 @@
             const partidas = ranking.filter(r => 
                 normalizarNome(r.nome) === normalizarNome(nome) && 
                 r.turma === turma
-            );
+            ).sort((a,b) => new Date(a.data) - new Date(b.data));
 
             if (partidas.length === 0) {
                 alert("Nenhuma partida encontrada para este aluno.");
@@ -864,7 +966,7 @@
             const melhorTempo = Math.min(...partidas.map(p => p.tempoMedio));
             const melhorSequencia = Math.max(...partidas.map(p => p.maiorSequencia));
             
-            const rankingTurma = await obterRankingPorPontos(modalidadeAtual, turma);
+            const rankingTurma = await obterRankingPorPontos(melhorPartida.modalidade, turma);
             const posicaoMelhor = rankingTurma.findIndex(r => r.data === melhorPartida.data) + 1;
             const melhorStatus = obterStatusPorPosicao(posicaoMelhor);
 
@@ -875,17 +977,21 @@
             document.getElementById("perfil-melhor-sequencia").innerHTML = `<span class="estatistica-destaque">${melhorSequencia}</span>`;
             document.getElementById("perfil-melhor-status").innerHTML = criarTagStatus(melhorStatus);
 
-            const conquistas = [];
-            if (melhorPontos >= 17000) conquistas.push({ nome: "🏆 Mestre da Tabuada", desbloqueado: true });
-            if (melhorSequencia === 20) conquistas.push({ nome: "⚡ Sequência Perfeita", desbloqueado: true });
-            if (melhorTempo < 1.2) conquistas.push({ nome: "🚀 Velocidade Relâmpago", desbloqueado: true });
-            if (partidas.length >= 5) conquistas.push({ nome: "📚 Treinador Dedicado", desbloqueado: true });
+            // Calcular conquistas do melhor desempenho
+            const conquistasUnicas = new Set();
+            for (const partida of partidas) {
+                const rankingTurmaPartida = await obterRankingPorPontos(partida.modalidade, turma);
+                const posPartida = rankingTurmaPartida.findIndex(r => r.data === partida.data) + 1;
+                const conquistas = calcularConquitas(partida, partidas, posPartida, 0);
+                conquistas.forEach(c => conquistasUnicas.add(JSON.stringify(c)));
+            }
             
+            const conquistasLista = Array.from(conquistasUnicas).map(c => JSON.parse(c));
             const conquistasContainer = document.getElementById("perfil-conquistas");
-            conquistasContainer.innerHTML = conquistas.map(c => 
-                `<div class="conquista-card desbloqueada">${c.nome}</div>`
+            conquistasContainer.innerHTML = conquistasLista.map(c => 
+                `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`
             ).join("");
-            if (conquistas.length === 0) {
+            if (conquistasLista.length === 0) {
                 conquistasContainer.innerHTML = "<p>Nenhuma conquista ainda. Continue jogando!</p>";
             }
 
@@ -1133,7 +1239,7 @@
                         <td>${aluno.acertos}/${TOTAL_PERGUNTAS}</td>
                         <td>${dataFormatada}</td>
                         <td>
-                            <button onclick="excluirRegistro('${aluno.modalidade}|${aluno.turma}|${normalizarNome(aluno.nome)}|${aluno.data}')" class="btn-acao btn-excluir" style="background:#dc3545; color:white;">🗑️</button>
+                            <button onclick="excluirRegistro('${aluno.modalidade}|${aluno.turma}|${normalizarNome(aluno.nome)}|${aluno.data}')" class="btn-excluir" style="padding: 4px 8px;">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -1141,8 +1247,8 @@
             
             html += '</tbody></table>';
             html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">';
-            html += '<button onclick="excluirSelecionados()" class="btn-acao" style="background: #dc3545; color: white; padding: 8px 16px;">🗑️ Excluir Selecionados</button>';
-            html += '<button onclick="salvarEdicoesNomes()" class="btn-acao" style="background: #198754; color: white; padding: 8px 16px;">💾 Salvar Edições de Nomes</button>';
+            html += '<button onclick="excluirSelecionados()" class="btn-excluir" style="padding: 8px 16px;">🗑️ Excluir Selecionados</button>';
+            html += '<button onclick="salvarEdicoesNomes()" class="botao-verde" style="padding: 8px 16px;">💾 Salvar Edições de Nomes</button>';
             html += '</div>';
             
             container.innerHTML = html;
@@ -1404,6 +1510,7 @@
             sequenciaAtual = 0;
             maiorSequencia = 0;
             temposRespostasCorretas = [];
+            temposRespostas = [];
             desempenhoTabuadas = {};
             jogoEmAndamento = true;
             jogoFinalizando = false;
@@ -1500,6 +1607,10 @@
             perguntaEmAberto = false;
             alternarBotoesResposta(true);
 
+            if (!modoTreino) {
+                temposRespostas.push({ acertou, tempo: tempoGasto });
+            }
+
             if (modoTreino) {
                 const dicaDiv = document.getElementById("dica-resposta");
                 if (acertou) {
@@ -1539,7 +1650,9 @@
                 acertos++;
                 sequenciaAtual++;
                 maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
-                if (tempoGasto && !modoTreino) temposRespostasCorretas.push(tempoGasto);
+                if (tempoGasto && !modoTreino) {
+                    temposRespostasCorretas.push(tempoGasto);
+                }
             } else {
                 erros++;
                 sequenciaAtual = 0;
@@ -1573,28 +1686,84 @@
                 document.getElementById("resumo-sequencia").innerText = maiorSequencia;
                 const mapaContainer = document.getElementById("mapa-tabuadas-container");
                 if (mapaContainer) mapaContainer.innerHTML = renderizarMapaTabuadas();
+                document.getElementById("novas-conquistas").innerHTML = "";
                 mostrarTela("tela-resultado");
                 return;
             }
 
-            const resultado = {
-                nome: alunoAtual, turma: turmaAtual, modalidade: modalidadeAtual,
-                pontos: pontosAcumulados, acertos: acertos, erros: erros,
-                tempoMedio: tempoMedio, maiorSequencia: maiorSequencia,
-                desempenhoTabuadas: desempenhoTabuadas, data: new Date().toISOString()
+            // Calcular métricas para conquistas
+            const temposRapidos = temposRespostas.filter(r => r.acertou && r.tempo < 1).length;
+            const temposMuitoRapidos = temposRespostas.filter(r => r.acertou && r.tempo < 0.8).length;
+            const temposExtremos = temposRespostas.filter(r => r.acertou && r.tempo < 0.5).length;
+            const acertouPrimeira = temposRespostas.length > 0 && temposRespostas[0].acertou;
+            const errosPrimeiros = temposRespostas.slice(0, 3).filter(r => !r.acertou).length;
+            const recuperacaoFinal = temposRespostas.slice(-5).filter(r => r.acertou).length >= 3 && temposRespostas.slice(0, 5).filter(r => !r.acertou).length >= 3;
+            const recuperacaoSequencia = (() => {
+                let maxSeq = 0;
+                let currentSeq = 0;
+                for (const r of temposRespostas) {
+                    if (r.acertou) currentSeq++;
+                    else { maxSeq = Math.max(maxSeq, currentSeq); currentSeq = 0; }
+                }
+                return Math.max(maxSeq, currentSeq);
+            })();
+            const errosFinais = temposRespostas.slice(-2).filter(r => !r.acertou).length;
+            const mesmoErroRepetido = 0; // Simplificado
+            const errouTabuada2 = desempenhoTabuadas[2] && desempenhoTabuadas[2].total > 0 && desempenhoTabuadas[2].acertos < desempenhoTabuadas[2].total;
+            const tabuadaDificilCompleta = [7,8,9].every(t => desempenhoTabuadas[t] && desempenhoTabuadas[t].acertos === desempenhoTabuadas[t].total && desempenhoTabuadas[t].total > 0);
+
+            const resultadoCompleto = {
+                ...{
+                    nome: alunoAtual, turma: turmaAtual, modalidade: modalidadeAtual,
+                    pontos: pontosAcumulados, acertos: acertos, erros: erros,
+                    tempoMedio: tempoMedio, maiorSequencia: maiorSequencia,
+                    desempenhoTabuadas: desempenhoTabuadas, data: new Date().toISOString(),
+                    temposRapidos, temposMuitoRapidos, temposExtremos,
+                    acertouPrimeira, errosPrimeiros, recuperacaoFinal,
+                    recuperacaoSequencia, errosFinais, mesmoErroRepetido,
+                    errouTabuada2, tabuadaDificilCompleta
+                }
             };
 
             try {
-                const resultadoSalvo = await salvarResultado(resultado);
+                const resultadoSalvo = await salvarResultado(resultadoCompleto);
+                
+                // Buscar histórico do aluno
+                const rankingCompleto = await obterRanking();
+                const historicoAluno = rankingCompleto.filter(r => 
+                    normalizarNome(r.nome) === normalizarNome(alunoAtual) && 
+                    r.turma === turmaAtual
+                ).sort((a,b) => new Date(a.data) - new Date(b.data));
+                
+                // Calcular posições
+                const rankingTurma = await obterRankingPorPontos(modalidadeAtual, turmaAtual);
+                const posicaoTurma = rankingTurma.findIndex(r => r.data === resultadoSalvo.data) + 1;
+                const rankingGlobal = await obterRankingPorPontos(modalidadeAtual);
+                const posicaoGlobal = rankingGlobal.findIndex(r => r.data === resultadoSalvo.data) + 1;
+                
+                // Calcular conquistas
+                const novasConquistas = calcularConquitas(resultadoSalvo, historicoAluno, posicaoTurma, posicaoGlobal);
+                
+                // Mostrar conquistas na tela de resultado
+                const conquistasDiv = document.getElementById("novas-conquistas");
+                if (novasConquistas.length > 0) {
+                    conquistasDiv.innerHTML = `<strong>🏅 NOVAS CONQUISTAS! 🏅</strong><br>` +
+                        novasConquistas.map(c => `${c.icone} ${c.nome}`).join(" • ");
+                    conquistasDiv.style.background = "#ffc107";
+                    conquistasDiv.style.color = "#000";
+                } else {
+                    conquistasDiv.innerHTML = "";
+                }
+                
                 await preencherResultado(resultadoSalvo);
                 mostrarTela("tela-resultado");
             } catch (e) {
                 console.error(e);
                 const chaveLocal = `${modalidadeAtual}_${turmaAtual}_${normalizarNome(alunoAtual)}`;
-                localStorage.setItem(`resultado_fallback_${chaveLocal}`, JSON.stringify(resultado));
-                setTimeout(() => salvarResultado(resultado).catch(console.warn), 3000);
+                localStorage.setItem(`resultado_fallback_${chaveLocal}`, JSON.stringify(resultadoCompleto));
+                setTimeout(() => salvarResultado(resultadoCompleto).catch(console.warn), 3000);
                 alert("⚠️ Resultado salvo localmente. Será sincronizado quando a conexão melhorar.");
-                await preencherResultado(resultado);
+                await preencherResultado(resultadoCompleto);
                 mostrarTela("tela-resultado");
             }
         }
@@ -1822,7 +1991,7 @@
                         return `<tr><td>${idx + 1}º</td><td>${escaparHtml(item.nome)}</td>${mostraTurma ? `<td>${item.turma}</td>` : ""}<td>${item.pontos} pts</td><td>${item.acertos}/${TOTAL_PERGUNTAS}</td><td>${item.tempoMedio.toFixed(2)}s</td></tr>`;
                     }
                     if (ehPrecisao) {
-                        return `<tr><td>${idx + 1}º</td><td>${escaparHtml(item.nome)}</td>${mostraTurma ? `<td>${item.turma}</td>` : ""}<td>${item.acertos}/${TOTAL_PERGUNTAS}</td><td>${item.pontos} pts</td><td>${item.tempoMedio.toFixed(2)}s</td></tr>`;
+                        return `</tr><td>${idx + 1}º</td><td>${escaparHtml(item.nome)}</td>${mostraTurma ? `<td>${item.turma}</td>` : ""}<td>${item.acertos}/${TOTAL_PERGUNTAS}</td><td>${item.pontos} pts</td><td>${item.tempoMedio.toFixed(2)}s</td></tr>`;
                     }
                     return `<tr><td>${idx + 1}º</td><td>${escaparHtml(item.nome)}</td>${mostraTurma ? `<td>${item.turma}</td>` : ""}<td>${item.pontos} pts</td><td>${item.acertos}/${TOTAL_PERGUNTAS}</td><td>${item.tempoMedio.toFixed(2)}s</td></tr>`;
                 }).join("");
