@@ -95,11 +95,33 @@
             transition: width 0.1s linear;
         }
 
+        #progresso.pulsando {
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         #pergunta {
             font-size: 42px;
             font-weight: bold;
             margin: 20px 0;
             color: #222;
+            transition: background-color 0.2s;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        #pergunta.erro-visual {
+            animation: piscarVermelho 0.3s ease-in-out;
+        }
+
+        @keyframes piscarVermelho {
+            0% { background-color: #fff; }
+            50% { background-color: #ffcccc; }
+            100% { background-color: #fff; }
         }
 
         .lista-opcoes {
@@ -194,6 +216,23 @@
         .tag-participante { background: #6c757d; }
         .sem-registros { color: #666; text-align: center; }
 
+        #toast-pontuacao {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #198754;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
         @media (max-width: 520px) {
             body { padding: 10px; }
             .card { padding: 18px; }
@@ -203,6 +242,8 @@
     </style>
 </head>
 <body>
+    <div id="toast-pontuacao"></div>
+
     <div id="tela-registro" class="card">
         <h1>Copa Tabuada CEIB 2026</h1>
         <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
@@ -232,7 +273,7 @@
             <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
         </select>
 
-        <button onclick="registrarAluno()">Iniciar Classificatória</button>
+        <button id="btn-iniciar" onclick="registrarAluno()">Iniciar Classificatória</button>
         <button class="botao-secundario" onclick="abrirRankings()">Ver Rankings</button>
     </div>
 
@@ -348,6 +389,7 @@
         let temporizadorTimeout;
         let perguntaEmAberto = false;
         let tipoRankingAtual = "turma";
+        let jogoEmAndamento = false;
 
         const TOTAL_PERGUNTAS = 20;
         const TEMPO_MAXIMO = 10000;
@@ -372,6 +414,15 @@
             "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6, 7, 8, 9] },
             "0-10": { nome: "Completa - Tabuadas do 0 ao 10", fatores: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }
         };
+
+        function mostrarToast(mensagem) {
+            const toast = document.getElementById("toast-pontuacao");
+            toast.innerText = mensagem;
+            toast.style.opacity = "1";
+            setTimeout(() => {
+                toast.style.opacity = "0";
+            }, 1500);
+        }
 
         function registrarAluno() {
             const inputNome = document.getElementById("nome-aluno").value.trim();
@@ -399,6 +450,7 @@
             maiorSequencia = 0;
             temposRespostasCorretas = [];
             pontuacaoPorPergunta = [];
+            jogoEmAndamento = true;
 
             document.getElementById("titulo-jogo").innerText = MODALIDADES[modalidadeAtual].nome;
             mostrarTela("tela-jogo");
@@ -422,6 +474,7 @@
             respostaCorreta = fatorA * fatorB;
 
             document.getElementById("pergunta").innerText = `${fatorA} x ${fatorB} = ?`;
+            document.getElementById("pergunta").classList.remove("erro-visual");
 
             gerarOpcoesResposta();
             iniciarCronometro();
@@ -443,6 +496,7 @@
 
             document.querySelectorAll(".btn-opcao").forEach((botao, index) => {
                 botao.innerText = opcoes[index];
+                botao.disabled = false;
             });
         }
 
@@ -451,6 +505,7 @@
             const progresso = document.getElementById("progresso");
             progresso.style.width = "100%";
             progresso.style.background = "#198754";
+            progresso.classList.remove("pulsando");
 
             let tempoRestante = TEMPO_MAXIMO;
 
@@ -460,8 +515,11 @@
                 const porcentagem = Math.max((tempoRestante / TEMPO_MAXIMO) * 100, 0);
                 progresso.style.width = `${porcentagem}%`;
 
-                if (porcentagem < 40) {
+                if (porcentagem < 40 && porcentagem > 0) {
                     progresso.style.background = "#dc3545";
+                    if (porcentagem < 20) {
+                        progresso.classList.add("pulsando");
+                    }
                 }
             }, 100);
 
@@ -473,6 +531,7 @@
 
         function verificarResposta(botaoClicado) {
             if (!perguntaEmAberto) return;
+            if (botaoClicado.disabled) return;
 
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
@@ -493,6 +552,16 @@
             perguntaEmAberto = false;
             alternarBotoesResposta(true);
 
+            if (!acertou) {
+                const perguntaDiv = document.getElementById("pergunta");
+                perguntaDiv.classList.add("erro-visual");
+                setTimeout(() => {
+                    perguntaDiv.classList.remove("erro-visual");
+                }, 300);
+            } else if (pontosGanhos > 0) {
+                mostrarToast(`+${pontosGanhos} pontos! 🎉`);
+            }
+
             pontosAcumulados += pontosGanhos;
             pontuacaoPorPergunta.push(pontosGanhos);
 
@@ -511,6 +580,7 @@
         }
 
         async function finalizarCircuito() {
+            jogoEmAndamento = false;
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
@@ -559,8 +629,18 @@
         }
 
         function abrirRankings() {
-            mostrarTela("tela-ranking");
-            renderizarRanking();
+            if (jogoEmAndamento) {
+                if (confirm("⚠️ Atenção! Você está no meio de uma partida. Seu progresso será perdido. Deseja sair para ver os rankings?")) {
+                    jogoEmAndamento = false;
+                    clearInterval(temporizadorInterval);
+                    clearTimeout(temporizadorTimeout);
+                    mostrarTela("tela-ranking");
+                    renderizarRanking();
+                }
+            } else {
+                mostrarTela("tela-ranking");
+                renderizarRanking();
+            }
         }
 
         function mudarTipoRanking(tipo) {
@@ -573,6 +653,7 @@
             document.getElementById("btn-ranking-turma").classList.toggle("ativa", tipoRankingAtual === "turma");
             document.getElementById("btn-ranking-global").classList.toggle("ativa", tipoRankingAtual === "global");
             document.getElementById("filtro-turma").classList.toggle("hidden", tipoRankingAtual === "global");
+            document.getElementById("coluna-turma").classList.toggle("hidden", tipoRankingAtual !== "global");
         }
 
         async function renderizarRanking() {
@@ -581,8 +662,6 @@
             const modalidade = document.getElementById("filtro-modalidade").value;
             const turma = document.getElementById("filtro-turma").value;
             const tabelaRanking = document.getElementById("tabela-ranking");
-
-            document.getElementById("coluna-turma").classList.toggle("hidden", tipoRankingAtual !== "global");
 
             let ranking;
             let rankingCompletoDaModalidade = [];
@@ -671,7 +750,6 @@
                 if (!resultadoAtual || compararResultados(resultado, resultadoAtual) < 0) {
                     return resultado;
                 }
-
                 return resultadoAtual;
             });
 
@@ -685,7 +763,6 @@
                 const snapshot = await database.ref(CAMINHO_RANKING_FIREBASE).once("value");
                 const dados = snapshot.val() || {};
                 const rankingOnline = Object.values(dados);
-
                 localStorage.setItem(CHAVE_RANKING, JSON.stringify(rankingOnline));
                 return rankingOnline;
             } catch (erro) {
@@ -705,7 +782,6 @@
             if (temposRespostasCorretas.length === 0) {
                 return TEMPO_MAXIMO / 1000;
             }
-
             const soma = temposRespostasCorretas.reduce((total, tempo) => total + tempo, 0);
             return soma / temposRespostasCorretas.length;
         }
@@ -751,7 +827,6 @@
 
         function salvarCopiaLocal(resultado) {
             const ranking = obterRankingLocal();
-
             const indiceExistente = ranking.findIndex((item) =>
                 item.turma === resultado.turma &&
                 item.modalidade === resultado.modalidade &&
@@ -767,19 +842,28 @@
             localStorage.setItem(CHAVE_RANKING, JSON.stringify(ranking));
         }
 
+        function reiniciarJogo() {
+            if (jogoEmAndamento) {
+                if (confirm("⚠️ Atenção! Se você sair agora, perderá todo o progresso desta partida. Deseja continuar?")) {
+                    jogoEmAndamento = false;
+                    clearInterval(temporizadorInterval);
+                    clearTimeout(temporizadorTimeout);
+                    document.getElementById("nome-aluno").value = "";
+                    mostrarTela("tela-registro");
+                }
+            } else {
+                clearInterval(temporizadorInterval);
+                clearTimeout(temporizadorTimeout);
+                document.getElementById("nome-aluno").value = "";
+                mostrarTela("tela-registro");
+            }
+        }
+
         database.ref(CAMINHO_RANKING_FIREBASE).on("value", () => {
             if (!document.getElementById("tela-ranking").classList.contains("hidden")) {
                 renderizarRanking();
             }
         });
-
-        function reiniciarJogo() {
-            clearInterval(temporizadorInterval);
-            clearTimeout(temporizadorTimeout);
-
-            document.getElementById("nome-aluno").value = "";
-            mostrarTela("tela-registro");
-        }
     </script>
 </body>
 </html>
