@@ -24,7 +24,7 @@
         }
 
         .card-large {
-            max-width: 900px;
+            max-width: 1000px;
         }
 
         .hidden { display: none; }
@@ -372,7 +372,7 @@
 
         .painel-botoes {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 12px;
             margin: 20px 0;
         }
@@ -403,6 +403,36 @@
             display: none;
         }
 
+        /* Estilos para a lista de alunos */
+        .alunos-table {
+            width: 100%;
+            font-size: 13px;
+            border-collapse: collapse;
+        }
+        .alunos-table th, .alunos-table td {
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+            text-align: left;
+        }
+        .alunos-table th {
+            background: #e9ecef;
+            position: sticky;
+            top: 0;
+        }
+        .editar-nome {
+            width: 130px;
+            padding: 4px 6px;
+            font-size: 12px;
+            margin: 0;
+        }
+        .btn-acao {
+            padding: 4px 8px;
+            font-size: 11px;
+            margin: 2px;
+        }
+        .btn-excluir { background: #dc3545; }
+        .btn-excluir:hover { background: #bb2d3b; }
+
         @media (max-width: 520px) {
             body { padding: 10px; }
             .card { padding: 18px; }
@@ -410,6 +440,8 @@
             .status-jogo, .resumo-resultado { grid-template-columns: 1fr; }
             .grade-tabuadas { grid-template-columns: 1fr; }
             .aba { font-size: 9px; padding: 6px 3px; }
+            .alunos-table { font-size: 11px; }
+            .editar-nome { width: 90px; }
         }
     </style>
 </head>
@@ -626,6 +658,7 @@
                 <button onclick="exportarCSV()">📎 Exportar Dados (CSV)</button>
                 <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
                 <button onclick="mostrarEstatisticasGerais()">📈 Estatísticas Gerais</button>
+                <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
             </div>
 
             <div id="painel-reset" class="hidden" style="margin-top: 20px; padding: 16px; background: #fff3cd; border-radius: 8px;">
@@ -661,6 +694,33 @@
                 <h4>📊 Estatísticas Gerais</h4>
                 <div id="estatisticas-conteudo"></div>
             </div>
+
+            <div id="painel-alunos" class="hidden" style="margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
+                <h4>👥 Gerenciar Alunos</h4>
+                <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex: 2;" onkeyup="filtrarAlunos()">
+                    <select id="filtro-turma-alunos" style="flex: 1;" onchange="filtrarAlunos()">
+                        <option value="">Todas as turmas</option>
+                        <option value="901">901</option>
+                        <option value="1001">1001</option>
+                        <option value="1002">1002</option>
+                        <option value="1003">1003</option>
+                        <option value="1004">1004</option>
+                        <option value="2001">2001</option>
+                        <option value="2002">2002</option>
+                        <option value="2003">2003</option>
+                        <option value="3001">3001</option>
+                        <option value="3002">3002</option>
+                    </select>
+                </div>
+                <div id="lista-alunos-container" style="max-height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px;">
+                    <!-- Lista será preenchida aqui -->
+                </div>
+                <div style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="excluirDuplicatasAutomatico()" class="botao-forcar" style="background: #fd7e14;">🔧 Auto-limpar Duplicatas</button>
+                    <button onclick="cancelarGerenciarAlunos()" class="botao-secundario">Fechar</button>
+                </div>
+            </div>
         </div>
 
         <button class="botao-verde" onclick="reiniciarJogo()" style="margin-top: 20px;">🏠 Voltar ao Início</button>
@@ -693,6 +753,8 @@
         let totalPerguntasTreino = 20;
 
         let desempenhoTabuadas = {};
+        let alunosData = [];
+        let alunosFiltrados = [];
 
         const TOTAL_PERGUNTAS = 20;
         const TEMPO_MAXIMO = 10000;
@@ -726,7 +788,7 @@
             toast.style.opacity = "1";
             setTimeout(() => {
                 toast.style.opacity = "0";
-            }, 1500);
+            }, 2000);
         }
 
         function sortearItem(lista) {
@@ -743,6 +805,10 @@
 
         function normalizarNome(nome) {
             return nome.trim().toLowerCase().replace(/\s+/g, " ");
+        }
+        
+        function normalizarNomeSimplificado(nome) {
+            return nome.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
         }
 
         function obterStatusPorPosicao(posicao) {
@@ -840,6 +906,7 @@
             mostrarTela("tela-painel");
             document.getElementById("senha-professor").value = "";
             document.getElementById("painel-conteudo").classList.add("hidden");
+            document.getElementById("painel-alunos").classList.add("hidden");
         }
 
         function autenticarProfessor() {
@@ -848,6 +915,7 @@
                 document.getElementById("painel-conteudo").classList.remove("hidden");
                 document.getElementById("painel-reset").classList.add("hidden");
                 document.getElementById("painel-estatisticas").classList.add("hidden");
+                document.getElementById("painel-alunos").classList.add("hidden");
                 mostrarToast("🔓 Acesso concedido!");
             } else {
                 alert("Senha incorreta!");
@@ -857,6 +925,7 @@
         function abrirResetTurma() {
             document.getElementById("painel-reset").classList.toggle("hidden");
             document.getElementById("painel-estatisticas").classList.add("hidden");
+            document.getElementById("painel-alunos").classList.add("hidden");
         }
 
         async function confirmarReset() {
@@ -993,6 +1062,266 @@
             document.getElementById("estatisticas-conteudo").innerHTML = html;
             document.getElementById("painel-estatisticas").classList.remove("hidden");
             document.getElementById("painel-reset").classList.add("hidden");
+            document.getElementById("painel-alunos").classList.add("hidden");
+        }
+
+        // ==================== GERENCIAR ALUNOS ====================
+        async function abrirGerenciarAlunos() {
+            document.getElementById("painel-reset").classList.add("hidden");
+            document.getElementById("painel-estatisticas").classList.add("hidden");
+            document.getElementById("painel-alunos").classList.remove("hidden");
+            await carregarListaAlunos();
+        }
+
+        function cancelarGerenciarAlunos() {
+            document.getElementById("painel-alunos").classList.add("hidden");
+        }
+
+        async function carregarListaAlunos() {
+            const ranking = await obterRanking();
+            alunosData = [...ranking];
+            filtrarAlunos();
+        }
+
+        function filtrarAlunos() {
+            const filtroNome = document.getElementById("filtro-alunos").value.toLowerCase();
+            const filtroTurma = document.getElementById("filtro-turma-alunos").value;
+            
+            alunosFiltrados = alunosData.filter(aluno => {
+                const matchNome = !filtroNome || aluno.nome.toLowerCase().includes(filtroNome);
+                const matchTurma = !filtroTurma || aluno.turma === filtroTurma;
+                return matchNome && matchTurma;
+            });
+            
+            alunosFiltrados.sort((a, b) => {
+                if (a.turma !== b.turma) return a.turma.localeCompare(b.turma);
+                return a.nome.localeCompare(b.nome);
+            });
+            
+            renderizarListaAlunos();
+        }
+
+        function renderizarListaAlunos() {
+            const container = document.getElementById("lista-alunos-container");
+            
+            if (alunosFiltrados.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center;">Nenhum aluno encontrado</div>';
+                return;
+            }
+            
+            let html = '<table class="alunos-table"><thead><tr>';
+            html += '<th style="width: 40px;"><input type="checkbox" id="select-all-checkbox" onchange="selecionarTodos()"></th>';
+            html += '<th>Nome</th>';
+            html += '<th>Turma</th>';
+            html += '<th>Modalidade</th>';
+            html += '<th>Pontos</th>';
+            html += '<th>Acertos</th>';
+            html += '<th>Data</th>';
+            html += '<th>Ações</th>';
+            html += '</tr></thead><tbody>';
+            
+            alunosFiltrados.forEach((aluno, index) => {
+                const dataFormatada = new Date(aluno.data).toLocaleDateString('pt-BR');
+                const chaveUnica = `${aluno.modalidade}|${aluno.turma}|${normalizarNome(aluno.nome)}|${aluno.data}`;
+                html += `
+                    <tr>
+                        <td style="text-align: center;"><input type="checkbox" class="aluno-checkbox" data-chave="${chaveUnica}"></td>
+                        <td><input type="text" value="${escaparHtml(aluno.nome)}" class="editar-nome" data-chave="${aluno.modalidade}|${aluno.turma}|${normalizarNome(aluno.nome)}" style="width: 140px;"></td>
+                        <td>${aluno.turma}</td>
+                        <td>${MODALIDADES[aluno.modalidade]?.nome || aluno.modalidade}</td>
+                        <td>${aluno.pontos}</td>
+                        <td>${aluno.acertos}/${TOTAL_PERGUNTAS}</td>
+                        <td>${dataFormatada}</td>
+                        <td>
+                            <button onclick="excluirRegistro('${aluno.modalidade}|${aluno.turma}|${normalizarNome(aluno.nome)}|${aluno.data}')" class="btn-acao btn-excluir" style="background:#dc3545; color:white;">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            html += '<div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">';
+            html += '<button onclick="excluirSelecionados()" class="btn-acao" style="background: #dc3545; color: white; padding: 8px 16px;">🗑️ Excluir Selecionados</button>';
+            html += '<button onclick="salvarEdicoesNomes()" class="btn-acao" style="background: #198754; color: white; padding: 8px 16px;">💾 Salvar Edições de Nomes</button>';
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        function selecionarTodos() {
+            const selectAll = document.getElementById("select-all-checkbox");
+            const checkboxes = document.querySelectorAll(".aluno-checkbox");
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        }
+
+        function encontrarDuplicatas() {
+            const mapa = new Map();
+            const duplicatas = [];
+            
+            alunosData.forEach(aluno => {
+                const chave = `${aluno.turma}|${normalizarNomeSimplificado(aluno.nome)}`;
+                if (!mapa.has(chave)) {
+                    mapa.set(chave, []);
+                }
+                mapa.get(chave).push(aluno);
+            });
+            
+            for (const [chave, registros] of mapa.entries()) {
+                if (registros.length > 1) {
+                    duplicatas.push({ chave, registros });
+                }
+            }
+            
+            return duplicatas;
+        }
+
+        async function excluirDuplicatasAutomatico() {
+            const duplicatas = encontrarDuplicatas();
+            
+            if (duplicatas.length === 0) {
+                alert("✅ Nenhuma duplicata encontrada!");
+                return;
+            }
+            
+            let mensagem = `🔍 Encontradas ${duplicatas.length} duplicatas:\n\n`;
+            for (const dup of duplicatas) {
+                const melhor = dup.registros.sort((a, b) => b.pontos - a.pontos)[0];
+                mensagem += `• ${dup.registros[0].nome} (Turma ${dup.registros[0].turma}): ${dup.registros.length} registros → manterá o melhor (${melhor.pontos} pts)\n`;
+            }
+            mensagem += `\nDeseja manter apenas o melhor registro de cada aluno?`;
+            
+            if (!confirm(mensagem)) return;
+            
+            let removidos = 0;
+            for (const dup of duplicatas) {
+                const melhor = dup.registros.sort((a, b) => b.pontos - a.pontos)[0];
+                for (const registro of dup.registros) {
+                    if (registro !== melhor) {
+                        await excluirRegistroFirebase(registro);
+                        removidos++;
+                    }
+                }
+            }
+            
+            alert(`✅ ${removidos} registros duplicados removidos!`);
+            await carregarListaAlunos();
+            renderizarRanking();
+        }
+
+        async function excluirRegistro(chaveComposta) {
+            if (!confirm("⚠️ Tem certeza que deseja excluir este registro permanentemente?")) return;
+            
+            const partes = chaveComposta.split("|");
+            const modalidade = partes[0];
+            const turma = partes[1];
+            const nome = partes[2];
+            const data = partes[3];
+            
+            const registro = alunosData.find(a => 
+                a.modalidade === modalidade && 
+                a.turma === turma && 
+                normalizarNome(a.nome) === nome &&
+                a.data === data
+            );
+            
+            if (registro) {
+                await excluirRegistroFirebase(registro);
+                await carregarListaAlunos();
+                renderizarRanking();
+                mostrarToast("✅ Registro excluído!");
+            }
+        }
+
+        async function excluirRegistroFirebase(registro) {
+            const chave = criarChaveAluno(registro);
+            await database.ref(`${CAMINHO_RANKING_FIREBASE}/${chave}`).remove();
+            
+            const ranking = obterRankingLocal();
+            const novoRanking = ranking.filter(r => 
+                !(r.modalidade === registro.modalidade && 
+                  r.turma === registro.turma && 
+                  normalizarNome(r.nome) === normalizarNome(registro.nome) &&
+                  r.data === registro.data)
+            );
+            localStorage.setItem(CHAVE_RANKING, JSON.stringify(novoRanking));
+        }
+
+        async function excluirSelecionados() {
+            const checkboxes = document.querySelectorAll(".aluno-checkbox:checked");
+            if (checkboxes.length === 0) {
+                alert("Selecione pelo menos um registro para excluir.");
+                return;
+            }
+            
+            if (!confirm(`⚠️ Tem certeza que deseja excluir ${checkboxes.length} registro(s) permanentemente?`)) return;
+            
+            let removidos = 0;
+            for (const checkbox of checkboxes) {
+                const chave = checkbox.getAttribute("data-chave");
+                const partes = chave.split("|");
+                const modalidade = partes[0];
+                const turma = partes[1];
+                const nome = partes[2];
+                const data = partes[3];
+                
+                const registro = alunosData.find(a => 
+                    a.modalidade === modalidade && 
+                    a.turma === turma && 
+                    normalizarNome(a.nome) === nome &&
+                    a.data === data
+                );
+                
+                if (registro) {
+                    await excluirRegistroFirebase(registro);
+                    removidos++;
+                }
+            }
+            
+            await carregarListaAlunos();
+            renderizarRanking();
+            mostrarToast(`✅ ${removidos} registro(s) excluído(s)!`);
+        }
+
+        async function salvarEdicoesNomes() {
+            const inputs = document.querySelectorAll(".editar-nome");
+            const alteracoes = [];
+            
+            for (const input of inputs) {
+                const chaveAntiga = input.getAttribute("data-chave");
+                const [modalidade, turma, nomeAntigo] = chaveAntiga.split("|");
+                const nomeNovo = input.value.trim();
+                
+                if (normalizarNome(nomeAntigo) !== normalizarNome(nomeNovo) && nomeNovo !== "") {
+                    alteracoes.push({ modalidade, turma, nomeAntigo, nomeNovo });
+                }
+            }
+            
+            if (alteracoes.length === 0) {
+                alert("Nenhuma alteração de nome detectada.");
+                return;
+            }
+            
+            if (!confirm(`Deseja alterar o nome de ${alteracoes.length} aluno(s)?`)) return;
+            
+            for (const alt of alteracoes) {
+                const registros = alunosData.filter(r => 
+                    r.modalidade === alt.modalidade && 
+                    r.turma === alt.turma && 
+                    normalizarNome(r.nome) === normalizarNome(alt.nomeAntigo)
+                );
+                
+                for (const registro of registros) {
+                    await excluirRegistroFirebase(registro);
+                    
+                    const novoRegistro = { ...registro, nome: alt.nomeNovo };
+                    const chaveNova = criarChaveAluno(novoRegistro);
+                    await database.ref(`${CAMINHO_RANKING_FIREBASE}/${chaveNova}`).set(novoRegistro);
+                }
+            }
+            
+            await carregarListaAlunos();
+            renderizarRanking();
+            mostrarToast(`✅ Nomes de ${alteracoes.length} aluno(s) atualizados!`);
         }
 
         // ==================== MAPA DE TABUADAS ====================
@@ -1341,11 +1670,10 @@
 
         function mergeRankings(local, online) {
             const mapa = new Map();
-            online.forEach(item => mapa.set(`${item.modalidade}|${item.turma}|${normalizarNome(item.nome)}`, item));
+            online.forEach(item => mapa.set(`${item.modalidade}|${item.turma}|${normalizarNome(item.nome)}|${item.data}`, item));
             local.forEach(item => {
-                const chave = `${item.modalidade}|${item.turma}|${normalizarNome(item.nome)}`;
-                const existente = mapa.get(chave);
-                if (!existente || compararResultados(item, existente) < 0) mapa.set(chave, item);
+                const chave = `${item.modalidade}|${item.turma}|${normalizarNome(item.nome)}|${item.data}`;
+                if (!mapa.has(chave)) mapa.set(chave, item);
             });
             return Array.from(mapa.values());
         }
@@ -1412,14 +1740,19 @@
 
         function salvarCopiaLocal(resultado) {
             const ranking = obterRankingLocal();
-            const idx = ranking.findIndex(item => item.turma === resultado.turma && item.modalidade === resultado.modalidade && normalizarNome(item.nome) === normalizarNome(resultado.nome));
+            const idx = ranking.findIndex(item => 
+                item.modalidade === resultado.modalidade && 
+                item.turma === resultado.turma && 
+                normalizarNome(item.nome) === normalizarNome(resultado.nome) &&
+                item.data === resultado.data
+            );
             if (idx === -1) ranking.push(resultado);
             else if (compararResultados(resultado, ranking[idx]) < 0) ranking[idx] = resultado;
             localStorage.setItem(CHAVE_RANKING, JSON.stringify(ranking));
         }
 
         function criarChaveAluno(resultado) {
-            const id = `${resultado.modalidade}|${resultado.turma}|${normalizarNome(resultado.nome)}`;
+            const id = `${resultado.modalidade}|${resultado.turma}|${normalizarNome(resultado.nome)}|${resultado.data}`;
             return encodeURIComponent(id).replace(/[.#$\[\]/]/g, "_");
         }
 
