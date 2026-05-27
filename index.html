@@ -24,7 +24,7 @@
         }
 
         .card-large {
-            max-width: 800px;
+            max-width: 900px;
         }
 
         .hidden { display: none; }
@@ -160,7 +160,6 @@
             padding: 10px;
         }
 
-        /* Mapa de Tabuadas */
         .mapa-tabuadas {
             margin-top: 20px;
             padding: 16px;
@@ -345,7 +344,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
-        /* Perfil do Aluno */
         .conquistas-grid {
             display: flex;
             flex-wrap: wrap;
@@ -372,7 +370,6 @@
             color: #0066cc;
         }
 
-        /* Painel do Professor */
         .painel-botoes {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -385,6 +382,21 @@
             padding: 16px;
             border-radius: 8px;
             margin-bottom: 20px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0066cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         #coluna-status.hidden {
@@ -446,7 +458,7 @@
         </div>
     </div>
 
-    <!-- TELA DE JOGO (COMPETITIVO) -->
+    <!-- TELA DE JOGO -->
     <div id="tela-jogo" class="card hidden">
         <h2 id="titulo-jogo">Classificatória</h2>
         <div id="modo-treino-badge" class="hidden" style="background: #fd7e14; padding: 5px 10px; border-radius: 20px; display: inline-block; margin-bottom: 10px;">🎯 MODO TREINO (não salva no ranking)</div>
@@ -612,13 +624,15 @@
         <div id="painel-conteudo" class="hidden">
             <div class="painel-botoes">
                 <button onclick="exportarCSV()">📎 Exportar Dados (CSV)</button>
-                <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking de Turma</button>
+                <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
                 <button onclick="mostrarEstatisticasGerais()">📈 Estatísticas Gerais</button>
             </div>
 
             <div id="painel-reset" class="hidden" style="margin-top: 20px; padding: 16px; background: #fff3cd; border-radius: 8px;">
-                <h4>⚠️ Resetar Ranking de Turma</h4>
+                <h4>⚠️ Resetar Ranking (IRREVERSÍVEL)</h4>
+                <label>Selecione a Turma</label>
                 <select id="reset-turma">
+                    <option value="todas">🏫 TODAS AS TURMAS</option>
                     <option value="901">901</option>
                     <option value="1001">1001</option>
                     <option value="1002">1002</option>
@@ -630,13 +644,17 @@
                     <option value="3001">3001</option>
                     <option value="3002">3002</option>
                 </select>
+                
+                <label>Selecione a Modalidade</label>
                 <select id="reset-modalidade">
                     <option value="2-5">Tabuadas do 2 ao 5</option>
                     <option value="6-9">Tabuadas do 6 ao 9</option>
                     <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
-                    <option value="todas">TODAS as modalidades</option>
+                    <option value="todas">📚 TODAS AS MODALIDADES</option>
                 </select>
-                <button onclick="confirmarReset()" class="botao-forcar" style="margin-top: 10px;">⚠️ CONFIRMAR RESET</button>
+                
+                <button onclick="confirmarReset()" class="botao-forcar" style="margin-top: 10px;">⚠️ CONFIRMAR RESET (FIREBASE)</button>
+                <p style="font-size: 12px; color: #856404; margin-top: 10px;">⚠️ Esta ação remove os dados diretamente do Firebase e é IRREVERSÍVEL!</p>
             </div>
 
             <div id="painel-estatisticas" class="hidden" style="margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
@@ -680,7 +698,6 @@
         const TEMPO_MAXIMO = 10000;
         const SENHA_PROFESSOR = "ceib2026";
         const CHAVE_RANKING = "rankingCopaTabuadaIsmaelBranco";
-        const CHAVE_PERFIS = "perfisAlunos";
         const CAMINHO_RANKING_FIREBASE = "resultados";
 
         const firebaseConfig = {
@@ -775,20 +792,12 @@
                 return;
             }
 
-            // Melhor pontuação
             const melhorPontos = Math.max(...partidas.map(p => p.pontos));
             const melhorPartida = partidas.find(p => p.pontos === melhorPontos);
-            
-            // Média de acertos
             const mediaAcertos = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
-            
-            // Melhor tempo médio (menor)
             const melhorTempo = Math.min(...partidas.map(p => p.tempoMedio));
-            
-            // Maior sequência
             const melhorSequencia = Math.max(...partidas.map(p => p.maiorSequencia));
             
-            // Melhor status
             const rankingTurma = await obterRankingPorPontos(modalidadeAtual, turma);
             const posicaoMelhor = rankingTurma.findIndex(r => r.data === melhorPartida.data) + 1;
             const melhorStatus = obterStatusPorPosicao(posicaoMelhor);
@@ -800,7 +809,6 @@
             document.getElementById("perfil-melhor-sequencia").innerHTML = `<span class="estatistica-destaque">${melhorSequencia}</span>`;
             document.getElementById("perfil-melhor-status").innerHTML = criarTagStatus(melhorStatus);
 
-            // Conquistas
             const conquistas = [];
             if (melhorPontos >= 17000) conquistas.push({ nome: "🏆 Mestre da Tabuada", desbloqueado: true });
             if (melhorSequencia === 20) conquistas.push({ nome: "⚡ Sequência Perfeita", desbloqueado: true });
@@ -815,7 +823,6 @@
                 conquistasContainer.innerHTML = "<p>Nenhuma conquista ainda. Continue jogando!</p>";
             }
 
-            // Mapa de Tabuadas da melhor partida
             if (melhorPartida.desempenhoTabuadas) {
                 desempenhoTabuadas = melhorPartida.desempenhoTabuadas;
                 modalidadeAtual = melhorPartida.modalidade;
@@ -856,36 +863,85 @@
             const turma = document.getElementById("reset-turma").value;
             const modalidade = document.getElementById("reset-modalidade").value;
             
-            if (!confirm(`⚠️ ATENÇÃO! Isso vai remover permanentemente todos os resultados da ${modalidade === "todas" ? "TODAS as modalidades" : MODALIDADES[modalidade]?.nome} da Turma ${turma}. Esta ação não pode ser desfeita. Deseja continuar?`)) {
-                return;
+            let mensagemConfirmacao = "";
+            if (turma === "todas" && modalidade === "todas") {
+                mensagemConfirmacao = "⚠️ ATENÇÃO! Isso vai remover TODOS os resultados de TODAS as turmas e TODAS as modalidades do Firebase. Esta ação é IRREVERSÍVEL! Deseja continuar?";
+            } else if (turma === "todas") {
+                mensagemConfirmacao = `⚠️ ATENÇÃO! Isso vai remover TODOS os resultados de TODAS as turmas da modalidade ${MODALIDADES[modalidade]?.nome || modalidade} do Firebase. Esta ação é IRREVERSÍVEL! Deseja continuar?`;
+            } else if (modalidade === "todas") {
+                mensagemConfirmacao = `⚠️ ATENÇÃO! Isso vai remover TODOS os resultados da Turma ${turma} em TODAS as modalidades do Firebase. Esta ação é IRREVERSÍVEL! Deseja continuar?`;
+            } else {
+                mensagemConfirmacao = `⚠️ ATENÇÃO! Isso vai remover permanentemente todos os resultados da Turma ${turma} na modalidade ${MODALIDADES[modalidade]?.nome || modalidade} do Firebase. Esta ação é IRREVERSÍVEL! Deseja continuar?`;
             }
-
-            const ranking = await obterRanking();
-            const novosRanking = ranking.filter(item => {
-                if (item.turma !== turma) return true;
-                if (modalidade === "todas") return false;
-                return item.modalidade !== modalidade;
-            });
-
-            // Salvar no localStorage
-            localStorage.setItem(CHAVE_RANKING, JSON.stringify(novosRanking));
             
-            // Tentar salvar no Firebase
+            if (!confirm(mensagemConfirmacao)) return;
+
+            mostrarToast("⏳ Processando reset... Isso pode levar alguns segundos.");
+            
             try {
-                for (const item of ranking) {
-                    if (item.turma === turma && (modalidade === "todas" || item.modalidade === modalidade)) {
-                        const chave = criarChaveAluno(item);
+                const snapshot = await database.ref(CAMINHO_RANKING_FIREBASE).once("value");
+                const dados = snapshot.val() || {};
+                const todosResultados = Object.entries(dados);
+                
+                let itensRemovidos = 0;
+                
+                for (const [chave, item] of todosResultados) {
+                    let deveRemover = false;
+                    
+                    if (turma === "todas" && modalidade === "todas") {
+                        deveRemover = true;
+                    } else if (turma === "todas") {
+                        deveRemover = (item.modalidade === modalidade);
+                    } else if (modalidade === "todas") {
+                        deveRemover = (item.turma === turma);
+                    } else {
+                        deveRemover = (item.turma === turma && item.modalidade === modalidade);
+                    }
+                    
+                    if (deveRemover) {
                         await database.ref(`${CAMINHO_RANKING_FIREBASE}/${chave}`).remove();
+                        itensRemovidos++;
                     }
                 }
-                mostrarToast(`✅ Reset concluído! ${novosRanking.length} registros mantidos.`);
-            } catch (e) {
-                console.warn("Erro ao resetar no Firebase:", e);
-                mostrarToast("⚠️ Reset concluído apenas localmente. Sincronize com o Firebase depois.");
+                
+                const rankingLocal = obterRankingLocal();
+                let novoRankingLocal = rankingLocal;
+                
+                if (turma === "todas" && modalidade === "todas") {
+                    novoRankingLocal = [];
+                } else if (turma === "todas") {
+                    novoRankingLocal = rankingLocal.filter(item => item.modalidade !== modalidade);
+                } else if (modalidade === "todas") {
+                    novoRankingLocal = rankingLocal.filter(item => item.turma !== turma);
+                } else {
+                    novoRankingLocal = rankingLocal.filter(item => !(item.turma === turma && item.modalidade === modalidade));
+                }
+                
+                localStorage.setItem(CHAVE_RANKING, JSON.stringify(novoRankingLocal));
+                
+                let mensagemResultado = "";
+                if (turma === "todas" && modalidade === "todas") {
+                    mensagemResultado = `✅ Reset completo! ${itensRemovidos} registros foram removidos do Firebase.`;
+                } else if (turma === "todas") {
+                    mensagemResultado = `✅ Reset concluído! ${itensRemovidos} registros da modalidade ${MODALIDADES[modalidade]?.nome || modalidade} foram removidos do Firebase.`;
+                } else if (modalidade === "todas") {
+                    mensagemResultado = `✅ Reset concluído! ${itensRemovidos} registros da Turma ${turma} foram removidos do Firebase.`;
+                } else {
+                    mensagemResultado = `✅ Reset concluído! ${itensRemovidos} registros foram removidos do Firebase.`;
+                }
+                
+                mostrarToast(mensagemResultado);
+                
+                setTimeout(() => {
+                    renderizarRanking();
+                }, 1000);
+                
+            } catch (error) {
+                console.error("Erro ao resetar no Firebase:", error);
+                alert("❌ Erro ao conectar com o Firebase. Verifique sua internet e tente novamente.");
             }
             
             document.getElementById("painel-reset").classList.add("hidden");
-            renderizarRanking();
         }
 
         async function exportarCSV() {
@@ -1115,7 +1171,6 @@
             perguntaEmAberto = false;
             alternarBotoesResposta(true);
 
-            // Feedback visual para modo treino
             if (modoTreino) {
                 const dicaDiv = document.getElementById("dica-resposta");
                 if (acertou) {
