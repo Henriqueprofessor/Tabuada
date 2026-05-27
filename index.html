@@ -62,6 +62,7 @@
 
         .botao-secundario { background: #495057; }
         .botao-verde { background: #198754; }
+        .botao-forcar { background: #dc3545; margin-top: 10px; }
 
         .status-jogo {
             display: grid;
@@ -152,6 +153,94 @@
             padding: 10px;
         }
 
+        .mapa-tabuadas {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .mapa-tabuadas h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .grade-tabuadas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .card-tabuada {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tabuada-titulo {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .simbolo {
+            font-size: 16px;
+        }
+
+        .barra-container {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .barra {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .percentual {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 4px 0;
+        }
+
+        .detalhes {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .mensagem {
+            font-size: 11px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .resumo-mapa {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .media-geral {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .dica-melhoria {
+            background: #e7f5ff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #0a58ca;
+        }
+
         .linha-filtros {
             display: grid;
             grid-template-columns: 1fr;
@@ -163,21 +252,34 @@
             display: flex;
             gap: 6px;
             margin-top: 12px;
+            flex-wrap: wrap;
         }
 
         .aba {
             flex: 1;
-            padding: 10px 8px;
-            font-size: 13px;
+            padding: 8px 6px;
+            font-size: 11px;
             background: #e9ecef;
             border: none;
             color: #222;
             border-radius: 6px;
+            cursor: pointer;
         }
 
         .aba.ativa {
             background: #0066cc;
             color: #fff;
+        }
+
+        .observacao-ranking {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-size: 13px;
+            text-align: left;
+            border-radius: 6px;
+            color: #856404;
         }
 
         .tabela-container {
@@ -233,11 +335,19 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
+        /* Esconder coluna Status quando não for ranking por turma */
+        #coluna-status.hidden,
+        td.status-cell.hidden {
+            display: none;
+        }
+
         @media (max-width: 520px) {
             body { padding: 10px; }
             .card { padding: 18px; }
             #pergunta { font-size: 36px; }
             .status-jogo, .resumo-resultado { grid-template-columns: 1fr; }
+            .grade-tabuadas { grid-template-columns: 1fr; }
+            .aba { font-size: 9px; padding: 6px 3px; }
         }
     </style>
 </head>
@@ -296,6 +406,8 @@
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
         </div>
+        
+        <button class="botao-forcar" onclick="forcarFinalizacao()">⚠️ Forçar Finalização (caso congele)</button>
     </div>
 
     <div id="tela-resultado" class="card hidden">
@@ -313,6 +425,8 @@
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
 
+        <div id="mapa-tabuadas-container"></div>
+
         <button onclick="abrirRankings()">Ver Rankings</button>
         <button class="botao-verde" onclick="reiniciarJogo()">Novo Aluno</button>
     </div>
@@ -321,8 +435,12 @@
         <h2>Rankings da Copa</h2>
 
         <div class="abas-filtro">
-            <button class="aba ativa" id="btn-ranking-turma" onclick="mudarTipoRanking('turma')">Por Turma</button>
-            <button class="aba" id="btn-ranking-global" onclick="mudarTipoRanking('global')">Global Top 100</button>
+            <button class="aba ativa" id="btn-ranking-turma" onclick="mudarTipoRanking('turma')">🏆 Por Turma</button>
+            <button class="aba" id="btn-ranking-global" onclick="mudarTipoRanking('global')">🌍 Global Top 100</button>
+            <button class="aba" id="btn-ranking-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão Global</button>
+            <button class="aba" id="btn-ranking-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão p/ Turma</button>
+            <button class="aba" id="btn-ranking-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
+            <button class="aba" id="btn-ranking-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade p/ Turma</button>
         </div>
 
         <div class="linha-filtros">
@@ -346,6 +464,10 @@
             </select>
         </div>
 
+        <div id="observacao-velocidade" class="observacao-ranking hidden">
+            ⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>15 ou mais acertos</strong> (mínimo de 75% de aproveitamento) são considerados neste ranking para garantir qualidade.
+        </div>
+
         <h3 id="titulo-ranking">Ranking</h3>
 
         <div class="tabela-container">
@@ -358,7 +480,7 @@
                         <th>Pontos</th>
                         <th>Acertos</th>
                         <th>Tempo</th>
-                        <th>Status</th>
+                        <th id="coluna-status">Status</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-ranking"></tbody>
@@ -382,7 +504,6 @@
         let sequenciaAtual = 0;
         let maiorSequencia = 0;
         let temposRespostasCorretas = [];
-        let pontuacaoPorPergunta = [];
         let respostaCorreta;
         let tempoInicio;
         let temporizadorInterval;
@@ -390,6 +511,9 @@
         let perguntaEmAberto = false;
         let tipoRankingAtual = "turma";
         let jogoEmAndamento = false;
+        let jogoFinalizando = false;
+
+        let desempenhoTabuadas = {};
 
         const TOTAL_PERGUNTAS = 20;
         const TEMPO_MAXIMO = 10000;
@@ -415,6 +539,153 @@
             "0-10": { nome: "Completa - Tabuadas do 0 ao 10", fatores: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }
         };
 
+        function forcarFinalizacao() {
+            if (!jogoEmAndamento) {
+                alert("Nenhum jogo em andamento.");
+                return;
+            }
+            
+            if (confirm("⚠️ Isso vai forçar a finalização do jogo atual. Deseja continuar?")) {
+                clearInterval(temporizadorInterval);
+                clearTimeout(temporizadorTimeout);
+                finalizarCircuito();
+            }
+        }
+
+        function getTabuadaDaPergunta(fatorA) {
+            return fatorA;
+        }
+
+        function registrarDesempenhoTabuada(tabuada, acertou) {
+            if (!desempenhoTabuadas[tabuada]) {
+                desempenhoTabuadas[tabuada] = { acertos: 0, total: 0 };
+            }
+            desempenhoTabuadas[tabuada].total++;
+            if (acertou) {
+                desempenhoTabuadas[tabuada].acertos++;
+            }
+        }
+
+        function calcularPercentuaisTabuada() {
+            const resultados = [];
+            const fatores = MODALIDADES[modalidadeAtual].fatores;
+            
+            if (!fatores) return resultados;
+            
+            for (let i = 0; i < fatores.length; i++) {
+                const tabuada = fatores[i];
+                const dados = desempenhoTabuadas[tabuada];
+                const percentual = dados && dados.total > 0 
+                    ? Math.round((dados.acertos / dados.total) * 100) 
+                    : null;
+                resultados.push({
+                    tabuada,
+                    percentual,
+                    acertos: dados?.acertos || 0,
+                    total: dados?.total || 0
+                });
+            }
+            return resultados;
+        }
+
+        function gerarDicaMelhoria(dados) {
+            const piores = dados
+                .filter(d => d.percentual !== null && d.percentual < 80)
+                .sort((a, b) => a.percentual - b.percentual);
+            
+            if (piores.length === 0) {
+                return "Parabéns! Você domina todas as tabuadas! 🎉";
+            }
+            
+            if (piores.length === 1) {
+                return `🎯 Treine mais a tabuada do ${piores[0].tabuada} (${piores[0].percentual}% de acertos). Use flashcards ou jogos online!`;
+            }
+            
+            const pioresNomes = piores.slice(0, 3).map(p => p.tabuada).join(", ");
+            return `🎯 Foque nas tabuadas: ${pioresNomes}. Comece pela que tem menor percentual!`;
+        }
+
+        function renderizarMapaTabuadas() {
+            const dados = calcularPercentuaisTabuada();
+            const nomeModalidade = MODALIDADES[modalidadeAtual]?.nome || "Tabuadas";
+            
+            if (dados.length === 0) {
+                return `<div class="mapa-tabuadas"><p>Nenhum dado registrado para o mapa de tabuadas.</p></div>`;
+            }
+            
+            let html = `
+                <div class="mapa-tabuadas">
+                    <h3>🗺️ Meu Mapa de Tabuadas</h3>
+                    <p class="subtitulo" style="margin-bottom: 12px;">${nomeModalidade}</p>
+                    <div class="grade-tabuadas">
+            `;
+            
+            dados.forEach(({ tabuada, percentual, acertos, total }) => {
+                let cor, simbolo, mensagem;
+                
+                if (percentual === null) {
+                    cor = "#e9ecef";
+                    simbolo = "❓";
+                    mensagem = "Não foi sorteada";
+                } else if (percentual === 100) {
+                    cor = "#198754";
+                    simbolo = "✅";
+                    mensagem = "Domínio completo!";
+                } else if (percentual >= 80) {
+                    cor = "#ffc107";
+                    simbolo = "⚠️";
+                    mensagem = "Bom, mas pode melhorar";
+                } else if (percentual >= 60) {
+                    cor = "#fd7e14";
+                    simbolo = "🔶";
+                    mensagem = "Atenção! Precisa treinar";
+                } else {
+                    cor = "#dc3545";
+                    simbolo = "❌";
+                    mensagem = "Urgente! Reforço necessário";
+                }
+                
+                const larguraBarra = percentual !== null ? percentual : 0;
+                
+                html += `
+                    <div class="card-tabuada" style="border-left: 4px solid ${cor};">
+                        <div class="tabuada-titulo">
+                            <strong>Tabuada ${tabuada}</strong>
+                            <span class="simbolo">${simbolo}</span>
+                        </div>
+                        <div class="barra-container">
+                            <div class="barra" style="width: ${larguraBarra}%; background: ${cor};"></div>
+                        </div>
+                        <div class="percentual">${percentual !== null ? `${percentual}%` : "—"}</div>
+                        <div class="detalhes">
+                            ${percentual !== null ? `${acertos}/${total} acertos` : "Não apareceu"}
+                        </div>
+                        <div class="mensagem">${mensagem}</div>
+                    </div>
+                `;
+            });
+            
+            const tabuadasValidas = dados.filter(d => d.percentual !== null);
+            const mediaGeral = tabuadasValidas.length > 0
+                ? Math.round(tabuadasValidas.reduce((s, d) => s + d.percentual, 0) / tabuadasValidas.length)
+                : 0;
+            
+            html += `
+                    </div>
+                    <div class="resumo-mapa">
+                        <div class="media-geral">
+                            📊 Média geral: <strong>${mediaGeral}%</strong>
+                        </div>
+                        <div class="dica-melhoria">
+                            💡 ${gerarDicaMelhoria(dados)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+
         function mostrarToast(mensagem) {
             const toast = document.getElementById("toast-pontuacao");
             toast.innerText = mensagem;
@@ -422,6 +693,14 @@
             setTimeout(() => {
                 toast.style.opacity = "0";
             }, 1500);
+        }
+
+        function sortearItem(lista) {
+            if (!lista || lista.length === 0) {
+                console.error("Lista vazia em sortearItem!");
+                return 0;
+            }
+            return lista[Math.floor(Math.random() * lista.length)];
         }
 
         function registrarAluno() {
@@ -449,8 +728,9 @@
             sequenciaAtual = 0;
             maiorSequencia = 0;
             temposRespostasCorretas = [];
-            pontuacaoPorPergunta = [];
+            desempenhoTabuadas = {};
             jogoEmAndamento = true;
+            jogoFinalizando = false;
 
             document.getElementById("titulo-jogo").innerText = MODALIDADES[modalidadeAtual].nome;
             mostrarTela("tela-jogo");
@@ -458,6 +738,8 @@
         }
 
         function proximaPergunta() {
+            if (jogoFinalizando) return;
+            
             perguntaAtual++;
 
             if (perguntaAtual > TOTAL_PERGUNTAS) {
@@ -469,12 +751,22 @@
             alternarBotoesResposta(false);
             atualizarStatusJogo();
 
-            const fatorA = sortearItem(MODALIDADES[modalidadeAtual].fatores);
+            const fatores = MODALIDADES[modalidadeAtual]?.fatores;
+            if (!fatores || fatores.length === 0) {
+                console.error("Nenhum fator encontrado para a modalidade:", modalidadeAtual);
+                finalizarCircuito();
+                return;
+            }
+
+            const fatorA = sortearItem(fatores);
             const fatorB = Math.floor(Math.random() * 11);
             respostaCorreta = fatorA * fatorB;
 
-            document.getElementById("pergunta").innerText = `${fatorA} x ${fatorB} = ?`;
-            document.getElementById("pergunta").classList.remove("erro-visual");
+            const perguntaElement = document.getElementById("pergunta");
+            if (perguntaElement) {
+                perguntaElement.innerText = `${fatorA} x ${fatorB} = ?`;
+                perguntaElement.classList.remove("erro-visual");
+            }
 
             gerarOpcoesResposta();
             iniciarCronometro();
@@ -494,30 +786,39 @@
 
             opcoes.sort((a, b) => a - b);
 
-            document.querySelectorAll(".btn-opcao").forEach((botao, index) => {
-                botao.innerText = opcoes[index];
-                botao.disabled = false;
+            const botoes = document.querySelectorAll(".btn-opcao");
+            botoes.forEach((botao, index) => {
+                if (index < opcoes.length) {
+                    botao.innerText = opcoes[index];
+                    botao.disabled = false;
+                }
             });
         }
 
         function iniciarCronometro() {
             tempoInicio = performance.now();
             const progresso = document.getElementById("progresso");
-            progresso.style.width = "100%";
-            progresso.style.background = "#198754";
-            progresso.classList.remove("pulsando");
+            if (progresso) {
+                progresso.style.width = "100%";
+                progresso.style.background = "#198754";
+                progresso.classList.remove("pulsando");
+            }
 
             let tempoRestante = TEMPO_MAXIMO;
 
             clearInterval(temporizadorInterval);
             temporizadorInterval = setInterval(() => {
+                if (jogoFinalizando) return;
+                
                 tempoRestante -= 100;
                 const porcentagem = Math.max((tempoRestante / TEMPO_MAXIMO) * 100, 0);
-                progresso.style.width = `${porcentagem}%`;
+                if (progresso) {
+                    progresso.style.width = `${porcentagem}%`;
+                }
 
                 if (porcentagem < 40 && porcentagem > 0) {
-                    progresso.style.background = "#dc3545";
-                    if (porcentagem < 20) {
+                    if (progresso) progresso.style.background = "#dc3545";
+                    if (porcentagem < 20 && progresso) {
                         progresso.classList.add("pulsando");
                     }
                 }
@@ -525,12 +826,14 @@
 
             clearTimeout(temporizadorTimeout);
             temporizadorTimeout = setTimeout(() => {
-                processarResposta(0, false);
+                if (!jogoFinalizando && perguntaEmAberto) {
+                    processarResposta(0, false);
+                }
             }, TEMPO_MAXIMO);
         }
 
         function verificarResposta(botaoClicado) {
-            if (!perguntaEmAberto) return;
+            if (!perguntaEmAberto || jogoFinalizando) return;
             if (botaoClicado.disabled) return;
 
             clearInterval(temporizadorInterval);
@@ -546,6 +849,8 @@
         }
 
         function processarResposta(pontosGanhos, acertou, tempoGasto) {
+            if (jogoFinalizando) return;
+            
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
@@ -554,37 +859,66 @@
 
             if (!acertou) {
                 const perguntaDiv = document.getElementById("pergunta");
-                perguntaDiv.classList.add("erro-visual");
-                setTimeout(() => {
-                    perguntaDiv.classList.remove("erro-visual");
-                }, 300);
+                if (perguntaDiv) {
+                    perguntaDiv.classList.add("erro-visual");
+                    setTimeout(() => {
+                        if (perguntaDiv) perguntaDiv.classList.remove("erro-visual");
+                    }, 300);
+                }
             } else if (pontosGanhos > 0) {
                 mostrarToast(`+${pontosGanhos} pontos! 🎉`);
             }
 
             pontosAcumulados += pontosGanhos;
-            pontuacaoPorPergunta.push(pontosGanhos);
+
+            if (perguntaAtual <= TOTAL_PERGUNTAS) {
+                try {
+                    const perguntaTexto = document.getElementById("pergunta")?.innerText;
+                    if (perguntaTexto && perguntaTexto.includes("x")) {
+                        const partes = perguntaTexto.split("x");
+                        if (partes.length >= 1) {
+                            const fatorA = parseInt(partes[0].trim(), 10);
+                            if (!isNaN(fatorA)) {
+                                const tabuada = getTabuadaDaPergunta(fatorA);
+                                registrarDesempenhoTabuada(tabuada, acertou);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Erro ao registrar tabuada:", e);
+                }
+            }
 
             if (acertou) {
                 acertos++;
                 sequenciaAtual++;
                 maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
-                temposRespostasCorretas.push(tempoGasto);
+                if (tempoGasto) temposRespostasCorretas.push(tempoGasto);
             } else {
                 erros++;
                 sequenciaAtual = 0;
             }
 
             atualizarStatusJogo();
-            setTimeout(proximaPergunta, 250);
+            
+            setTimeout(() => {
+                if (!jogoFinalizando && perguntaAtual <= TOTAL_PERGUNTAS) {
+                    proximaPergunta();
+                }
+            }, 250);
         }
 
         async function finalizarCircuito() {
+            if (jogoFinalizando) return;
+            jogoFinalizando = true;
             jogoEmAndamento = false;
+            
             clearInterval(temporizadorInterval);
             clearTimeout(temporizadorTimeout);
 
-            const tempoMedio = calcularTempoMedio();
+            const tempoMedio = temposRespostasCorretas.length > 0 
+                ? temposRespostasCorretas.reduce((a, b) => a + b, 0) / temposRespostasCorretas.length
+                : TEMPO_MAXIMO / 1000;
 
             const resultado = {
                 nome: alunoAtual,
@@ -595,135 +929,163 @@
                 erros: erros,
                 tempoMedio: tempoMedio,
                 maiorSequencia: maiorSequencia,
-                pontuacaoPorPergunta: pontuacaoPorPergunta,
+                desempenhoTabuadas: desempenhoTabuadas,
                 data: new Date().toISOString()
             };
 
-            const resultadoSalvo = await salvarResultado(resultado);
-            await preencherResultado(resultadoSalvo);
-            mostrarTela("tela-resultado");
+            try {
+                const resultadoSalvo = await salvarResultado(resultado);
+                await preencherResultado(resultadoSalvo);
+                mostrarTela("tela-resultado");
+            } catch (e) {
+                console.error("Erro ao finalizar circuito:", e);
+                
+                const chaveLocal = `${modalidadeAtual}_${turmaAtual}_${normalizarNome(alunoAtual)}`;
+                localStorage.setItem(`resultado_fallback_${chaveLocal}`, JSON.stringify(resultado));
+                
+                setTimeout(() => {
+                    salvarResultado(resultado).catch(console.warn);
+                }, 3000);
+                
+                alert("⚠️ Resultado salvo localmente devido a problemas de conexão. Ele será sincronizado automaticamente quando a conexão melhorar.");
+                
+                await preencherResultado(resultado);
+                mostrarTela("tela-resultado");
+            }
         }
 
-        async function preencherResultado(resultado) {
-            const rankingTurma = await obterRankingOrdenado(resultado.modalidade, resultado.turma);
-            const posicao = rankingTurma.findIndex((item) => item.data === resultado.data) + 1;
-            const status = obterStatusPorPosicao(posicao);
+        async function salvarResultado(resultado) {
+            const resultadoSimplificado = {
+                nome: resultado.nome,
+                turma: resultado.turma,
+                modalidade: resultado.modalidade,
+                pontos: resultado.pontos,
+                acertos: resultado.acertos,
+                erros: resultado.erros,
+                tempoMedio: resultado.tempoMedio,
+                maiorSequencia: resultado.maiorSequencia,
+                desempenhoTabuadas: resultado.desempenhoTabuadas,
+                data: resultado.data
+            };
+            
+            const chaveAluno = criarChaveAluno(resultadoSimplificado);
+            const refAluno = database.ref(`${CAMINHO_RANKING_FIREBASE}/${chaveAluno}`);
 
-            document.getElementById("feedback-pontos").innerText =
-                `${resultado.nome}, você concluiu a classificatória da Copa da Tabuada.`;
-
-            document.getElementById("resumo-turma").innerText = resultado.turma;
-            document.getElementById("resumo-modalidade").innerText = MODALIDADES[resultado.modalidade].nome;
-            document.getElementById("resumo-pontos").innerText = `${resultado.pontos} pts`;
-            document.getElementById("resumo-acertos").innerText = `${resultado.acertos}/${TOTAL_PERGUNTAS}`;
-            document.getElementById("resumo-erros").innerText = resultado.erros;
-            document.getElementById("resumo-tempo").innerText = `${resultado.tempoMedio.toFixed(2)}s`;
-            document.getElementById("resumo-sequencia").innerText = resultado.maiorSequencia;
-            document.getElementById("resumo-status").innerHTML = criarTagStatus(status);
-
-            document.getElementById("filtro-modalidade").value = resultado.modalidade;
-            document.getElementById("filtro-turma").value = resultado.turma;
-
-            tipoRankingAtual = "turma";
-            atualizarAbasRanking();
-        }
-
-        function abrirRankings() {
-            if (jogoEmAndamento) {
-                if (confirm("⚠️ Atenção! Você está no meio de uma partida. Seu progresso será perdido. Deseja sair para ver os rankings?")) {
-                    jogoEmAndamento = false;
-                    clearInterval(temporizadorInterval);
-                    clearTimeout(temporizadorTimeout);
-                    mostrarTela("tela-ranking");
-                    renderizarRanking();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Timeout ao salvar")), 10000)
+            );
+            
+            const savePromise = refAluno.transaction((resultadoAtual) => {
+                if (!resultadoAtual || compararResultados(resultadoSimplificado, resultadoAtual) < 0) {
+                    return resultadoSimplificado;
                 }
-            } else {
-                mostrarTela("tela-ranking");
-                renderizarRanking();
+                return resultadoAtual;
+            });
+            
+            try {
+                const transacao = await Promise.race([savePromise, timeoutPromise]);
+                const resultadoSalvo = transacao.snapshot.val() || resultadoSimplificado;
+                salvarCopiaLocal(resultadoSimplificado);
+                return resultadoSalvo;
+            } catch (erro) {
+                console.warn("Erro ao salvar no Firebase, salvando apenas localmente:", erro);
+                salvarCopiaLocal(resultadoSimplificado);
+                throw erro;
             }
         }
 
-        function mudarTipoRanking(tipo) {
-            tipoRankingAtual = tipo;
-            atualizarAbasRanking();
-            renderizarRanking();
-        }
-
-        function atualizarAbasRanking() {
-            document.getElementById("btn-ranking-turma").classList.toggle("ativa", tipoRankingAtual === "turma");
-            document.getElementById("btn-ranking-global").classList.toggle("ativa", tipoRankingAtual === "global");
-            document.getElementById("filtro-turma").classList.toggle("hidden", tipoRankingAtual === "global");
-            document.getElementById("coluna-turma").classList.toggle("hidden", tipoRankingAtual !== "global");
-        }
-
-        async function renderizarRanking() {
-            atualizarAbasRanking();
-
-            const modalidade = document.getElementById("filtro-modalidade").value;
-            const turma = document.getElementById("filtro-turma").value;
-            const tabelaRanking = document.getElementById("tabela-ranking");
-
-            let ranking;
-            let rankingCompletoDaModalidade = [];
-
-            if (tipoRankingAtual === "global") {
-                rankingCompletoDaModalidade = await obterRankingOrdenado(modalidade);
-                ranking = rankingCompletoDaModalidade.slice(0, 100);
-                document.getElementById("titulo-ranking").innerText = `Top 100 Global - ${MODALIDADES[modalidade].nome}`;
-            } else {
-                ranking = await obterRankingOrdenado(modalidade, turma);
-                rankingCompletoDaModalidade = ranking;
-                document.getElementById("titulo-ranking").innerText = `Turma ${turma} - ${MODALIDADES[modalidade].nome}`;
+        async function obterRanking() {
+            let rankingLocal = obterRankingLocal();
+            
+            try {
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Timeout")), 8000)
+                );
+                const snapshotPromise = database.ref(CAMINHO_RANKING_FIREBASE).once("value");
+                const snapshot = await Promise.race([snapshotPromise, timeoutPromise]);
+                const dados = snapshot.val() || {};
+                const rankingOnline = Object.values(dados);
+                
+                const mergedRanking = mergeRankings(rankingLocal, rankingOnline);
+                localStorage.setItem(CHAVE_RANKING, JSON.stringify(mergedRanking));
+                return mergedRanking;
+            } catch (erro) {
+                console.warn("Erro ao sincronizar com Firebase, usando cache local:", erro);
+                return rankingLocal;
             }
-
-            if (ranking.length === 0) {
-                const totalColunas = tipoRankingAtual === "global" ? 7 : 6;
-                tabelaRanking.innerHTML = `<tr><td class="sem-registros" colspan="${totalColunas}">Nenhum resultado registrado ainda.</td></tr>`;
-                return;
-            }
-
-            tabelaRanking.innerHTML = ranking.map((item, index) => {
-                const posicaoNaTurma = obterPosicaoNaTurma(item, rankingCompletoDaModalidade);
-                const status = obterStatusPorPosicao(posicaoNaTurma);
-
-                return `
-                    <tr>
-                        <td>${index + 1}º</td>
-                        <td>${escaparHtml(item.nome)}</td>
-                        ${tipoRankingAtual === "global" ? `<td>${item.turma}</td>` : ""}
-                        <td>${item.pontos}</td>
-                        <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
-                        <td>${item.tempoMedio.toFixed(2)}s</td>
-                        <td>${criarTagStatus(status)}</td>
-                    </tr>
-                `;
-            }).join("");
         }
 
-        async function obterRankingOrdenado(modalidade, turma) {
+        function mergeRankings(local, online) {
+            const mapa = new Map();
+            
+            online.forEach(item => {
+                const chave = `${item.modalidade}|${item.turma}|${normalizarNome(item.nome)}`;
+                mapa.set(chave, item);
+            });
+            
+            local.forEach(item => {
+                const chave = `${item.modalidade}|${item.turma}|${normalizarNome(item.nome)}`;
+                const existente = mapa.get(chave);
+                if (!existente || compararResultados(item, existente) < 0) {
+                    mapa.set(chave, item);
+                }
+            });
+            
+            return Array.from(mapa.values());
+        }
+
+        async function obterRankingPorPontos(modalidade, turma = null) {
             const ranking = await obterRanking();
+            
+            let filtrados = ranking.filter(item => item.modalidade === modalidade);
+            if (turma) {
+                filtrados = filtrados.filter(item => item.turma === turma);
+            }
+            
+            return filtrados.sort((a, b) => {
+                if (b.pontos !== a.pontos) return b.pontos - a.pontos;
+                if (b.acertos !== a.acertos) return b.acertos - a.acertos;
+                return a.tempoMedio - b.tempoMedio;
+            });
+        }
 
-            return ranking
-                .filter((item) => item.modalidade === modalidade)
-                .filter((item) => !turma || item.turma === turma)
-                .sort(compararResultados);
+        async function obterRankingPorPrecisao(modalidade, turma = null) {
+            const ranking = await obterRanking();
+            
+            let filtrados = ranking.filter(item => item.modalidade === modalidade);
+            if (turma) {
+                filtrados = filtrados.filter(item => item.turma === turma);
+            }
+            
+            return filtrados.sort((a, b) => {
+                if (b.acertos !== a.acertos) return b.acertos - a.acertos;
+                return a.tempoMedio - b.tempoMedio;
+            });
+        }
+
+        async function obterRankingPorVelocidade(modalidade, turma = null) {
+            const ranking = await obterRanking();
+            
+            let filtrados = ranking.filter(item => 
+                item.modalidade === modalidade && 
+                item.acertos >= 15
+            );
+            if (turma) {
+                filtrados = filtrados.filter(item => item.turma === turma);
+            }
+            
+            return filtrados.sort((a, b) => {
+                if (a.tempoMedio !== b.tempoMedio) return a.tempoMedio - b.tempoMedio;
+                return b.acertos - a.acertos;
+            });
         }
 
         function compararResultados(a, b) {
-            return b.pontos - a.pontos ||
-                b.acertos - a.acertos ||
-                a.tempoMedio - b.tempoMedio ||
-                a.erros - b.erros ||
-                b.maiorSequencia - a.maiorSequencia;
-        }
-
-        function obterPosicaoNaTurma(resultado, rankingAtual) {
-            const rankingTurma = (rankingAtual || [])
-                .filter((item) => item.modalidade === resultado.modalidade)
-                .filter((item) => item.turma === resultado.turma)
-                .sort(compararResultados);
-
-            return rankingTurma.findIndex((item) => item.data === resultado.data) + 1;
+            if (b.pontos !== a.pontos) return b.pontos - a.pontos;
+            if (b.acertos !== a.acertos) return b.acertos - a.acertos;
+            if (a.tempoMedio !== b.tempoMedio) return a.tempoMedio - b.tempoMedio;
+            if (a.erros !== b.erros) return a.erros - b.erros;
+            return b.maiorSequencia - a.maiorSequencia;
         }
 
         function obterStatusPorPosicao(posicao) {
@@ -742,32 +1104,39 @@
             return `<span class="tag ${classe}">${status}</span>`;
         }
 
-        async function salvarResultado(resultado) {
-            const chaveAluno = criarChaveAluno(resultado);
-            const refAluno = database.ref(`${CAMINHO_RANKING_FIREBASE}/${chaveAluno}`);
+        async function preencherResultado(resultado) {
+            const rankingTurma = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
+            const posicao = rankingTurma.findIndex((item) => item.data === resultado.data) + 1;
+            const status = obterStatusPorPosicao(posicao);
 
-            const transacao = await refAluno.transaction((resultadoAtual) => {
-                if (!resultadoAtual || compararResultados(resultado, resultadoAtual) < 0) {
-                    return resultado;
-                }
-                return resultadoAtual;
-            });
+            document.getElementById("feedback-pontos").innerHTML =
+                `${escaparHtml(resultado.nome)}, você concluiu a classificatória da Copa da Tabuada.`;
 
-            const resultadoSalvo = transacao.snapshot.val() || resultado;
-            salvarCopiaLocal(resultadoSalvo);
-            return resultadoSalvo;
-        }
+            document.getElementById("resumo-turma").innerText = resultado.turma;
+            document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[resultado.modalidade]?.nome || resultado.modalidade;
+            document.getElementById("resumo-pontos").innerText = `${resultado.pontos} pts`;
+            document.getElementById("resumo-acertos").innerText = `${resultado.acertos}/${TOTAL_PERGUNTAS}`;
+            document.getElementById("resumo-erros").innerText = resultado.erros;
+            document.getElementById("resumo-tempo").innerText = `${resultado.tempoMedio.toFixed(2)}s`;
+            document.getElementById("resumo-sequencia").innerText = resultado.maiorSequencia;
+            document.getElementById("resumo-status").innerHTML = criarTagStatus(status);
 
-        async function obterRanking() {
-            try {
-                const snapshot = await database.ref(CAMINHO_RANKING_FIREBASE).once("value");
-                const dados = snapshot.val() || {};
-                const rankingOnline = Object.values(dados);
-                localStorage.setItem(CHAVE_RANKING, JSON.stringify(rankingOnline));
-                return rankingOnline;
-            } catch (erro) {
-                return obterRankingLocal();
+            if (resultado.desempenhoTabuadas) {
+                desempenhoTabuadas = resultado.desempenhoTabuadas;
             }
+            
+            const mapaContainer = document.getElementById("mapa-tabuadas-container");
+            if (mapaContainer) {
+                mapaContainer.innerHTML = renderizarMapaTabuadas();
+            }
+
+            const filtroModalidade = document.getElementById("filtro-modalidade");
+            const filtroTurma = document.getElementById("filtro-turma");
+            if (filtroModalidade) filtroModalidade.value = resultado.modalidade;
+            if (filtroTurma) filtroTurma.value = resultado.turma;
+
+            tipoRankingAtual = "turma";
+            atualizarAbasRanking();
         }
 
         function obterRankingLocal() {
@@ -776,53 +1145,6 @@
             } catch (erro) {
                 return [];
             }
-        }
-
-        function calcularTempoMedio() {
-            if (temposRespostasCorretas.length === 0) {
-                return TEMPO_MAXIMO / 1000;
-            }
-            const soma = temposRespostasCorretas.reduce((total, tempo) => total + tempo, 0);
-            return soma / temposRespostasCorretas.length;
-        }
-
-        function atualizarStatusJogo() {
-            document.getElementById("info-pergunta").innerText =
-                `Pergunta: ${Math.min(perguntaAtual, TOTAL_PERGUNTAS)} / ${TOTAL_PERGUNTAS}`;
-            document.getElementById("info-pontos").innerText = `Pontos: ${pontosAcumulados}`;
-            document.getElementById("info-acertos").innerText = `Acertos: ${acertos}`;
-            document.getElementById("info-sequencia").innerText = `Sequência: ${sequenciaAtual}`;
-        }
-
-        function alternarBotoesResposta(desativado) {
-            document.querySelectorAll(".btn-opcao").forEach((botao) => {
-                botao.disabled = desativado;
-            });
-        }
-
-        function sortearItem(lista) {
-            return lista[Math.floor(Math.random() * lista.length)];
-        }
-
-        function mostrarTela(idTela) {
-            ["tela-registro", "tela-jogo", "tela-resultado", "tela-ranking"].forEach((id) => {
-                document.getElementById(id).classList.toggle("hidden", id !== idTela);
-            });
-        }
-
-        function escaparHtml(texto) {
-            const div = document.createElement("div");
-            div.innerText = texto;
-            return div.innerHTML;
-        }
-
-        function normalizarNome(nome) {
-            return nome.trim().toLowerCase().replace(/\s+/g, " ");
-        }
-
-        function criarChaveAluno(resultado) {
-            const identificador = `${resultado.modalidade}|${resultado.turma}|${normalizarNome(resultado.nome)}`;
-            return encodeURIComponent(identificador).replace(/[.#$\[\]/]/g, "_");
         }
 
         function salvarCopiaLocal(resultado) {
@@ -842,10 +1164,235 @@
             localStorage.setItem(CHAVE_RANKING, JSON.stringify(ranking));
         }
 
+        function atualizarStatusJogo() {
+            const infoPergunta = document.getElementById("info-pergunta");
+            const infoPontos = document.getElementById("info-pontos");
+            const infoAcertos = document.getElementById("info-acertos");
+            const infoSequencia = document.getElementById("info-sequencia");
+            
+            if (infoPergunta) infoPergunta.innerText = `Pergunta: ${Math.min(perguntaAtual, TOTAL_PERGUNTAS)} / ${TOTAL_PERGUNTAS}`;
+            if (infoPontos) infoPontos.innerText = `Pontos: ${pontosAcumulados}`;
+            if (infoAcertos) infoAcertos.innerText = `Acertos: ${acertos}`;
+            if (infoSequencia) infoSequencia.innerText = `Sequência: ${sequenciaAtual}`;
+        }
+
+        function alternarBotoesResposta(desativado) {
+            document.querySelectorAll(".btn-opcao").forEach((botao) => {
+                botao.disabled = desativado;
+            });
+        }
+
+        function mostrarTela(idTela) {
+            const telas = ["tela-registro", "tela-jogo", "tela-resultado", "tela-ranking"];
+            telas.forEach((id) => {
+                const elemento = document.getElementById(id);
+                if (elemento) {
+                    elemento.classList.toggle("hidden", id !== idTela);
+                }
+            });
+        }
+
+        function abrirRankings() {
+            if (jogoEmAndamento) {
+                if (confirm("⚠️ Atenção! Você está no meio de uma partida. Seu progresso será perdido. Deseja sair para ver os rankings?")) {
+                    jogoEmAndamento = false;
+                    jogoFinalizando = true;
+                    clearInterval(temporizadorInterval);
+                    clearTimeout(temporizadorTimeout);
+                    mostrarTela("tela-ranking");
+                    renderizarRanking();
+                }
+            } else {
+                mostrarTela("tela-ranking");
+                renderizarRanking();
+            }
+        }
+
+        function mudarTipoRanking(tipo) {
+            tipoRankingAtual = tipo;
+            atualizarAbasRanking();
+            renderizarRanking();
+        }
+
+        function atualizarAbasRanking() {
+            const abas = [
+                "btn-ranking-turma", "btn-ranking-global", 
+                "btn-ranking-precisao-global", "btn-ranking-precisao-turma",
+                "btn-ranking-velocidade-global", "btn-ranking-velocidade-turma"
+            ];
+            
+            abas.forEach(aba => {
+                const elemento = document.getElementById(aba);
+                if (elemento) {
+                    const tipoAba = aba.replace("btn-ranking-", "");
+                    elemento.classList.toggle("ativa", tipoRankingAtual === tipoAba);
+                }
+            });
+            
+            const tiposComFiltroTurma = ["turma", "precisao-turma", "velocidade-turma"];
+            const mostrarFiltroTurma = tiposComFiltroTurma.includes(tipoRankingAtual);
+            const filtroTurma = document.getElementById("filtro-turma");
+            if (filtroTurma) filtroTurma.classList.toggle("hidden", !mostrarFiltroTurma);
+            
+            const tiposComColunaTurma = ["global", "precisao-global", "velocidade-global"];
+            const mostrarColunaTurma = tiposComColunaTurma.includes(tipoRankingAtual);
+            const colunaTurma = document.getElementById("coluna-turma");
+            if (colunaTurma) colunaTurma.classList.toggle("hidden", !mostrarColunaTurma);
+            
+            const tiposVelocidade = ["velocidade-global", "velocidade-turma"];
+            const mostrarObservacao = tiposVelocidade.includes(tipoRankingAtual);
+            const observacao = document.getElementById("observacao-velocidade");
+            if (observacao) observacao.classList.toggle("hidden", !mostrarObservacao);
+            
+            // Esconder coluna Status apenas quando NÃO for ranking por turma
+            const colunaStatus = document.getElementById("coluna-status");
+            if (colunaStatus) {
+                colunaStatus.classList.toggle("hidden", tipoRankingAtual !== "turma");
+            }
+        }
+
+        async function renderizarRanking() {
+            atualizarAbasRanking();
+
+            const modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
+            const turma = document.getElementById("filtro-turma")?.value || "901";
+            const tabelaRanking = document.getElementById("tabela-ranking");
+            const tituloElement = document.getElementById("titulo-ranking");
+
+            let ranking = [];
+            let titulo = "";
+
+            try {
+                if (tipoRankingAtual === "turma") {
+                    ranking = await obterRankingPorPontos(modalidade, turma);
+                    titulo = `🏆 Por Pontos - Turma ${turma} - ${MODALIDADES[modalidade]?.nome || modalidade}`;
+                } 
+                else if (tipoRankingAtual === "global") {
+                    ranking = await obterRankingPorPontos(modalidade);
+                    ranking = ranking.slice(0, 100);
+                    titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome || modalidade}`;
+                }
+                else if (tipoRankingAtual === "precisao-global") {
+                    ranking = await obterRankingPorPrecisao(modalidade);
+                    titulo = `🎯 Precisão Global (Acertos) - ${MODALIDADES[modalidade]?.nome || modalidade}`;
+                }
+                else if (tipoRankingAtual === "precisao-turma") {
+                    ranking = await obterRankingPorPrecisao(modalidade, turma);
+                    titulo = `🎯 Precisão por Turma (Acertos) - Turma ${turma} - ${MODALIDADES[modalidade]?.nome || modalidade}`;
+                }
+                else if (tipoRankingAtual === "velocidade-global") {
+                    ranking = await obterRankingPorVelocidade(modalidade);
+                    titulo = `⚡ Velocidade Global (≥15 acertos) - ${MODALIDADES[modalidade]?.nome || modalidade}`;
+                }
+                else if (tipoRankingAtual === "velocidade-turma") {
+                    ranking = await obterRankingPorVelocidade(modalidade, turma);
+                    titulo = `⚡ Velocidade por Turma (≥15 acertos) - Turma ${turma} - ${MODALIDADES[modalidade]?.nome || modalidade}`;
+                }
+
+                if (tituloElement) tituloElement.innerText = titulo;
+                if (!tabelaRanking) return;
+
+                if (ranking.length === 0) {
+                    let totalColunas = 5;
+                    if (tipoRankingAtual.includes("global")) totalColunas = 6;
+                    if (tipoRankingAtual === "turma") totalColunas = 6;
+                    tabelaRanking.innerHTML = `<tr><td class="sem-registros" colspan="${totalColunas}">Nenhum resultado registrado ainda.</td></tr>`;
+                    return;
+                }
+
+                const mostraTurma = tipoRankingAtual.includes("global");
+                const tiposVelocidade = ["velocidade-global", "velocidade-turma"];
+                const mostrarVelocidade = tiposVelocidade.includes(tipoRankingAtual);
+                const tiposPrecisao = ["precisao-global", "precisao-turma"];
+                const mostrarPrecisao = tiposPrecisao.includes(tipoRankingAtual);
+                const ehRankingTurma = tipoRankingAtual === "turma";
+
+                tabelaRanking.innerHTML = ranking.map((item, index) => {
+                    // Para o ranking Por Turma: inclui Status
+                    if (ehRankingTurma) {
+                        const status = obterStatusPorPosicao(index + 1);
+                        return `
+                            <tr>
+                                <td>${index + 1}º</td>
+                                <td>${escaparHtml(item.nome)}</td>
+                                <td>${item.turma}</td>
+                                <td>${item.pontos} pts</td>
+                                <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
+                                <td>${item.tempoMedio.toFixed(2)}s</td>
+                                <td>${criarTagStatus(status)}</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Para rankings de VELOCIDADE: Pontos | Acertos | Tempo (sem Status)
+                    if (mostrarVelocidade) {
+                        return `
+                            <tr>
+                                <td>${index + 1}º</td>
+                                <td>${escaparHtml(item.nome)}</td>
+                                ${mostraTurma ? `<td>${item.turma}</td>` : ""}
+                                <td>${item.pontos} pts</td>
+                                <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
+                                <td>${item.tempoMedio.toFixed(2)}s</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Para rankings de PRECISÃO: Acertos | Pontos | Tempo (sem Status)
+                    if (mostrarPrecisao) {
+                        return `
+                            <tr>
+                                <td>${index + 1}º</td>
+                                <td>${escaparHtml(item.nome)}</td>
+                                ${mostraTurma ? `<td>${item.turma}</td>` : ""}
+                                <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
+                                <td>${item.pontos} pts</td>
+                                <td>${item.tempoMedio.toFixed(2)}s</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Para rankings de PONTOS (global): Pontos | Acertos | Tempo (sem Status)
+                    return `
+                        <tr>
+                            <td>${index + 1}º</td>
+                            <td>${escaparHtml(item.nome)}</td>
+                            ${mostraTurma ? `<td>${item.turma}</td>` : ""}
+                            <td>${item.pontos} pts</td>
+                            <td>${item.acertos}/${TOTAL_PERGUNTAS}</td>
+                            <td>${item.tempoMedio.toFixed(2)}s</td>
+                        </tr>
+                    `;
+                }).join("");
+            } catch (error) {
+                console.error("Erro ao renderizar ranking:", error);
+                if (tabelaRanking) {
+                    tabelaRanking.innerHTML = `<tr><td colspan="6" class="sem-registros">Erro ao carregar ranking. Tente novamente.</td></table>`;
+                }
+            }
+        }
+
+        function escaparHtml(texto) {
+            if (!texto) return "";
+            const div = document.createElement("div");
+            div.innerText = texto;
+            return div.innerHTML;
+        }
+
+        function normalizarNome(nome) {
+            return nome.trim().toLowerCase().replace(/\s+/g, " ");
+        }
+
+        function criarChaveAluno(resultado) {
+            const identificador = `${resultado.modalidade}|${resultado.turma}|${normalizarNome(resultado.nome)}`;
+            return encodeURIComponent(identificador).replace(/[.#$\[\]/]/g, "_");
+        }
+
         function reiniciarJogo() {
             if (jogoEmAndamento) {
                 if (confirm("⚠️ Atenção! Se você sair agora, perderá todo o progresso desta partida. Deseja continuar?")) {
                     jogoEmAndamento = false;
+                    jogoFinalizando = true;
                     clearInterval(temporizadorInterval);
                     clearTimeout(temporizadorTimeout);
                     document.getElementById("nome-aluno").value = "";
@@ -860,7 +1407,7 @@
         }
 
         database.ref(CAMINHO_RANKING_FIREBASE).on("value", () => {
-            if (!document.getElementById("tela-ranking").classList.contains("hidden")) {
+            if (!document.getElementById("tela-ranking")?.classList.contains("hidden")) {
                 renderizarRanking();
             }
         });
