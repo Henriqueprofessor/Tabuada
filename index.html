@@ -230,6 +230,7 @@
             <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
             <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
             <button onclick="mostrarTela('tela-painel')" class="botao-painel">🔧 Painel do Professor</button>
+            <button onclick="forcarLimparCache()" class="botao-secundario" style="background: #fd7e14;">🔄 Limpar Cache</button>
         </div>
     </div>
 
@@ -357,7 +358,10 @@
                 <tbody id="tabela-ranking-body"></tbody>
             </table>
         </div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+            <button onclick="recarregarRankings()" class="botao-verde" style="background: #0d6efd;">🔄 Recarregar Rankings</button>
+        </div>
     </div>
 
     <!-- ==================== PERFIL ==================== -->
@@ -952,7 +956,7 @@
                 titulo = `📜 Histórico de Duelos - ${turma ? `Turma ${turma}` : "Todas as turmas"}`;
                 if(tabelaHead) tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Partidas</th><th>Vitórias</th><th>Aproveitamento</th></tr>`;
                 let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td></tr>`).join("");
-                tabelaBody.innerHTML = html || `<tr><td colspan="5" class="sem-registros">Nenhum duelo registrado. Participe do multiplayer!</td></tr>`;
+                tabelaBody.innerHTML = html || `<td><td colspan="5" class="sem-registros">Nenhum duelo registrado. Participe do multiplayer!</td></tr>`;
                 tituloEl.innerText = titulo;
                 return;
             }
@@ -975,19 +979,19 @@
                 if(tipoRankingAtual === "turma"){
                     let statusClass = i<4?"tag-classificado":(i<6?"tag-reserva":"tag-participante");
                     let statusText = i<4?"Classificado":(i<6?"Reserva":"Participante");
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
                 } else if(tipoRankingAtual === "global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "precisao-global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "precisao-turma"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "velocidade-global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "velocidade-turma"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else {
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 }
             }).join("");
             tabelaBody.innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
@@ -1114,7 +1118,7 @@
             alunosFiltrados.forEach(a=>{
                 html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td><td style="text-align:center">${a.turma}</td><td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td><td style="text-align:center">${a.pontos}</td><td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td><td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
             });
-            html += '</tbody><tr><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         async function excluirRegistro(chave){
@@ -1193,6 +1197,32 @@
                 html += `</div>`;
             }
             container.innerHTML = html;
+        }
+
+        // ==================== FUNÇÕES DE CACHE ====================
+        function forcarLimparCache() {
+            if (confirm("Isso vai recarregar a página e limpar o cache do navegador. Deseja continuar?")) {
+                localStorage.removeItem("rankingCEIB");
+                localStorage.removeItem("historico_duelos");
+                window.location.reload(true);
+            }
+        }
+
+        async function recarregarRankings() {
+            const toast = document.getElementById("toast-pontuacao");
+            if (toast) {
+                toast.innerText = "⏳ Atualizando dados do Firebase...";
+                toast.style.opacity = "1";
+                setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+            }
+            localStorage.removeItem("rankingCEIB");
+            localStorage.removeItem("historico_duelos");
+            await renderizarRanking();
+            if (toast) {
+                toast.innerText = "✅ Rankings atualizados!";
+                toast.style.opacity = "1";
+                setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+            }
         }
 
         window.addEventListener("DOMContentLoaded", () => {
