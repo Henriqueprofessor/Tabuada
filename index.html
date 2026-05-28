@@ -403,7 +403,7 @@
             <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
         </select>
         <h3 id="titulo-ranking">Ranking</h3>
-        <div class="tabela-container"></table><thead><tr><th>Pos.</th><th>Nome</th><th id="coluna-turma">Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th id="coluna-status">Status</th></tr></thead><tbody id="tabela-ranking"></tbody></table></div>
+        <div class="tabela-container"><table><thead><tr><th>Pos.</th><th>Nome</th><th id="coluna-turma">Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th id="coluna-status">Status</th></tr></thead><tbody id="tabela-ranking"></tbody></table></div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
 
@@ -594,7 +594,7 @@
             if(historico.length === 0) {
                 container.innerHTML = "<p>Nenhum duelo registrado ainda.</p>";
             } else {
-                let html = '<table><thead><tr><th>Data</th><th>Vencedor</th><th>Placar</th><th>Perdedor</th><th>Modalidade</th><th>Detalhes</th></tr></thead><tbody>';
+                let html = '<table><thead><tr><th>Data</th><th>Vencedor</th><th>Placar</th><th>Perdedor</th><th>Modalidade</th><th>Detalhes</th></td></thead><tbody>';
                 historico.forEach(d => {
                     let data = new Date(d.data).toLocaleString();
                     let detalhesHtml = '';
@@ -802,11 +802,11 @@
             let conquistas = CONQUISTAS.filter(c => c.criterio(r, historico, [])).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
             document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
             
-            // ========== FEEDBACK DE RANKING ==========
-            await gerarFeedbackRanking(r, posTurma, rankingPrecisaoGlobal, rankingVelocidadeGlobal);
+            // ========== FEEDBACK DE RANKING COM QUEM ULTRAPASSOU ==========
+            await gerarFeedbackRankingComUltrapassagem(r, posTurma, rankingTurma, rankingPrecisaoGlobal, rankingVelocidadeGlobal);
         }
         
-        async function gerarFeedbackRanking(resultado, posTurmaAtual, rankingPrecisaoGlobal, rankingVelocidadeGlobal) {
+        async function gerarFeedbackRankingComUltrapassagem(resultado, posTurmaAtual, rankingTurmaAtual, rankingPrecisaoGlobal, rankingVelocidadeGlobal) {
             // Buscar partidas anteriores do mesmo aluno
             let todasPartidas = await obterRanking();
             let partidasAnteriores = todasPartidas.filter(p => 
@@ -832,24 +832,51 @@
                 `;
                 tipoFeedback = "melhorou";
             } else {
-                // Calcular posições anteriores
-                let rankingTurmaAnterior = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
+                // Buscar ranking anterior (antes desta partida)
+                let rankingTurmaAnterior = await obterRankingPorPontosAntigo(resultado.modalidade, resultado.turma, resultado.data);
                 let posTurmaAnterior = rankingTurmaAnterior.findIndex(p => p.data === partidaAnterior.data) + 1;
                 
-                let posPrecisaoAnterior = obterPosicaoNoRanking(partidaAnterior, rankingPrecisaoGlobal);
+                // Identificar quem ultrapassou o aluno
+                let ultrapassaram = [];
+                if(posTurmaAtual > posTurmaAnterior && posTurmaAnterior > 0) {
+                    // Aluno caiu - descobrir quem entrou na frente
+                    for(let i = posTurmaAnterior - 1; i >= 0 && ultrapassaram.length < 3; i--) {
+                        let alunoAntigo = rankingTurmaAnterior[i];
+                        let posAntiga = i + 1;
+                        let posNova = rankingTurmaAtual.findIndex(a => a.data === alunoAntigo.data) + 1;
+                        if(posNova < posAntiga && posNova <= posTurmaAtual) {
+                            ultrapassaram.push({
+                                nome: alunoAntigo.nome,
+                                posAntiga: posAntiga,
+                                posNova: posNova
+                            });
+                        }
+                    }
+                }
+                
+                let posPrecisaoAnterior = obterPosicaoNoRankingAntigo(partidaAnterior, rankingPrecisaoGlobal);
                 let posPrecisaoAtual = obterPosicaoNoRanking(resultado, rankingPrecisaoGlobal);
                 
                 let feedbackTurma = "";
                 let feedbackPrecisao = "";
                 let feedbackVelocidade = "";
+                let sugestaoRevanche = "";
                 
                 // Feedback Turma
                 if(posTurmaAtual < posTurmaAnterior) {
                     feedbackTurma = `✅ Você SUBIU para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º)! 🚀`;
                     tipoFeedback = "melhorou";
                 } else if(posTurmaAtual > posTurmaAnterior) {
-                    feedbackTurma = `📉 Você caiu para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º). Continue treinando! 💪`;
+                    feedbackTurma = `📉 Você caiu para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º).`;
                     tipoFeedback = "piorou";
+                    
+                    if(ultrapassaram.length > 0) {
+                        feedbackTurma += `<br><br>👥 <strong>Quem passou na sua frente:</strong><br>`;
+                        ultrapassaram.forEach(u => {
+                            feedbackTurma += `• <strong>${u.nome}</strong> (subiu do ${u.posAntiga}º para o ${u.posNova}º)<br>`;
+                        });
+                        sugestaoRevanche = `<br>💡 <strong>Revanche?</strong> Desafie ${ultrapassaram[0].nome} para um DUELO no modo Multiplayer! 🎮<br>`;
+                    }
                 } else {
                     feedbackTurma = `📊 Você manteve o <strong>${posTurmaAtual}º lugar</strong> na turma! 🎯`;
                 }
@@ -867,7 +894,7 @@
                 // Feedback Velocidade Global (apenas se tiver 20 acertos)
                 if(resultado.acertos === 20) {
                     let posVelocidadeAtual = obterPosicaoNoRanking(resultado, rankingVelocidadeGlobal);
-                    let posVelocidadeAnterior = obterPosicaoNoRanking(partidaAnterior, rankingVelocidadeGlobal);
+                    let posVelocidadeAnterior = obterPosicaoNoRankingAntigo(partidaAnterior, rankingVelocidadeGlobal);
                     
                     if(posVelocidadeAtual < posVelocidadeAnterior) {
                         feedbackVelocidade = `✅ Você SUBIU para <strong>${posVelocidadeAtual}º lugar</strong> no ranking de Velocidade Global (era ${posVelocidadeAnterior}º)! ⚡`;
@@ -894,6 +921,7 @@
                         ${feedbackTurma}<br>
                         ${feedbackPrecisao}<br>
                         ${feedbackVelocidade}
+                        ${sugestaoRevanche}
                     </div>
                 `;
             }
@@ -901,9 +929,25 @@
             document.getElementById("feedback-ranking-container").innerHTML = feedbackHtml;
         }
         
+        async function obterRankingPorPontosAntigo(modalidade, turma, dataAtual) {
+            let rank = await obterRanking();
+            let filt = rank.filter(r => r.modalidade === modalidade && r.turma === turma && r.data !== dataAtual);
+            let mapa = new Map();
+            filt.forEach(r => {
+                let chave = `${r.nome}|${r.turma}`;
+                if(!mapa.has(chave) || r.pontos > mapa.get(chave).pontos) mapa.set(chave, r);
+            });
+            return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
+        }
+        
         function obterPosicaoNoRanking(resultado, ranking) {
             let pos = ranking.findIndex(r => r.data === resultado.data) + 1;
             return pos > 0 ? pos : "-";
+        }
+        
+        function obterPosicaoNoRankingAntigo(resultado, ranking) {
+            let pos = ranking.findIndex(r => r.data === resultado.data) + 1;
+            return pos > 0 ? pos : 999;
         }
 
         function renderizarMapa() {
@@ -1334,8 +1378,8 @@
             
             document.getElementById("titulo-ranking").innerHTML = `${titulo} - ${MODALIDADES[modalidade]?.nome}`;
             
-            let html = ranking.map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td>${(tipoRankingAtual==="global"||tipoRankingAtual.includes("global"))?`<td style="text-align:center">${r.turma}</td>`:""}<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>${tipoRankingAtual==="turma"?`<td style="text-align:center"><span class="tag ${i<4?"tag-classificado":i<6?"tag-reserva":"tag-participante"}">${i<4?"Classificado":i<6?"Reserva":"Participante"}</span></td>`:""}</table>`).join("");
-            document.getElementById("tabela-ranking").innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado</td></tr>`;
+            let html = ranking.map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td>${(tipoRankingAtual==="global"||tipoRankingAtual.includes("global"))?`<td style="text-align:center">${r.turma}<td style="text-align:center">`:""}<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>${tipoRankingAtual==="turma"?`<td style="text-align:center"><span class="tag ${i<4?"tag-classificado":i<6?"tag-reserva":"tag-participante"}">${i<4?"Classificado":i<6?"Reserva":"Participante"}</span></td>`:""}</tr>`).join("");
+            document.getElementById("tabela-ranking").innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado</td></tr></table>`;
         }
         
         function mudarTipoRanking(tipo){
@@ -1482,15 +1526,9 @@
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
             let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
-                html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
-                        <td style="text-align:center">${a.turma}</td>
-                        <td>${MODALIDADES[a.modalidade]?.nome}</td>
-                        <td style="text-align:center">${a.pontos}</td>
-                        <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
-                        <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                        </tr>`;
+                html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"><td style="text-align:center">${a.turma}<td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}<td style="text-align:center">${a.pontos}<td style="text-align:center">${new Date(a.data).toLocaleDateString()}<td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></tr>`;
             });
-            html += '</tbody><table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         
