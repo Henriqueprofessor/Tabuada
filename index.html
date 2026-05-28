@@ -184,6 +184,16 @@
             font-size: 14px;
             text-align: left;
         }
+        .config-jogador {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .config-jogador h4 {
+            margin: 0 0 10px 0;
+            color: #0066cc;
+        }
 
         @media (max-width: 700px) {
             .multiplayer-container { flex-direction: column; }
@@ -302,21 +312,42 @@
                 • Cada RODADA tem <strong>10 perguntas</strong><br>
                 • Vence a rodada quem fizer <strong>mais pontos</strong><br>
                 • Critério de desempate: mais acertos → menor tempo médio<br>
-                • O duelo é <strong>melhor de 5 rodadas</strong> (quem vencer 3 primeiro)
+                • O duelo é <strong>melhor de 5 rodadas</strong> (quem vencer 3 primeiro)<br>
+                • Os duelos são registrados e geram um <strong>Ranking de Duelos</strong>!
             </div>
         </div>
         
-        <label>Jogador 1</label>
-        <input type="text" id="jogador1-nome" placeholder="Nome do Jogador 1">
-        <label>Jogador 2</label>
-        <input type="text" id="jogador2-nome" placeholder="Nome do Jogador 2">
-        <label>Modalidade</label>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div class="config-jogador" style="flex: 1;">
+                <h4>👤 JOGADOR 1</h4>
+                <input type="text" id="jogador1-nome" placeholder="Nome do Jogador 1">
+                <select id="jogador1-turma">
+                    <option value="">Selecione a turma</option>
+                    <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                    <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                    <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                </select>
+            </div>
+            <div class="config-jogador" style="flex: 1;">
+                <h4>👤 JOGADOR 2</h4>
+                <input type="text" id="jogador2-nome" placeholder="Nome do Jogador 2">
+                <select id="jogador2-turma">
+                    <option value="">Selecione a turma</option>
+                    <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                    <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                    <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                </select>
+            </div>
+        </div>
+        
+        <label for="multi-modalidade">Modalidade</label>
         <select id="multi-modalidade">
             <option value="2-5">Tabuadas do 2 ao 5</option>
             <option value="6-9">Tabuadas do 6 ao 9</option>
             <option value="0-10" selected>Completa - Tabuadas do 0 ao 10</option>
         </select>
-        <div style="display:flex;gap:10px;">
+        
+        <div style="display:flex;gap:10px;margin-top:15px;">
             <button onclick="iniciarMultiplayer()" class="botao-verde">🎮 Iniciar Duelo</button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-secundario">⬅️ Voltar</button>
         </div>
@@ -392,8 +423,10 @@
             <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
             <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
             <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
+            <button class="aba" id="aba-duelos" onclick="mudarTipoRanking('duelos')">🏅 Ranking de Duelos</button>
         </div>
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados neste ranking.</div>
+        <div id="observacao-duelos" class="observacao-ranking hidden">🏅 <strong>Ranking de Duelos:</strong> Classificação baseada no total de vitórias em duelos multiplayer. O ranking considera apenas jogadores com pelo menos uma vitória.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()">
             <option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option>
         </select>
@@ -518,7 +551,9 @@
             { icone: "📈", nome: "Boa Sequência", descricao: "10 acertos seguidos", criterio: (r) => r.maiorSequencia >= 10 },
             { icone: "🆕", nome: "Primeira Vitória", descricao: "Primeira partida", criterio: (r, h) => h.length === 1 },
             { icone: "👑", nome: "Lenda da Tabuada", descricao: "20 partidas", criterio: (r, h) => h.length >= 20 },
-            { icone: "🏅", nome: "Colecionador", descricao: "5 conquistas", criterio: (r, h, c) => c.length >= 5 }
+            { icone: "🏅", nome: "Colecionador", descricao: "5 conquistas", criterio: (r, h, c) => c.length >= 5 },
+            { icone: "🥊", nome: "Campeão de Duelos", descricao: "Vencer 5 duelos no multiplayer", criterio: (r, h, c, vitDuelos) => vitDuelos >= 5 },
+            { icone: "👑", nome: "Rei dos Duelos", descricao: "Vencer 10 duelos no multiplayer", criterio: (r, h, c, vitDuelos) => vitDuelos >= 10 }
         ];
 
         // VARIÁVEIS SINGLE
@@ -529,8 +564,8 @@
 
         // VARIÁVEIS MULTIPLAYER
         let multiJogadores = [
-            { id:1, nome:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false },
-            { id:2, nome:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false }
+            { id:1, nome:"", turma:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false },
+            { id:2, nome:"", turma:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false }
         ];
         let multiModalidade="0-10";
         let rodadaAtual=1;
@@ -555,12 +590,14 @@
             document.getElementById(id).classList.remove("hidden");
         }
 
-        // ========== HISTÓRICO DE DUELOS ==========
-        async function salvarDuelo(vencedor, perdedor, vitoriasVencedor, vitoriasPerdedor, modalidade, rodadas, historicoRodadasDetalhe) {
+        // ========== HISTÓRICO DE DUELOS E RANKING ==========
+        async function salvarDuelo(vencedor, vencedorTurma, perdedor, perdedorTurma, vitoriasVencedor, vitoriasPerdedor, modalidade, rodadas, historicoRodadasDetalhe) {
             let duelo = {
                 data: new Date().toISOString(),
                 vencedor: vencedor,
+                vencedorTurma: vencedorTurma,
                 perdedor: perdedor,
+                perdedorTurma: perdedorTurma,
                 placar: `${vitoriasVencedor} x ${vitoriasPerdedor}`,
                 modalidade: MODALIDADES[modalidade]?.nome || modalidade,
                 rodadas: rodadas,
@@ -573,15 +610,41 @@
                 await database.ref(`${CAMINHO_DUELOS}/${chave}`).set(duelo);
                 let historico = JSON.parse(localStorage.getItem("historico_duelos") || "[]");
                 historico.unshift(duelo);
-                historico = historico.slice(0, 200);
+                historico = historico.slice(0, 500);
                 localStorage.setItem("historico_duelos", JSON.stringify(historico));
             } catch(e) {
                 console.warn("Erro ao salvar duelo no Firebase:", e);
                 let historico = JSON.parse(localStorage.getItem("historico_duelos") || "[]");
                 historico.unshift(duelo);
-                historico = historico.slice(0, 200);
+                historico = historico.slice(0, 500);
                 localStorage.setItem("historico_duelos", JSON.stringify(historico));
             }
+        }
+        
+        async function obterRankingDuelos() {
+            let historico = JSON.parse(localStorage.getItem("historico_duelos") || "[]");
+            let mapaVitorias = new Map();
+            
+            historico.forEach(duelo => {
+                if(duelo.vencedor && duelo.vencedor !== "EMPATE") {
+                    let chave = `${duelo.vencedor}|${duelo.vencedorTurma || ""}`;
+                    if(!mapaVitorias.has(chave)) {
+                        mapaVitorias.set(chave, { nome: duelo.vencedor, turma: duelo.vencedorTurma || "", vitorias: 0, duelos: 0 });
+                    }
+                    mapaVitorias.get(chave).vitorias++;
+                    mapaVitorias.get(chave).duelos++;
+                }
+                if(duelo.perdedor && duelo.perdedor !== "EMPATE") {
+                    let chave = `${duelo.perdedor}|${duelo.perdedorTurma || ""}`;
+                    if(!mapaVitorias.has(chave)) {
+                        mapaVitorias.set(chave, { nome: duelo.perdedor, turma: duelo.perdedorTurma || "", vitorias: 0, duelos: 0 });
+                    }
+                    mapaVitorias.get(chave).duelos++;
+                }
+            });
+            
+            let ranking = Array.from(mapaVitorias.values()).filter(j => j.vitorias > 0).sort((a,b) => b.vitorias - a.vitorias);
+            return ranking;
         }
         
         function verHistoricoDuelos() {
@@ -594,7 +657,7 @@
             if(historico.length === 0) {
                 container.innerHTML = "<p>Nenhum duelo registrado ainda.</p>";
             } else {
-                let html = '<table><thead><tr><th>Data</th><th>Vencedor</th><th>Placar</th><th>Perdedor</th><th>Modalidade</th><th>Detalhes</th></td></thead><tbody>';
+                let html = '<tr><thead><tr><th>Data</th><th>Vencedor</th><th>Turma</th><th>Placar</th><th>Perdedor</th><th>Turma</th><th>Modalidade</th><th>Detalhes</th></tr></thead><tbody>';
                 historico.forEach(d => {
                     let data = new Date(d.data).toLocaleString();
                     let detalhesHtml = '';
@@ -608,8 +671,10 @@
                     html += `<tr>
                         <td style="text-align:center">${data}</td>
                         <td style="text-align:center"><strong>${d.vencedor}</strong></td>
+                        <td style="text-align:center">${d.vencedorTurma || "-"}</td>
                         <td style="text-align:center">${d.placar}</td>
                         <td style="text-align:center">${d.perdedor}</td>
+                        <td style="text-align:center">${d.perdedorTurma || "-"}</td>
                         <td style="text-align:center">${d.modalidade}</td>
                         <td>${detalhesHtml}</td>
                     </tr>`;
@@ -776,7 +841,6 @@
         }
 
         async function preencherResultado(r) {
-            // Buscar ranking atualizado
             let rankingTurma = await obterRankingPorPontos(r.modalidade, r.turma);
             let rankingPrecisaoGlobal = await obterRankingPorPrecisao(r.modalidade);
             let rankingVelocidadeGlobal = await obterRankingPorVelocidade(r.modalidade);
@@ -797,17 +861,16 @@
             if(r.desempenhoTabuadas) desempenhoTabuadas=r.desempenhoTabuadas;
             document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
             
-            // Calcular conquistas
             let historico = await obterRankingPorPontos(r.modalidade, r.turma);
-            let conquistas = CONQUISTAS.filter(c => c.criterio(r, historico, [])).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
+            let rankingDuelos = await obterRankingDuelos();
+            let vitoriasDuelos = rankingDuelos.find(d => normalizarNome(d.nome) === normalizarNome(r.nome) && d.turma === r.turma)?.vitorias || 0;
+            let conquistas = CONQUISTAS.filter(c => c.criterio(r, historico, [], vitoriasDuelos)).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
             document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
             
-            // ========== FEEDBACK DE RANKING COM QUEM ULTRAPASSOU ==========
             await gerarFeedbackRankingComUltrapassagem(r, posTurma, rankingTurma, rankingPrecisaoGlobal, rankingVelocidadeGlobal);
         }
         
         async function gerarFeedbackRankingComUltrapassagem(resultado, posTurmaAtual, rankingTurmaAtual, rankingPrecisaoGlobal, rankingVelocidadeGlobal) {
-            // Buscar partidas anteriores do mesmo aluno
             let todasPartidas = await obterRanking();
             let partidasAnteriores = todasPartidas.filter(p => 
                 normalizarNome(p.nome) === normalizarNome(resultado.nome) && 
@@ -819,7 +882,6 @@
             let feedbackHtml = "";
             let tipoFeedback = "manteve";
             
-            // Verificar se é a primeira partida
             if(partidasAnteriores.length === 0) {
                 feedbackHtml = `
                     <div class="feedback-ranking">
@@ -832,14 +894,11 @@
                 `;
                 tipoFeedback = "melhorou";
             } else {
-                // Buscar ranking anterior (antes desta partida)
                 let rankingTurmaAnterior = await obterRankingPorPontosAntigo(resultado.modalidade, resultado.turma, resultado.data);
                 let posTurmaAnterior = rankingTurmaAnterior.findIndex(p => p.data === partidaAnterior.data) + 1;
                 
-                // Identificar quem ultrapassou o aluno
                 let ultrapassaram = [];
                 if(posTurmaAtual > posTurmaAnterior && posTurmaAnterior > 0) {
-                    // Aluno caiu - descobrir quem entrou na frente
                     for(let i = posTurmaAnterior - 1; i >= 0 && ultrapassaram.length < 3; i--) {
                         let alunoAntigo = rankingTurmaAnterior[i];
                         let posAntiga = i + 1;
@@ -862,7 +921,6 @@
                 let feedbackVelocidade = "";
                 let sugestaoRevanche = "";
                 
-                // Feedback Turma
                 if(posTurmaAtual < posTurmaAnterior) {
                     feedbackTurma = `✅ Você SUBIU para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º)! 🚀`;
                     tipoFeedback = "melhorou";
@@ -881,7 +939,6 @@
                     feedbackTurma = `📊 Você manteve o <strong>${posTurmaAtual}º lugar</strong> na turma! 🎯`;
                 }
                 
-                // Feedback Precisão Global
                 if(posPrecisaoAtual < posPrecisaoAnterior) {
                     feedbackPrecisao = `✅ Você SUBIU para <strong>${posPrecisaoAtual}º lugar</strong> no ranking de Precisão Global (era ${posPrecisaoAnterior}º)! 🎯`;
                     tipoFeedback = "melhorou";
@@ -891,7 +948,6 @@
                     feedbackPrecisao = `📊 Você manteve o <strong>${posPrecisaoAtual}º lugar</strong> no ranking de Precisão Global! 🎯`;
                 }
                 
-                // Feedback Velocidade Global (apenas se tiver 20 acertos)
                 if(resultado.acertos === 20) {
                     let posVelocidadeAtual = obterPosicaoNoRanking(resultado, rankingVelocidadeGlobal);
                     let posVelocidadeAnterior = obterPosicaoNoRankingAntigo(partidaAnterior, rankingVelocidadeGlobal);
@@ -991,25 +1047,34 @@
 
         // ========== MULTIPLAYER ==========
         function iniciarMultiplayer() {
-            let n1=document.getElementById("jogador1-nome").value.trim();
-            let n2=document.getElementById("jogador2-nome").value.trim();
-            if(!n1||!n2){ alert("Preencha os nomes!"); return; }
-            multiModalidade = document.getElementById("multi-modalidade").value;
-            multiJogadores[0].nome=n1; multiJogadores[1].nome=n2;
-            multiJogadores[0].vitorias=0; multiJogadores[1].vitorias=0;
-            rodadaAtual=1;
-            perguntaRodadaAtual=1;
-            historicoRodadas = [];
-            multiAtivo=true;
+            let n1 = document.getElementById("jogador1-nome").value.trim();
+            let t1 = document.getElementById("jogador1-turma").value;
+            let n2 = document.getElementById("jogador2-nome").value.trim();
+            let t2 = document.getElementById("jogador2-turma").value;
             
-            document.getElementById("player1-name").innerText=n1;
-            document.getElementById("player2-name").innerText=n2;
-            document.getElementById("rodadas-player1").innerText="0";
-            document.getElementById("rodadas-player2").innerText="0";
-            document.getElementById("player1-vitorias").innerText="0";
-            document.getElementById("player2-vitorias").innerText="0";
-            document.getElementById("rodada-atual").innerText="1";
-            document.getElementById("pergunta-rodada").innerText="1";
+            if(!n1||!n2){ alert("Preencha os nomes dos jogadores!"); return; }
+            if(!t1||!t2){ alert("Selecione as turmas dos jogadores!"); return; }
+            
+            multiModalidade = document.getElementById("multi-modalidade").value;
+            multiJogadores[0].nome = n1;
+            multiJogadores[0].turma = t1;
+            multiJogadores[1].nome = n2;
+            multiJogadores[1].turma = t2;
+            multiJogadores[0].vitorias = 0;
+            multiJogadores[1].vitorias = 0;
+            rodadaAtual = 1;
+            perguntaRodadaAtual = 1;
+            historicoRodadas = [];
+            multiAtivo = true;
+            
+            document.getElementById("player1-name").innerHTML = `${n1}<br><small style="font-size:12px">Turma ${t1}</small>`;
+            document.getElementById("player2-name").innerHTML = `${n2}<br><small style="font-size:12px">Turma ${t2}</small>`;
+            document.getElementById("rodadas-player1").innerText = "0";
+            document.getElementById("rodadas-player2").innerText = "0";
+            document.getElementById("player1-vitorias").innerText = "0";
+            document.getElementById("player2-vitorias").innerText = "0";
+            document.getElementById("rodada-atual").innerText = "1";
+            document.getElementById("pergunta-rodada").innerText = "1";
             
             mostrarTela("tela-multiplayer");
             iniciarRodada();
@@ -1239,7 +1304,9 @@
             
             await salvarDuelo(
                 vencedor ? vencedor.nome : "EMPATE",
+                vencedor ? vencedor.turma : "",
                 perdedor ? perdedor.nome : `${multiJogadores[0].nome} vs ${multiJogadores[1].nome}`,
+                perdedor ? perdedor.turma : "",
                 multiJogadores[0].vitorias,
                 multiJogadores[1].vitorias,
                 multiModalidade,
@@ -1254,8 +1321,8 @@
                            <div style="font-size:24px; margin-bottom:20px;">${vencedor.nome} venceu o duelo!</div>
                            <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
                                <strong>📊 Placar Final:</strong><br>
-                               ${multiJogadores[0].nome}: ${multiJogadores[0].vitorias} vitórias<br>
-                               ${multiJogadores[1].nome}: ${multiJogadores[1].vitorias} vitórias<br><br>
+                               ${multiJogadores[0].nome} (Turma ${multiJogadores[0].turma}): ${multiJogadores[0].vitorias} vitórias<br>
+                               ${multiJogadores[1].nome} (Turma ${multiJogadores[1].turma}): ${multiJogadores[1].vitorias} vitórias<br><br>
                                <strong>🏅 Rodadas disputadas:</strong> ${rodadaAtual} de ${totalRodadas}
                            </div>
                            <div style="margin-top:15px; font-size:12px; color:#666;">✅ Duelo registrado no histórico!</div>`;
@@ -1265,8 +1332,8 @@
                            <div style="font-size:24px; margin-bottom:20px;">Duelo terminou empatado!</div>
                            <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
                                <strong>📊 Placar Final:</strong><br>
-                               ${multiJogadores[0].nome}: ${multiJogadores[0].vitorias} vitórias<br>
-                               ${multiJogadores[1].nome}: ${multiJogadores[1].vitorias} vitórias
+                               ${multiJogadores[0].nome} (Turma ${multiJogadores[0].turma}): ${multiJogadores[0].vitorias} vitórias<br>
+                               ${multiJogadores[1].nome} (Turma ${multiJogadores[1].turma}): ${multiJogadores[1].vitorias} vitórias
                            </div>
                            <div style="margin-top:15px; font-size:12px; color:#666;">✅ Duelo registrado no histórico!</div>`;
             }
@@ -1374,12 +1441,19 @@
             } else if(tipoRankingAtual === "velocidade-turma"){
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
                 titulo = `⚡ Velocidade - Turma ${turma} (100% acertos)`;
+            } else if(tipoRankingAtual === "duelos"){
+                ranking = await obterRankingDuelos();
+                titulo = `🏅 Ranking de Duelos`;
+                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.duelos}</td><td style="text-align:center">${Math.round(r.vitorias/r.duelos*100)}%</td></tr>`).join("");
+                document.getElementById("tabela-ranking").innerHTML = html || `<td><td colspan="6" class="sem-registros">Nenhum duelo registrado ainda. Participe do multiplayer!</td></tr>`;
+                document.getElementById("titulo-ranking").innerHTML = `${titulo} - ${MODALIDADES[modalidade]?.nome}`;
+                return;
             }
             
             document.getElementById("titulo-ranking").innerHTML = `${titulo} - ${MODALIDADES[modalidade]?.nome}`;
             
-            let html = ranking.map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td>${(tipoRankingAtual==="global"||tipoRankingAtual.includes("global"))?`<td style="text-align:center">${r.turma}<td style="text-align:center">`:""}<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>${tipoRankingAtual==="turma"?`<td style="text-align:center"><span class="tag ${i<4?"tag-classificado":i<6?"tag-reserva":"tag-participante"}">${i<4?"Classificado":i<6?"Reserva":"Participante"}</span></td>`:""}</tr>`).join("");
-            document.getElementById("tabela-ranking").innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado</td></tr></table>`;
+            let html = ranking.map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td>${(tipoRankingAtual==="global"||tipoRankingAtual.includes("global"))?`<td style="text-align:center">${r.turma}</td>`:""}<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>${tipoRankingAtual==="turma"?`<td style="text-align:center"><span class="tag ${i<4?"tag-classificado":i<6?"tag-reserva":"tag-participante"}">${i<4?"Classificado":i<6?"Reserva":"Participante"}</span></td>`:""}</tr>`).join("");
+            document.getElementById("tabela-ranking").innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado</td></tr>`;
         }
         
         function mudarTipoRanking(tipo){
@@ -1390,9 +1464,11 @@
             document.getElementById("aba-precisao-turma").classList.toggle("ativa",tipo==="precisao-turma");
             document.getElementById("aba-velocidade-global").classList.toggle("ativa",tipo==="velocidade-global");
             document.getElementById("aba-velocidade-turma").classList.toggle("ativa",tipo==="velocidade-turma");
-            document.getElementById("coluna-turma").classList.toggle("hidden",!(tipo==="global"||tipo==="precisao-global"||tipo==="velocidade-global"));
+            document.getElementById("aba-duelos").classList.toggle("ativa",tipo==="duelos");
+            document.getElementById("coluna-turma").classList.toggle("hidden",!(tipo==="global"||tipo==="precisao-global"||tipo==="velocidade-global"||tipo==="duelos"));
             document.getElementById("coluna-status").classList.toggle("hidden",tipo!=="turma");
             document.getElementById("observacao-velocidade").classList.toggle("hidden",!(tipo==="velocidade-global"||tipo==="velocidade-turma"));
+            document.getElementById("observacao-duelos").classList.toggle("hidden",tipo!=="duelos");
             renderizarRanking();
         }
 
@@ -1417,7 +1493,9 @@
             let status = pos<=4?"Classificado":(pos<=6?"Reserva":"Participante");
             document.getElementById("perfil-melhor-status").innerHTML=`<span class="tag tag-${status==='Classificado'?'classificado':status==='Reserva'?'reserva':'participante'}">${status}</span>`;
             
-            let conquistas = CONQUISTAS.filter(c => c.criterio(melhor, partidas, [])).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
+            let rankingDuelos = await obterRankingDuelos();
+            let vitoriasDuelos = rankingDuelos.find(d => normalizarNome(d.nome) === normalizarNome(nome) && d.turma === turma)?.vitorias || 0;
+            let conquistas = CONQUISTAS.filter(c => c.criterio(melhor, partidas, [], vitoriasDuelos)).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
             document.getElementById("perfil-conquistas").innerHTML = conquistas || "Nenhuma conquista ainda";
             
             if(melhor.desempenhoTabuadas){
