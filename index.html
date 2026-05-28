@@ -79,6 +79,18 @@
         .resumo-resultado { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; text-align: left; }
         .resumo-resultado div { background: #f8f9fa; border-radius: 6px; padding: 10px; }
 
+        .feedback-ranking {
+            background: #e7f5ff;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+            border-left: 4px solid #0066cc;
+        }
+        .feedback-melhorou { background: #d1e7dd; border-left-color: #198754; }
+        .feedback-piorou { background: #f8d7da; border-left-color: #dc3545; }
+        .feedback-manteve { background: #fff3cd; border-left-color: #ffc107; }
+
         .mapa-tabuadas { margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 12px; text-align: left; }
         .grade-tabuadas { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
         .card-tabuada { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -262,6 +274,7 @@
             <div><strong>Maior sequência:</strong> <span id="resumo-sequencia"></span></div>
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
+        <div id="feedback-ranking-container" class="feedback-ranking"></div>
         <div id="novas-conquistas" style="background:#e7f5ff;border-radius:12px;padding:12px;margin:16px 0;"></div>
         <div id="mapa-tabuadas-container"></div>
         <div style="display:flex;gap:10px;">
@@ -390,7 +403,7 @@
             <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
         </select>
         <h3 id="titulo-ranking">Ranking</h3>
-        <div class="tabela-container"><table><thead><tr><th>Pos.</th><th>Nome</th><th id="coluna-turma">Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th id="coluna-status">Status</th></tr></thead><tbody id="tabela-ranking"></tbody></table></div>
+        <div class="tabela-container"></table><thead><tr><th>Pos.</th><th>Nome</th><th id="coluna-turma">Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th id="coluna-status">Status</th></tr></thead><tbody id="tabela-ranking"></tbody></table></div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
 
@@ -747,6 +760,7 @@
                 document.getElementById("resumo-sequencia").innerText=maiorSequencia;
                 document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
                 document.getElementById("novas-conquistas").innerHTML="";
+                document.getElementById("feedback-ranking-container").innerHTML = "";
                 mostrarTela("tela-resultado");
                 return;
             }
@@ -762,9 +776,14 @@
         }
 
         async function preencherResultado(r) {
+            // Buscar ranking atualizado
             let rankingTurma = await obterRankingPorPontos(r.modalidade, r.turma);
-            let pos = rankingTurma.findIndex(i=>i.data===r.data)+1;
-            let status = pos<=4?"Classificado":(pos<=6?"Reserva":"Participante");
+            let rankingPrecisaoGlobal = await obterRankingPorPrecisao(r.modalidade);
+            let rankingVelocidadeGlobal = await obterRankingPorVelocidade(r.modalidade);
+            
+            let posTurma = rankingTurma.findIndex(i=>i.data===r.data)+1;
+            let status = posTurma<=4?"Classificado":(posTurma<=6?"Reserva":"Participante");
+            
             document.getElementById("feedback-pontos").innerHTML=`${r.nome}, você concluiu!`;
             document.getElementById("resumo-turma").innerText=r.turma;
             document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[r.modalidade]?.nome||r.modalidade;
@@ -774,12 +793,117 @@
             document.getElementById("resumo-tempo").innerText=`${r.tempoMedio.toFixed(2)}s`;
             document.getElementById("resumo-sequencia").innerText=r.maiorSequencia;
             document.getElementById("resumo-status").innerHTML=`<span class="tag ${status==='Classificado'?'tag-classificado':status==='Reserva'?'tag-reserva':'tag-participante'}">${status}</span>`;
+            
             if(r.desempenhoTabuadas) desempenhoTabuadas=r.desempenhoTabuadas;
             document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
             
+            // Calcular conquistas
             let historico = await obterRankingPorPontos(r.modalidade, r.turma);
             let conquistas = CONQUISTAS.filter(c => c.criterio(r, historico, [])).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
             document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
+            
+            // ========== FEEDBACK DE RANKING ==========
+            await gerarFeedbackRanking(r, posTurma, rankingPrecisaoGlobal, rankingVelocidadeGlobal);
+        }
+        
+        async function gerarFeedbackRanking(resultado, posTurmaAtual, rankingPrecisaoGlobal, rankingVelocidadeGlobal) {
+            // Buscar partidas anteriores do mesmo aluno
+            let todasPartidas = await obterRanking();
+            let partidasAnteriores = todasPartidas.filter(p => 
+                normalizarNome(p.nome) === normalizarNome(resultado.nome) && 
+                p.turma === resultado.turma &&
+                p.data !== resultado.data
+            ).sort((a,b) => new Date(b.data) - new Date(a.data));
+            
+            let partidaAnterior = partidasAnteriores[0];
+            let feedbackHtml = "";
+            let tipoFeedback = "manteve";
+            
+            // Verificar se é a primeira partida
+            if(partidasAnteriores.length === 0) {
+                feedbackHtml = `
+                    <div class="feedback-ranking">
+                        <strong>🎉 PARABÉNS PELA SUA PRIMEIRA PARTIDA! 🎉</strong><br><br>
+                        📊 Você entrou no ranking da Turma ${resultado.turma} na <strong>${posTurmaAtual}ª posição</strong>!<br>
+                        🎯 No ranking de Precisão Global, você está em <strong>${obterPosicaoNoRanking(resultado, rankingPrecisaoGlobal)}º lugar</strong>.<br>
+                        ${resultado.acertos === 20 ? `⚡ No ranking de Velocidade Global, você está em <strong>${obterPosicaoNoRanking(resultado, rankingVelocidadeGlobal)}º lugar</strong>!` : ''}<br><br>
+                        Continue assim! 💪
+                    </div>
+                `;
+                tipoFeedback = "melhorou";
+            } else {
+                // Calcular posições anteriores
+                let rankingTurmaAnterior = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
+                let posTurmaAnterior = rankingTurmaAnterior.findIndex(p => p.data === partidaAnterior.data) + 1;
+                
+                let posPrecisaoAnterior = obterPosicaoNoRanking(partidaAnterior, rankingPrecisaoGlobal);
+                let posPrecisaoAtual = obterPosicaoNoRanking(resultado, rankingPrecisaoGlobal);
+                
+                let feedbackTurma = "";
+                let feedbackPrecisao = "";
+                let feedbackVelocidade = "";
+                
+                // Feedback Turma
+                if(posTurmaAtual < posTurmaAnterior) {
+                    feedbackTurma = `✅ Você SUBIU para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º)! 🚀`;
+                    tipoFeedback = "melhorou";
+                } else if(posTurmaAtual > posTurmaAnterior) {
+                    feedbackTurma = `📉 Você caiu para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º). Continue treinando! 💪`;
+                    tipoFeedback = "piorou";
+                } else {
+                    feedbackTurma = `📊 Você manteve o <strong>${posTurmaAtual}º lugar</strong> na turma! 🎯`;
+                }
+                
+                // Feedback Precisão Global
+                if(posPrecisaoAtual < posPrecisaoAnterior) {
+                    feedbackPrecisao = `✅ Você SUBIU para <strong>${posPrecisaoAtual}º lugar</strong> no ranking de Precisão Global (era ${posPrecisaoAnterior}º)! 🎯`;
+                    tipoFeedback = "melhorou";
+                } else if(posPrecisaoAtual > posPrecisaoAnterior) {
+                    feedbackPrecisao = `📉 Você caiu para <strong>${posPrecisaoAtual}º lugar</strong> no ranking de Precisão Global (era ${posPrecisaoAnterior}º).`;
+                } else {
+                    feedbackPrecisao = `📊 Você manteve o <strong>${posPrecisaoAtual}º lugar</strong> no ranking de Precisão Global! 🎯`;
+                }
+                
+                // Feedback Velocidade Global (apenas se tiver 20 acertos)
+                if(resultado.acertos === 20) {
+                    let posVelocidadeAtual = obterPosicaoNoRanking(resultado, rankingVelocidadeGlobal);
+                    let posVelocidadeAnterior = obterPosicaoNoRanking(partidaAnterior, rankingVelocidadeGlobal);
+                    
+                    if(posVelocidadeAtual < posVelocidadeAnterior) {
+                        feedbackVelocidade = `✅ Você SUBIU para <strong>${posVelocidadeAtual}º lugar</strong> no ranking de Velocidade Global (era ${posVelocidadeAnterior}º)! ⚡`;
+                        tipoFeedback = "melhorou";
+                    } else if(posVelocidadeAtual > posVelocidadeAnterior) {
+                        feedbackVelocidade = `📉 Você caiu para <strong>${posVelocidadeAtual}º lugar</strong> no ranking de Velocidade Global (era ${posVelocidadeAnterior}º).`;
+                    } else {
+                        feedbackVelocidade = `📊 Você manteve o <strong>${posVelocidadeAtual}º lugar</strong> no ranking de Velocidade Global! ⚡`;
+                    }
+                }
+                
+                let mensagemMotivacional = "";
+                if(tipoFeedback === "melhorou") {
+                    mensagemMotivacional = "🎉 PARABÉNS! Você está evoluindo! Continue assim! 🎉";
+                } else if(tipoFeedback === "piorou") {
+                    mensagemMotivacional = "💪 NÃO DESANIME! Cada partida é uma oportunidade de aprendizado. Revise as tabuadas que você errou e tente novamente! 📚";
+                } else {
+                    mensagemMotivacional = "👏 BOA TENTATIVA! Continue praticando para subir no ranking. Você consegue! 🎯";
+                }
+                
+                feedbackHtml = `
+                    <div class="feedback-ranking ${tipoFeedback === 'melhorou' ? 'feedback-melhorou' : (tipoFeedback === 'piorou' ? 'feedback-piorou' : 'feedback-manteve')}">
+                        <strong>${mensagemMotivacional}</strong><br><br>
+                        ${feedbackTurma}<br>
+                        ${feedbackPrecisao}<br>
+                        ${feedbackVelocidade}
+                    </div>
+                `;
+            }
+            
+            document.getElementById("feedback-ranking-container").innerHTML = feedbackHtml;
+        }
+        
+        function obterPosicaoNoRanking(resultado, ranking) {
+            let pos = ranking.findIndex(r => r.data === resultado.data) + 1;
+            return pos > 0 ? pos : "-";
         }
 
         function renderizarMapa() {
@@ -1156,7 +1280,6 @@
         
         async function obterRankingPorVelocidade(modalidade, turma=null){
             let rank = await obterRanking();
-            // ALTERADO: apenas alunos com 100% de acertos (20/20)
             let filt = rank.filter(r => r.modalidade === modalidade && r.acertos === 20);
             if(turma) filt = filt.filter(r => r.turma === turma);
             let mapa = new Map();
@@ -1211,7 +1334,7 @@
             
             document.getElementById("titulo-ranking").innerHTML = `${titulo} - ${MODALIDADES[modalidade]?.nome}`;
             
-            let html = ranking.map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td>${(tipoRankingAtual==="global"||tipoRankingAtual.includes("global"))?`<td style="text-align:center">${r.turma}</td>`:""}<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>${tipoRankingAtual==="turma"?`<td style="text-align:center"><span class="tag ${i<4?"tag-classificado":i<6?"tag-reserva":"tag-participante"}">${i<4?"Classificado":i<6?"Reserva":"Participante"}</span></td>`:""}</tr>`).join("");
+            let html = ranking.map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td>${(tipoRankingAtual==="global"||tipoRankingAtual.includes("global"))?`<td style="text-align:center">${r.turma}</td>`:""}<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>${tipoRankingAtual==="turma"?`<td style="text-align:center"><span class="tag ${i<4?"tag-classificado":i<6?"tag-reserva":"tag-participante"}">${i<4?"Classificado":i<6?"Reserva":"Participante"}</span></td>`:""}</table>`).join("");
             document.getElementById("tabela-ranking").innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado</td></tr>`;
         }
         
@@ -1359,7 +1482,7 @@
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
             let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
-                html += `<tr><td><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}"></td>
+                html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
                         <td style="text-align:center">${a.turma}</td>
                         <td>${MODALIDADES[a.modalidade]?.nome}</td>
                         <td style="text-align:center">${a.pontos}</td>
@@ -1367,7 +1490,7 @@
                         <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
                         </tr>`;
             });
-            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody><table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         
