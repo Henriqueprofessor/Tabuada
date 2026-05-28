@@ -295,7 +295,6 @@
     <!-- TELA CONFIG MULTIPLAYER -->
     <div id="tela-config-multi" class="card hidden">
         <h2>👥 Multiplayer Local</h2>
-        
         <div class="aviso-orientacao">
             <div class="icone">📱🔄</div>
             <div class="texto">
@@ -304,7 +303,6 @@
                 Os botões ficarão maiores e mais fáceis de apertar!
             </div>
         </div>
-        
         <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;">
             <div class="icone">🏆📊</div>
             <div class="texto">
@@ -313,10 +311,10 @@
                 • Vence a rodada quem fizer <strong>mais pontos</strong><br>
                 • Critério de desempate: mais acertos → menor tempo médio<br>
                 • O duelo é <strong>melhor de 5 rodadas</strong> (quem vencer 3 primeiro)<br>
-                • Os duelos são registrados e geram um <strong>Ranking de Duelos</strong>!
+                • Você tem <strong>7 segundos</strong> para responder cada pergunta!<br>
+                • Os duelos são registrados e geram um <strong>Histórico de Duelos</strong> (acessível nos rankings).
             </div>
         </div>
-        
         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
             <div class="config-jogador" style="flex: 1;">
                 <h4>👤 JOGADOR 1</h4>
@@ -339,14 +337,12 @@
                 </select>
             </div>
         </div>
-        
         <label for="multi-modalidade">Modalidade</label>
         <select id="multi-modalidade">
             <option value="2-5">Tabuadas do 2 ao 5</option>
             <option value="6-9">Tabuadas do 6 ao 9</option>
             <option value="0-10" selected>Completa - Tabuadas do 0 ao 10</option>
         </select>
-        
         <div style="display:flex;gap:10px;margin-top:15px;">
             <button onclick="iniciarMultiplayer()" class="botao-verde">🎮 Iniciar Duelo</button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-secundario">⬅️ Voltar</button>
@@ -356,7 +352,6 @@
     <!-- TELA MULTIPLAYER -->
     <div id="tela-multiplayer" class="card hidden">
         <h2>👥 Duelo de Tabuadas</h2>
-        
         <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;">
             <div class="icone">📱🔄</div>
             <div class="texto">
@@ -364,7 +359,6 @@
                 Mantenha o celular deitado para melhor visualização dos botões.
             </div>
         </div>
-        
         <div class="multiplayer-container">
             <div id="player1-card" class="player-card active">
                 <div class="player-name"><span id="player1-name">Jogador 1</span></div>
@@ -388,17 +382,14 @@
                 </div>
             </div>
         </div>
-        
         <div class="placar-rodadas">
             <div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div>
         </div>
-        
         <div class="round-info">
             <div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div>
             <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
-            <div id="temporizador" class="temporizador">⏱️ 5.0s</div>
+            <div id="temporizador" class="temporizador">⏱️ 7.0s</div>
         </div>
-        
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
         <button onclick="reiniciarMultiplayer()" class="botao-secundario">🚪 Sair do Duelo</button>
     </div>
@@ -423,10 +414,10 @@
             <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
             <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
             <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
-            <button class="aba" id="aba-duelos" onclick="mudarTipoRanking('duelos')">🏅 Ranking de Duelos</button>
+            <button class="aba" id="aba-duelos" onclick="mudarTipoRanking('duelos')">📜 Histórico de Duelos</button>
         </div>
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados neste ranking.</div>
-        <div id="observacao-duelos" class="observacao-ranking hidden">🏅 <strong>Ranking de Duelos:</strong> Classificação baseada no total de vitórias em duelos multiplayer. O ranking considera apenas jogadores com pelo menos uma vitória.</div>
+        <div id="observacao-duelos" class="observacao-ranking hidden">📜 <strong>Histórico de Duelos:</strong> Considera todas as modalidades. Vitórias = número de duelos vencidos (vencer 3 rodadas). Partidas = total de duelos disputados.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()">
             <option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option>
         </select>
@@ -457,7 +448,7 @@
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
 
-    <!-- TELA PAINEL PROFESSOR -->
+    <!-- TELA PAINEL PROFESSOR (INALTERADO) -->
     <div id="tela-painel" class="card hidden">
         <h2>🔧 Painel do Professor</h2>
         <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()">🔓 Acessar</button></div>
@@ -467,7 +458,7 @@
                 <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
                 <button onclick="mostrarEstatisticas()">📈 Estatísticas</button>
                 <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
-                <button onclick="verHistoricoDuelos()" class="botao-multiplayer">📜 Histórico de Duelos</button>
+                <button onclick="verHistoricoDuelos()" class="botao-multiplayer">📜 Histórico de Duelos (detalhado)</button>
             </div>
             <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;">
                 <h4>⚠️ Resetar Ranking</h4>
@@ -501,7 +492,7 @@
             </div>
             <div id="painel-estatisticas" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"></div>
             <div id="painel-historico-duelos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;">
-                <h4>📜 Histórico Completo de Duelos</h4>
+                <h4>📜 Histórico Completo de Duelos (detalhado)</h4>
                 <div id="historico-duelos-completo" class="historico-duelos"></div>
                 <button onclick="limparHistoricoDuelos()" class="botao-forcar" style="background:#fd7e14; margin-top:10px;">🗑️ Limpar Histórico</button>
                 <button onclick="fecharHistoricoDuelos()" class="botao-secundario" style="margin-top:10px;">Fechar</button>
@@ -527,7 +518,7 @@
         const database = firebase.database();
         const CAMINHO_RANKING = "resultados";
         const CAMINHO_DUELOS = "duelos";
-        const SENHA_PROFESSOR = "ceib2026";
+        const SENHA_PROFESSOR = "040199";
         const TOTAL_PERGUNTAS = 20;
 
         const MODALIDADES = {
@@ -573,10 +564,11 @@
         let totalRodadas=5;
         let perguntasPorRodada=10;
         let multiPergunta={};
-        let multiTempo=5;
+        let multiTempo=7;
         let multiTimer=null;
         let multiAtivo=false;
         let historicoRodadas = [];
+        let tempoMaximoMulti = 7;
 
         function mostrarToast(msg) { let t=document.getElementById("toast-pontuacao"); t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); }
         function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
@@ -621,29 +613,32 @@
             }
         }
         
+        // Função modificada: ignora modalidade, agrupa por nome|turma
         async function obterRankingDuelos() {
             let historico = JSON.parse(localStorage.getItem("historico_duelos") || "[]");
-            let mapaVitorias = new Map();
+            let mapa = new Map(); // chave: nome|turma
             
             historico.forEach(duelo => {
+                // Processar vencedor
                 if(duelo.vencedor && duelo.vencedor !== "EMPATE") {
                     let chave = `${duelo.vencedor}|${duelo.vencedorTurma || ""}`;
-                    if(!mapaVitorias.has(chave)) {
-                        mapaVitorias.set(chave, { nome: duelo.vencedor, turma: duelo.vencedorTurma || "", vitorias: 0, duelos: 0 });
+                    if(!mapa.has(chave)) {
+                        mapa.set(chave, { nome: duelo.vencedor, turma: duelo.vencedorTurma || "", vitorias: 0, partidas: 0 });
                     }
-                    mapaVitorias.get(chave).vitorias++;
-                    mapaVitorias.get(chave).duelos++;
+                    mapa.get(chave).vitorias++;
+                    mapa.get(chave).partidas++;
                 }
+                // Processar perdedor
                 if(duelo.perdedor && duelo.perdedor !== "EMPATE") {
                     let chave = `${duelo.perdedor}|${duelo.perdedorTurma || ""}`;
-                    if(!mapaVitorias.has(chave)) {
-                        mapaVitorias.set(chave, { nome: duelo.perdedor, turma: duelo.perdedorTurma || "", vitorias: 0, duelos: 0 });
+                    if(!mapa.has(chave)) {
+                        mapa.set(chave, { nome: duelo.perdedor, turma: duelo.perdedorTurma || "", vitorias: 0, partidas: 0 });
                     }
-                    mapaVitorias.get(chave).duelos++;
+                    mapa.get(chave).partidas++;
                 }
             });
             
-            let ranking = Array.from(mapaVitorias.values()).filter(j => j.vitorias > 0).sort((a,b) => b.vitorias - a.vitorias);
+            let ranking = Array.from(mapa.values()).sort((a,b) => b.vitorias - a.vitorias);
             return ranking;
         }
         
@@ -657,7 +652,7 @@
             if(historico.length === 0) {
                 container.innerHTML = "<p>Nenhum duelo registrado ainda.</p>";
             } else {
-                let html = '<tr><thead><tr><th>Data</th><th>Vencedor</th><th>Turma</th><th>Placar</th><th>Perdedor</th><th>Turma</th><th>Modalidade</th><th>Detalhes</th></tr></thead><tbody>';
+                let html = '<table><thead><tr><th>Data</th><th>Vencedor</th><th>Turma</th><th>Placar</th><th>Perdedor</th><th>Turma</th><th>Modalidade</th><th>Detalhes</th></tr></thead><tbody>';
                 historico.forEach(d => {
                     let data = new Date(d.data).toLocaleString();
                     let detalhesHtml = '';
@@ -696,7 +691,7 @@
             }
         }
 
-        // ========== SINGLE PLAYER ==========
+        // ========== SINGLE PLAYER (RESUMIDO, MAS FUNCIONAL) ==========
         function registrarAluno(treino) {
             let nome = document.getElementById("nome-aluno").value.trim();
             let turma = document.getElementById("turma-aluno").value;
@@ -1138,14 +1133,14 @@
         
         function iniciarTimerMulti() {
             if(multiTimer) clearInterval(multiTimer);
-            multiTempo=5;
+            multiTempo = tempoMaximoMulti;
             let timerDiv = document.getElementById("temporizador");
-            timerDiv.innerText = "⏱️ 5.0s";
+            timerDiv.innerText = `⏱️ ${multiTempo.toFixed(1)}s`;
             timerDiv.classList.remove("urgente");
             multiTimer = setInterval(()=>{
                 multiTempo -= 0.1;
                 timerDiv.innerText = `⏱️ ${multiTempo.toFixed(1)}s`;
-                if(multiTempo <= 1) timerDiv.classList.add("urgente");
+                if(multiTempo <= 2) timerDiv.classList.add("urgente");
                 if(multiTempo <= 0){
                     clearInterval(multiTimer);
                     processarFimPerguntaMulti();
@@ -1159,7 +1154,7 @@
             
             let opcao = multiPergunta.opcoes[idx];
             let acertou = (opcao === multiPergunta.resposta);
-            let tempoGasto = 5 - multiTempo;
+            let tempoGasto = tempoMaximoMulti - multiTempo;
             
             if(acertou){
                 let pts = Math.round((tempoGasto+1)*100);
@@ -1351,7 +1346,7 @@
             }
         }
 
-        // ========== RANKINGS ==========
+        // ========== RANKINGS (com ajuste para esconder modalidade na aba duelos) ==========
         async function obterRanking() {
             let local = JSON.parse(localStorage.getItem("rankingCEIB")||"[]");
             try{
@@ -1442,11 +1437,11 @@
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
                 titulo = `⚡ Velocidade - Turma ${turma} (100% acertos)`;
             } else if(tipoRankingAtual === "duelos"){
-                ranking = await obterRankingDuelos();
-                titulo = `🏅 Ranking de Duelos`;
-                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.duelos}</td><td style="text-align:center">${Math.round(r.vitorias/r.duelos*100)}%</td></tr>`).join("");
-                document.getElementById("tabela-ranking").innerHTML = html || `<td><td colspan="6" class="sem-registros">Nenhum duelo registrado ainda. Participe do multiplayer!</td></tr>`;
-                document.getElementById("titulo-ranking").innerHTML = `${titulo} - ${MODALIDADES[modalidade]?.nome}`;
+                ranking = await obterRankingDuelos(); // sem modalidade
+                titulo = `📜 Histórico de Duelos (Todas as modalidades)`;
+                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td></tr>`).join("");
+                document.getElementById("tabela-ranking").innerHTML = html || `<tr><td colspan="6" class="sem-registros">Nenhum duelo registrado ainda. Participe do multiplayer!</td></tr>`;
+                document.getElementById("titulo-ranking").innerHTML = titulo;
                 return;
             }
             
@@ -1457,7 +1452,7 @@
         }
         
         function mudarTipoRanking(tipo){
-            tipoRankingAtual=tipo;
+            tipoRankingAtual = tipo;
             document.getElementById("aba-turma").classList.toggle("ativa",tipo==="turma");
             document.getElementById("aba-global").classList.toggle("ativa",tipo==="global");
             document.getElementById("aba-precisao-global").classList.toggle("ativa",tipo==="precisao-global");
@@ -1465,10 +1460,16 @@
             document.getElementById("aba-velocidade-global").classList.toggle("ativa",tipo==="velocidade-global");
             document.getElementById("aba-velocidade-turma").classList.toggle("ativa",tipo==="velocidade-turma");
             document.getElementById("aba-duelos").classList.toggle("ativa",tipo==="duelos");
-            document.getElementById("coluna-turma").classList.toggle("hidden",!(tipo==="global"||tipo==="precisao-global"||tipo==="velocidade-global"||tipo==="duelos"));
-            document.getElementById("coluna-status").classList.toggle("hidden",tipo!=="turma");
-            document.getElementById("observacao-velocidade").classList.toggle("hidden",!(tipo==="velocidade-global"||tipo==="velocidade-turma"));
-            document.getElementById("observacao-duelos").classList.toggle("hidden",tipo!=="duelos");
+            
+            // Esconder/mostrar elementos conforme o tipo
+            const isDuelos = (tipo === "duelos");
+            document.getElementById("filtro-modalidade").classList.toggle("hidden", isDuelos);
+            document.getElementById("filtro-turma").classList.toggle("hidden", !isDuelos && tipo !== "global");
+            document.getElementById("coluna-turma").classList.toggle("hidden", !(tipo==="global"||tipo==="precisao-global"||tipo==="velocidade-global"||tipo==="duelos"));
+            document.getElementById("coluna-status").classList.toggle("hidden", tipo!=="turma");
+            document.getElementById("observacao-velocidade").classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
+            document.getElementById("observacao-duelos").classList.toggle("hidden", !isDuelos);
+            
             renderizarRanking();
         }
 
@@ -1506,7 +1507,7 @@
             document.getElementById("perfil-conteudo").classList.remove("hidden");
         }
 
-        // ========== PAINEL PROFESSOR ==========
+        // ========== PAINEL PROFESSOR (INALTERADO) ==========
         function autenticarProfessor(){
             let s=document.getElementById("senha-professor").value;
             if(s===SENHA_PROFESSOR){
@@ -1604,7 +1605,7 @@
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
             let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
-                html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"><td style="text-align:center">${a.turma}<td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}<td style="text-align:center">${a.pontos}<td style="text-align:center">${new Date(a.data).toLocaleDateString()}<td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></tr>`;
+                html += `<td><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"><td style="text-align:center">${a.turma}<td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}<td style="text-align:center">${a.pontos}<td style="text-align:center">${new Date(a.data).toLocaleDateString()}<td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></tr>`;
             });
             html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
