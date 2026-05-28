@@ -175,11 +175,13 @@
             margin-top: 0;
             color: #0066cc;
         }
-        .modal-countdown {
-            font-size: 48px;
-            font-weight: bold;
-            margin: 20px 0;
-            color: #ffc107;
+        .modal-pause-message {
+            font-size: 14px;
+            color: #666;
+            margin: 15px 0;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
         }
         .modal-buttons {
             display: flex;
@@ -349,7 +351,7 @@
                 • Vence a rodada quem fizer <strong>mais pontos</strong><br>
                 • Critério de desempate: mais acertos → menor tempo médio<br>
                 • O duelo é <strong>melhor de 5 rodadas</strong> (quem vencer 3 primeiro)<br>
-                • Entre rodadas há um <strong>descanso de 5 segundos</strong> (ou clique em "Próxima Rodada")<br>
+                • Os jogadores decidem quando iniciar a <strong>próxima rodada</strong><br>
                 • Você tem <strong>7 segundos</strong> para responder cada pergunta!
             </div>
         </div>
@@ -1292,8 +1294,7 @@
                         <h3>🏆 FIM DA RODADA ${rodadaAtual-1}! 🏆</h3>
                         <p>Placar atual:</p>
                         <p><strong>${multiJogadores[0].nome}</strong> ${multiJogadores[0].vitorias} x ${multiJogadores[1].vitorias} <strong>${multiJogadores[1].nome}</strong></p>
-                        <div class="modal-countdown" id="modal-countdown">5</div>
-                        <p>Preparando próxima rodada...</p>
+                        <p class="modal-pause-message">⏸️ Jogo pausado. Clique em "Próxima Rodada" quando estiverem prontos!</p>
                         <div class="modal-buttons">
                             <button onclick="fecharModalEContinuar()" class="botao-verde">▶️ Próxima Rodada</button>
                             <button onclick="finalizarMultiplayer()" class="botao-forcar">🏁 Encerrar Duelo</button>
@@ -1302,23 +1303,12 @@
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            let countdown = 5;
-            let countdownInterval = setInterval(() => {
-                countdown--;
-                let countdownEl = document.getElementById("modal-countdown");
-                if(countdownEl) countdownEl.innerText = countdown;
-                if(countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    fecharModalEContinuar();
-                }
-            }, 1000);
         }
         
         function fecharModalEContinuar() {
             let modal = document.getElementById("modal-rodada");
             if(modal) modal.remove();
-            setTimeout(() => { iniciarRodada(); }, 100);
+            iniciarRodada();
         }
         
         async function finalizarMultiplayer() {
