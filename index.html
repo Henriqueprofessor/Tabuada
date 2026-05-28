@@ -380,7 +380,7 @@
             <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
             <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
         </div>
-        <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ Apenas alunos com 15+ acertos</div>
+        <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados neste ranking.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()">
             <option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option>
         </select>
@@ -494,7 +494,7 @@
         const CONQUISTAS = [
             { icone: "🏆", nome: "Mestre da Tabuada", descricao: "17.000+ pontos", criterio: (r) => r.pontos >= 17000 },
             { icone: "📚", nome: "Domínio Total", descricao: "20/20 acertos", criterio: (r) => r.acertos === 20 },
-            { icone: "🚀", nome: "Velocidade Relâmpago", descricao: "Tempo < 1.2s e ≥15 acertos", criterio: (r) => r.acertos >= 15 && r.tempoMedio < 1.2 },
+            { icone: "🚀", nome: "Velocidade Relâmpago", descricao: "Tempo < 1.2s e acertos 20/20", criterio: (r) => r.acertos === 20 && r.tempoMedio < 1.2 },
             { icone: "⚡", nome: "Sequência Perfeita", descricao: "20 acertos consecutivos", criterio: (r) => r.maiorSequencia === 20 },
             { icone: "📚", nome: "Treinador Dedicado", descricao: "5 partidas", criterio: (r, h) => h.length >= 5 },
             { icone: "🎓", nome: "Veterano", descricao: "10 partidas", criterio: (r, h) => h.length >= 10 },
@@ -850,7 +850,6 @@
         function iniciarRodada() {
             if(!multiAtivo) return;
             
-            // Resetar dados da rodada
             multiJogadores[0].pontosRodada = 0;
             multiJogadores[1].pontosRodada = 0;
             multiJogadores[0].acertosRodada = 0;
@@ -874,7 +873,6 @@
             if(!multiAtivo) return;
             
             if(perguntaRodadaAtual > perguntasPorRodada) {
-                // Fim da rodada - determinar vencedor
                 finalizarRodada();
                 return;
             }
@@ -882,7 +880,6 @@
             multiJogadores[0].bloqueado = false;
             multiJogadores[1].bloqueado = false;
             
-            // Gerar pergunta
             let fatores = MODALIDADES[multiModalidade].fatores;
             let fA = sortearItem(fatores), fB = Math.floor(Math.random()*11);
             let resp = fA*fB;
@@ -896,7 +893,6 @@
             multiPergunta = { texto:`${fA} x ${fB}`, resposta:resp, opcoes:ops };
             document.getElementById("pergunta-multiplayer").innerHTML = `${multiPergunta.texto} = ?`;
             
-            // Atualizar botões
             let b1 = document.querySelectorAll("#player1-opcoes .player-option");
             let b2 = document.querySelectorAll("#player2-opcoes .player-option");
             ops.forEach((opt,i)=>{
@@ -959,7 +955,6 @@
         function processarFimPerguntaMulti() {
             if(!multiAtivo) return;
             
-            // Se alguém não respondeu, considerar como erro
             if(!multiJogadores[0].bloqueado){
                 multiJogadores[0].bloqueado = true;
                 let btns = document.querySelectorAll("#player1-opcoes .player-option");
@@ -1000,7 +995,6 @@
                 placarRodada = `${p2.pontosRodada} x ${p1.pontosRodada}`;
                 mostrarToast(`🏆 ${p2.nome} venceu a rodada ${rodadaAtual}!`);
             } else {
-                // Critério de desempate: mais acertos
                 if(p1.acertosRodada > p2.acertosRodada) {
                     vencedorRodada = p1;
                     p1.vitorias++;
@@ -1012,7 +1006,6 @@
                     placarRodada = `${p2.pontosRodada} x ${p1.pontosRodada} (desempate: ${p2.acertosRodada} x ${p1.acertosRodada} acertos)`;
                     mostrarToast(`🏆 ${p2.nome} venceu a rodada ${rodadaAtual} por desempate!`);
                 } else {
-                    // Segundo desempate: menor tempo médio
                     if(tempoMedio1 < tempoMedio2) {
                         vencedorRodada = p1;
                         p1.vitorias++;
@@ -1030,7 +1023,6 @@
                 }
             }
             
-            // Registrar histórico da rodada
             historicoRodadas.push({
                 numero: rodadaAtual,
                 vencedor: vencedorRodada ? vencedorRodada.nome : "Empate",
@@ -1041,13 +1033,11 @@
                 acertos2: p2.acertosRodada
             });
             
-            // Atualizar placar
             document.getElementById("rodadas-player1").innerText = p1.vitorias;
             document.getElementById("rodadas-player2").innerText = p2.vitorias;
             document.getElementById("player1-vitorias").innerText = p1.vitorias;
             document.getElementById("player2-vitorias").innerText = p2.vitorias;
             
-            // Verificar se alguém venceu o duelo (3 vitórias)
             if(p1.vitorias >= 3 || p2.vitorias >= 3 || rodadaAtual >= totalRodadas) {
                 finalizarMultiplayer();
             } else {
@@ -1070,7 +1060,6 @@
                 vencedor = multiJogadores[1];
                 perdedor = multiJogadores[0];
             } else {
-                // Empate no duelo - verificar quem tem mais vitórias
                 if(multiJogadores[0].vitorias > multiJogadores[1].vitorias) {
                     vencedor = multiJogadores[0];
                     perdedor = multiJogadores[1];
@@ -1167,8 +1156,9 @@
         
         async function obterRankingPorVelocidade(modalidade, turma=null){
             let rank = await obterRanking();
-            let filt = rank.filter(r=>r.modalidade===modalidade && r.acertos>=15);
-            if(turma) filt = filt.filter(r=>r.turma===turma);
+            // ALTERADO: apenas alunos com 100% de acertos (20/20)
+            let filt = rank.filter(r => r.modalidade === modalidade && r.acertos === 20);
+            if(turma) filt = filt.filter(r => r.turma === turma);
             let mapa = new Map();
             filt.forEach(r => {
                 let chave = `${r.nome}|${r.turma}`;
@@ -1213,10 +1203,10 @@
                 titulo = `🎯 Precisão - Turma ${turma}`;
             } else if(tipoRankingAtual === "velocidade-global"){
                 ranking = await obterRankingPorVelocidade(modalidade);
-                titulo = `⚡ Velocidade Global (≥15 acertos)`;
+                titulo = `⚡ Velocidade Global (100% acertos)`;
             } else if(tipoRankingAtual === "velocidade-turma"){
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
-                titulo = `⚡ Velocidade - Turma ${turma} (≥15 acertos)`;
+                titulo = `⚡ Velocidade - Turma ${turma} (100% acertos)`;
             }
             
             document.getElementById("titulo-ranking").innerHTML = `${titulo} - ${MODALIDADES[modalidade]?.nome}`;
@@ -1374,7 +1364,8 @@
                         <td>${MODALIDADES[a.modalidade]?.nome}</td>
                         <td style="text-align:center">${a.pontos}</td>
                         <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
-                        <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
+                        <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
+                        </tr>`;
             });
             html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
