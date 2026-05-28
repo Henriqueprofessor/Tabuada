@@ -2,37 +2,41 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.0, viewport-fit=cover">
     <title>Copa Tabuada CEIB 2026 - Sistema Completo</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: Arial, sans-serif;
             background: #f0f2f5;
             color: #222;
             margin: 0;
-            padding: 16px;
+            padding: 0;
             text-align: center;
+            height: 100vh;
+            overflow-x: hidden;
         }
         .card {
             background: #fff;
             max-width: 1000px;
-            margin: 16px auto;
-            padding: 24px;
+            margin: 8px auto;
+            padding: 12px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .hidden { display: none; }
-        h1, h2, h3, p { margin-top: 0; }
-        .subtitulo { color: #555; line-height: 1.4; }
-        label { display: block; text-align: left; font-weight: bold; margin-top: 12px; }
+        h1 { font-size: 20px; margin: 4px 0; }
+        h2 { font-size: 16px; margin: 2px 0; }
+        h3, p { margin-top: 0; font-size: 14px; }
+        .subtitulo { color: #555; line-height: 1.3; font-size: 12px; }
+        label { display: block; text-align: left; font-weight: bold; margin-top: 6px; font-size: 13px; }
         input, button, select {
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
+            padding: 8px;
+            margin: 4px 0;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 14px;
         }
         button {
             background: #0066cc;
@@ -40,6 +44,8 @@
             border: none;
             cursor: pointer;
             font-weight: bold;
+            font-size: 13px;
+            padding: 10px;
         }
         button:hover:not(:disabled) { background: #004f9f; }
         button:disabled { cursor: not-allowed; opacity: 0.65; }
@@ -56,99 +62,233 @@
         .status-jogo {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 4px;
             font-weight: bold;
             color: #555;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             text-align: left;
+            font-size: 13px;
         }
-        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 8px; }
+        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 6px; }
 
-        #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+        #barra-tempo { width: 100%; height: 12px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
         #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
         #progresso.pulsando { animation: pulse 0.5s ease-in-out infinite; }
         @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
 
-        #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; }
+        #pergunta { font-size: 32px; font-weight: bold; margin: 10px 0; padding: 10px; border-radius: 12px; }
         #pergunta.erro-visual { animation: piscarVermelho 0.3s ease-in-out; }
         @keyframes piscarVermelho { 0%{background:#fff;} 50%{background:#ffcccc;} 100%{background:#fff;} }
 
-        .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .btn-opcao { background: #6c757d; padding: 14px; font-size: 20px; border-radius: 8px; }
+        .lista-opcoes { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+        .btn-opcao { background: #6c757d; padding: 10px; font-size: 18px; border-radius: 8px; }
 
-        .resumo-resultado { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; text-align: left; }
-        .resumo-resultado div { background: #f8f9fa; border-radius: 6px; padding: 10px; }
+        .resumo-resultado { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 10px 0; text-align: left; font-size: 12px; }
+        .resumo-resultado div { background: #f8f9fa; border-radius: 6px; padding: 6px; }
 
         .feedback-ranking {
             background: #e7f5ff;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
             text-align: center;
             border-left: 4px solid #0066cc;
+            font-size: 12px;
         }
         .feedback-melhorou { background: #d1e7dd; border-left-color: #198754; }
         .feedback-piorou { background: #f8d7da; border-left-color: #dc3545; }
         .feedback-manteve { background: #fff3cd; border-left-color: #ffc107; }
 
-        .mapa-tabuadas { margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 12px; text-align: left; }
-        .grade-tabuadas { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
-        .card-tabuada { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .tabuada-titulo { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-        .barra-container { background: #e9ecef; border-radius: 10px; height: 8px; overflow: hidden; margin: 8px 0; }
+        .mapa-tabuadas { margin-top: 12px; padding: 10px; background: #f8f9fa; border-radius: 10px; text-align: left; }
+        .grade-tabuadas { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 10px 0; }
+        .card-tabuada { background: white; padding: 8px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 11px; }
+        .tabuada-titulo { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; }
+        .barra-container { background: #e9ecef; border-radius: 10px; height: 6px; overflow: hidden; margin: 4px 0; }
         .barra { height: 100%; transition: width 0.3s; }
-        .percentual { font-size: 18px; font-weight: bold; margin: 4px 0; }
-        .detalhes { font-size: 11px; color: #6c757d; }
-        .mensagem { font-size: 11px; margin-top: 6px; font-weight: 500; }
-        .resumo-mapa { margin-top: 16px; padding-top: 12px; border-top: 1px solid #dee2e6; }
-        .media-geral { font-size: 16px; margin-bottom: 8px; }
-        .dica-melhoria { background: #e7f5ff; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #0a58ca; }
+        .percentual { font-size: 14px; font-weight: bold; margin: 2px 0; }
+        .detalhes { font-size: 10px; color: #6c757d; }
+        .mensagem { font-size: 10px; margin-top: 3px; font-weight: 500; }
+        .resumo-mapa { margin-top: 10px; padding-top: 8px; border-top: 1px solid #dee2e6; }
+        .media-geral { font-size: 13px; margin-bottom: 4px; }
+        .dica-melhoria { background: #e7f5ff; padding: 6px 8px; border-radius: 6px; font-size: 11px; color: #0a58ca; }
 
-        .abas-filtro { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
-        .aba { flex: 1; padding: 8px 6px; font-size: 11px; background: #e9ecef; border: none; border-radius: 6px; cursor: pointer; }
+        .abas-filtro { display: flex; gap: 3px; margin-top: 8px; flex-wrap: wrap; }
+        .aba { flex: 1; padding: 6px 4px; font-size: 10px; background: #e9ecef; border: none; border-radius: 4px; cursor: pointer; }
         .aba.ativa { background: #0066cc; color: #fff; }
-        .observacao-ranking { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 15px; margin: 15px 0; font-size: 13px; text-align: left; border-radius: 6px; color: #856404; }
-        .tabela-container { overflow-x: auto; margin-top: 14px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        .observacao-ranking { background: #fff3cd; border-left: 4px solid #ffc107; padding: 6px 10px; margin: 8px 0; font-size: 11px; text-align: left; border-radius: 6px; color: #856404; }
+        .tabela-container { overflow-x: auto; margin-top: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th, td { padding: 6px 4px; border-bottom: 1px solid #ddd; text-align: left; }
         th { background: #f8f9fa; }
-        .tag { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: bold; color: #fff; }
+        .tag { display: inline-block; padding: 3px 6px; border-radius: 999px; font-size: 10px; font-weight: bold; color: #fff; }
         .tag-classificado { background: #198754; }
         .tag-reserva { background: #fd7e14; }
         .tag-participante { background: #6c757d; }
         .sem-registros { color: #666; text-align: center; }
 
-        .conquistas-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
-        .conquista-card { background: #e9ecef; padding: 10px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: help; }
+        .conquistas-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+        .conquista-card { background: #e9ecef; padding: 6px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; cursor: help; }
         .conquista-card.desbloqueada { background: #ffc107; color: #000; }
-        .estatistica-destaque { font-size: 24px; font-weight: bold; color: #0066cc; }
+        .estatistica-destaque { font-size: 18px; font-weight: bold; color: #0066cc; }
 
-        .painel-botoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
-        .senha-container { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
-        .alunos-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-        .alunos-table th, .alunos-table td { padding: 8px; border-bottom: 1px solid #dee2e6; text-align: left; }
-        .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
-        .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
+        .painel-botoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 12px 0; }
+        .senha-container { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 12px; }
+        .alunos-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+        .alunos-table th, .alunos-table td { padding: 6px; border-bottom: 1px solid #dee2e6; text-align: left; }
+        .editar-nome { width: 100px; padding: 3px 4px; font-size: 11px; margin: 0; }
+        .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 3px 6px; cursor: pointer; }
 
-        .multiplayer-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        .player-card { flex: 1; min-width: 280px; padding: 20px; border-radius: 12px; background: #f8f9fa; text-align: center; }
+        /* MULTIPLAYER - OTIMIZADO PARA PAISAGEM */
+        #tela-multiplayer.card {
+            padding: 6px !important;
+            margin: 0 auto !important;
+            max-width: 100% !important;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #tela-multiplayer h2 {
+            font-size: 14px !important;
+            margin: 2px 0 !important;
+        }
+        
+        .aviso-orientacao {
+            background: #e7f5ff;
+            border-left: 3px solid #0066cc;
+            padding: 4px 8px;
+            margin: 4px 0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            text-align: left;
+        }
+        .aviso-orientacao .icone { font-size: 16px; }
+        .aviso-orientacao .texto { line-height: 1.2; }
+        
+        .multiplayer-container {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .player-card {
+            flex: 1;
+            padding: 6px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
         .player-card.active { background: #e7f5ff; border: 2px solid #0066cc; }
-        .player-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-        .player-score { font-size: 42px; font-weight: bold; color: #0066cc; }
-        .player-rounds { font-size: 18px; margin: 10px 0; padding: 5px; background: #e9ecef; border-radius: 8px; }
-        .player-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
-        .player-option { background: #6c757d; padding: 12px; font-size: 18px; }
+        
+        .player-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+        .player-name small {
+            font-size: 9px;
+            color: #666;
+        }
+        
+        .player-score {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0066cc;
+            line-height: 1;
+            margin: 2px 0;
+        }
+        
+        .player-rounds {
+            font-size: 13px;
+            margin: 2px 0;
+            padding: 3px;
+            background: #e9ecef;
+            border-radius: 6px;
+        }
+        
+        .player-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin-top: 4px;
+        }
+        
+        .player-option {
+            background: #6c757d;
+            padding: 12px 6px;
+            font-size: 16px;
+            border-radius: 8px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .player-option.correct { background: #198754; animation: correctFlash 0.3s; }
         .player-option.wrong { background: #dc3545; animation: wrongFlash 0.3s; }
         @keyframes correctFlash { 0%{transform:scale(1);background:#198754;} 50%{transform:scale(1.05);background:#2fb86e;} 100%{transform:scale(1);background:#198754;} }
         @keyframes wrongFlash { 0%{transform:scale(1);background:#dc3545;} 50%{transform:scale(1.05);background:#e74c3c;} 100%{transform:scale(1);background:#dc3545;} }
-        .versus { font-size: 32px; font-weight: bold; color: #ffc107; display: flex; align-items: center; justify-content: center; }
-        .current-question { font-size: 48px; font-weight: bold; margin: 20px 0; text-align: center; }
-        .temporizador { font-size: 24px; font-weight: bold; margin: 10px 0; }
+        
+        .versus {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffc107;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            writing-mode: vertical-lr;
+            padding: 0 2px;
+        }
+        
+        .current-question {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 4px 0;
+            text-align: center;
+        }
+        
+        .temporizador {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 4px 0;
+        }
         .temporizador.urgente { color: #dc3545; animation: pulse 0.5s ease-in-out infinite; }
-        .waiting-message { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; }
-        .placar-rodadas { display: flex; justify-content: center; gap: 30px; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; }
-        .vitorias { font-size: 28px; font-weight: bold; color: #ffc107; }
+        
+        .waiting-message {
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+        
+        .placar-rodadas {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 4px 0;
+            padding: 4px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .round-info {
+            margin: 4px 0;
+        }
+        .round-info div:first-child {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .vitorias { font-size: 20px; font-weight: bold; color: #ffc107; }
 
         .modal-overlay {
             position: fixed;
@@ -164,80 +304,112 @@
         }
         .modal-content {
             background: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 16px;
             text-align: center;
-            max-width: 400px;
+            max-width: 350px;
             width: 90%;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
         .modal-content h3 {
             margin-top: 0;
             color: #0066cc;
+            font-size: 16px;
         }
         .modal-pause-message {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
-            margin: 15px 0;
+            margin: 10px 0;
             background: #f8f9fa;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
         }
         .modal-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .modal-buttons button {
+            font-size: 12px;
+            padding: 10px;
         }
 
-        #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
+        #toast-pontuacao {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #198754;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
         #coluna-status.hidden, #coluna-turma.hidden { display: none; }
 
         .historico-duelos {
-            max-height: 500px;
+            max-height: 400px;
             overflow-y: auto;
-            margin-top: 15px;
-            font-size: 12px;
+            margin-top: 10px;
+            font-size: 10px;
         }
         .historico-duelos table {
             width: 100%;
-            font-size: 11px;
+            font-size: 9px;
         }
         .historico-duelos th, .historico-duelos td {
-            padding: 6px 4px;
+            padding: 4px 2px;
         }
         .detalhes-duelo {
-            font-size: 10px;
+            font-size: 8px;
             color: #666;
-            margin-top: 5px;
-        }
-        .aviso-orientacao {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 12px 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            text-align: left;
+            margin-top: 3px;
         }
         .config-jogador {
             background: #f8f9fa;
-            padding: 12px;
+            padding: 8px;
             border-radius: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
         .config-jogador h4 {
-            margin: 0 0 10px 0;
+            margin: 0 0 6px 0;
             color: #0066cc;
+            font-size: 14px;
         }
 
         @media (max-width: 700px) {
-            .multiplayer-container { flex-direction: column; }
-            .versus { margin: 10px 0; }
-            .current-question { font-size: 32px; }
-            .player-options { grid-template-columns: repeat(3, 1fr); }
+            .multiplayer-container {
+                flex-direction: row !important;
+                gap: 4px !important;
+            }
+            .versus {
+                writing-mode: vertical-lr;
+                margin: 0 2px;
+                font-size: 16px;
+            }
+            .current-question { font-size: 24px; }
+            .player-options { gap: 3px; }
+            .player-option { padding: 10px 4px; font-size: 14px; min-height: 38px; }
+            .player-name { font-size: 12px; }
+            .player-score { font-size: 24px; }
+            .player-rounds { font-size: 11px; }
+            .placar-rodadas { font-size: 12px; gap: 10px; }
+            .temporizador { font-size: 16px; }
+            #tela-multiplayer h2 { font-size: 12px !important; }
+            .round-info div:first-child { font-size: 10px; }
+        }
+
+        @media (max-width: 400px) {
+            .player-option { padding: 8px 2px; font-size: 12px; min-height: 32px; }
+            .player-name { font-size: 11px; }
+            .player-score { font-size: 20px; }
+            .current-question { font-size: 20px; }
+            .versus { font-size: 14px; }
         }
     </style>
 </head>
@@ -248,14 +420,14 @@
     <div id="tela-inicial" class="card">
         <h1>Copa Tabuada CEIB 2026</h1>
         <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="mostrarTela('tela-single')" class="botao-verde">🎮 Single Player</button>
-            <button onclick="mostrarTela('tela-config-multi')" class="botao-multiplayer">👥 Multiplayer Local</button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="mostrarTela('tela-single')" class="botao-verde" style="font-size:13px;padding:8px;">🎮 Single Player</button>
+            <button onclick="mostrarTela('tela-config-multi')" class="botao-multiplayer" style="font-size:13px;padding:8px;">👥 Multiplayer Local</button>
         </div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-            <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
-            <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
-            <button onclick="mostrarTela('tela-painel')" class="botao-painel">🔧 Painel do Professor</button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+            <button onclick="mostrarTela('tela-ranking')" class="botao-secundario" style="font-size:12px;padding:8px;">📊 Rankings</button>
+            <button onclick="mostrarTela('tela-perfil')" class="botao-perfil" style="font-size:12px;padding:8px;">👤 Meu Perfil</button>
+            <button onclick="mostrarTela('tela-painel')" class="botao-painel" style="font-size:12px;padding:8px;">🔧 Painel do Professor</button>
         </div>
     </div>
 
@@ -277,17 +449,17 @@
             <option value="6-9">Tabuadas do 6 ao 9</option>
             <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
         </select>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 8px;">
             <button onclick="registrarAluno(false)">🏆 Classificatória</button>
             <button class="botao-treino" onclick="registrarAluno(true)">🎯 Modo Treino</button>
         </div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top: 10px;">⬅️ Voltar</button>
+        <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top: 8px;">⬅️ Voltar</button>
     </div>
 
     <!-- TELA DE JOGO SINGLE -->
     <div id="tela-jogo" class="card hidden">
         <h2 id="titulo-jogo">Classificatória</h2>
-        <div id="modo-treino-badge" class="hidden" style="background:#fd7e14;padding:5px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;">🎯 MODO TREINO</div>
+        <div id="modo-treino-badge" class="hidden" style="background:#fd7e14;padding:4px 8px;border-radius:20px;display:inline-block;margin-bottom:6px;font-size:12px;">🎯 MODO TREINO</div>
         <div class="status-jogo">
             <span id="info-pergunta">Pergunta: 1 / 20</span>
             <span id="info-pontos">Pontos: 0</span>
@@ -296,7 +468,7 @@
         </div>
         <div id="barra-tempo"><div id="progresso"></div></div>
         <div id="pergunta">X x Y = ?</div>
-        <div id="dica-resposta" class="hidden" style="background:#e7f5ff;padding:10px;border-radius:8px;margin:10px 0;"></div>
+        <div id="dica-resposta" class="hidden" style="background:#e7f5ff;padding:8px;border-radius:8px;margin:8px 0;"></div>
         <div class="lista-opcoes">
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
@@ -305,7 +477,7 @@
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
         </div>
         <button class="botao-forcar" onclick="forcarFinalizacao()" style="background:#dc3545;">⚠️ Forçar Finalização</button>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">🚪 Sair</button>
+        <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:6px;">🚪 Sair</button>
     </div>
 
     <!-- TELA DE RESULTADO SINGLE -->
@@ -323,9 +495,9 @@
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
         <div id="feedback-ranking-container" class="feedback-ranking"></div>
-        <div id="novas-conquistas" style="background:#e7f5ff;border-radius:12px;padding:12px;margin:16px 0;"></div>
+        <div id="novas-conquistas" style="background:#e7f5ff;border-radius:10px;padding:8px;margin:10px 0;"></div>
         <div id="mapa-tabuadas-container"></div>
-        <div style="display:flex;gap:10px;">
+        <div style="display:flex;gap:8px;">
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Início</button>
         </div>
     </div>
@@ -334,7 +506,7 @@
     <div id="tela-config-multi" class="card hidden">
         <h2>👥 Multiplayer Local</h2>
         
-        <div class="aviso-orientacao">
+        <div class="aviso-orientacao" style="background:#fff3cd; border-left-color:#ffc107;">
             <div class="icone">📱🔄</div>
             <div class="texto">
                 <strong>⚠️ ATENÇÃO!</strong><br>
@@ -356,7 +528,7 @@
             </div>
         </div>
         
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <div class="config-jogador" style="flex: 1;">
                 <h4>👤 JOGADOR 1</h4>
                 <input type="text" id="jogador1-nome" placeholder="Nome do Jogador 1">
@@ -386,29 +558,31 @@
             <option value="0-10" selected>Completa - Tabuadas do 0 ao 10</option>
         </select>
         
-        <div style="display:flex;gap:10px;margin-top:15px;">
+        <div style="display:flex;gap:8px;margin-top:10px;">
             <button onclick="iniciarMultiplayer()" class="botao-verde">🎮 Iniciar Duelo</button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-secundario">⬅️ Voltar</button>
         </div>
     </div>
 
-    <!-- TELA MULTIPLAYER -->
+    <!-- TELA MULTIPLAYER - OTIMIZADA PARA PAISAGEM -->
     <div id="tela-multiplayer" class="card hidden">
         <h2>👥 Duelo de Tabuadas</h2>
         
-        <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;">
-            <div class="icone">📱🔄</div>
-            <div class="texto">
-                <strong>📱 Celular na horizontal!</strong><br>
-                Mantenha o celular deitado para melhor visualização dos botões.
-            </div>
+        <div class="placar-rodadas">
+            <div>🏆 <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span> 🏆</div>
+        </div>
+        
+        <div class="round-info">
+            <div>🎮 Rodada <span id="rodada-atual">1</span>/5 | Pergunta <span id="pergunta-rodada">1</span>/10</div>
+            <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
+            <div id="temporizador" class="temporizador">⏱️ 7.0s</div>
         </div>
         
         <div class="multiplayer-container">
             <div id="player1-card" class="player-card active">
                 <div class="player-name"><span id="player1-name">Jogador 1</span></div>
                 <div class="player-score" id="player1-pontos">0</div>
-                <div class="player-rounds">🏆 Vitórias: <span id="player1-vitorias">0</span></div>
+                <div class="player-rounds">🏆 <span id="player1-vitorias">0</span> vitórias</div>
                 <div id="player1-opcoes" class="player-options">
                     <button class="player-option" onclick="responderMultiplayer(1,0)"></button>
                     <button class="player-option" onclick="responderMultiplayer(1,1)"></button>
@@ -419,7 +593,7 @@
             <div id="player2-card" class="player-card">
                 <div class="player-name"><span id="player2-name">Jogador 2</span></div>
                 <div class="player-score" id="player2-pontos">0</div>
-                <div class="player-rounds">🏆 Vitórias: <span id="player2-vitorias">0</span></div>
+                <div class="player-rounds">🏆 <span id="player2-vitorias">0</span> vitórias</div>
                 <div id="player2-opcoes" class="player-options">
                     <button class="player-option" onclick="responderMultiplayer(2,0)"></button>
                     <button class="player-option" onclick="responderMultiplayer(2,1)"></button>
@@ -428,25 +602,15 @@
             </div>
         </div>
         
-        <div class="placar-rodadas">
-            <div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div>
-        </div>
-        
-        <div class="round-info">
-            <div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div>
-            <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
-            <div id="temporizador" class="temporizador">⏱️ 7.0s</div>
-        </div>
-        
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
-        <button onclick="reiniciarMultiplayer()" class="botao-secundario">🚪 Sair do Duelo</button>
+        <button onclick="reiniciarMultiplayer()" class="botao-secundario" style="margin-top:4px;padding:8px;font-size:12px;">🚪 Sair do Duelo</button>
     </div>
 
     <!-- TELA RESULTADO MULTIPLAYER -->
     <div id="tela-resultado-multi" class="card hidden">
         <h2 id="resultado-titulo-multi">🏆 Fim do Duelo!</h2>
-        <div id="resultado-conteudo-multi" style="padding:20px;"></div>
-        <div style="display:flex;gap:10px;">
+        <div id="resultado-conteudo-multi" style="padding:15px;"></div>
+        <div style="display:flex;gap:8px;">
             <button onclick="mostrarTela('tela-config-multi')" class="botao-multiplayer">👥 Novo Duelo</button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-secundario">🏠 Início</button>
         </div>
@@ -456,12 +620,12 @@
     <div id="tela-ranking" class="card hidden">
         <h2>Rankings</h2>
         <div class="abas-filtro">
-            <button class="aba" id="aba-turma" onclick="mudarTipoRanking('turma')">🏆 Por Turma</button>
+            <button class="aba" id="aba-turma" onclick="mudarTipoRanking('turma')">🏆 Turma</button>
             <button class="aba" id="aba-global" onclick="mudarTipoRanking('global')">🌍 Global</button>
-            <button class="aba" id="aba-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão Global</button>
-            <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
-            <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
-            <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
+            <button class="aba" id="aba-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão</button>
+            <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Prec.Turma</button>
+            <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade</button>
+            <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Vel.Turma</button>
         </div>
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados neste ranking.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()">
@@ -506,7 +670,7 @@
                 <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
                 <button onclick="verHistoricoDuelos()" class="botao-multiplayer">📜 Histórico de Duelos</button>
             </div>
-            <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;">
+            <div id="painel-reset" class="hidden" style="margin-top:15px;padding:12px;background:#fff3cd;border-radius:8px;">
                 <h4>⚠️ Resetar Ranking</h4>
                 <select id="reset-turma">
                     <option value="todas">🏫 TODAS AS TURMAS</option>
@@ -520,9 +684,9 @@
                 </select>
                 <button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button>
             </div>
-            <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;">
+            <div id="painel-alunos" class="hidden" style="margin-top:15px;padding:12px;background:#f8f9fa;border-radius:8px;">
                 <h4>👥 Gerenciar Alunos</h4>
-                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
                     <input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()">
                     <select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()">
                         <option value="">Todas turmas</option>
@@ -531,17 +695,17 @@
                         <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
                     </select>
                 </div>
-                <div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div>
-                <div style="margin-top:16px;display:flex;gap:10px;">
+                <div id="lista-alunos-container" style="max-height:350px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div>
+                <div style="margin-top:12px;display:flex;gap:8px;">
                     <button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button>
                 </div>
             </div>
-            <div id="painel-estatisticas" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"></div>
-            <div id="painel-historico-duelos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;">
+            <div id="painel-estatisticas" class="hidden" style="margin-top:15px;padding:12px;background:#f8f9fa;border-radius:8px;"></div>
+            <div id="painel-historico-duelos" class="hidden" style="margin-top:15px;padding:12px;background:#f8f9fa;border-radius:8px;">
                 <h4>📜 Histórico Completo de Duelos</h4>
                 <div id="historico-duelos-completo" class="historico-duelos"></div>
-                <button onclick="limparHistoricoDuelos()" class="botao-forcar" style="background:#fd7e14; margin-top:10px;">🗑️ Limpar Histórico</button>
-                <button onclick="fecharHistoricoDuelos()" class="botao-secundario" style="margin-top:10px;">Fechar</button>
+                <button onclick="limparHistoricoDuelos()" class="botao-forcar" style="background:#fd7e14; margin-top:8px;">🗑️ Limpar Histórico</button>
+                <button onclick="fecharHistoricoDuelos()" class="botao-secundario" style="margin-top:8px;">Fechar</button>
             </div>
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -624,6 +788,11 @@
             const telas = ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-config-multi","tela-multiplayer","tela-resultado-multi","tela-ranking","tela-perfil","tela-painel"];
             telas.forEach(t=>{ let el=document.getElementById(t); if(el) el.classList.add("hidden"); });
             document.getElementById(id).classList.remove("hidden");
+            
+            // Ajustar altura da tela multiplayer
+            if(id === "tela-multiplayer") {
+                document.getElementById("tela-multiplayer").style.height = window.innerHeight + "px";
+            }
         }
 
         // ========== HISTÓRICO DE DUELOS ==========
@@ -1075,8 +1244,8 @@
             historicoRodadas = [];
             multiAtivo = true;
             
-            document.getElementById("player1-name").innerHTML = `${n1}<br><small style="font-size:12px">Turma ${t1}</small>`;
-            document.getElementById("player2-name").innerHTML = `${n2}<br><small style="font-size:12px">Turma ${t2}</small>`;
+            document.getElementById("player1-name").innerHTML = `${n1}<br><small style="font-size:9px">Turma ${t1}</small>`;
+            document.getElementById("player2-name").innerHTML = `${n2}<br><small style="font-size:9px">Turma ${t2}</small>`;
             document.getElementById("rodadas-player1").innerText = "0";
             document.getElementById("rodadas-player2").innerText = "0";
             document.getElementById("player1-vitorias").innerText = "0";
@@ -1630,9 +1799,9 @@
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
             let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
-                html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"><td style="text-align:center">${a.turma}<td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}<td style="text-align:center">${a.pontos}<td style="text-align:center">${new Date(a.data).toLocaleDateString()}<td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>`;
+                html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:100px;"><td style="text-align:center">${a.turma}<td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}<td style="text-align:center">${a.pontos}<td style="text-align:center">${new Date(a.data).toLocaleDateString()}<td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>`;
             });
-            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:8px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         
@@ -1672,6 +1841,14 @@
             renderizarRanking();
             mostrarToast("✅ Nomes atualizados");
         }
+
+        // Ajustar altura ao redimensionar
+        window.addEventListener('resize', () => {
+            let telaMulti = document.getElementById("tela-multiplayer");
+            if(telaMulti && !telaMulti.classList.contains("hidden")) {
+                telaMulti.style.height = window.innerHeight + "px";
+            }
+        });
 
         window.onload = ()=>{ mostrarTela("tela-inicial"); renderizarRanking(); };
     </script>
