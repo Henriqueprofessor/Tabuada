@@ -134,13 +134,12 @@
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
         .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
 
-        /* ESTILOS GERAIS DO MULTIPLAYER - LAYOUT VERTICAL */
+        /* ========== ESTILOS DO MODO MULTIPLAYER (VERTICAL INVERTIDO) ========== */
         #tela-multiplayer .multiplayer-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            height: calc(100vh - 120px); /* Ajuste conforme necessário */
-            min-height: 500px;
+            height: calc(100vh - 120px);
+            min-height: 520px;
         }
         #tela-multiplayer .player-card {
             flex: 1;
@@ -148,25 +147,25 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 8px;
             border-radius: 12px;
             background: #f8f9fa;
         }
         #tela-multiplayer .player-card.active { background: #e7f5ff; border: 2px solid #0066cc; }
-        #tela-multiplayer .player-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
-        #tela-multiplayer .player-score { font-size: 28px; font-weight: bold; color: #0066cc; }
-        #tela-multiplayer .player-rounds { font-size: 14px; margin: 5px 0; padding: 4px; background: #e9ecef; border-radius: 6px; }
+        #tela-multiplayer .player-name { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+        #tela-multiplayer .player-score { font-size: 24px; font-weight: bold; color: #0066cc; }
+        #tela-multiplayer .player-rounds { font-size: 13px; margin: 4px 0; padding: 3px; background: #e9ecef; border-radius: 6px; }
         #tela-multiplayer .player-options {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 6px;
         }
         #tela-multiplayer .player-option {
             background: #6c757d;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 18px;
             font-size: 18px;
             border-radius: 8px;
             cursor: pointer;
@@ -177,46 +176,52 @@
         #tela-multiplayer .player-option.wrong { background: #dc3545; animation: wrongFlash 0.3s; }
         @keyframes correctFlash { 0%{transform:scale(1);background:#198754;} 50%{transform:scale(1.05);background:#2fb86e;} 100%{transform:scale(1);background:#198754;} }
         @keyframes wrongFlash { 0%{transform:scale(1);background:#dc3545;} 50%{transform:scale(1.05);background:#e74c3c;} 100%{transform:scale(1);background:#dc3545;} }
-        
+
+        /* Jogador 2 invertido */
+        #player2-card {
+            transform: rotate(180deg);
+            flex-direction: column-reverse; /* inverte a ordem interna para manter layout lógico */
+        }
+
         #tela-multiplayer .versus {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             color: #ffc107;
             text-align: center;
-            margin: 5px 0;
+            margin: 4px 0;
         }
         #tela-multiplayer .current-question {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 8px 0;
             text-align: center;
         }
         #tela-multiplayer .temporizador {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
-            margin: 5px 0;
+            margin: 4px 0;
         }
         #tela-multiplayer .temporizador.urgente { color: #dc3545; animation: pulse 0.5s ease-in-out infinite; }
         #tela-multiplayer .waiting-message {
             background: #fff3cd;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
-            margin: 10px 0;
+            margin: 8px 0;
         }
         #tela-multiplayer .placar-rodadas {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin: 5px 0;
-            padding: 5px;
+            margin: 4px 0;
+            padding: 4px;
             background: #f8f9fa;
             border-radius: 8px;
         }
         #tela-multiplayer .round-info {
             text-align: center;
-            margin: 5px 0;
+            margin: 4px 0;
         }
-        #tela-multiplayer .round-info div:first-child { font-size: 14px; color: #666; }
+        #tela-multiplayer .round-info div:first-child { font-size: 13px; color: #666; }
 
         .config-jogador {
             background: #f8f9fa;
@@ -419,7 +424,7 @@
         </div>
     </div>
 
-    <!-- TELA MULTIPLAYER (LAYOUT VERTICAL) -->
+    <!-- TELA MULTIPLAYER (FORMATO DE DUELO VERTICAL INVERTIDO) -->
     <div id="tela-multiplayer" class="card hidden" style="max-width:600px; padding:10px;">
         <h2 style="font-size:18px; margin:4px 0;">👥 Duelo de Tabuadas</h2>
         
@@ -432,7 +437,7 @@
         </div>
         
         <div class="multiplayer-container">
-            <!-- Jogador 1 (Topo) -->
+            <!-- Jogador 1 (topo) -->
             <div id="player1-card" class="player-card active">
                 <div class="player-name"><span id="player1-name">Jogador 1</span></div>
                 <div class="player-score" id="player1-pontos">0</div>
@@ -445,13 +450,13 @@
             </div>
             
             <!-- Área central: pergunta e timer -->
-            <div style="text-align:center; padding:5px;">
+            <div style="text-align:center; padding:6px;">
                 <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
                 <div id="temporizador" class="temporizador">⏱️ 7.0s</div>
                 <div class="versus">VS</div>
             </div>
             
-            <!-- Jogador 2 (Base) -->
+            <!-- Jogador 2 (base, invertido) -->
             <div id="player2-card" class="player-card">
                 <div class="player-name"><span id="player2-name">Jogador 2</span></div>
                 <div class="player-score" id="player2-pontos">0</div>
