@@ -134,40 +134,44 @@
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
         .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
 
-        /* ESTILOS GERAIS DO MULTIPLAYER (APENAS PARA OS ELEMENTOS DENTRO DA TELA MULTIPLAYER) */
+        /* ESTILOS GERAIS DO MULTIPLAYER - LAYOUT VERTICAL */
         #tela-multiplayer .multiplayer-container {
             display: flex;
+            flex-direction: column;
             gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
+            height: calc(100vh - 120px); /* Ajuste conforme necessário */
+            min-height: 500px;
         }
         #tela-multiplayer .player-card {
             flex: 1;
-            min-width: 200px;
-            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
             border-radius: 12px;
             background: #f8f9fa;
-            text-align: center;
         }
         #tela-multiplayer .player-card.active { background: #e7f5ff; border: 2px solid #0066cc; }
-        #tela-multiplayer .player-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
-        #tela-multiplayer .player-score { font-size: 36px; font-weight: bold; color: #0066cc; }
-        #tela-multiplayer .player-rounds { font-size: 16px; margin: 8px 0; padding: 5px; background: #e9ecef; border-radius: 8px; }
+        #tela-multiplayer .player-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        #tela-multiplayer .player-score { font-size: 28px; font-weight: bold; color: #0066cc; }
+        #tela-multiplayer .player-rounds { font-size: 14px; margin: 5px 0; padding: 4px; background: #e9ecef; border-radius: 6px; }
         #tela-multiplayer .player-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-top: 10px;
         }
         #tela-multiplayer .player-option {
             background: #6c757d;
             color: white;
             border: none;
-            padding: 14px 8px;
+            padding: 12px 20px;
             font-size: 18px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            min-width: 60px;
         }
         #tela-multiplayer .player-option.correct { background: #198754; animation: correctFlash 0.3s; }
         #tela-multiplayer .player-option.wrong { background: #dc3545; animation: wrongFlash 0.3s; }
@@ -175,56 +179,45 @@
         @keyframes wrongFlash { 0%{transform:scale(1);background:#dc3545;} 50%{transform:scale(1.05);background:#e74c3c;} 100%{transform:scale(1);background:#dc3545;} }
         
         #tela-multiplayer .versus {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             color: #ffc107;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-align: center;
+            margin: 5px 0;
         }
         #tela-multiplayer .current-question {
-            font-size: 42px;
+            font-size: 36px;
             font-weight: bold;
-            margin: 15px 0;
+            margin: 10px 0;
             text-align: center;
         }
         #tela-multiplayer .temporizador {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
-            margin: 8px 0;
+            margin: 5px 0;
         }
         #tela-multiplayer .temporizador.urgente { color: #dc3545; animation: pulse 0.5s ease-in-out infinite; }
         #tela-multiplayer .waiting-message {
             background: #fff3cd;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
             margin: 10px 0;
         }
         #tela-multiplayer .placar-rodadas {
             display: flex;
             justify-content: center;
-            gap: 25px;
-            margin: 10px 0;
-            padding: 8px;
+            gap: 20px;
+            margin: 5px 0;
+            padding: 5px;
             background: #f8f9fa;
             border-radius: 8px;
         }
-        #tela-multiplayer .round-info { margin: 8px 0; }
+        #tela-multiplayer .round-info {
+            text-align: center;
+            margin: 5px 0;
+        }
         #tela-multiplayer .round-info div:first-child { font-size: 14px; color: #666; }
 
-        /* AVISO DE ORIENTAÇÃO */
-        .aviso-orientacao {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 12px 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            text-align: left;
-        }
         .config-jogador {
             background: #f8f9fa;
             padding: 12px;
@@ -283,130 +276,6 @@
         .historico-duelos table { width: 100%; font-size: 11px; }
         .historico-duelos th, .historico-duelos td { padding: 6px 4px; }
         .detalhes-duelo { font-size: 10px; color: #666; margin-top: 5px; }
-
-        /* ESTILOS RESPONSIVOS PARA MULTIPLAYER EM PAISAGEM */
-        @media (max-width: 700px) and (orientation: landscape) {
-            body { padding: 0; margin: 0; }
-            
-            #tela-multiplayer.card {
-                margin: 0 !important;
-                padding: 4px !important;
-                max-width: 100% !important;
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-                border-radius: 0;
-            }
-            
-            #tela-multiplayer h2 { font-size: 12px; margin: 2px 0; }
-            
-            #tela-multiplayer .placar-rodadas {
-                margin: 2px 0;
-                padding: 3px;
-                font-size: 12px;
-                gap: 10px;
-            }
-            
-            #tela-multiplayer .round-info { margin: 2px 0; }
-            #tela-multiplayer .round-info div:first-child { font-size: 10px; }
-            
-            #tela-multiplayer .current-question {
-                font-size: 22px;
-                margin: 4px 0;
-            }
-            
-            #tela-multiplayer .temporizador {
-                font-size: 16px;
-                margin: 2px 0;
-            }
-            
-            #tela-multiplayer .multiplayer-container {
-                flex-direction: row;
-                gap: 4px;
-                flex: 1;
-                min-height: 0;
-            }
-            
-            #tela-multiplayer .player-card {
-                flex: 1;
-                min-width: 0;
-                padding: 4px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-            
-            #tela-multiplayer .player-name {
-                font-size: 12px;
-                margin-bottom: 2px;
-                line-height: 1.2;
-            }
-            #tela-multiplayer .player-name small { font-size: 8px; }
-            
-            #tela-multiplayer .player-score {
-                font-size: 22px;
-                line-height: 1;
-                margin: 2px 0;
-            }
-            
-            #tela-multiplayer .player-rounds {
-                font-size: 11px;
-                margin: 2px 0;
-                padding: 2px;
-            }
-            
-            #tela-multiplayer .player-options {
-                gap: 3px;
-                margin-top: 3px;
-            }
-            
-            #tela-multiplayer .player-option {
-                padding: 10px 4px;
-                font-size: 14px;
-                border-radius: 6px;
-            }
-            
-            #tela-multiplayer .versus {
-                font-size: 16px;
-                writing-mode: vertical-lr;
-                padding: 0 2px;
-            }
-            
-            #tela-multiplayer .aviso-orientacao {
-                padding: 3px 6px;
-                margin: 2px 0;
-                font-size: 9px;
-                gap: 4px;
-            }
-            #tela-multiplayer .aviso-orientacao .icone { font-size: 14px; }
-            
-            #tela-multiplayer button.botao-secundario {
-                padding: 6px;
-                font-size: 10px;
-                margin-top: 2px;
-            }
-        }
-        
-        @media (max-width: 400px) and (orientation: landscape) {
-            #tela-multiplayer .player-option {
-                padding: 6px 2px;
-                font-size: 12px;
-            }
-            #tela-multiplayer .player-name { font-size: 10px; }
-            #tela-multiplayer .player-score { font-size: 18px; }
-            #tela-multiplayer .current-question { font-size: 18px; }
-        }
-        
-        /* Manter comportamento normal em retrato */
-        @media (max-width: 700px) and (orientation: portrait) {
-            #tela-multiplayer .multiplayer-container {
-                flex-direction: column;
-            }
-            #tela-multiplayer .versus {
-                writing-mode: horizontal-tb;
-                margin: 8px 0;
-            }
-        }
     </style>
 </head>
 <body>
@@ -502,17 +371,7 @@
     <div id="tela-config-multi" class="card hidden">
         <h2>👥 Multiplayer Local</h2>
         
-        <div class="aviso-orientacao">
-            <div class="icone">📱🔄</div>
-            <div class="texto">
-                <strong>⚠️ ATENÇÃO!</strong><br>
-                Para melhor experiência, <strong>vire o celular na horizontal (modo paisagem/deitado)</strong>.<br>
-                Os botões ficarão maiores e mais fáceis de apertar!
-            </div>
-        </div>
-        
         <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;">
-            <div class="icone">🏆📊</div>
             <div class="texto">
                 <strong>📋 REGRAS DO DUELO:</strong><br>
                 • Cada RODADA tem <strong>10 perguntas</strong><br>
@@ -560,29 +419,20 @@
         </div>
     </div>
 
-    <!-- TELA MULTIPLAYER -->
-    <div id="tela-multiplayer" class="card hidden">
-        <h2>👥 Duelo de Tabuadas</h2>
-        
-        <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;">
-            <div class="icone">📱🔄</div>
-            <div class="texto">
-                <strong>📱 Celular na horizontal!</strong><br>
-                Mantenha o celular deitado para melhor visualização dos botões.
-            </div>
-        </div>
+    <!-- TELA MULTIPLAYER (LAYOUT VERTICAL) -->
+    <div id="tela-multiplayer" class="card hidden" style="max-width:600px; padding:10px;">
+        <h2 style="font-size:18px; margin:4px 0;">👥 Duelo de Tabuadas</h2>
         
         <div class="placar-rodadas">
             <div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div>
         </div>
         
         <div class="round-info">
-            <div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div>
-            <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
-            <div id="temporizador" class="temporizador">⏱️ 7.0s</div>
+            <div>🎮 Rodada <span id="rodada-atual">1</span>/5 | Pergunta <span id="pergunta-rodada">1</span>/10</div>
         </div>
         
         <div class="multiplayer-container">
+            <!-- Jogador 1 (Topo) -->
             <div id="player1-card" class="player-card active">
                 <div class="player-name"><span id="player1-name">Jogador 1</span></div>
                 <div class="player-score" id="player1-pontos">0</div>
@@ -593,7 +443,15 @@
                     <button class="player-option" onclick="responderMultiplayer(1,2)"></button>
                 </div>
             </div>
-            <div class="versus">VS</div>
+            
+            <!-- Área central: pergunta e timer -->
+            <div style="text-align:center; padding:5px;">
+                <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
+                <div id="temporizador" class="temporizador">⏱️ 7.0s</div>
+                <div class="versus">VS</div>
+            </div>
+            
+            <!-- Jogador 2 (Base) -->
             <div id="player2-card" class="player-card">
                 <div class="player-name"><span id="player2-name">Jogador 2</span></div>
                 <div class="player-score" id="player2-pontos">0</div>
@@ -607,7 +465,7 @@
         </div>
         
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
-        <button onclick="reiniciarMultiplayer()" class="botao-secundario">🚪 Sair do Duelo</button>
+        <button onclick="reiniciarMultiplayer()" class="botao-secundario" style="margin-top:8px;">🚪 Sair do Duelo</button>
     </div>
 
     <!-- TELA RESULTADO MULTIPLAYER -->
