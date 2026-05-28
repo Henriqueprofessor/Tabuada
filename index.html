@@ -134,12 +134,12 @@
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
         .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
 
-        /* ========== ESTILOS DO MODO MULTIPLAYER (VERTICAL INVERTIDO) ========== */
+        /* ========== ESTILOS DO MODO MULTIPLAYER (DUELO VERTICAL INVERTIDO) ========== */
         #tela-multiplayer .multiplayer-container {
             display: flex;
             flex-direction: column;
             height: calc(100vh - 120px);
-            min-height: 520px;
+            min-height: 560px;
         }
         #tela-multiplayer .player-card {
             flex: 1;
@@ -147,30 +147,30 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 8px;
+            padding: 6px;
             border-radius: 12px;
             background: #f8f9fa;
         }
         #tela-multiplayer .player-card.active { background: #e7f5ff; border: 2px solid #0066cc; }
-        #tela-multiplayer .player-name { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
-        #tela-multiplayer .player-score { font-size: 24px; font-weight: bold; color: #0066cc; }
-        #tela-multiplayer .player-rounds { font-size: 13px; margin: 4px 0; padding: 3px; background: #e9ecef; border-radius: 6px; }
+        #tela-multiplayer .player-name { font-size: 15px; font-weight: bold; margin-bottom: 2px; }
+        #tela-multiplayer .player-score { font-size: 22px; font-weight: bold; color: #0066cc; }
+        #tela-multiplayer .player-rounds { font-size: 12px; margin: 2px 0; padding: 2px; background: #e9ecef; border-radius: 6px; }
         #tela-multiplayer .player-options {
             display: flex;
             justify-content: center;
             gap: 8px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
         #tela-multiplayer .player-option {
             background: #6c757d;
             color: white;
             border: none;
-            padding: 12px 18px;
+            padding: 10px 16px;
             font-size: 18px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            min-width: 60px;
+            min-width: 55px;
         }
         #tela-multiplayer .player-option.correct { background: #198754; animation: correctFlash 0.3s; }
         #tela-multiplayer .player-option.wrong { background: #dc3545; animation: wrongFlash 0.3s; }
@@ -180,48 +180,70 @@
         /* Jogador 2 invertido */
         #player2-card {
             transform: rotate(180deg);
-            flex-direction: column-reverse; /* inverte a ordem interna para manter layout lógico */
+            flex-direction: column-reverse;
         }
 
         #tela-multiplayer .versus {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             color: #ffc107;
             text-align: center;
-            margin: 4px 0;
+            margin: 2px 0;
         }
-        #tela-multiplayer .current-question {
-            font-size: 32px;
+
+        /* Barra de progresso do multiplayer */
+        #tela-multiplayer .multi-barra-container {
+            width: 90%;
+            max-width: 400px;
+            height: 14px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 8px auto;
+        }
+        #tela-multiplayer .multi-barra-progresso {
+            height: 100%;
+            background: #198754;
+            transition: width 0.1s linear;
+            border-radius: 10px;
+        }
+        #tela-multiplayer .multi-barra-progresso.urgente {
+            background: #dc3545;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        /* Perguntas */
+        #tela-multiplayer .pergunta-jogador {
+            font-size: 28px;
             font-weight: bold;
-            margin: 8px 0;
+            margin: 4px 0;
             text-align: center;
         }
-        #tela-multiplayer .temporizador {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 4px 0;
+        #tela-multiplayer .pergunta-jogador.invertida {
+            transform: rotate(180deg);
         }
-        #tela-multiplayer .temporizador.urgente { color: #dc3545; animation: pulse 0.5s ease-in-out infinite; }
+
         #tela-multiplayer .waiting-message {
             background: #fff3cd;
-            padding: 8px;
+            padding: 6px;
             border-radius: 8px;
-            margin: 8px 0;
+            margin: 4px 0;
+            font-size: 13px;
         }
         #tela-multiplayer .placar-rodadas {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin: 4px 0;
-            padding: 4px;
+            margin: 2px 0;
+            padding: 3px;
             background: #f8f9fa;
             border-radius: 8px;
         }
         #tela-multiplayer .round-info {
             text-align: center;
-            margin: 4px 0;
+            margin: 2px 0;
         }
-        #tela-multiplayer .round-info div:first-child { font-size: 13px; color: #666; }
+        #tela-multiplayer .round-info div:first-child { font-size: 12px; color: #666; }
 
         .config-jogador {
             background: #f8f9fa;
@@ -424,9 +446,9 @@
         </div>
     </div>
 
-    <!-- TELA MULTIPLAYER (FORMATO DE DUELO VERTICAL INVERTIDO) -->
-    <div id="tela-multiplayer" class="card hidden" style="max-width:600px; padding:10px;">
-        <h2 style="font-size:18px; margin:4px 0;">👥 Duelo de Tabuadas</h2>
+    <!-- TELA MULTIPLAYER (DUELO VERTICAL COM BARRA DE PROGRESSO E PERGUNTAS DUPLICADAS) -->
+    <div id="tela-multiplayer" class="card hidden" style="max-width:600px; padding:8px;">
+        <h2 style="font-size:16px; margin:2px 0;">👥 Duelo de Tabuadas</h2>
         
         <div class="placar-rodadas">
             <div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div>
@@ -442,6 +464,7 @@
                 <div class="player-name"><span id="player1-name">Jogador 1</span></div>
                 <div class="player-score" id="player1-pontos">0</div>
                 <div class="player-rounds">🏆 Vitórias: <span id="player1-vitorias">0</span></div>
+                <div class="pergunta-jogador" id="pergunta-jogador1">? x ? = ?</div>
                 <div id="player1-opcoes" class="player-options">
                     <button class="player-option" onclick="responderMultiplayer(1,0)"></button>
                     <button class="player-option" onclick="responderMultiplayer(1,1)"></button>
@@ -449,10 +472,12 @@
                 </div>
             </div>
             
-            <!-- Área central: pergunta e timer -->
-            <div style="text-align:center; padding:6px;">
-                <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
-                <div id="temporizador" class="temporizador">⏱️ 7.0s</div>
+            <!-- Área central: barra de progresso + pergunta invertida para jogador 2 -->
+            <div style="text-align:center; padding:2px;">
+                <div class="multi-barra-container">
+                    <div id="multi-barra-progresso" class="multi-barra-progresso" style="width:100%;"></div>
+                </div>
+                <div class="pergunta-jogador invertida" id="pergunta-jogador2">? x ? = ?</div>
                 <div class="versus">VS</div>
             </div>
             
@@ -470,7 +495,7 @@
         </div>
         
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
-        <button onclick="reiniciarMultiplayer()" class="botao-secundario" style="margin-top:8px;">🚪 Sair do Duelo</button>
+        <button onclick="reiniciarMultiplayer()" class="botao-secundario" style="margin-top:4px;">🚪 Sair do Duelo</button>
     </div>
 
     <!-- TELA RESULTADO MULTIPLAYER -->
@@ -1106,8 +1131,8 @@
             historicoRodadas = [];
             multiAtivo = true;
             
-            document.getElementById("player1-name").innerHTML = `${n1}<br><small style="font-size:12px">Turma ${t1}</small>`;
-            document.getElementById("player2-name").innerHTML = `${n2}<br><small style="font-size:12px">Turma ${t2}</small>`;
+            document.getElementById("player1-name").innerHTML = `${n1}<br><small style="font-size:11px">Turma ${t1}</small>`;
+            document.getElementById("player2-name").innerHTML = `${n2}<br><small style="font-size:11px">Turma ${t2}</small>`;
             document.getElementById("rodadas-player1").innerText = "0";
             document.getElementById("rodadas-player2").innerText = "0";
             document.getElementById("player1-vitorias").innerText = "0";
@@ -1163,7 +1188,10 @@
             }
             ops.sort((a,b)=>a-b);
             multiPergunta = { texto:`${fA} x ${fB}`, resposta:resp, opcoes:ops };
-            document.getElementById("pergunta-multiplayer").innerHTML = `${multiPergunta.texto} = ?`;
+            
+            // Atualizar ambas as perguntas
+            document.getElementById("pergunta-jogador1").innerText = `${multiPergunta.texto} = ?`;
+            document.getElementById("pergunta-jogador2").innerText = `${multiPergunta.texto} = ?`;
             
             let b1 = document.querySelectorAll("#player1-opcoes .player-option");
             let b2 = document.querySelectorAll("#player2-opcoes .player-option");
@@ -1178,18 +1206,27 @@
         function iniciarTimerMulti() {
             if(multiTimer) clearInterval(multiTimer);
             multiTempo = tempoMaximoMulti;
-            let timerDiv = document.getElementById("temporizador");
-            timerDiv.innerText = `⏱️ ${multiTempo.toFixed(1)}s`;
-            timerDiv.classList.remove("urgente");
+            atualizarBarraMulti();
+            let barra = document.getElementById("multi-barra-progresso");
+            barra.classList.remove("urgente");
+            
             multiTimer = setInterval(()=>{
                 multiTempo -= 0.1;
-                timerDiv.innerText = `⏱️ ${multiTempo.toFixed(1)}s`;
-                if(multiTempo <= 2) timerDiv.classList.add("urgente");
+                atualizarBarraMulti();
+                if(multiTempo <= 2) barra.classList.add("urgente");
                 if(multiTempo <= 0){
                     clearInterval(multiTimer);
                     processarFimPerguntaMulti();
                 }
             },100);
+        }
+        
+        function atualizarBarraMulti() {
+            let pct = Math.max(multiTempo / tempoMaximoMulti * 100, 0);
+            let barra = document.getElementById("multi-barra-progresso");
+            if(barra) {
+                barra.style.width = pct + "%";
+            }
         }
         
         function responderMultiplayer(jogador, idx) {
