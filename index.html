@@ -153,6 +153,23 @@
         .placar-rodadas { display: flex; justify-content: center; gap: 30px; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; }
         .vitorias { font-size: 28px; font-weight: bold; color: #ffc107; }
 
+        /* Barra decrescente no multiplayer */
+        .timer-bar-multi-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 8px;
+            margin: 10px 0;
+            height: 16px;
+            overflow: hidden;
+        }
+        .timer-bar-multi {
+            width: 100%;
+            height: 100%;
+            background-color: #198754;
+            border-radius: 8px;
+            transition: width 0.1s linear;
+        }
+
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         #coluna-status.hidden, #coluna-turma.hidden { display: none; }
 
@@ -324,7 +341,11 @@
             <div id="player2-card" class="player-card"><div class="player-name"><span id="player2-name">Jogador 2</span></div><div class="player-score" id="player2-pontos">0</div><div class="player-rounds">🏆 Vitórias: <span id="player2-vitorias">0</span></div><div id="player2-opcoes" class="player-options"><button class="player-option" onclick="responderMultiplayer(2,0)"></button><button class="player-option" onclick="responderMultiplayer(2,1)"></button><button class="player-option" onclick="responderMultiplayer(2,2)"></button></div></div>
         </div>
         <div class="placar-rodadas"><div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div></div>
-        <div class="round-info"><div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div><div id="pergunta-multiplayer" class="current-question">? x ? = ?</div><div id="temporizador" class="temporizador">⏱️ 7.0s</div></div>
+        <div class="round-info"><div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div>
+        <div id="pergunta-multiplayer" class="current-question">? x ? = ?</div>
+        <!-- BARRA DECRESCENTE DO MULTIPLAYER -->
+        <div class="timer-bar-multi-container"><div id="multiProgressBar" class="timer-bar-multi"></div></div>
+        <div id="temporizador" class="temporizador">⏱️ 7.0s</div></div>
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
         <button onclick="reiniciarMultiplayer()" class="botao-secundario">🚪 Sair do Duelo</button>
     </div>
@@ -360,7 +381,7 @@
         </div>
         <div style="display: flex; gap: 10px; margin-top: 10px;">
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
-            <button onclick="recarregarRankings()" class="botao-verde" style="background: #0d6efd;">🔄 Recarregar Rankings</button>
+            <button id="btnRecarregarRankings" onclick="recarregarRankings()" class="botao-verde" style="background: #0d6efd;">🔄 Recarregar Rankings</button>
         </div>
     </div>
 
@@ -444,7 +465,7 @@
             "0-10": { nome: "Completa - Tabuadas do 0 ao 10", fatores: [0,1,2,3,4,5,6,7,8,9,10] }
         };
 
-        // CONQUISTAS (resumido, mas funcional)
+        // CONQUISTAS (resumido)
         const CONQUISTAS = [
             { icone: "🏆", nome: "Mestre da Tabuada", descricao: "17.000+ pontos", criterio: (r) => r.pontos >= 17000 },
             { icone: "📚", nome: "Domínio Total", descricao: "20/20 acertos", criterio: (r) => r.acertos === 20 },
@@ -487,7 +508,7 @@
             if(alvo) alvo.classList.remove("hidden");
         }
 
-        // ==================== SINGLE PLAYER (resumido mas funcional) ====================
+        // ==================== SINGLE PLAYER ====================
         function registrarAluno(treino) {
             let nome = document.getElementById("nome-aluno").value.trim();
             let turma = document.getElementById("turma-aluno").value;
@@ -707,7 +728,7 @@
         function alternarBotoes(des) { document.querySelectorAll(".btn-opcao").forEach(b=>b.disabled=des); }
         function forcarFinalizacao() { if(jogoAtivo && confirm("Forçar finalização?")){ clearInterval(timerInterval); clearTimeout(timerTimeout); finalizarCircuito(); } }
 
-        // ==================== MULTIPLAYER (resumido) ====================
+        // ==================== MULTIPLAYER ====================
         function iniciarMultiplayer() {
             let n1 = document.getElementById("jogador1-nome").value.trim();
             let t1 = document.getElementById("jogador1-turma").value;
@@ -759,14 +780,26 @@
             if(multiTimer) clearInterval(multiTimer);
             multiTempo=tempoMaximoMulti;
             let timerDiv=document.getElementById("temporizador");
+            let barraDiv=document.getElementById("multiProgressBar");
             if(timerDiv){
                 timerDiv.innerText=`⏱️ ${multiTempo.toFixed(1)}s`;
                 timerDiv.classList.remove("urgente");
+            }
+            if(barraDiv){
+                barraDiv.style.width="100%";
+                barraDiv.style.backgroundColor="#198754";
             }
             multiTimer=setInterval(()=>{
                 if(!multiAtivo) return;
                 multiTempo-=0.1;
                 if(timerDiv) timerDiv.innerText=`⏱️ ${multiTempo.toFixed(1)}s`;
+                if(barraDiv){
+                    let percent = (multiTempo / tempoMaximoMulti) * 100;
+                    barraDiv.style.width = Math.max(0, percent) + "%";
+                    if(percent > 60) barraDiv.style.backgroundColor = "#198754";
+                    else if(percent > 30) barraDiv.style.backgroundColor = "#ffc107";
+                    else barraDiv.style.backgroundColor = "#dc3545";
+                }
                 if(multiTempo<=2 && timerDiv) timerDiv.classList.add("urgente");
                 if(multiTempo<=0){ clearInterval(multiTimer); processarFimPerguntaMulti(); }
             },100);
@@ -853,7 +886,7 @@
             } catch(e) { console.warn(e); }
         }
 
-        // ==================== RANKINGS (FULL) ====================
+        // ==================== RANKINGS ====================
         async function obterRanking() {
             let local = JSON.parse(localStorage.getItem("rankingCEIB")||"[]");
             try{
@@ -955,12 +988,12 @@
                 ranking = await obterRankingDuelos(turma);
                 titulo = `📜 Histórico de Duelos - ${turma ? `Turma ${turma}` : "Todas as turmas"}`;
                 if(tabelaHead) tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Partidas</th><th>Vitórias</th><th>Aproveitamento</th></tr>`;
-                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td></tr>`).join("");
-                tabelaBody.innerHTML = html || `<td><td colspan="5" class="sem-registros">Nenhum duelo registrado. Participe do multiplayer!</td></tr>`;
+                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td>`).join("");
+                tabelaBody.innerHTML = html || `<tr><td colspan="5" class="sem-registros">Nenhum duelo registrado. Participe do multiplayer!</td></tr>`;
                 tituloEl.innerText = titulo;
+                atualizarBotaoRecarregar(); // Desabilita se for duelos
                 return;
             }
-            // Para os outros tipos, gerar cabeçalho padrão
             if(tabelaHead){
                 if(tipoRankingAtual === "turma"){
                     tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
@@ -979,22 +1012,23 @@
                 if(tipoRankingAtual === "turma"){
                     let statusClass = i<4?"tag-classificado":(i<6?"tag-reserva":"tag-participante");
                     let statusText = i<4?"Classificado":(i<6?"Reserva":"Participante");
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>``;
                 } else if(tipoRankingAtual === "global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>``;
                 } else if(tipoRankingAtual === "precisao-global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>``;
                 } else if(tipoRankingAtual === "precisao-turma"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>``;
                 } else if(tipoRankingAtual === "velocidade-global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>``;
                 } else if(tipoRankingAtual === "velocidade-turma"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>``;
                 } else {
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>``;
                 }
             }).join("");
             tabelaBody.innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+            atualizarBotaoRecarregar();
         }
         function mudarTipoRanking(tipo) {
             tipoRankingAtual = tipo;
@@ -1010,6 +1044,20 @@
             let observacaoDuelos = document.getElementById("observacao-duelos");
             if(observacaoDuelos) observacaoDuelos.classList.toggle("hidden", !isDuelos);
             renderizarRanking();
+        }
+        function atualizarBotaoRecarregar() {
+            let btn = document.getElementById("btnRecarregarRankings");
+            if(btn) {
+                if(tipoRankingAtual === "duelos") {
+                    btn.disabled = true;
+                    btn.style.opacity = "0.65";
+                    btn.style.cursor = "not-allowed";
+                } else {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    btn.style.cursor = "pointer";
+                }
+            }
         }
 
         // ==================== PERFIL ====================
@@ -1041,7 +1089,7 @@
             document.getElementById("perfil-conteudo").classList.remove("hidden");
         }
 
-        // ==================== PAINEL DO PROFESSOR (funções essenciais) ====================
+        // ==================== PAINEL DO PROFESSOR ====================
         function autenticarProfessor(){
             let s=document.getElementById("senha-professor").value;
             if(s===SENHA_PROFESSOR){
@@ -1209,6 +1257,10 @@
         }
 
         async function recarregarRankings() {
+            if(tipoRankingAtual === "duelos") {
+                mostrarToast("⛔ Recarregar Rankings está desabilitado no Histórico de Duelos.");
+                return;
+            }
             const toast = document.getElementById("toast-pontuacao");
             if (toast) {
                 toast.innerText = "⏳ Atualizando dados do Firebase...";
