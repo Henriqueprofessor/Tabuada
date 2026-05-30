@@ -260,12 +260,13 @@
 
     <div id="tela-jogo" class="card hidden">
         <h2 id="titulo-jogo">Classificatória</h2>
-        <div id="modo-treino-badge" class="hidden" style="background:#fd7e14;padding:5px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;">🎯 MODO TREINO</div>
+        <div id="modo-badge" class="hidden" style="background:#fd7e14;padding:5px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;">🏆 MODO CLASSIFICATÓRIO</div>
         <div class="status-jogo">
             <span id="info-pergunta">Pergunta: 1 / 20</span>
             <span id="info-pontos">Pontos: 0</span>
             <span id="info-acertos">Acertos: 0</span>
             <span id="info-sequencia">Sequência: 0</span>
+            <span id="info-media-tempo">Média: -- s</span>
         </div>
         <div id="barra-tempo"><div id="progresso"></div></div>
         <div id="pergunta">X x Y = ?</div>
@@ -493,10 +494,38 @@
             acertouPrimeira=false; temposRapidos=0;
             jogoAtivo=true; finalizando=false;
             document.getElementById("titulo-jogo").innerText = modoTreino?"🎯 Modo Treino":MODALIDADES[modalidadeAtual].nome;
-            document.getElementById("modo-treino-badge").classList.toggle("hidden",!modoTreino);
-            document.getElementById("barra-tempo").classList.toggle("hidden",modoTreino);
+            let badgeDiv = document.getElementById("modo-badge");
+            if(badgeDiv) {
+                if(!modoTreino) {
+                    badgeDiv.innerText = "🏆 MODO CLASSIFICATÓRIO";
+                    badgeDiv.style.background = "#198754";
+                    badgeDiv.classList.remove("hidden");
+                } else {
+                    badgeDiv.innerText = "🎯 MODO TREINO";
+                    badgeDiv.style.background = "#fd7e14";
+                    badgeDiv.classList.remove("hidden");
+                }
+            }
+            // A barra de tempo agora é sempre visível (treino também tem cronômetro)
+            let barra = document.getElementById("barra-tempo");
+            if(barra) barra.classList.remove("hidden");
+            
+            // Reseta o campo de média
+            let mediaSpan = document.getElementById("info-media-tempo");
+            if(mediaSpan) mediaSpan.innerText = "Média: -- s";
             mostrarTela("tela-jogo");
             proximaPergunta();
+        }
+        function atualizarMediaTempo() {
+            // Agora funciona tanto no classificatório quanto no treino
+            let mediaSpan = document.getElementById("info-media-tempo");
+            if(mediaSpan && temposCorretas.length > 0) {
+                let soma = temposCorretas.reduce((a,b)=>a+b,0);
+                let media = soma / temposCorretas.length;
+                mediaSpan.innerText = `Média: ${media.toFixed(2)} s`;
+            } else if(mediaSpan && temposCorretas.length === 0) {
+                mediaSpan.innerText = "Média: -- s";
+            }
         }
         function proximaPergunta() {
             if(finalizando) return;
@@ -510,7 +539,8 @@
             respostaCorreta = fA*fB;
             document.getElementById("pergunta").innerText = `${fA} x ${fB} = ?`;
             gerarOpcoes();
-            if(!modoTreino) iniciarCronometro();
+            // Sempre inicia o cronômetro (tanto classificatório quanto treino)
+            iniciarCronometro();
         }
         function gerarOpcoes() {
             let ops = [respostaCorreta];
@@ -541,9 +571,9 @@
         }
         function verificarResposta(btn) {
             if(!perguntaAberta||finalizando) return;
-            if(!modoTreino){ clearInterval(timerInterval); clearTimeout(timerTimeout); }
+            clearInterval(timerInterval); clearTimeout(timerTimeout);
             let tempoGasto = (performance.now()-tempoInicio)/1000;
-            let acertou = parseInt(btn.innerText)===respostaCorreta && (!modoTreino || tempoGasto<=10);
+            let acertou = parseInt(btn.innerText)===respostaCorreta && tempoGasto<=10;
             let pontos = (!modoTreino && acertou) ? Math.round((10-tempoGasto)*100) : 0;
             processarResposta(pontos,acertou,tempoGasto);
         }
@@ -551,16 +581,19 @@
             if(finalizando) return;
             perguntaAberta=false;
             alternarBotoes(true);
-            if(!modoTreino){
-                temposRespostas.push({acertou, tempo});
-                if(perguntaAtual===1 && acertou) acertouPrimeira=true;
-                if(acertou && tempo<0.8) temposRapidos++;
-            }
+            
+            // Registro de tempos e estatísticas (comum aos dois modos, mas sem salvar pontuação no treino)
+            temposRespostas.push({acertou, tempo});
+            if(perguntaAtual===1 && acertou) acertouPrimeira=true;
+            if(acertou && tempo<0.8) temposRapidos++;
+            
             if(!modoTreino && !acertou){
                 let pDiv=document.getElementById("pergunta");
                 if(pDiv) pDiv.classList.add("erro-visual");
                 setTimeout(()=>{ if(pDiv) pDiv.classList.remove("erro-visual"); },300);
             } else if(!modoTreino && pontos>0) mostrarToast(`+${pontos} pontos! 🎉`);
+            
+            // Exibe dica de resposta apenas no modo treino
             if(modoTreino){
                 let dicaDiv=document.getElementById("dica-resposta");
                 if(dicaDiv){
@@ -570,7 +603,10 @@
                     setTimeout(()=>dicaDiv.classList.add("hidden"),2000);
                 }
             }
-            pontosAcumulados+=pontos;
+            
+            pontosAcumulados += pontos;
+            
+            // Registro de desempenho por tabuada
             if(perguntaAtual<=TOTAL_PERGUNTAS){
                 let txt=document.getElementById("pergunta").innerText;
                 if(txt && txt.includes("x")){
@@ -583,8 +619,17 @@
                     }
                 }
             }
-            if(acertou){ acertos++; sequenciaAtual++; maiorSequencia=Math.max(maiorSequencia,sequenciaAtual); if(tempo) temposCorretas.push(tempo); }
+            
+            if(acertou){ 
+                acertos++; 
+                sequenciaAtual++; 
+                maiorSequencia=Math.max(maiorSequencia,sequenciaAtual); 
+                if(tempo) temposCorretas.push(tempo); 
+                // Atualiza a média de tempo (ambos os modos)
+                atualizarMediaTempo();
+            }
             else{ erros++; sequenciaAtual=0; }
+            
             atualizarStatus();
             setTimeout(()=>{ if(!finalizando) proximaPergunta(); },250);
         }
@@ -971,7 +1016,7 @@
                 } else if(tipoRankingAtual === "precisao-turma"){
                     tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
                 } else if(tipoRankingAtual === "velocidade-global"){
-                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><tr>`;
                 } else if(tipoRankingAtual === "velocidade-turma"){
                     tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
                 } else {
@@ -1012,7 +1057,6 @@
             
             let filtroTurma = document.getElementById("filtro-turma");
             if(filtroTurma) {
-                // Oculta o filtro de turma nos rankings globais
                 filtroTurma.classList.toggle("hidden", isGlobal);
             }
             
