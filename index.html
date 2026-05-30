@@ -929,20 +929,24 @@
             let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
             let turma = document.getElementById("filtro-turma")?.value || "901";
             let ranking = [], titulo = "";
+            
+            // Verificar se o tipo atual é um dos três globais
+            const isGlobal = (tipoRankingAtual === "global" || tipoRankingAtual === "precisao-global" || tipoRankingAtual === "velocidade-global");
+            
             if(tipoRankingAtual === "turma"){
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
             } else if(tipoRankingAtual === "global"){
-                ranking = (await obterRankingPorPontos(modalidade)).slice(0,100);
+                ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
                 titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
             } else if(tipoRankingAtual === "precisao-global"){
-                ranking = await obterRankingPorPrecisao(modalidade);
+                ranking = await obterRankingPorPrecisao(modalidade, null);
                 titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
             } else if(tipoRankingAtual === "precisao-turma"){
                 ranking = await obterRankingPorPrecisao(modalidade, turma);
                 titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
             } else if(tipoRankingAtual === "velocidade-global"){
-                ranking = await obterRankingPorVelocidade(modalidade);
+                ranking = await obterRankingPorVelocidade(modalidade, null);
                 titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
             } else if(tipoRankingAtual === "velocidade-turma"){
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
@@ -962,10 +966,14 @@
                     tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
                 } else if(tipoRankingAtual === "global"){
                     tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-                } else if(tipoRankingAtual === "precisao-global" || tipoRankingAtual === "precisao-turma"){
-                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th>${tipoRankingAtual==="precisao-global"?"<th>Turma</th>":""}<th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
-                } else if(tipoRankingAtual === "velocidade-global" || tipoRankingAtual === "velocidade-turma"){
-                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th>${tipoRankingAtual==="velocidade-global"?"<th>Turma</th>":""}<th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                } else if(tipoRankingAtual === "precisao-global"){
+                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+                } else if(tipoRankingAtual === "precisao-turma"){
+                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+                } else if(tipoRankingAtual === "velocidade-global"){
+                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                } else if(tipoRankingAtual === "velocidade-turma"){
+                    tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
                 } else {
                     tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
                 }
@@ -975,19 +983,19 @@
                 if(tipoRankingAtual === "turma"){
                     let statusClass = i<4?"tag-classificado":(i<6?"tag-reserva":"tag-participante");
                     let statusText = i<4?"Classificado":(i<6?"Reserva":"Participante");
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
                 } else if(tipoRankingAtual === "global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "precisao-global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "precisao-turma"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "velocidade-global"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else if(tipoRankingAtual === "velocidade-turma"){
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 } else {
-                    return `<tr><td style="text-align:center">${i+1}º</td><td>${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 }
             }).join("");
             tabelaBody.innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
@@ -997,14 +1005,26 @@
             const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma","aba-duelos"];
             abas.forEach(abaId=>{ let el=document.getElementById(abaId); if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); });
             const isDuelos = (tipo === "duelos");
+            const isGlobal = (tipo === "global" || tipo === "precisao-global" || tipo === "velocidade-global");
+            
             let filtroModalidade = document.getElementById("filtro-modalidade");
             if(filtroModalidade) filtroModalidade.classList.toggle("hidden", isDuelos);
+            
+            let filtroTurma = document.getElementById("filtro-turma");
+            if(filtroTurma) {
+                // Oculta o filtro de turma nos rankings globais
+                filtroTurma.classList.toggle("hidden", isGlobal);
+            }
+            
             let colunaTurma = document.getElementById("coluna-turma");
-            if(colunaTurma) colunaTurma.classList.toggle("hidden", !(tipo==="global"));
+            if(colunaTurma) colunaTurma.classList.toggle("hidden", !(tipo==="global" || tipo==="precisao-global" || tipo==="velocidade-global"));
+            
             let observacaoVelocidade = document.getElementById("observacao-velocidade");
             if(observacaoVelocidade) observacaoVelocidade.classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
+            
             let observacaoDuelos = document.getElementById("observacao-duelos");
             if(observacaoDuelos) observacaoDuelos.classList.toggle("hidden", !isDuelos);
+            
             renderizarRanking();
         }
 
@@ -1114,7 +1134,7 @@
             alunosFiltrados.forEach(a=>{
                 html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td><td style="text-align:center">${a.turma}</td><td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td><td style="text-align:center">${a.pontos}</td><td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td><td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
             });
-            html += '</tbody><tr><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         async function excluirRegistro(chave){
