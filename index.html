@@ -347,7 +347,7 @@
         <div class="placar-rodadas"><div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div></div>
         <div class="round-info"><div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div><div id="pergunta-multiplayer" class="current-question">? x ? = ?</div><div id="temporizador" class="temporizador">⏱️ 7.0s</div></div>
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
-        <button onclick="reiniciarMultiplayer()" class="botao-secundario">🚪 Sair do Duelo</button>
+        <!-- Botão "Sair do Duelo" removido -->
     </div>
 
     <div id="tela-resultado-multi" class="card hidden">
@@ -452,7 +452,7 @@
             { icone: "🏅", nome: "Colecionador", descricao: "5 conquistas", criterio: (r, h, c) => c.length >= 5 }
         ];
 
-        // Variáveis globais
+        // Variáveis globais (single player)
         let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
         let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
         let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
@@ -460,6 +460,7 @@
         let melhorMediaAluno = null, mediaTurma = null;
         let somAtivo = true, jaToCouSomSuperacao = false;
 
+        // Variáveis multiplayer
         let multiJogadores = [
             { id:1, nome:"", turma:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false },
             { id:2, nome:"", turma:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false }
@@ -495,7 +496,7 @@
         }
         function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-        // Ranking (Firebase + localStorage)
+        // ==================== RANKING ====================
         async function obterRanking() {
             let local = JSON.parse(localStorage.getItem("rankingCEIB")||"[]");
             try {
@@ -580,7 +581,7 @@
             return { melhorMediaAluno, mediaTurma };
         }
 
-        // SINGLE PLAYER
+        // ==================== SINGLE PLAYER ====================
         async function registrarAluno(treino) {
             let nome = document.getElementById("nome-aluno").value.trim();
             let turma = document.getElementById("turma-aluno").value;
@@ -699,7 +700,6 @@
             feedbackDiv.innerHTML = feedbackHtml;
             feedbackDiv.className = `feedback-comparacao ${corClasse}`;
         }
-        // Função gerar opções agora com 4 opções
         function gerarOpcoes() {
             let ops = [respostaCorreta];
             while(ops.length < 4){
@@ -709,16 +709,12 @@
             }
             ops.sort((a,b) => a - b);
             const botoes = document.querySelectorAll(".btn-opcao");
-            botoes.forEach((btn, i) => {
-                if(i < ops.length) btn.innerText = ops[i];
-                btn.disabled = false;
-            });
+            botoes.forEach((btn, i) => { if(i < ops.length) btn.innerText = ops[i]; btn.disabled = false; });
         }
-        // Demais funções do jogo (proximaPergunta, iniciarCronometro, etc.) são idênticas à versão anterior e mantidas
         function proximaPergunta() {
             if(finalizando) return;
             perguntaAtual++;
-            if(perguntaAtual>TOTAL_PERGUNTAS){ finalizarCircuito(); return; }
+            if(perguntaAtual > TOTAL_PERGUNTAS){ finalizarCircuito(); return; }
             perguntaAberta=true;
             alternarBotoes(false);
             atualizarStatus();
@@ -732,9 +728,7 @@
         function iniciarCronometro() {
             tempoInicio=performance.now();
             let progresso=document.getElementById("progresso");
-            if(progresso){
-                progresso.style.width="100%"; progresso.style.background="#198754"; progresso.classList.remove("pulsando");
-            }
+            if(progresso){ progresso.style.width="100%"; progresso.style.background="#198754"; progresso.classList.remove("pulsando"); }
             let tempoRest=10000;
             clearInterval(timerInterval); clearTimeout(timerTimeout);
             timerInterval=setInterval(()=>{
@@ -796,9 +790,7 @@
                 }
             }
             if(acertou){
-                acertos++;
-                sequenciaAtual++;
-                maiorSequencia=Math.max(maiorSequencia,sequenciaAtual);
+                acertos++; sequenciaAtual++; maiorSequencia=Math.max(maiorSequencia,sequenciaAtual);
                 if(tempo) temposCorretas.push(tempo);
                 atualizarMediaTempo();
             } else { erros++; sequenciaAtual=0; }
@@ -925,7 +917,7 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // MULTIPLAYER (mantido igual ao original, sem alterações)
+        // ==================== MULTIPLAYER CORRIGIDO (PONTUAÇÃO AJUSTADA) ====================
         function iniciarMultiplayer() {
             let n1 = document.getElementById("jogador1-nome").value.trim();
             let t1 = document.getElementById("jogador1-turma").value;
@@ -994,10 +986,10 @@
             if(j.bloqueado||!multiAtivo) return;
             let opcao = multiPergunta.opcoes[idx];
             let acertou = (opcao === multiPergunta.resposta);
-            let tempoGasto = tempoMaximoMulti - multiTempo;
             if(acertou){
-                let pts = Math.round((tempoGasto+1)*100);
-                j.pontosRodada += pts; j.acertosRodada++; j.temposRodada.push(tempoGasto);
+                // FÓRMULA CORRIGIDA: quanto maior o tempo restante (multiTempo), mais pontos
+                let pts = Math.round((multiTempo + 1) * 100);
+                j.pontosRodada += pts; j.acertosRodada++; j.temposRodada.push(tempoMaximoMulti - multiTempo);
                 document.getElementById(`player${jogador}-pontos`).innerText = j.pontosRodada;
                 let btns = document.querySelectorAll(`#player${jogador}-opcoes .player-option`);
                 if(btns[idx]) btns[idx].classList.add("correct");
@@ -1005,7 +997,7 @@
             } else {
                 let btns = document.querySelectorAll(`#player${jogador}-opcoes .player-option`);
                 if(btns[idx]) btns[idx].classList.add("wrong");
-                mostrarToast(`❌ ${j.nome} errou! A resposta correta é ${multiPergunta.resposta}`);
+                mostrarToast(`❌ ${j.nome} errou!`);
             }
             j.bloqueado = true;
             document.querySelectorAll(`#player${jogador}-opcoes .player-option`).forEach(b=>b.disabled=true);
@@ -1037,7 +1029,21 @@
             document.getElementById("rodadas-player1").innerText=p1.vitorias; document.getElementById("rodadas-player2").innerText=p2.vitorias;
             document.getElementById("player1-vitorias").innerText=p1.vitorias; document.getElementById("player2-vitorias").innerText=p2.vitorias;
             if(p1.vitorias>=3||p2.vitorias>=3||rodadaAtual>=totalRodadas){ finalizarMultiplayer(); }
-            else{ rodadaAtual++; setTimeout(()=>{ iniciarRodada(); },2000); }
+            else{ 
+                rodadaAtual++; 
+                let segundos = 10;
+                const waitingDiv = document.getElementById("waiting-message");
+                waitingDiv.classList.remove("hidden");
+                const interval = setInterval(() => {
+                    segundos--;
+                    waitingDiv.innerHTML = `⏳ Preparando próxima rodada em ${segundos} segundo${segundos !== 1 ? 's' : ''}...`;
+                    if (segundos <= 0) {
+                        clearInterval(interval);
+                        waitingDiv.classList.add("hidden");
+                        iniciarRodada();
+                    }
+                }, 1000);
+            }
         }
         async function finalizarMultiplayer() {
             multiAtivo=false; if(multiTimer) clearInterval(multiTimer);
@@ -1059,7 +1065,6 @@
             document.getElementById("resultado-conteudo-multi").innerHTML=conteudo;
             mostrarTela("tela-resultado-multi");
         }
-        function reiniciarMultiplayer() { if(confirm("Sair do duelo?")){ multiAtivo=false; if(multiTimer) clearInterval(multiTimer); mostrarTela("tela-inicial"); } }
         async function salvarDuelo(vencedor, vencedorTurma, perdedor, perdedorTurma, vitoriasVencedor, vitoriasPerdedor, modalidade, rodadas, historicoRodadasDetalhe) {
             let duelo = { data:new Date().toISOString(), vencedor, vencedorTurma, perdedor, perdedorTurma, placar:`${vitoriasVencedor} x ${vitoriasPerdedor}`, modalidade:MODALIDADES[modalidade]?.nome||modalidade, rodadas, timestamp:Date.now(), detalhesRodadas:historicoRodadasDetalhe };
             try {
@@ -1071,7 +1076,7 @@
             } catch(e) { console.warn(e); }
         }
 
-        // RANKINGS (renderização)
+        // ==================== RANKINGS (RENDERIZAÇÃO) ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
             const tabelaBody = document.getElementById("tabela-ranking-body");
@@ -1080,7 +1085,6 @@
             let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
             let turma = document.getElementById("filtro-turma")?.value || "901";
             let ranking = [], titulo = "";
-            const isGlobal = (tipoRankingAtual === "global" || tipoRankingAtual === "precisao-global" || tipoRankingAtual === "velocidade-global");
             if(tipoRankingAtual === "turma"){
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
@@ -1103,8 +1107,8 @@
                 ranking = await obterRankingDuelos(turma);
                 titulo = `📜 Histórico de Duelos - ${turma ? `Turma ${turma}` : "Todas as turmas"}`;
                 if(tabelaHead) tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Partidas</th><th>Vitórias</th><th>Aproveitamento</th></tr>`;
-                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%<tr></tr>`).join("");
-                tabelaBody.innerHTML = html || `<tr><td colspan="5" class="sem-registros">Nenhum duelo registrado. Participe do multiplayer!</td></tr>`;
+                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td></tr>`).join("");
+                tabelaBody.innerHTML = html || `<tr><td colspan="5" class="sem-registros">Nenhum duelo registrado.</td></tr>`;
                 tituloEl.innerText = titulo;
                 return;
             }
@@ -1126,11 +1130,11 @@
                 } else if(tipoRankingAtual === "global") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 else if(tipoRankingAtual === "precisao-global") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 else if(tipoRankingAtual === "precisao-turma") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
-                else if(tipoRankingAtual === "velocidade-global") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><tr>`;
+                else if(tipoRankingAtual === "velocidade-global") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 else if(tipoRankingAtual === "velocidade-turma") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 else return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
             }).join("");
-            tabelaBody.innerHTML = html || `<td><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+            tabelaBody.innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
         }
         function mudarTipoRanking(tipo) {
             tipoRankingAtual = tipo;
@@ -1138,18 +1142,14 @@
             abas.forEach(abaId=>{ let el=document.getElementById(abaId); if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); });
             const isDuelos = (tipo === "duelos");
             const isGlobal = (tipo === "global" || tipo === "precisao-global" || tipo === "velocidade-global");
-            let filtroModalidade = document.getElementById("filtro-modalidade");
-            if(filtroModalidade) filtroModalidade.classList.toggle("hidden", isDuelos);
-            let filtroTurma = document.getElementById("filtro-turma");
-            if(filtroTurma) filtroTurma.classList.toggle("hidden", isGlobal);
-            let observacaoVelocidade = document.getElementById("observacao-velocidade");
-            if(observacaoVelocidade) observacaoVelocidade.classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
-            let observacaoDuelos = document.getElementById("observacao-duelos");
-            if(observacaoDuelos) observacaoDuelos.classList.toggle("hidden", !isDuelos);
+            document.getElementById("filtro-modalidade").classList.toggle("hidden", isDuelos);
+            document.getElementById("filtro-turma").classList.toggle("hidden", isGlobal);
+            document.getElementById("observacao-velocidade").classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
+            document.getElementById("observacao-duelos").classList.toggle("hidden", !isDuelos);
             renderizarRanking();
         }
 
-        // PERFIL
+        // ==================== PERFIL ====================
         async function carregarPerfil() {
             let nome = document.getElementById("perfil-nome").value.trim();
             let turma = document.getElementById("perfil-turma").value;
@@ -1178,7 +1178,7 @@
             document.getElementById("perfil-conteudo").classList.remove("hidden");
         }
 
-        // PAINEL DO PROFESSOR (funções essenciais)
+        // ==================== PAINEL DO PROFESSOR ====================
         function autenticarProfessor(){
             let s=document.getElementById("senha-professor").value;
             if(s===SENHA_PROFESSOR){
@@ -1186,11 +1186,11 @@
                 mostrarToast("🔓 Acesso concedido!");
             } else alert("Senha incorreta");
         }
-        function abrirResetTurma(){ let div=document.getElementById("painel-reset"); if(div) div.classList.toggle("hidden"); }
+        function abrirResetTurma(){ document.getElementById("painel-reset").classList.toggle("hidden"); }
         async function confirmarReset(){
             let turma = document.getElementById("reset-turma").value;
             let modalidade = document.getElementById("reset-modalidade").value;
-            if(!confirm(`⚠️ Resetar ${turma==="todas"?"TODAS":turma} - ${modalidade==="todas"?"TODAS":MODALIDADES[modalidade]?.nome}? Irreversível!`)) return;
+            if(!confirm(`⚠️ Resetar ${turma==="todas"?"TODAS":turma} - ${modalidade==="todas"?"TODAS":MODALIDADES[modalidade]?.nome}?`)) return;
             let rank = await obterRanking();
             let novos = rank.filter(r=>{
                 if(turma!=="todas" && r.turma!==turma) return true;
@@ -1209,7 +1209,7 @@
             localStorage.setItem("rankingCEIB",JSON.stringify(novos));
             mostrarToast("✅ Reset concluído!");
             renderizarRanking();
-            if(document.getElementById("painel-reset")) document.getElementById("painel-reset").classList.add("hidden");
+            document.getElementById("painel-reset").classList.add("hidden");
         }
         async function exportarCSV(){
             let rank = await obterRanking();
@@ -1255,7 +1255,7 @@
             alunosFiltrados.forEach(a=>{
                 html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td><td style="text-align:center">${a.turma}</td><td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td><td style="text-align:center">${a.pontos}</td><td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td><td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
             });
-            html += '</tbody><tr><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         async function excluirRegistro(chave){
