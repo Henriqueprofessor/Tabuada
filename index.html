@@ -74,7 +74,8 @@
             margin-bottom: 12px;
             text-align: left;
         }
-        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 8px; }
+        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 8px; transition: all 0.2s; }
+        .status-jogo span.combo-flash { background: #ffc107; color: #000; }
         .comparacao {
             background: #e9ecef;
             border-radius: 10px;
@@ -474,6 +475,59 @@
         let multiModalidade="0-10", rodadaAtual=1, perguntaRodadaAtual=1, totalRodadas=5, perguntasPorRodada=10;
         let multiPergunta={}, multiTempo=7, multiTimer=null, multiAtivo=false, historicoRodadas=[], tempoMaximoMulti=7, multiPerguntasGeradas=[];
 
+        // ==================== NOVAS FUNÇÕES DE SOM E COMBO ====================
+        const SONS = {
+            combo: { freq: 1200, duration: 0.2 },
+            superCombo: { freq: 1500, duration: 0.3 },
+            megaCombo: { freq: 1800, duration: 0.4 }
+        };
+
+        function tocarSomCombo(tipo) {
+            if (!somAtivo) return;
+            let cfg = SONS[tipo] || SONS.combo;
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = cfg.freq;
+                gain.gain.value = 0.3;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + cfg.duration);
+                osc.stop(audioCtx.currentTime + cfg.duration);
+                setTimeout(() => audioCtx.close(), cfg.duration * 1000);
+            } catch(e) {}
+        }
+
+        function exibirComboVisual(sequencia) {
+            let elem = document.getElementById("info-sequencia");
+            if (!elem) return;
+            let mensagem = "";
+            if (sequencia === 5) mensagem = "🔥 Combo 5!";
+            else if (sequencia === 10) mensagem = "⚡ Combo 10!";
+            else if (sequencia === 15) mensagem = "💥 Combo 15!";
+            else if (sequencia === 20) mensagem = "🏆 Combo PERFEITO!";
+            else return;
+            
+            // Efeito visual: piscar e mudar cor temporariamente
+            elem.style.transition = "all 0.2s";
+            elem.style.backgroundColor = "#ffc107";
+            elem.style.color = "#000";
+            setTimeout(() => {
+                elem.style.backgroundColor = "";
+                elem.style.color = "";
+            }, 500);
+            
+            // Toast especial
+            mostrarToast(mensagem);
+            
+            // Som correspondente
+            if (sequencia === 5) tocarSomCombo("combo");
+            else if (sequencia === 10) tocarSomCombo("superCombo");
+            else if (sequencia >= 15) tocarSomCombo("megaCombo");
+        }
+
         // Funções auxiliares
         function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
         function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
@@ -496,7 +550,7 @@
                 sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
                 return true;
             }
-            alert("A sessÃ£o do professor expirou. Digite a senha novamente.");
+            alert("A sessão do professor expirou. Digite a senha novamente.");
             document.getElementById("painel-conteudo").classList.add("hidden");
             document.getElementById("senha-professor").focus();
             return false;
@@ -1032,10 +1086,15 @@
                 }
             }
             if(acertou){
-                acertos++; sequenciaAtual++; maiorSequencia=Math.max(maiorSequencia,sequenciaAtual);
+                acertos++; sequenciaAtual++; maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
                 if(tempo) temposCorretas.push(tempo);
                 atualizarMediaTempo();
-            } else { erros++; sequenciaAtual=0; }
+                // ===== COMBO VISUAL/SONORO =====
+                if ([5, 10, 15, 20].includes(sequenciaAtual)) {
+                    exibirComboVisual(sequenciaAtual);
+                }
+                // ================================
+            } else { erros++; sequenciaAtual = 0; }
             atualizarStatus();
             setTimeout(()=>{ if(!finalizando) proximaPergunta(); },250);
         }
@@ -1161,7 +1220,7 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== MULTIPLAYER CORRIGIDO (PONTUAÇÃO AJUSTADA) ====================
+        // ==================== MULTIPLAYER (COM RESUMO DETALHADO ENTRE RODADAS) ====================
         function iniciarMultiplayer() {
             let n1 = document.getElementById("jogador1-nome").value.trim();
             let t1 = document.getElementById("jogador1-turma").value;
@@ -1283,18 +1342,44 @@
             if(p1.vitorias>=3||p2.vitorias>=3||rodadaAtual>=totalRodadas){ finalizarMultiplayer(); }
             else{ 
                 rodadaAtual++; 
+                // ===== RESUMO DETALHADO ENTRE RODADAS =====
+                let resumoHtml = `
+                    <div style="background:#e9ecef; border-radius:12px; padding:15px; margin-bottom:15px;">
+                        <h3>📊 Resumo da Rodada ${rodadaAtual-1}</h3>
+                        <div style="display:flex; justify-content:space-around; gap:20px; flex-wrap:wrap;">
+                            <div><strong>${p1.nome}</strong><br>
+                                ✅ Acertos: ${p1.acertosRodada}<br>
+                                ⏱️ Tempo médio: ${tempoMedio1.toFixed(2)}s<br>
+                                🎯 Pontos: ${p1.pontosRodada}
+                            </div>
+                            <div><strong>${p2.nome}</strong><br>
+                                ✅ Acertos: ${p2.acertosRodada}<br>
+                                ⏱️ Tempo médio: ${tempoMedio2.toFixed(2)}s<br>
+                                🎯 Pontos: ${p2.pontosRodada}
+                            </div>
+                        </div>
+                        <div style="margin-top:12px; font-weight:bold; font-size:1.2em;">
+                            ${vencedorRodada ? `🏆 Vencedor: ${vencedorRodada.nome} (${placarRodada})` : "🤝 Empate"}
+                        </div>
+                        <div style="margin-top:8px; font-size:0.9em;">
+                            Diferença de pontos: ${Math.abs(p1.pontosRodada - p2.pontosRodada)}
+                        </div>
+                    </div>
+                `;
                 let segundos = 10;
                 const waitingDiv = document.getElementById("waiting-message");
                 waitingDiv.classList.remove("hidden");
+                waitingDiv.innerHTML = resumoHtml + `<div style="text-align:center; margin-top:10px;">⏳ Próxima rodada em ${segundos} segundos...</div>`;
                 const interval = setInterval(() => {
                     segundos--;
-                    waitingDiv.innerHTML = `⏳ Preparando próxima rodada em ${segundos} segundo${segundos !== 1 ? 's' : ''}...`;
+                    waitingDiv.innerHTML = resumoHtml + `<div style="text-align:center; margin-top:10px;">⏳ Próxima rodada em ${segundos} segundo${segundos !== 1 ? 's' : ''}...</div>`;
                     if (segundos <= 0) {
                         clearInterval(interval);
                         waitingDiv.classList.add("hidden");
                         iniciarRodada();
                     }
                 }, 1000);
+                // ========================================
             }
         }
         async function finalizarMultiplayer() {
@@ -1361,7 +1446,7 @@
                 titulo = `📜 Histórico de Duelos - ${turma ? `Turma ${turma}` : "Todas as turmas"}`;
                 if(tabelaHead) tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Partidas</th><th>Vitórias</th><th>Aproveitamento</th></tr>`;
                 let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td></tr>`).join("");
-                tabelaBody.innerHTML = html || `<tr><td colspan="5" class="sem-registros">Nenhum duelo registrado.</td></tr>`;
+                tabelaBody.innerHTML = html || `<table><td colspan="5" class="sem-registros">Nenhum duelo registrado.</td></tr>`;
                 tituloEl.innerText = titulo;
                 return;
             }
