@@ -572,24 +572,81 @@
             perguntasGeradas.push({fA,fB,chave});
             return {fA,fB,resposta:fA*fB};
         }
-        function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes) {
-            let candidatos = new Set();
-            [fB-2,fB-1,fB+1,fB+2].forEach(n=>{ if(n>=0 && n<=10) candidatos.add(fA*n); });
-            [fA-1,fA+1].forEach(n=>{ if(n>=0 && n<=10) candidatos.add(n*fB); });
-            candidatos.add(fA+fB);
-            candidatos.add(resposta+fA);
-            candidatos.add(resposta-fA);
-            candidatos.add(resposta+fB);
-            candidatos.add(resposta-fB);
-            candidatos.add(Math.max(0,resposta+sortearItem([-10,-5,-3,3,5,10])));
+        function embaralharLista(lista) {
+            let copia = [...lista];
+            for(let i=copia.length-1;i>0;i--){
+                let j = Math.floor(Math.random()*(i+1));
+                [copia[i], copia[j]] = [copia[j], copia[i]];
+            }
+            return copia;
+        }
+        function adicionarDistrator(lista, valor, tipo, prioridade) {
+            if(!Number.isFinite(valor)) return;
+            valor = Math.round(valor);
+            if(valor < 0 || valor > 120) return;
+            if(!lista.some(c=>c.valor===valor)) lista.push({valor, tipo, prioridade});
+        }
+        function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes, modalidadeBase=modalidadeAtual) {
+            let candidatos = [];
+            let fatores = MODALIDADES[modalidadeBase]?.fatores || [0,1,2,3,4,5,6,7,8,9,10];
+
+            // Erros comuns: usar um fator vizinho, pular uma casa da tabuada ou confundir a tabuada lateral.
+            [fB-1,fB+1,fB-2,fB+2].forEach((n,idx)=>{
+                if(n>=0 && n<=10) adicionarDistrator(candidatos, fA*n, "fator-vizinho", idx<2 ? 1 : 2);
+            });
+            [fA-1,fA+1,fA-2,fA+2].forEach((n,idx)=>{
+                if(n>=0 && n<=10) adicionarDistrator(candidatos, n*fB, "tabuada-vizinha", idx<2 ? 1 : 2);
+            });
+            adicionarDistrator(candidatos, resposta + fA, "proximo-passo", 1);
+            adicionarDistrator(candidatos, resposta - fA, "passo-anterior", 1);
+            adicionarDistrator(candidatos, resposta + fB, "incremento-fator", 2);
+            adicionarDistrator(candidatos, resposta - fB, "decremento-fator", 2);
+
+            // Erros conceituais: somar os fatores, dobrar/metade ou esquecer uma parcela.
+            adicionarDistrator(candidatos, fA + fB, "soma", resposta <= 25 ? 1 : 3);
+            adicionarDistrator(candidatos, resposta + (fA + fB), "soma-extra", 3);
+            adicionarDistrator(candidatos, Math.floor(resposta / 2), "metade", 3);
+            adicionarDistrator(candidatos, resposta * 2, "dobro", 3);
+
+            // Erros de leitura: inverter algarismos em produtos de dois digitos.
+            if(resposta >= 10 && resposta < 100) {
+                let invertido = Number(String(resposta).split("").reverse().join(""));
+                adicionarDistrator(candidatos, invertido, "invertido", 2);
+            }
+
+            // Produtos reais proximos da modalidade mantem as opcoes plausiveis.
+            fatores.forEach(tab=>{
+                for(let n=0;n<=10;n++){
+                    let prod = tab*n;
+                    if(Math.abs(prod-resposta) <= 18) adicionarDistrator(candidatos, prod, "produto-real", 2);
+                }
+            });
+
+            // Casos especiais de 0 e 1 precisam de opcoes que nao entreguem a resposta de cara.
+            if(resposta === 0) {
+                [fA+fB, Math.max(fA,fB), 1, 2, 5, 10].forEach(v=>adicionarDistrator(candidatos, v, "zero-especial", 1));
+            }
+            if(resposta === 1) {
+                [0,2,10,11].forEach(v=>adicionarDistrator(candidatos, v, "um-especial", 1));
+            }
+
+            candidatos = candidatos
+                .filter(c=>c.valor !== resposta)
+                .sort((a,b)=>a.prioridade-b.prioridade || Math.abs(a.valor-resposta)-Math.abs(b.valor-resposta));
+
             let ops = [resposta];
-            Array.from(candidatos)
-                .filter(v=>Number.isFinite(v) && v>=0 && v!==resposta)
-                .sort((a,b)=>Math.abs(a-resposta)-Math.abs(b-resposta))
-                .forEach(v=>{ if(!ops.includes(v) && ops.length<totalOpcoes) ops.push(v); });
+            for(let prioridade of [1,2,3]){
+                let grupo = embaralharLista(candidatos.filter(c=>c.prioridade===prioridade));
+                for(let cand of grupo){
+                    if(ops.length >= totalOpcoes) break;
+                    if(!ops.includes(cand.valor)) ops.push(cand.valor);
+                }
+                if(ops.length >= totalOpcoes) break;
+            }
+
             while(ops.length < totalOpcoes){
-                let ruido = sortearItem([-12,-9,-6,-4,-2,2,4,6,9,12]);
-                let v = Math.max(0, resposta + ruido);
+                let ruido = sortearItem([-15,-12,-9,-6,-4,-2,2,4,6,9,12,15]);
+                let v = Math.max(0, Math.min(120, resposta + ruido));
                 if(v !== resposta && !ops.includes(v)) ops.push(v);
             }
             return ops.sort((a,b)=>a-b);
@@ -893,7 +950,7 @@
         }
         function gerarOpcoes() {
             let ultima = perguntasGeradas[perguntasGeradas.length-1];
-            let ops = gerarDistratoresInteligentes(ultima?.fA || tabuadaAtualPergunta || 1, ultima?.fB || 1, respostaCorreta, 4);
+            let ops = gerarDistratoresInteligentes(ultima?.fA || tabuadaAtualPergunta || 1, ultima?.fB || 1, respostaCorreta, 4, modalidadeAtual);
             const botoes = document.querySelectorAll(".btn-opcao");
             botoes.forEach((btn, i) => { if(i < ops.length) btn.innerText = ops[i]; btn.disabled = false; });
         }
@@ -1153,7 +1210,7 @@
             } while(multiPerguntasGeradas.slice(-6).some(p=>p.chave===chave) && tentativas<20);
             multiPerguntasGeradas.push({fA,fB,chave});
             let resp=fA*fB;
-            let ops=gerarDistratoresInteligentes(fA, fB, resp, 3);
+            let ops=gerarDistratoresInteligentes(fA, fB, resp, 3, multiModalidade);
             multiPergunta = { texto:`${fA} x ${fB}`, resposta:resp, opcoes:ops };
             document.getElementById("pergunta-multiplayer").innerHTML = `${multiPergunta.texto} = ?`;
             let b1=document.querySelectorAll("#player1-opcoes .player-option");
