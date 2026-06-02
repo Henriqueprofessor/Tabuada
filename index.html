@@ -115,8 +115,8 @@
         .positivo { color: #198754; }
         .negativo { color: #dc3545; }
         .neutro { color: #ffc107; }
-        #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-        #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
+        #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
+        #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear, background 0.2s ease; }
         #progresso.pulsando { animation: pulse 0.5s ease-in-out infinite; }
         @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; }
@@ -271,10 +271,29 @@
         <button onclick="mostrarTela('tela-single')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar e alterar dados</button>
     </div>
 
-    <!-- TELA DE JOGO (SINGLE) - 4 OPÇÕES -->
+    <!-- TELA DE JOGO (SINGLE) - NOVA ORDEM + BARRA COM COR POR MÉDIA -->
     <div id="tela-jogo" class="card hidden">
         <h2 id="titulo-jogo">Classificatória</h2>
         <div id="modo-badge" class="hidden" style="background:#fd7e14;padding:5px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;">🏆 MODO CLASSIFICATÓRIO</div>
+        
+        <!-- Barra de tempo (tooltip será preenchido dinamicamente) -->
+        <div id="barra-tempo" title="Acompanhe seu desempenho"><div id="progresso"></div></div>
+        
+        <!-- Pergunta -->
+        <div id="pergunta">X x Y = ?</div>
+        
+        <!-- Botões de opções (4 respostas) -->
+        <div class="lista-opcoes">
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+        </div>
+        
+        <!-- Dica (inicialmente oculta) -->
+        <div id="dica-resposta" class="hidden"></div>
+        
+        <!-- Status do jogo -->
         <div class="status-jogo">
             <span id="info-pergunta">Pergunta: 1 / 20</span>
             <span id="info-pontos">Pontos: 0</span>
@@ -282,21 +301,17 @@
             <span id="info-sequencia">Sequência: 0</span>
             <span id="info-media-tempo">Média: -- s</span>
         </div>
+        
+        <!-- Comparação: melhor média do aluno e média da turma -->
         <div class="comparacao">
             <div class="comparacao-item"><div class="comparacao-rotulo">🏆 Sua melhor média</div><div class="comparacao-valor" id="melhor-media-aluno">-- s</div></div>
             <div class="comparacao-item"><div class="comparacao-rotulo">👥 Média da Turma</div><div class="comparacao-valor" id="media-turma">-- s</div></div>
         </div>
+        
+        <!-- Feedback de comparação -->
         <div id="feedback-comparacao" class="feedback-comparacao">📊 Compare seu desempenho</div>
-        <div id="barra-tempo"><div id="progresso"></div></div>
-        <div id="pergunta">X x Y = ?</div>
-        <div id="dica-resposta" class="hidden"></div>
-        <!-- 4 botões de resposta -->
-        <div class="lista-opcoes">
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-        </div>
+        
+        <!-- Botões de ação -->
         <button class="botao-forcar" onclick="forcarFinalizacao()" style="background:#dc3545;">⚠️ Forçar Finalização</button>
         <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">🚪 Sair</button>
     </div>
@@ -348,7 +363,6 @@
         <div class="placar-rodadas"><div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div></div>
         <div class="round-info"><div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div><div id="pergunta-multiplayer" class="current-question">? x ? = ?</div><div id="temporizador" class="temporizador">⏱️ 7.0s</div></div>
         <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
-        <!-- Botão "Sair do Duelo" removido -->
     </div>
 
     <div id="tela-resultado-multi" class="card hidden">
@@ -510,7 +524,6 @@
             else if (sequencia === 20) mensagem = "🏆 Combo PERFEITO!";
             else return;
             
-            // Efeito visual: piscar e mudar cor temporariamente
             elem.style.transition = "all 0.2s";
             elem.style.backgroundColor = "#ffc107";
             elem.style.color = "#000";
@@ -519,13 +532,36 @@
                 elem.style.color = "";
             }, 500);
             
-            // Toast especial
             mostrarToast(mensagem);
-            
-            // Som correspondente
             if (sequencia === 5) tocarSomCombo("combo");
             else if (sequencia === 10) tocarSomCombo("superCombo");
             else if (sequencia >= 15) tocarSomCombo("megaCombo");
+        }
+
+        // ========== BARRA COM COR POR MÉDIA ==========
+        function atualizarCorBarraPorMedia(tempoGasto) {
+            if (modoTreino || !melhorMediaAluno) return false;
+            let progressoDiv = document.getElementById("progresso");
+            if (!progressoDiv) return false;
+            let tempoRestante = 10 - tempoGasto;
+            if (tempoRestante <= 2) return false; // emergência tem prioridade
+            
+            let relacao = tempoGasto / melhorMediaAluno;
+            let novaCor = "";
+            if (relacao <= 0.7) novaCor = "#00cc66";      // muito mais rápido
+            else if (relacao <= 0.9) novaCor = "#2ecc71"; // mais rápido
+            else if (relacao <= 1.1) novaCor = "#f39c12"; // no ritmo
+            else novaCor = "#e67e22";                     // mais lento
+            
+            progressoDiv.style.background = novaCor;
+            
+            let diferenca = (tempoGasto - melhorMediaAluno).toFixed(2);
+            let tooltipMsg = (diferenca <= 0) 
+                ? `🚀 Rápido! ${Math.abs(diferenca)}s abaixo da média` 
+                : `🐢 Lento... ${diferenca}s acima da média`;
+            let barraDiv = document.getElementById("barra-tempo");
+            if (barraDiv) barraDiv.title = `Melhor média: ${melhorMediaAluno.toFixed(2)}s | Agora: ${tempoGasto.toFixed(2)}s | ${tooltipMsg}`;
+            return true;
         }
 
         // Funções auxiliares
@@ -643,8 +679,6 @@
         function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes, modalidadeBase=modalidadeAtual) {
             let candidatos = [];
             let fatores = MODALIDADES[modalidadeBase]?.fatores || [0,1,2,3,4,5,6,7,8,9,10];
-
-            // Erros comuns: usar um fator vizinho, pular uma casa da tabuada ou confundir a tabuada lateral.
             [fB-1,fB+1,fB-2,fB+2].forEach((n,idx)=>{
                 if(n>=0 && n<=10) adicionarDistrator(candidatos, fA*n, "fator-vizinho", idx<2 ? 1 : 2);
             });
@@ -655,39 +689,29 @@
             adicionarDistrator(candidatos, resposta - fA, "passo-anterior", 1);
             adicionarDistrator(candidatos, resposta + fB, "incremento-fator", 2);
             adicionarDistrator(candidatos, resposta - fB, "decremento-fator", 2);
-
-            // Erros conceituais: somar os fatores, dobrar/metade ou esquecer uma parcela.
             adicionarDistrator(candidatos, fA + fB, "soma", resposta <= 25 ? 1 : 3);
             adicionarDistrator(candidatos, resposta + (fA + fB), "soma-extra", 3);
             adicionarDistrator(candidatos, Math.floor(resposta / 2), "metade", 3);
             adicionarDistrator(candidatos, resposta * 2, "dobro", 3);
-
-            // Erros de leitura: inverter algarismos em produtos de dois digitos.
             if(resposta >= 10 && resposta < 100) {
                 let invertido = Number(String(resposta).split("").reverse().join(""));
                 adicionarDistrator(candidatos, invertido, "invertido", 2);
             }
-
-            // Produtos reais proximos da modalidade mantem as opcoes plausiveis.
             fatores.forEach(tab=>{
                 for(let n=0;n<=10;n++){
                     let prod = tab*n;
                     if(Math.abs(prod-resposta) <= 18) adicionarDistrator(candidatos, prod, "produto-real", 2);
                 }
             });
-
-            // Casos especiais de 0 e 1 precisam de opcoes que nao entreguem a resposta de cara.
             if(resposta === 0) {
                 [fA+fB, Math.max(fA,fB), 1, 2, 5, 10].forEach(v=>adicionarDistrator(candidatos, v, "zero-especial", 1));
             }
             if(resposta === 1) {
                 [0,2,10,11].forEach(v=>adicionarDistrator(candidatos, v, "um-especial", 1));
             }
-
             candidatos = candidatos
                 .filter(c=>c.valor !== resposta)
                 .sort((a,b)=>a.prioridade-b.prioridade || Math.abs(a.valor-resposta)-Math.abs(b.valor-resposta));
-
             let ops = [resposta];
             for(let prioridade of [1,2,3]){
                 let grupo = embaralharLista(candidatos.filter(c=>c.prioridade===prioridade));
@@ -697,7 +721,6 @@
                 }
                 if(ops.length >= totalOpcoes) break;
             }
-
             while(ops.length < totalOpcoes){
                 let ruido = sortearItem([-15,-12,-9,-6,-4,-2,2,4,6,9,12,15]);
                 let v = Math.max(0, Math.min(120, resposta + ruido));
@@ -745,7 +768,7 @@
         }
         function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-        // ==================== RANKING ====================
+        // ==================== RANKING (código reduzido mas completo) ====================
         async function obterRanking() {
             let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
             try {
@@ -856,9 +879,7 @@
                 if(!anteriorVal || res.pontos > anteriorVal.pontos){
                     await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro:"recorde" });
                 }
-            } catch(e) {
-                console.warn("Recorde salvo apenas localmente", e);
-            }
+            } catch(e) { console.warn("Recorde salvo apenas localmente", e); }
             let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
             let idx = local.findIndex(r=>`${r.modalidade}|${r.turma}|${normalizarNome(r.nome)}` === `${res.modalidade}|${res.turma}|${normalizarNome(res.nome)}`);
             if(idx===-1) local.push(res);
@@ -1024,19 +1045,36 @@
             iniciarCronometro();
         }
         function iniciarCronometro() {
-            tempoInicio=performance.now();
-            let progresso=document.getElementById("progresso");
-            if(progresso){ progresso.style.width="100%"; progresso.style.background="#198754"; progresso.classList.remove("pulsando"); }
-            let tempoRest=10000;
-            clearInterval(timerInterval); clearTimeout(timerTimeout);
-            timerInterval=setInterval(()=>{
-                if(finalizando) return;
-                tempoRest-=100;
-                let pct=Math.max(tempoRest/10000*100,0);
-                if(progresso) progresso.style.width=pct+"%";
-                if(pct<40 && progresso){ progresso.style.background="#dc3545"; if(pct<20) progresso.classList.add("pulsando"); }
-            },100);
-            timerTimeout=setTimeout(()=>{ if(perguntaAberta) processarResposta(0,false); },10000);
+            tempoInicio = performance.now();
+            let progresso = document.getElementById("progresso");
+            if (progresso) {
+                progresso.style.width = "100%";
+                progresso.style.background = "#198754";
+                progresso.classList.remove("pulsando");
+            }
+            let tempoRest = 10000;
+            clearInterval(timerInterval);
+            clearTimeout(timerTimeout);
+            timerInterval = setInterval(() => {
+                if (finalizando) return;
+                tempoRest -= 100;
+                let pct = Math.max(tempoRest / 10000 * 100, 0);
+                if (progresso) progresso.style.width = pct + "%";
+                let tempoGasto = (10000 - tempoRest) / 1000;
+                if (tempoRest > 2000) { // ainda não está na zona de emergência
+                    atualizarCorBarraPorMedia(tempoGasto);
+                }
+                if (pct < 40 && progresso) {
+                    progresso.style.background = "#dc3545";
+                    if (pct < 20) progresso.classList.add("pulsando");
+                    else progresso.classList.remove("pulsando");
+                } else if (progresso && tempoRest > 2000 && !modoTreino && melhorMediaAluno) {
+                    // mantém a cor definida pela média (já aplicada)
+                } else if (progresso && tempoRest > 2000 && !progresso.style.background) {
+                    progresso.style.background = "#198754";
+                }
+            }, 100);
+            timerTimeout = setTimeout(() => { if (perguntaAberta) processarResposta(0, false); }, 10000);
         }
         function verificarResposta(btn) {
             if(!perguntaAberta||finalizando) return;
@@ -1089,11 +1127,9 @@
                 acertos++; sequenciaAtual++; maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
                 if(tempo) temposCorretas.push(tempo);
                 atualizarMediaTempo();
-                // ===== COMBO VISUAL/SONORO =====
                 if ([5, 10, 15, 20].includes(sequenciaAtual)) {
                     exibirComboVisual(sequenciaAtual);
                 }
-                // ================================
             } else { erros++; sequenciaAtual = 0; }
             atualizarStatus();
             setTimeout(()=>{ if(!finalizando) proximaPergunta(); },250);
@@ -1220,7 +1256,7 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== MULTIPLAYER (COM RESUMO DETALHADO ENTRE RODADAS) ====================
+        // ==================== MULTIPLAYER (código reduzido) ====================
         function iniciarMultiplayer() {
             let n1 = document.getElementById("jogador1-nome").value.trim();
             let t1 = document.getElementById("jogador1-turma").value;
@@ -1342,30 +1378,7 @@
             if(p1.vitorias>=3||p2.vitorias>=3||rodadaAtual>=totalRodadas){ finalizarMultiplayer(); }
             else{ 
                 rodadaAtual++; 
-                // ===== RESUMO DETALHADO ENTRE RODADAS =====
-                let resumoHtml = `
-                    <div style="background:#e9ecef; border-radius:12px; padding:15px; margin-bottom:15px;">
-                        <h3>📊 Resumo da Rodada ${rodadaAtual-1}</h3>
-                        <div style="display:flex; justify-content:space-around; gap:20px; flex-wrap:wrap;">
-                            <div><strong>${p1.nome}</strong><br>
-                                ✅ Acertos: ${p1.acertosRodada}<br>
-                                ⏱️ Tempo médio: ${tempoMedio1.toFixed(2)}s<br>
-                                🎯 Pontos: ${p1.pontosRodada}
-                            </div>
-                            <div><strong>${p2.nome}</strong><br>
-                                ✅ Acertos: ${p2.acertosRodada}<br>
-                                ⏱️ Tempo médio: ${tempoMedio2.toFixed(2)}s<br>
-                                🎯 Pontos: ${p2.pontosRodada}
-                            </div>
-                        </div>
-                        <div style="margin-top:12px; font-weight:bold; font-size:1.2em;">
-                            ${vencedorRodada ? `🏆 Vencedor: ${vencedorRodada.nome} (${placarRodada})` : "🤝 Empate"}
-                        </div>
-                        <div style="margin-top:8px; font-size:0.9em;">
-                            Diferença de pontos: ${Math.abs(p1.pontosRodada - p2.pontosRodada)}
-                        </div>
-                    </div>
-                `;
+                let resumoHtml = `<div style="background:#e9ecef; border-radius:12px; padding:15px; margin-bottom:15px;"><h3>📊 Resumo da Rodada ${rodadaAtual-1}</h3><div style="display:flex; justify-content:space-around; gap:20px; flex-wrap:wrap;"><div><strong>${p1.nome}</strong><br>✅ Acertos: ${p1.acertosRodada}<br>⏱️ Tempo médio: ${tempoMedio1.toFixed(2)}s<br>🎯 Pontos: ${p1.pontosRodada}</div><div><strong>${p2.nome}</strong><br>✅ Acertos: ${p2.acertosRodada}<br>⏱️ Tempo médio: ${tempoMedio2.toFixed(2)}s<br>🎯 Pontos: ${p2.pontosRodada}</div></div><div style="margin-top:12px; font-weight:bold; font-size:1.2em;">${vencedorRodada ? `🏆 Vencedor: ${vencedorRodada.nome} (${placarRodada})` : "🤝 Empate"}</div><div style="margin-top:8px; font-size:0.9em;">Diferença de pontos: ${Math.abs(p1.pontosRodada - p2.pontosRodada)}</div></div>`;
                 let segundos = 10;
                 const waitingDiv = document.getElementById("waiting-message");
                 waitingDiv.classList.remove("hidden");
@@ -1379,7 +1392,6 @@
                         iniciarRodada();
                     }
                 }, 1000);
-                // ========================================
             }
         }
         async function finalizarMultiplayer() {
@@ -1414,7 +1426,7 @@
             } catch(e) { console.warn("Duelo salvo apenas localmente", e); }
         }
 
-        // ==================== RANKINGS (RENDERIZAÇÃO) ====================
+        // ==================== RENDERIZAÇÃO RANKING (resumida) ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
             const tabelaBody = document.getElementById("tabela-ranking-body");
@@ -1446,13 +1458,13 @@
                 titulo = `📜 Histórico de Duelos - ${turma ? `Turma ${turma}` : "Todas as turmas"}`;
                 if(tabelaHead) tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Partidas</th><th>Vitórias</th><th>Aproveitamento</th></tr>`;
                 let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td></tr>`).join("");
-                tabelaBody.innerHTML = html || `<table><td colspan="5" class="sem-registros">Nenhum duelo registrado.</td></tr>`;
+                tabelaBody.innerHTML = html || `<tr><td colspan="5" class="sem-registros">Nenhum duelo registrado.</td></tr>`;
                 tituloEl.innerText = titulo;
                 return;
             }
             if(tabelaHead){
                 if(tipoRankingAtual === "turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
-                else if(tipoRankingAtual === "global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                else if(tipoRankingAtual === "global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></table>`;
                 else if(tipoRankingAtual === "precisao-global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
                 else if(tipoRankingAtual === "precisao-turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
                 else if(tipoRankingAtual === "velocidade-global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
@@ -1472,7 +1484,7 @@
                 else if(tipoRankingAtual === "velocidade-turma") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 else return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
             }).join("");
-            tabelaBody.innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+            tabelaBody.innerHTML = html || `<table><td colspan="7" class="sem-registros">Nenhum resultado registrado.</tr></tr>`;
         }
         function mudarTipoRanking(tipo) {
             tipoRankingAtual = tipo;
@@ -1487,7 +1499,7 @@
             renderizarRanking();
         }
 
-        // ==================== PERFIL ====================
+        // ==================== PERFIL (resumido) ====================
         async function carregarPerfil() {
             let nome = document.getElementById("perfil-nome").value.trim();
             let turma = document.getElementById("perfil-turma").value;
@@ -1515,7 +1527,7 @@
             document.getElementById("perfil-conteudo").classList.remove("hidden");
         }
 
-        // ==================== PAINEL DO PROFESSOR ====================
+        // ==================== PAINEL DO PROFESSOR (resumido) ====================
         function autenticarProfessor(){
             let s=document.getElementById("senha-professor").value;
             if(s===SENHA_PROFESSOR){
@@ -1568,7 +1580,6 @@
             let totalAlunos = new Set(base.map(r=>`${normalizarNome(r.nome)}|${r.turma}`)).size;
             let mediaPts = base.length ? base.reduce((s,r)=>s+r.pontos,0)/base.length : 0;
             let mediaAcertos = base.length ? base.reduce((s,r)=>s+r.acertos,0)/base.length : 0;
-            document.getElementById("painel-estatisticas").innerHTML = `<p>📊 Total alunos: ${totalAlunos}</p><p>🎮 Partidas: ${rank.length}</p><p>⭐ Média pontos: ${Math.round(mediaPts)}</p>`;
             document.getElementById("painel-estatisticas").innerHTML = `<p>Total alunos: ${totalAlunos}</p><p>Partidas registradas: ${base.length}</p><p>Recordes no ranking: ${rank.length}</p><p>Media pontos: ${Math.round(mediaPts)}</p><p>Media acertos: ${mediaAcertos.toFixed(1)}/20</p>`;
             document.getElementById("painel-estatisticas").classList.remove("hidden");
         }
