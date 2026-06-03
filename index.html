@@ -271,29 +271,19 @@
         <button onclick="mostrarTela('tela-single')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar e alterar dados</button>
     </div>
 
-    <!-- TELA DE JOGO (SINGLE) - NOVA ORDEM + BARRA COM COR POR MÉDIA -->
+    <!-- TELA DE JOGO (SINGLE) -->
     <div id="tela-jogo" class="card hidden">
         <h2 id="titulo-jogo">Classificatória</h2>
         <div id="modo-badge" class="hidden" style="background:#fd7e14;padding:5px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;">🏆 MODO CLASSIFICATÓRIO</div>
-        
-        <!-- Barra de tempo (tooltip será preenchido dinamicamente) -->
         <div id="barra-tempo" title="Acompanhe seu desempenho"><div id="progresso"></div></div>
-        
-        <!-- Pergunta -->
         <div id="pergunta">X x Y = ?</div>
-        
-        <!-- Botões de opções (4 respostas) -->
         <div class="lista-opcoes">
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
         </div>
-        
-        <!-- Dica (inicialmente oculta) -->
         <div id="dica-resposta" class="hidden"></div>
-        
-        <!-- Status do jogo -->
         <div class="status-jogo">
             <span id="info-pergunta">Pergunta: 1 / 20</span>
             <span id="info-pontos">Pontos: 0</span>
@@ -301,17 +291,11 @@
             <span id="info-sequencia">Sequência: 0</span>
             <span id="info-media-tempo">Média: -- s</span>
         </div>
-        
-        <!-- Comparação: melhor média do aluno e média da turma -->
         <div class="comparacao">
             <div class="comparacao-item"><div class="comparacao-rotulo">🏆 Sua melhor média</div><div class="comparacao-valor" id="melhor-media-aluno">-- s</div></div>
             <div class="comparacao-item"><div class="comparacao-rotulo">👥 Média da Turma</div><div class="comparacao-valor" id="media-turma">-- s</div></div>
         </div>
-        
-        <!-- Feedback de comparação -->
         <div id="feedback-comparacao" class="feedback-comparacao">📊 Compare seu desempenho</div>
-        
-        <!-- Botões de ação -->
         <button class="botao-forcar" onclick="forcarFinalizacao()" style="background:#dc3545;">⚠️ Forçar Finalização</button>
         <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">🚪 Sair</button>
     </div>
@@ -411,7 +395,7 @@
         <h2>🔧 Painel do Professor</h2>
         <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()">🔓 Acessar</button></div>
         <div id="painel-conteudo" class="hidden">
-            <div class="observacao-ranking">Acesso administrativo protegido por sessao local de 30 minutos. Para seguranca real, configure regras de escrita no Firebase.</div>
+            <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos. Para segurança real, configure regras de escrita no Firebase.</div>
             <div class="painel-botoes">
                 <button onclick="exportarCSV()">📎 Exportar CSV</button>
                 <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
@@ -445,7 +429,8 @@
         const CAMINHO_RANKING = "resultados";
         const CAMINHO_PARTIDAS = "partidas";
         const CAMINHO_DUELOS = "duelos";
-        const SENHA_PROFESSOR = "040199";
+        const SENHA_PROFESSOR_HASH = "68accac682c485d39a223b9c57ae8423271ec0e1129f5298cc5455656d23c3e7";
+        const SENHA_PROFESSOR_HASH_FALLBACK = "1ojwkhau4c9";
         const PROFESSOR_SESSION_MS = 30 * 60 * 1000;
         const STORAGE_RANKING = "rankingCEIB";
         const STORAGE_PARTIDAS = "partidasCEIB";
@@ -489,7 +474,7 @@
         let multiModalidade="0-10", rodadaAtual=1, perguntaRodadaAtual=1, totalRodadas=5, perguntasPorRodada=10;
         let multiPergunta={}, multiTempo=7, multiTimer=null, multiAtivo=false, historicoRodadas=[], tempoMaximoMulti=7, multiPerguntasGeradas=[];
 
-        // ==================== NOVAS FUNÇÕES DE SOM E COMBO ====================
+        // ==================== FUNÇÕES DE SOM E COMBO ====================
         const SONS = {
             combo: { freq: 1200, duration: 0.2 },
             superCombo: { freq: 1500, duration: 0.3 },
@@ -548,10 +533,10 @@
             
             let relacao = tempoGasto / melhorMediaAluno;
             let novaCor = "";
-            if (relacao <= 0.7) novaCor = "#00cc66";      // muito mais rápido
-            else if (relacao <= 0.9) novaCor = "#2ecc71"; // mais rápido
-            else if (relacao <= 1.1) novaCor = "#f39c12"; // no ritmo
-            else novaCor = "#e67e22";                     // mais lento
+            if (relacao <= 0.7) novaCor = "#00cc66";
+            else if (relacao <= 0.9) novaCor = "#2ecc71";
+            else if (relacao <= 1.1) novaCor = "#f39c12";
+            else novaCor = "#e67e22";
             
             progressoDiv.style.background = novaCor;
             
@@ -564,7 +549,6 @@
             return true;
         }
 
-        // Funções auxiliares
         function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
         function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
         function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
@@ -576,6 +560,23 @@
             if(turma !== "todas" && r.turma !== turma) return false;
             if(modalidade !== "todas" && r.modalidade !== modalidade) return false;
             return true;
+        }
+        async function gerarHashSenha(valor) {
+            if (!window.crypto?.subtle) return gerarHashSenhaFallback(valor);
+            const bytes = new TextEncoder().encode(valor);
+            const hash = await crypto.subtle.digest("SHA-256", bytes);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+        function gerarHashSenhaFallback(valor, seed = 0) {
+            let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+            for (let i = 0, ch; i < valor.length; i++) {
+                ch = valor.charCodeAt(i);
+                h1 = Math.imul(h1 ^ ch, 2654435761);
+                h2 = Math.imul(h2 ^ ch, 1597334677);
+            }
+            h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+            h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+            return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
         }
         function professorAutenticado() {
             let ts = Number(sessionStorage.getItem("professorCEIBAuth") || 0);
@@ -600,19 +601,31 @@
         function calcularDificuldades(partidas, modalidade) {
             let fatores = MODALIDADES[modalidade]?.fatores || [];
             let mapa = {};
-            fatores.forEach(f=>mapa[f]={total:0, acertos:0, peso:1});
+            fatores.forEach(f=>mapa[f]={total:0, acertos:0, tempoTotal:0, peso:1, origem:"sem historico"});
             partidas.forEach(p=>{
                 if(p.modalidade !== modalidade || !p.desempenhoTabuadas) return;
                 Object.entries(p.desempenhoTabuadas).forEach(([tab,d])=>{
-                    if(!mapa[tab]) mapa[tab]={total:0, acertos:0, peso:1};
+                    if(!mapa[tab]) mapa[tab]={total:0, acertos:0, tempoTotal:0, peso:1, origem:"historico"};
                     mapa[tab].total += d.total || 0;
                     mapa[tab].acertos += d.acertos || 0;
+                    mapa[tab].tempoTotal += d.tempoTotal || 0;
                 });
             });
             Object.keys(mapa).forEach(tab=>{
                 let d = mapa[tab];
-                let taxaErro = d.total ? 1 - (d.acertos / d.total) : 0.35;
-                d.peso = 1 + taxaErro * 4 + (d.total < 3 ? 0.8 : 0);
+                let precisao = d.total ? d.acertos / d.total : 0;
+                let taxaErro = d.total ? 1 - precisao : 0.45;
+                let tempoMedio = d.total && d.tempoTotal ? d.tempoTotal / d.total : 0;
+                let poucoTreino = d.total < 4 ? 1.4 : 0;
+                let lento = tempoMedio > 4 ? 0.8 : tempoMedio > 3 ? 0.45 : 0;
+                d.precisao = precisao;
+                d.tempoMedio = tempoMedio;
+                d.peso = 1 + taxaErro * 5 + poucoTreino + lento;
+                if(!d.total) d.motivo = "ainda apareceu pouco";
+                else if(precisao < 0.6) d.motivo = "muitos erros recentes";
+                else if(precisao < 0.8) d.motivo = "precisa consolidar";
+                else if(lento) d.motivo = "boa precisão, mas resposta lenta";
+                else d.motivo = "em bom ritmo";
             });
             return mapa;
         }
@@ -620,11 +633,34 @@
             let historico = await obterHistoricoAluno(nome, turma, modalidade);
             dificuldadesHistoricas = calcularDificuldades(historico, modalidade);
             focoTreinoTabuadas = Object.entries(dificuldadesHistoricas)
-                .filter(([tab,d]) => d.total < 3 || (d.total && d.acertos / d.total < 0.8))
+                .filter(([tab,d]) => d.total < 4 || d.precisao < 0.85 || d.tempoMedio > 3)
                 .sort((a,b)=>b[1].peso-a[1].peso)
                 .slice(0,3)
                 .map(([tab])=>Number(tab));
             return focoTreinoTabuadas;
+        }
+        function descreverFocoTreino() {
+            if(!focoTreinoTabuadas.length) return "Treino equilibrado: nenhuma tabuada fraca foi detectada ainda.";
+            return focoTreinoTabuadas.map(tab => {
+                let d = dificuldadesHistoricas[tab] || {};
+                let precisao = d.total ? `${Math.round((d.precisao || 0) * 100)}%` : "sem dados";
+                return `Tabuada do ${tab}: ${d.motivo || "reforço"} (${precisao})`;
+            }).join("<br>");
+        }
+        function gerarPlanoTreinoResultado() {
+            let itens = Object.entries(desempenhoTabuadas).map(([tab,d]) => {
+                let precisao = d.total ? d.acertos / d.total : 0;
+                let tempoMedio = d.total && d.tempoTotal ? d.tempoTotal / d.total : 10;
+                let prioridade = (1 - precisao) * 5 + (tempoMedio > 4 ? 1 : tempoMedio > 3 ? 0.5 : 0) + (d.total < 2 ? 0.5 : 0);
+                return { tab:Number(tab), total:d.total, acertos:d.acertos, precisao, tempoMedio, prioridade };
+            }).filter(item => item.total > 0).sort((a,b)=>b.prioridade-a.prioridade).slice(0,3);
+            if(!itens.length) return "";
+            let linhas = itens.map(item => {
+                let pct = Math.round(item.precisao * 100);
+                let motivo = pct < 70 ? "reforçar precisão" : item.tempoMedio > 3 ? "ganhar velocidade" : "manter no aquecimento";
+                return `<li>Tabuada do ${item.tab}: ${pct}% de acerto, média ${item.tempoMedio.toFixed(2)}s - ${motivo}</li>`;
+            }).join("");
+            return `<div class="feedback-ranking"><strong>Plano de treino recomendado</strong><ul style="text-align:left;margin:8px 0 0;">${linhas}</ul></div>`;
         }
         function escolherPorPeso(itens, pesoFn) {
             let total = itens.reduce((s,item)=>s+Math.max(0.1,pesoFn(item)),0);
@@ -641,14 +677,16 @@
             fatores.forEach(f=>contagem[f]=0);
             perguntasGeradas.forEach(p=>{ if(contagem[p.fA] !== undefined) contagem[p.fA]++; });
             let candidatos = fatores;
-            if(modoTreino && focoTreinoTabuadas.length && Math.random() < 0.7) candidatos = focoTreinoTabuadas;
+            if(modoTreino && focoTreinoTabuadas.length && Math.random() < 0.8) candidatos = focoTreinoTabuadas;
             let minVezes = Math.min(...candidatos.map(f=>contagem[f]||0));
             let menosUsadas = candidatos.filter(f=>(contagem[f]||0)===minVezes);
             return escolherPorPeso(menosUsadas, f => {
                 let atual = desempenhoTabuadas[f];
                 let erroAtual = atual && atual.total ? 1 - atual.acertos/atual.total : 0;
+                let tempoAtual = atual && atual.total && atual.tempoTotal ? atual.tempoTotal / atual.total : 0;
+                let lentoAtual = tempoAtual > 4 ? 0.8 : tempoAtual > 3 ? 0.4 : 0;
                 let hist = dificuldadesHistoricas[f]?.peso || 1;
-                return hist + erroAtual * 3;
+                return hist + erroAtual * 3 + lentoAtual;
             });
         }
         function gerarPerguntaAdaptativa(modalidade) {
@@ -732,6 +770,8 @@
             let base = 300;
             let bonusVelocidade = Math.max(0, Math.round((10 - tempo) * 60));
             let bonusSequencia = Math.min(120, (sequenciaAtual + 1) * 10);
+            if(tempo < 0.45) bonusVelocidade = Math.round(bonusVelocidade * 0.25);
+            else if(tempo < 0.75) bonusVelocidade = Math.round(bonusVelocidade * 0.6);
             return base + bonusVelocidade + bonusSequencia;
         }
         function calcularPontosMulti(tempoRestante) {
@@ -768,7 +808,7 @@
         }
         function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-        // ==================== RANKING (código reduzido mas completo) ====================
+        // ==================== RANKING ====================
         async function obterRanking() {
             let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
             try {
@@ -928,6 +968,7 @@
                     <hr>
                     <p><strong>🏆 Sua melhor média:</strong> ${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+" s" : "---"}</p>
                     <p><strong>👥 Média da turma:</strong> ${mediaTurma ? mediaTurma.toFixed(2)+" s" : "---"}</p>
+                    <p><strong>🎯 Foco recomendado para treino:</strong><br>${descreverFocoTreino()}</p>
                     <hr>
                     <div style="background:#e7f5ff; padding:12px; border-radius:8px; text-align:center;">
                         ${msgMotivacional}<br>
@@ -953,7 +994,7 @@
             document.getElementById("info-media-tempo").innerText = "Média: -- s";
             document.getElementById("melhor-media-aluno").innerText = "---";
             document.getElementById("media-turma").innerText = "---";
-            document.getElementById("feedback-comparacao").innerHTML = focoTreinoTabuadas.length ? `Treino focado nas tabuadas: ${focoTreinoTabuadas.join(", ")}.` : "Modo Treino: estatisticas apenas para pratica.";
+            document.getElementById("feedback-comparacao").innerHTML = descreverFocoTreino();
             mostrarTela("tela-jogo");
             proximaPergunta();
         }
@@ -1061,7 +1102,7 @@
                 let pct = Math.max(tempoRest / 10000 * 100, 0);
                 if (progresso) progresso.style.width = pct + "%";
                 let tempoGasto = (10000 - tempoRest) / 1000;
-                if (tempoRest > 2000) { // ainda não está na zona de emergência
+                if (tempoRest > 2000) {
                     atualizarCorBarraPorMedia(tempoGasto);
                 }
                 if (pct < 40 && progresso) {
@@ -1069,7 +1110,7 @@
                     if (pct < 20) progresso.classList.add("pulsando");
                     else progresso.classList.remove("pulsando");
                 } else if (progresso && tempoRest > 2000 && !modoTreino && melhorMediaAluno) {
-                    // mantém a cor definida pela média (já aplicada)
+                    // mantém a cor definida pela média
                 } else if (progresso && tempoRest > 2000 && !progresso.style.background) {
                     progresso.style.background = "#198754";
                 }
@@ -1105,9 +1146,8 @@
                         dicaDiv.style.background = "#d1e7dd";
                         dicaDiv.style.color = "#0f5132";
                     } else {
-                        dicaDiv.innerHTML = `❌ Errado! A resposta correta é ${respostaCorreta}`;
                         let ultima = perguntasGeradas[perguntasGeradas.length-1] || {};
-                        dicaDiv.innerHTML = `Errado! A resposta correta e ${respostaCorreta}. ${dicaMultiplicacao(ultima.fA, ultima.fB, respostaCorreta)}`;
+                        dicaDiv.innerHTML = `❌ Errado! A resposta correta é ${respostaCorreta}. ${dicaMultiplicacao(ultima.fA, ultima.fB, respostaCorreta)}`;
                         dicaDiv.style.background = "#f8d7da";
                         dicaDiv.style.color = "#842029";
                     }
@@ -1118,8 +1158,9 @@
             if(perguntaAtual<=TOTAL_PERGUNTAS){
                 let tab=tabuadaAtualPergunta;
                 if(tab !== null && !isNaN(tab)){
-                    if(!desempenhoTabuadas[tab]) desempenhoTabuadas[tab]={acertos:0,total:0};
+                    if(!desempenhoTabuadas[tab]) desempenhoTabuadas[tab]={acertos:0,total:0,tempoTotal:0};
                     desempenhoTabuadas[tab].total++;
+                    desempenhoTabuadas[tab].tempoTotal += tempo || 10;
                     if(acertou) desempenhoTabuadas[tab].acertos++;
                 }
             }
@@ -1163,7 +1204,7 @@
                 document.getElementById("resumo-media-turma").innerText="--";
                 document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
                 document.getElementById("novas-conquistas").innerHTML="";
-                document.getElementById("feedback-ranking-container").innerHTML = "";
+                document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
                 mostrarTela("tela-resultado");
                 return;
             }
@@ -1256,7 +1297,7 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== MULTIPLAYER (código reduzido) ====================
+        // ==================== MULTIPLAYER ====================
         function iniciarMultiplayer() {
             let n1 = document.getElementById("jogador1-nome").value.trim();
             let t1 = document.getElementById("jogador1-turma").value;
@@ -1426,7 +1467,7 @@
             } catch(e) { console.warn("Duelo salvo apenas localmente", e); }
         }
 
-        // ==================== RENDERIZAÇÃO RANKING (resumida) ====================
+        // ==================== RENDERIZAÇÃO RANKING ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
             const tabelaBody = document.getElementById("tabela-ranking-body");
@@ -1464,7 +1505,7 @@
             }
             if(tabelaHead){
                 if(tipoRankingAtual === "turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
-                else if(tipoRankingAtual === "global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></table>`;
+                else if(tipoRankingAtual === "global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
                 else if(tipoRankingAtual === "precisao-global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
                 else if(tipoRankingAtual === "precisao-turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
                 else if(tipoRankingAtual === "velocidade-global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
@@ -1484,7 +1525,7 @@
                 else if(tipoRankingAtual === "velocidade-turma") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
                 else return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
             }).join("");
-            tabelaBody.innerHTML = html || `<table><td colspan="7" class="sem-registros">Nenhum resultado registrado.</tr></tr>`;
+            tabelaBody.innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
         }
         function mudarTipoRanking(tipo) {
             tipoRankingAtual = tipo;
@@ -1499,7 +1540,7 @@
             renderizarRanking();
         }
 
-        // ==================== PERFIL (resumido) ====================
+        // ==================== PERFIL ====================
         async function carregarPerfil() {
             let nome = document.getElementById("perfil-nome").value.trim();
             let turma = document.getElementById("perfil-turma").value;
@@ -1527,14 +1568,24 @@
             document.getElementById("perfil-conteudo").classList.remove("hidden");
         }
 
-        // ==================== PAINEL DO PROFESSOR (resumido) ====================
-        function autenticarProfessor(){
-            let s=document.getElementById("senha-professor").value;
-            if(s===SENHA_PROFESSOR){
+        // ==================== PAINEL DO PROFESSOR ====================
+        async function autenticarProfessor(){
+            let inputSenha = document.getElementById("senha-professor");
+            let s = inputSenha.value;
+            try {
+                let hashSenha = await gerarHashSenha(s);
+                if(hashSenha !== SENHA_PROFESSOR_HASH && hashSenha !== SENHA_PROFESSOR_HASH_FALLBACK) {
+                    alert("Senha incorreta");
+                    return;
+                }
                 sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
+                inputSenha.value = "";
                 document.getElementById("painel-conteudo").classList.remove("hidden");
                 mostrarToast("🔓 Acesso concedido!");
-            } else alert("Senha incorreta");
+            } catch(e) {
+                alert("Não foi possível validar a senha neste navegador.");
+                console.warn(e);
+            }
         }
         function abrirResetTurma(){ if(!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
         async function confirmarReset(){
