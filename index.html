@@ -51,7 +51,6 @@
         .botao-treino { background: #fd7e14; }
         .botao-perfil { background: #6f42c1; }
         .botao-painel { background: #dc3545; }
-        .botao-multiplayer { background: #e83e8c; }
         .botao-forcar { background: #dc3545; }
         .botao-som {
             position: fixed;
@@ -189,31 +188,8 @@
         .alunos-table th, .alunos-table td { padding: 8px; border-bottom: 1px solid #dee2e6; text-align: left; }
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
         .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
-        .multiplayer-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        .player-card { flex: 1; min-width: 280px; padding: 20px; border-radius: 12px; background: #f8f9fa; text-align: center; }
-        .player-card.active { background: #e7f5ff; border: 2px solid #0066cc; }
-        .player-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-        .player-score { font-size: 42px; font-weight: bold; color: #0066cc; }
-        .player-rounds { font-size: 18px; margin: 10px 0; padding: 5px; background: #e9ecef; border-radius: 8px; }
-        .player-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
-        .player-option { background: #6c757d; padding: 12px; font-size: 18px; }
-        .player-option.correct { background: #198754; animation: correctFlash 0.3s; }
-        .player-option.wrong { background: #dc3545; animation: wrongFlash 0.3s; }
-        @keyframes correctFlash { 0%{transform:scale(1);background:#198754;} 50%{transform:scale(1.05);background:#2fb86e;} 100%{transform:scale(1);background:#198754;} }
-        @keyframes wrongFlash { 0%{transform:scale(1);background:#dc3545;} 50%{transform:scale(1.05);background:#e74c3c;} 100%{transform:scale(1);background:#dc3545;} }
-        .versus { font-size: 32px; font-weight: bold; color: #ffc107; display: flex; align-items: center; justify-content: center; }
-        .current-question { font-size: 48px; font-weight: bold; margin: 20px 0; text-align: center; }
-        .temporizador { font-size: 24px; font-weight: bold; margin: 10px 0; }
-        .temporizador.urgente { color: #dc3545; animation: pulse 0.5s ease-in-out infinite; }
-        .waiting-message { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; }
-        .placar-rodadas { display: flex; justify-content: center; gap: 30px; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; }
-        .vitorias { font-size: 28px; font-weight: bold; color: #ffc107; }
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         @media (max-width: 700px) {
-            .multiplayer-container { flex-direction: column; }
-            .versus { margin: 10px 0; }
-            .current-question { font-size: 32px; }
-            .player-options { grid-template-columns: repeat(3, 1fr); }
             .status-jogo { grid-template-columns: repeat(2, 1fr); }
             .comparacao { flex-direction: column; }
         }
@@ -229,7 +205,6 @@
         <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button onclick="mostrarTela('tela-single')" class="botao-verde">🎮 Single Player</button>
-            <button onclick="mostrarTela('tela-config-multi')" class="botao-multiplayer">👥 Multiplayer Local</button>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
             <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
@@ -322,39 +297,6 @@
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Início</button>
     </div>
 
-    <!-- MULTIPLAYER -->
-    <div id="tela-config-multi" class="card hidden">
-        <h2>👥 Multiplayer Local</h2>
-        <div class="aviso-orientacao"><div class="icone">📱🔄</div><div class="texto"><strong>⚠️ ATENÇÃO!</strong><br>Vire o celular na horizontal (modo paisagem/deitado).<br>Os botões ficarão maiores!</div></div>
-        <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;"><div class="icone">🏆📊</div><div class="texto"><strong>📋 REGRAS DO DUELO:</strong><br>• Cada RODADA tem <strong>10 perguntas</strong><br>• Vence a rodada quem fizer <strong>mais pontos</strong><br>• Critério de desempate: mais acertos → menor tempo médio<br>• O duelo é <strong>melhor de 5 rodadas</strong> (quem vencer 3 primeiro)<br>• Você tem <strong>7 segundos</strong> para responder cada pergunta!<br>• Os duelos são registrados e geram um <strong>Histórico de Duelos</strong> (acessível nos rankings).</div></div>
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <div class="config-jogador" style="flex:1;"><h4>👤 JOGADOR 1</h4><input type="text" id="jogador1-nome" placeholder="Nome do Jogador 1"><select id="jogador1-turma"><option value="">Selecione a turma</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div>
-            <div class="config-jogador" style="flex:1;"><h4>👤 JOGADOR 2</h4><input type="text" id="jogador2-nome" placeholder="Nome do Jogador 2"><select id="jogador2-turma"><option value="">Selecione a turma</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div>
-        </div>
-        <label for="multi-modalidade">Modalidade</label>
-        <select id="multi-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10" selected>Completa 0-10</option></select>
-        <div style="display:flex;gap:10px;margin-top:15px;"><button onclick="iniciarMultiplayer()" class="botao-verde">🎮 Iniciar Duelo</button><button onclick="mostrarTela('tela-inicial')" class="botao-secundario">⬅️ Voltar</button></div>
-    </div>
-
-    <div id="tela-multiplayer" class="card hidden">
-        <h2>👥 Duelo de Tabuadas</h2>
-        <div class="aviso-orientacao" style="background:#e7f5ff; border-left-color:#0066cc;"><div class="icone">📱🔄</div><div class="texto"><strong>📱 Celular na horizontal!</strong><br>Mantenha o celular deitado para melhor visualização.</div></div>
-        <div class="multiplayer-container">
-            <div id="player1-card" class="player-card active"><div class="player-name"><span id="player1-name">Jogador 1</span></div><div class="player-score" id="player1-pontos">0</div><div class="player-rounds">🏆 Vitórias: <span id="player1-vitorias">0</span></div><div id="player1-opcoes" class="player-options"><button class="player-option" onclick="responderMultiplayer(1,0)"></button><button class="player-option" onclick="responderMultiplayer(1,1)"></button><button class="player-option" onclick="responderMultiplayer(1,2)"></button></div></div>
-            <div class="versus">VS</div>
-            <div id="player2-card" class="player-card"><div class="player-name"><span id="player2-name">Jogador 2</span></div><div class="player-score" id="player2-pontos">0</div><div class="player-rounds">🏆 Vitórias: <span id="player2-vitorias">0</span></div><div id="player2-opcoes" class="player-options"><button class="player-option" onclick="responderMultiplayer(2,0)"></button><button class="player-option" onclick="responderMultiplayer(2,1)"></button><button class="player-option" onclick="responderMultiplayer(2,2)"></button></div></div>
-        </div>
-        <div class="placar-rodadas"><div>🏆 Placar: <span id="rodadas-player1">0</span> x <span id="rodadas-player2">0</span></div></div>
-        <div class="round-info"><div>🎮 Rodada: <span id="rodada-atual">1</span> de 5 | 🎯 Pergunta: <span id="pergunta-rodada">1</span> de 10</div><div id="pergunta-multiplayer" class="current-question">? x ? = ?</div><div id="temporizador" class="temporizador">⏱️ 7.0s</div></div>
-        <div id="waiting-message" class="waiting-message hidden">⏳ Aguardando resposta...</div>
-    </div>
-
-    <div id="tela-resultado-multi" class="card hidden">
-        <h2 id="resultado-titulo-multi">🏆 Fim do Duelo!</h2>
-        <div id="resultado-conteudo-multi" style="padding:20px;"></div>
-        <div style="display:flex;gap:10px;"><button onclick="mostrarTela('tela-config-multi')" class="botao-multiplayer">👥 Novo Duelo</button><button onclick="mostrarTela('tela-inicial')" class="botao-secundario">🏠 Início</button></div>
-    </div>
-
     <!-- RANKINGS -->
     <div id="tela-ranking" class="card hidden">
         <h2>Rankings</h2>
@@ -365,10 +307,8 @@
             <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
             <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
             <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
-            <button class="aba" id="aba-duelos" onclick="mudarTipoRanking('duelos')">📜 Histórico de Duelos</button>
         </div>
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
-        <div id="observacao-duelos" class="observacao-ranking hidden">📜 <strong>Histórico de Duelos:</strong> Considera todas as modalidades. Vitórias = número de duelos vencidos (vencer 3 rodadas). Partidas = total de duelos disputados.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option></select>
         <select id="filtro-turma" onchange="renderizarRanking()"><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select>
         <h3 id="titulo-ranking">Ranking</h3>
@@ -395,18 +335,16 @@
         <h2>🔧 Painel do Professor</h2>
         <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()">🔓 Acessar</button></div>
         <div id="painel-conteudo" class="hidden">
-            <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos. Para segurança real, configure regras de escrita no Firebase.</div>
+            <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos.</div>
             <div class="painel-botoes">
                 <button onclick="exportarCSV()">📎 Exportar CSV</button>
                 <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
                 <button onclick="mostrarEstatisticas()">📈 Estatísticas</button>
                 <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
-                <button onclick="verHistoricoDuelos()" class="botao-multiplayer">📜 Histórico de Duelos (detalhado)</button>
             </div>
             <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option><option value="todas">📚 TODAS</option></select><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
             <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
             <div id="painel-estatisticas" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"></div>
-            <div id="painel-historico-duelos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>📜 Histórico de Duelos (detalhado)</h4><div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;align-items:center;"><label style="margin:0;width:auto;">Filtrar por modalidade:</label><select id="filtro-modalidade-duelos" style="width:auto;flex:1;min-width:150px;"><option value="todas">Todas as modalidades</option><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option></select><button onclick="carregarHistoricoDuelosDetalhado()" class="botao-verde" style="width:auto;margin:0;">🔍 Filtrar</button></div><div id="historico-duelos-detalhado" class="historico-duelos"></div><button onclick="limparHistoricoDuelos()" class="botao-forcar" style="background:#fd7e14;margin-top:10px;">🗑️ Limpar Histórico</button><button onclick="fecharHistoricoDuelos()" class="botao-secundario" style="margin-top:10px;">Fechar</button></div>
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
@@ -428,7 +366,6 @@
         const database = firebase.database();
         const CAMINHO_RANKING = "resultados";
         const CAMINHO_PARTIDAS = "partidas";
-        const CAMINHO_DUELOS = "duelos";
         const SENHA_PROFESSOR_HASH = "68accac682c485d39a223b9c57ae8423271ec0e1129f5298cc5455656d23c3e7";
         const SENHA_PROFESSOR_HASH_FALLBACK = "1ojwkhau4c9";
         const PROFESSOR_SESSION_MS = 30 * 60 * 1000;
@@ -466,90 +403,6 @@
         let melhorMediaAluno = null, mediaTurma = null;
         let somAtivo = true, jaToCouSomSuperacao = false;
 
-        // Variáveis multiplayer
-        let multiJogadores = [
-            { id:1, nome:"", turma:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false },
-            { id:2, nome:"", turma:"", pontosRodada:0, acertosRodada:0, temposRodada:[], vitorias:0, bloqueado:false }
-        ];
-        let multiModalidade="0-10", rodadaAtual=1, perguntaRodadaAtual=1, totalRodadas=5, perguntasPorRodada=10;
-        let multiPergunta={}, multiTempo=7, multiTimer=null, multiAtivo=false, historicoRodadas=[], tempoMaximoMulti=7, multiPerguntasGeradas=[];
-
-        // ==================== FUNÇÕES DE SOM E COMBO ====================
-        const SONS = {
-            combo: { freq: 1200, duration: 0.2 },
-            superCombo: { freq: 1500, duration: 0.3 },
-            megaCombo: { freq: 1800, duration: 0.4 }
-        };
-
-        function tocarSomCombo(tipo) {
-            if (!somAtivo) return;
-            let cfg = SONS[tipo] || SONS.combo;
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = cfg.freq;
-                gain.gain.value = 0.3;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + cfg.duration);
-                osc.stop(audioCtx.currentTime + cfg.duration);
-                setTimeout(() => audioCtx.close(), cfg.duration * 1000);
-            } catch(e) {}
-        }
-
-        function exibirComboVisual(sequencia) {
-            let elem = document.getElementById("info-sequencia");
-            if (!elem) return;
-            let mensagem = "";
-            if (sequencia === 5) mensagem = "🔥 Combo 5!";
-            else if (sequencia === 10) mensagem = "⚡ Combo 10!";
-            else if (sequencia === 15) mensagem = "💥 Combo 15!";
-            else if (sequencia === 20) mensagem = "🏆 Combo PERFEITO!";
-            else return;
-            
-            elem.style.transition = "all 0.2s";
-            elem.style.backgroundColor = "#ffc107";
-            elem.style.color = "#000";
-            setTimeout(() => {
-                elem.style.backgroundColor = "";
-                elem.style.color = "";
-            }, 500);
-            
-            mostrarToast(mensagem);
-            if (sequencia === 5) tocarSomCombo("combo");
-            else if (sequencia === 10) tocarSomCombo("superCombo");
-            else if (sequencia >= 15) tocarSomCombo("megaCombo");
-        }
-
-        // ========== BARRA COM COR POR MÉDIA ==========
-        function atualizarCorBarraPorMedia(tempoGasto) {
-            if (modoTreino || !melhorMediaAluno) return false;
-            let progressoDiv = document.getElementById("progresso");
-            if (!progressoDiv) return false;
-            let tempoRestante = 10 - tempoGasto;
-            if (tempoRestante <= 2) return false; // emergência tem prioridade
-            
-            let relacao = tempoGasto / melhorMediaAluno;
-            let novaCor = "";
-            if (relacao <= 0.7) novaCor = "#00cc66";
-            else if (relacao <= 0.9) novaCor = "#2ecc71";
-            else if (relacao <= 1.1) novaCor = "#f39c12";
-            else novaCor = "#e67e22";
-            
-            progressoDiv.style.background = novaCor;
-            
-            let diferenca = (tempoGasto - melhorMediaAluno).toFixed(2);
-            let tooltipMsg = (diferenca <= 0) 
-                ? `🚀 Rápido! ${Math.abs(diferenca)}s abaixo da média` 
-                : `🐢 Lento... ${diferenca}s acima da média`;
-            let barraDiv = document.getElementById("barra-tempo");
-            if (barraDiv) barraDiv.title = `Melhor média: ${melhorMediaAluno.toFixed(2)}s | Agora: ${tempoGasto.toFixed(2)}s | ${tooltipMsg}`;
-            return true;
-        }
-
-        function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
         function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
         function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
         function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
@@ -774,10 +627,6 @@
             else if(tempo < 0.75) bonusVelocidade = Math.round(bonusVelocidade * 0.6);
             return base + bonusVelocidade + bonusSequencia;
         }
-        function calcularPontosMulti(tempoRestante) {
-            let tempoGasto = Math.max(0, tempoMaximoMulti - tempoRestante);
-            return Math.max(120, 250 + Math.round((tempoMaximoMulti - tempoGasto) * 70));
-        }
         function dicaMultiplicacao(fA, fB, resposta) {
             if(fA === 0 || fB === 0) return `Qualquer numero vezes 0 resulta em 0.`;
             if(fA === 1) return `Todo numero vezes 1 continua o mesmo: ${fB}.`;
@@ -786,7 +635,7 @@
             return `${fA} x ${fB} e o mesmo que somar ${fA}, ${fB} vezes.`;
         }
         function mostrarTela(id) {
-            const telas = ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-config-multi","tela-multiplayer","tela-resultado-multi","tela-ranking","tela-perfil","tela-painel","tela-preparacao"];
+            const telas = ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-painel","tela-preparacao"];
             telas.forEach(t=>{ let el=document.getElementById(t); if(el) el.classList.add("hidden"); });
             let alvo = document.getElementById(id);
             if(alvo) alvo.classList.remove("hidden");
@@ -875,41 +724,6 @@
             let mapa = new Map();
             filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.tempoMedio<mapa.get(chave).tempoMedio) mapa.set(chave,r); });
             return Array.from(mapa.values()).sort((a,b)=>a.tempoMedio-b.tempoMedio || b.acertos-a.acertos);
-        }
-        async function obterRankingDuelos(turma=null){
-            let historico = await obterHistoricoDuelosCompleto();
-            let mapa = new Map();
-            historico.forEach(duelo=>{
-                if(duelo.vencedor && duelo.vencedor!=="EMPATE"){
-                    let chave=`${duelo.vencedor}|${duelo.vencedorTurma||""}`;
-                    if(!mapa.has(chave)) mapa.set(chave,{nome:duelo.vencedor, turma:duelo.vencedorTurma||"", vitorias:0, partidas:0});
-                    mapa.get(chave).vitorias++;
-                    mapa.get(chave).partidas++;
-                }
-                if(duelo.perdedor && duelo.perdedor!=="EMPATE"){
-                    let chave=`${duelo.perdedor}|${duelo.perdedorTurma||""}`;
-                    if(!mapa.has(chave)) mapa.set(chave,{nome:duelo.perdedor, turma:duelo.perdedorTurma||"", vitorias:0, partidas:0});
-                    mapa.get(chave).partidas++;
-                }
-            });
-            let ranking = Array.from(mapa.values());
-            if(turma) ranking = ranking.filter(item=>item.turma===turma);
-            ranking.sort((a,b)=>b.vitorias-a.vitorias);
-            return ranking;
-        }
-        async function obterHistoricoDuelosCompleto() {
-            let local = JSON.parse(localStorage.getItem("historico_duelos")||"[]");
-            try {
-                let snap = await database.ref(CAMINHO_DUELOS).once("value");
-                let online = Object.values(snap.val() || {});
-                let merge = [...online];
-                local.forEach(l=>{ if(!merge.some(o=>o.idDuelo===l.idDuelo || o.data===l.data)) merge.push(l); });
-                merge.sort(ordenarPorDataDesc);
-                localStorage.setItem("historico_duelos", JSON.stringify(merge.slice(0,500)));
-                return merge;
-            } catch(e) {
-                return local.sort(ordenarPorDataDesc);
-            }
         }
         async function salvarResultado(res){
             let chave = criarChaveResultado(res);
@@ -1117,6 +931,72 @@
             }, 100);
             timerTimeout = setTimeout(() => { if (perguntaAberta) processarResposta(0, false); }, 10000);
         }
+        function atualizarCorBarraPorMedia(tempoGasto) {
+            if (modoTreino || !melhorMediaAluno) return false;
+            let progressoDiv = document.getElementById("progresso");
+            if (!progressoDiv) return false;
+            let tempoRestante = 10 - tempoGasto;
+            if (tempoRestante <= 2) return false;
+            
+            let relacao = tempoGasto / melhorMediaAluno;
+            let novaCor = "";
+            if (relacao <= 0.7) novaCor = "#00cc66";
+            else if (relacao <= 0.9) novaCor = "#2ecc71";
+            else if (relacao <= 1.1) novaCor = "#f39c12";
+            else novaCor = "#e67e22";
+            
+            progressoDiv.style.background = novaCor;
+            
+            let diferenca = (tempoGasto - melhorMediaAluno).toFixed(2);
+            let tooltipMsg = (diferenca <= 0) 
+                ? `🚀 Rápido! ${Math.abs(diferenca)}s abaixo da média` 
+                : `🐢 Lento... ${diferenca}s acima da média`;
+            let barraDiv = document.getElementById("barra-tempo");
+            if (barraDiv) barraDiv.title = `Melhor média: ${melhorMediaAluno.toFixed(2)}s | Agora: ${tempoGasto.toFixed(2)}s | ${tooltipMsg}`;
+            return true;
+        }
+        function exibirComboVisual(sequencia) {
+            let elem = document.getElementById("info-sequencia");
+            if (!elem) return;
+            let mensagem = "";
+            if (sequencia === 5) mensagem = "🔥 Combo 5!";
+            else if (sequencia === 10) mensagem = "⚡ Combo 10!";
+            else if (sequencia === 15) mensagem = "💥 Combo 15!";
+            else if (sequencia === 20) mensagem = "🏆 Combo PERFEITO!";
+            else return;
+            
+            elem.style.transition = "all 0.2s";
+            elem.style.backgroundColor = "#ffc107";
+            elem.style.color = "#000";
+            setTimeout(() => {
+                elem.style.backgroundColor = "";
+                elem.style.color = "";
+            }, 500);
+            
+            mostrarToast(mensagem);
+            if (sequencia === 5) tocarSomCombo("combo");
+            else if (sequencia === 10) tocarSomCombo("superCombo");
+            else if (sequencia >= 15) tocarSomCombo("megaCombo");
+        }
+        function tocarSomCombo(tipo) {
+            if (!somAtivo) return;
+            const SONS = { combo: { freq: 1200, duration: 0.2 }, superCombo: { freq: 1500, duration: 0.3 }, megaCombo: { freq: 1800, duration: 0.4 } };
+            let cfg = SONS[tipo] || SONS.combo;
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = cfg.freq;
+                gain.gain.value = 0.3;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + cfg.duration);
+                osc.stop(audioCtx.currentTime + cfg.duration);
+                setTimeout(() => audioCtx.close(), cfg.duration * 1000);
+            } catch(e) {}
+        }
+        function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
         function verificarResposta(btn) {
             if(!perguntaAberta||finalizando) return;
             clearInterval(timerInterval); clearTimeout(timerTimeout);
@@ -1297,176 +1177,6 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== MULTIPLAYER ====================
-        function iniciarMultiplayer() {
-            let n1 = document.getElementById("jogador1-nome").value.trim();
-            let t1 = document.getElementById("jogador1-turma").value;
-            let n2 = document.getElementById("jogador2-nome").value.trim();
-            let t2 = document.getElementById("jogador2-turma").value;
-            if(!n1||!n2){ alert("Preencha os nomes!"); return; }
-            if(!t1||!t2){ alert("Selecione as turmas!"); return; }
-            multiModalidade = document.getElementById("multi-modalidade").value;
-            multiJogadores[0].nome=n1; multiJogadores[0].turma=t1;
-            multiJogadores[1].nome=n2; multiJogadores[1].turma=t2;
-            multiJogadores[0].vitorias=0; multiJogadores[1].vitorias=0;
-            rodadaAtual=1; perguntaRodadaAtual=1; historicoRodadas=[]; multiPerguntasGeradas=[]; multiAtivo=true;
-            document.getElementById("player1-name").innerHTML = `${n1}<br><small>Turma ${t1}</small>`;
-            document.getElementById("player2-name").innerHTML = `${n2}<br><small>Turma ${t2}</small>`;
-            document.getElementById("rodadas-player1").innerText="0"; document.getElementById("rodadas-player2").innerText="0";
-            document.getElementById("player1-vitorias").innerText="0"; document.getElementById("player2-vitorias").innerText="0";
-            document.getElementById("rodada-atual").innerText="1"; document.getElementById("pergunta-rodada").innerText="1";
-            mostrarTela("tela-multiplayer");
-            iniciarRodada();
-        }
-        function iniciarRodada() {
-            if(!multiAtivo) return;
-            multiJogadores[0].pontosRodada=0; multiJogadores[1].pontosRodada=0;
-            multiJogadores[0].acertosRodada=0; multiJogadores[1].acertosRodada=0;
-            multiJogadores[0].temposRodada=[]; multiJogadores[1].temposRodada=[];
-            multiJogadores[0].bloqueado=false; multiJogadores[1].bloqueado=false;
-            document.getElementById("player1-pontos").innerText="0"; document.getElementById("player2-pontos").innerText="0";
-            perguntaRodadaAtual=1; document.getElementById("pergunta-rodada").innerText="1"; document.getElementById("rodada-atual").innerText=rodadaAtual;
-            proximaPerguntaMulti();
-        }
-        function proximaPerguntaMulti() {
-            if(!multiAtivo) return;
-            if(perguntaRodadaAtual>perguntasPorRodada){ finalizarRodada(); return; }
-            multiJogadores[0].bloqueado=false; multiJogadores[1].bloqueado=false;
-            let fatores = MODALIDADES[multiModalidade].fatores;
-            let fA, fB, chave, tentativas=0;
-            do {
-                let contagem = {};
-                fatores.forEach(f=>contagem[f]=0);
-                multiPerguntasGeradas.forEach(p=>{ if(contagem[p.fA] !== undefined) contagem[p.fA]++; });
-                let minVezes = Math.min(...fatores.map(f=>contagem[f]||0));
-                fA=sortearItem(fatores.filter(f=>(contagem[f]||0)===minVezes));
-                fB=Math.floor(Math.random()*11);
-                chave=`${fA}x${fB}`;
-                tentativas++;
-            } while(multiPerguntasGeradas.slice(-6).some(p=>p.chave===chave) && tentativas<20);
-            multiPerguntasGeradas.push({fA,fB,chave});
-            let resp=fA*fB;
-            let ops=gerarDistratoresInteligentes(fA, fB, resp, 3, multiModalidade);
-            multiPergunta = { texto:`${fA} x ${fB}`, resposta:resp, opcoes:ops };
-            document.getElementById("pergunta-multiplayer").innerHTML = `${multiPergunta.texto} = ?`;
-            let b1=document.querySelectorAll("#player1-opcoes .player-option");
-            let b2=document.querySelectorAll("#player2-opcoes .player-option");
-            ops.forEach((opt,i)=>{ if(b1[i]){ b1[i].innerText=opt; b1[i].disabled=false; b1[i].classList.remove("correct","wrong"); } if(b2[i]){ b2[i].innerText=opt; b2[i].disabled=false; b2[i].classList.remove("correct","wrong"); } });
-            iniciarTimerMulti();
-        }
-        function iniciarTimerMulti() {
-            if(multiTimer) clearInterval(multiTimer);
-            multiTempo=tempoMaximoMulti;
-            let timerDiv=document.getElementById("temporizador");
-            if(timerDiv){
-                timerDiv.innerText=`⏱️ ${multiTempo.toFixed(1)}s`;
-                timerDiv.classList.remove("urgente");
-            }
-            multiTimer=setInterval(()=>{
-                if(!multiAtivo) return;
-                multiTempo-=0.1;
-                if(timerDiv) timerDiv.innerText=`⏱️ ${multiTempo.toFixed(1)}s`;
-                if(multiTempo<=2 && timerDiv) timerDiv.classList.add("urgente");
-                if(multiTempo<=0){ clearInterval(multiTimer); processarFimPerguntaMulti(); }
-            },100);
-        }
-        function responderMultiplayer(jogador, idx) {
-            let j = multiJogadores[jogador-1];
-            if(j.bloqueado||!multiAtivo) return;
-            let opcao = multiPergunta.opcoes[idx];
-            let acertou = (opcao === multiPergunta.resposta);
-            if(acertou){
-                let pts = calcularPontosMulti(multiTempo);
-                j.pontosRodada += pts; j.acertosRodada++; j.temposRodada.push(tempoMaximoMulti - multiTempo);
-                document.getElementById(`player${jogador}-pontos`).innerText = j.pontosRodada;
-                let btns = document.querySelectorAll(`#player${jogador}-opcoes .player-option`);
-                if(btns[idx]) btns[idx].classList.add("correct");
-                mostrarToast(`${j.nome} acertou! +${pts} pts`);
-            } else {
-                let btns = document.querySelectorAll(`#player${jogador}-opcoes .player-option`);
-                if(btns[idx]) btns[idx].classList.add("wrong");
-                mostrarToast(`❌ ${j.nome} errou!`);
-            }
-            j.bloqueado = true;
-            document.querySelectorAll(`#player${jogador}-opcoes .player-option`).forEach(b=>b.disabled=true);
-            if(multiJogadores[0].bloqueado && multiJogadores[1].bloqueado){ clearInterval(multiTimer); processarFimPerguntaMulti(); }
-        }
-        function processarFimPerguntaMulti() {
-            if(!multiAtivo) return;
-            if(!multiJogadores[0].bloqueado){ multiJogadores[0].bloqueado=true; let btns=document.querySelectorAll("#player1-opcoes .player-option"); if(btns) btns.forEach(b=>b.disabled=true); }
-            if(!multiJogadores[1].bloqueado){ multiJogadores[1].bloqueado=true; let btns=document.querySelectorAll("#player2-opcoes .player-option"); if(btns) btns.forEach(b=>b.disabled=true); }
-            perguntaRodadaAtual++;
-            document.getElementById("pergunta-rodada").innerText = perguntaRodadaAtual;
-            setTimeout(()=>{ if(multiAtivo) proximaPerguntaMulti(); },1000);
-        }
-        function finalizarRodada() {
-            let p1=multiJogadores[0], p2=multiJogadores[1];
-            let tempoMedio1 = p1.temposRodada.length? p1.temposRodada.reduce((a,b)=>a+b,0)/p1.temposRodada.length : 10;
-            let tempoMedio2 = p2.temposRodada.length? p2.temposRodada.reduce((a,b)=>a+b,0)/p2.temposRodada.length : 10;
-            let vencedorRodada=null, placarRodada="";
-            if(p1.pontosRodada>p2.pontosRodada){ vencedorRodada=p1; p1.vitorias++; placarRodada=`${p1.pontosRodada} x ${p2.pontosRodada}`; mostrarToast(`🏆 ${p1.nome} venceu a rodada ${rodadaAtual}!`); }
-            else if(p2.pontosRodada>p1.pontosRodada){ vencedorRodada=p2; p2.vitorias++; placarRodada=`${p2.pontosRodada} x ${p1.pontosRodada}`; mostrarToast(`🏆 ${p2.nome} venceu a rodada ${rodadaAtual}!`); }
-            else {
-                if(p1.acertosRodada>p2.acertosRodada){ vencedorRodada=p1; p1.vitorias++; placarRodada=`${p1.pontosRodada} x ${p2.pontosRodada} (desempate: acertos)`; }
-                else if(p2.acertosRodada>p1.acertosRodada){ vencedorRodada=p2; p2.vitorias++; placarRodada=`${p2.pontosRodada} x ${p1.pontosRodada} (desempate: acertos)`; }
-                else if(tempoMedio1<tempoMedio2){ vencedorRodada=p1; p1.vitorias++; placarRodada=`${p1.pontosRodada} x ${p2.pontosRodada} (desempate: tempo)`; }
-                else if(tempoMedio2<tempoMedio1){ vencedorRodada=p2; p2.vitorias++; placarRodada=`${p2.pontosRodada} x ${p1.pontosRodada} (desempate: tempo)`; }
-                else { placarRodada=`${p1.pontosRodada} x ${p2.pontosRodada} (EMPATE PERFEITO!)`; mostrarToast(`🤝 Empate na rodada ${rodadaAtual}!`); }
-            }
-            historicoRodadas.push({ numero:rodadaAtual, vencedor:vencedorRodada?vencedorRodada.nome:"Empate", placar:placarRodada, pontos1:p1.pontosRodada, pontos2:p2.pontosRodada, acertos1:p1.acertosRodada, acertos2:p2.acertosRodada });
-            document.getElementById("rodadas-player1").innerText=p1.vitorias; document.getElementById("rodadas-player2").innerText=p2.vitorias;
-            document.getElementById("player1-vitorias").innerText=p1.vitorias; document.getElementById("player2-vitorias").innerText=p2.vitorias;
-            if(p1.vitorias>=3||p2.vitorias>=3||rodadaAtual>=totalRodadas){ finalizarMultiplayer(); }
-            else{ 
-                rodadaAtual++; 
-                let resumoHtml = `<div style="background:#e9ecef; border-radius:12px; padding:15px; margin-bottom:15px;"><h3>📊 Resumo da Rodada ${rodadaAtual-1}</h3><div style="display:flex; justify-content:space-around; gap:20px; flex-wrap:wrap;"><div><strong>${p1.nome}</strong><br>✅ Acertos: ${p1.acertosRodada}<br>⏱️ Tempo médio: ${tempoMedio1.toFixed(2)}s<br>🎯 Pontos: ${p1.pontosRodada}</div><div><strong>${p2.nome}</strong><br>✅ Acertos: ${p2.acertosRodada}<br>⏱️ Tempo médio: ${tempoMedio2.toFixed(2)}s<br>🎯 Pontos: ${p2.pontosRodada}</div></div><div style="margin-top:12px; font-weight:bold; font-size:1.2em;">${vencedorRodada ? `🏆 Vencedor: ${vencedorRodada.nome} (${placarRodada})` : "🤝 Empate"}</div><div style="margin-top:8px; font-size:0.9em;">Diferença de pontos: ${Math.abs(p1.pontosRodada - p2.pontosRodada)}</div></div>`;
-                let segundos = 10;
-                const waitingDiv = document.getElementById("waiting-message");
-                waitingDiv.classList.remove("hidden");
-                waitingDiv.innerHTML = resumoHtml + `<div style="text-align:center; margin-top:10px;">⏳ Próxima rodada em ${segundos} segundos...</div>`;
-                const interval = setInterval(() => {
-                    segundos--;
-                    waitingDiv.innerHTML = resumoHtml + `<div style="text-align:center; margin-top:10px;">⏳ Próxima rodada em ${segundos} segundo${segundos !== 1 ? 's' : ''}...</div>`;
-                    if (segundos <= 0) {
-                        clearInterval(interval);
-                        waitingDiv.classList.add("hidden");
-                        iniciarRodada();
-                    }
-                }, 1000);
-            }
-        }
-        async function finalizarMultiplayer() {
-            multiAtivo=false; if(multiTimer) clearInterval(multiTimer);
-            let vencedor=null, perdedor=null;
-            if(multiJogadores[0].vitorias>=3){ vencedor=multiJogadores[0]; perdedor=multiJogadores[1]; }
-            else if(multiJogadores[1].vitorias>=3){ vencedor=multiJogadores[1]; perdedor=multiJogadores[0]; }
-            else if(multiJogadores[0].vitorias>multiJogadores[1].vitorias){ vencedor=multiJogadores[0]; perdedor=multiJogadores[1]; }
-            else if(multiJogadores[1].vitorias>multiJogadores[0].vitorias){ vencedor=multiJogadores[1]; perdedor=multiJogadores[0]; }
-            await salvarDuelo(vencedor?vencedor.nome:"EMPATE", vencedor?vencedor.turma:"", perdedor?perdedor.nome:`${multiJogadores[0].nome} vs ${multiJogadores[1].nome}`, perdedor?perdedor.turma:"", multiJogadores[0].vitorias, multiJogadores[1].vitorias, multiModalidade, rodadaAtual, historicoRodadas);
-            let titulo="",conteudo="";
-            if(vencedor){
-                titulo=`🏆 ${vencedor.nome} é o CAMPEÃO! 🏆`;
-                conteudo=`<div style="font-size:48px">🏆👑🏆</div><div style="font-size:24px;margin-bottom:20px;">${vencedor.nome} venceu o duelo!</div><div style="background:#f8f9fa;padding:15px;border-radius:8px;"><strong>📊 Placar Final:</strong><br>${multiJogadores[0].nome} (Turma ${multiJogadores[0].turma}): ${multiJogadores[0].vitorias} vitórias<br>${multiJogadores[1].nome} (Turma ${multiJogadores[1].turma}): ${multiJogadores[1].vitorias} vitórias<br><br><strong>🏅 Rodadas disputadas:</strong> ${rodadaAtual} de ${totalRodadas}</div><div style="margin-top:15px;">✅ Duelo registrado no histórico!</div>`;
-            } else {
-                titulo="🤝 DUELO EMPATADO! 🤝";
-                conteudo=`<div style="font-size:48px">🤝🤝🤝</div><div>Duelo terminou empatado!</div><div style="background:#f8f9fa;padding:15px;border-radius:8px;"><strong>📊 Placar Final:</strong><br>${multiJogadores[0].nome} (Turma ${multiJogadores[0].turma}): ${multiJogadores[0].vitorias} vitórias<br>${multiJogadores[1].nome} (Turma ${multiJogadores[1].turma}): ${multiJogadores[1].vitorias} vitórias</div><div style="margin-top:15px;">✅ Duelo registrado no histórico!</div>`;
-            }
-            document.getElementById("resultado-titulo-multi").innerHTML=titulo;
-            document.getElementById("resultado-conteudo-multi").innerHTML=conteudo;
-            mostrarTela("tela-resultado-multi");
-        }
-        async function salvarDuelo(vencedor, vencedorTurma, perdedor, perdedorTurma, vitoriasVencedor, vitoriasPerdedor, modalidade, rodadas, historicoRodadasDetalhe) {
-            let idDuelo = `duelo_${Date.now()}_${Math.random().toString(36).substr(2,6)}`;
-            let duelo = { idDuelo, data:new Date().toISOString(), vencedor, vencedorTurma, perdedor, perdedorTurma, placar:`${vitoriasVencedor} x ${vitoriasPerdedor}`, modalidade:MODALIDADES[modalidade]?.nome||modalidade, rodadas, timestamp:Date.now(), detalhesRodadas:historicoRodadasDetalhe };
-            let historico = JSON.parse(localStorage.getItem("historico_duelos")||"[]");
-            if(!historico.some(d=>d.idDuelo===idDuelo || d.data===duelo.data)) historico.unshift(duelo);
-            historico = historico.slice(0,500);
-            localStorage.setItem("historico_duelos",JSON.stringify(historico));
-            try {
-                await database.ref(`${CAMINHO_DUELOS}/${idDuelo}`).set(duelo);
-            } catch(e) { console.warn("Duelo salvo apenas localmente", e); }
-        }
-
         // ==================== RENDERIZAÇÃO RANKING ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
@@ -1494,14 +1204,6 @@
             } else if(tipoRankingAtual === "velocidade-turma"){
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
                 titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-            } else if(tipoRankingAtual === "duelos"){
-                ranking = await obterRankingDuelos(turma);
-                titulo = `📜 Histórico de Duelos - ${turma ? `Turma ${turma}` : "Todas as turmas"}`;
-                if(tabelaHead) tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Partidas</th><th>Vitórias</th><th>Aproveitamento</th></tr>`;
-                let html = ranking.slice(0,100).map((r,i)=>`<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.partidas}</td><td style="text-align:center">${r.vitorias}</td><td style="text-align:center">${r.partidas ? Math.round(r.vitorias/r.partidas*100) : 0}%</td></tr>`).join("");
-                tabelaBody.innerHTML = html || `<tr><td colspan="5" class="sem-registros">Nenhum duelo registrado.</td></tr>`;
-                tituloEl.innerText = titulo;
-                return;
             }
             if(tabelaHead){
                 if(tipoRankingAtual === "turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
@@ -1529,14 +1231,12 @@
         }
         function mudarTipoRanking(tipo) {
             tipoRankingAtual = tipo;
-            const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma","aba-duelos"];
+            const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
             abas.forEach(abaId=>{ let el=document.getElementById(abaId); if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); });
-            const isDuelos = (tipo === "duelos");
             const isGlobal = (tipo === "global" || tipo === "precisao-global" || tipo === "velocidade-global");
-            document.getElementById("filtro-modalidade").classList.toggle("hidden", isDuelos);
+            document.getElementById("filtro-modalidade").classList.toggle("hidden", false);
             document.getElementById("filtro-turma").classList.toggle("hidden", isGlobal);
             document.getElementById("observacao-velocidade").classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
-            document.getElementById("observacao-duelos").classList.toggle("hidden", !isDuelos);
             renderizarRanking();
         }
 
@@ -1719,50 +1419,6 @@
             await carregarListaAlunos();
             renderizarRanking();
             mostrarToast("✅ Nomes atualizados");
-        }
-        function verHistoricoDuelos(){
-            if(!exigirProfessorAutenticado()) return;
-            document.getElementById("painel-historico-duelos").classList.remove("hidden");
-            carregarHistoricoDuelosDetalhado();
-        }
-        function fecharHistoricoDuelos(){ document.getElementById("painel-historico-duelos").classList.add("hidden"); }
-        function limparHistoricoDuelos(){
-            if(!exigirProfessorAutenticado()) return;
-            if(confirm("⚠️ Limpar TODO o histórico de duelos? Irreversível!")){
-                localStorage.removeItem("historico_duelos");
-                database.ref(CAMINHO_DUELOS).remove().catch(e=>console.warn(e));
-                mostrarToast("✅ Histórico limpo!");
-                carregarHistoricoDuelosDetalhado();
-            }
-        }
-        async function carregarHistoricoDuelosDetalhado(){
-            let modalidadeFiltro = document.getElementById("filtro-modalidade-duelos")?.value || "todas";
-            let historico = await obterHistoricoDuelosCompleto();
-            if(modalidadeFiltro !== "todas"){
-                let nomeModalidade = MODALIDADES[modalidadeFiltro]?.nome || modalidadeFiltro;
-                historico = historico.filter(duelo => duelo.modalidade === nomeModalidade);
-            }
-            let container = document.getElementById("historico-duelos-detalhado");
-            if(!container) return;
-            if(historico.length === 0){ container.innerHTML = "<p>Nenhum duelo registrado com esse filtro.</p>"; return; }
-            historico.sort((a,b)=>new Date(b.data)-new Date(a.data));
-            let html = '';
-            for(let duelo of historico){
-                let dataHora = new Date(duelo.data).toLocaleString('pt-BR', { dateStyle:'short', timeStyle:'short' });
-                let vencedorStr = `(${duelo.vencedorTurma || '?'}) ${duelo.vencedor}`;
-                let perdedorStr = `(${duelo.perdedorTurma || '?'}) ${duelo.perdedor}`;
-                let confronto = `${vencedorStr} ${duelo.placar} ${perdedorStr}`;
-                html += `<div class="duelo-item"><div class="duelo-header">📅 ${dataHora} &nbsp;|&nbsp; 🎮 Modalidade: ${duelo.modalidade}</div><div><strong>🏆 Vencedor:</strong> ${vencedorStr}</div><div><strong>📊 Placar final:</strong> ${duelo.placar}</div><div><strong>👥 Confronto:</strong> ${confronto}</div>`;
-                if(duelo.detalhesRodadas && duelo.detalhesRodadas.length){
-                    html += `<div style="margin-top:8px;"><strong>📋 Detalhes das rodadas:</strong>`;
-                    for(let rodada of duelo.detalhesRodadas){
-                        html += `<div class="detalhes-rodada">🎲 Rodada ${rodada.numero}: ${rodada.vencedor} (${rodada.placar})</div>`;
-                    }
-                    html += `</div>`;
-                } else { html += `<div style="margin-top:8px;"><em>Detalhes das rodadas não disponíveis.</em></div>`; }
-                html += `</div>`;
-            }
-            container.innerHTML = html;
         }
 
         // Event listeners
