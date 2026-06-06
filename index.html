@@ -205,6 +205,7 @@
         <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button onclick="mostrarTela('tela-single')" class="botao-verde">🎮 Single Player</button>
+            <button onclick="window.open('https://henriqueprofessor.github.io/TABUADA-FINAL/final.html', '_blank')" class="botao-verde" style="background:#e67e22;">🚀 Acessar Fase Final</button>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
             <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
@@ -735,7 +736,7 @@
                 }
             } catch(e) { console.warn("Recorde salvo apenas localmente", e); }
             let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
-            let idx = local.findIndex(r=>`${r.modalidade}|${r.turma}|${normalizarNome(r.nome)}` === `${res.modalidade}|${res.turma}|${normalizarNome(res.nome)}`);
+            let idx = local.findIndex(r=>`${r.modalidade}|${r.turma}|${normalizarNome(r.nome)}` === `${res.modalidade}|${r.turma}|${normalizarNome(res.nome)}`);
             if(idx===-1) local.push(res);
             else if(res.pontos > local[idx].pontos) local[idx]=res;
             localStorage.setItem(STORAGE_RANKING,JSON.stringify(local));
@@ -1177,58 +1178,140 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== RENDERIZAÇÃO RANKING ====================
+        // ==================== RENDERIZAÇÃO RANKING (CORRIGIDA) ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
             const tabelaBody = document.getElementById("tabela-ranking-body");
             const tituloEl = document.getElementById("titulo-ranking");
             if(!tabelaBody || !tituloEl) return;
+
             let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
             let turma = document.getElementById("filtro-turma")?.value || "901";
-            let ranking = [], titulo = "";
+            let ranking = [];
+            let titulo = "";
+
             if(tipoRankingAtual === "turma"){
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-            } else if(tipoRankingAtual === "global"){
+                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
+            } 
+            else if(tipoRankingAtual === "global"){
                 ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
                 titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
-            } else if(tipoRankingAtual === "precisao-global"){
+                tabelaHead.innerHTML = `</table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+            } 
+            else if(tipoRankingAtual === "precisao-global"){
                 ranking = await obterRankingPorPrecisao(modalidade, null);
                 titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-            } else if(tipoRankingAtual === "precisao-turma"){
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+            } 
+            else if(tipoRankingAtual === "precisao-turma"){
                 ranking = await obterRankingPorPrecisao(modalidade, turma);
                 titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-            } else if(tipoRankingAtual === "velocidade-global"){
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+            } 
+            else if(tipoRankingAtual === "velocidade-global"){
                 ranking = await obterRankingPorVelocidade(modalidade, null);
                 titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-            } else if(tipoRankingAtual === "velocidade-turma"){
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+            } 
+            else if(tipoRankingAtual === "velocidade-turma"){
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
                 titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
             }
-            if(tabelaHead){
-                if(tipoRankingAtual === "turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
-                else if(tipoRankingAtual === "global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-                else if(tipoRankingAtual === "precisao-global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
-                else if(tipoRankingAtual === "precisao-turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
-                else if(tipoRankingAtual === "velocidade-global") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-                else if(tipoRankingAtual === "velocidade-turma") tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-                else tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+            else {
+                ranking = await obterRankingPorPontos(modalidade, turma);
+                titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
             }
+
             tituloEl.innerText = titulo;
-            let html = ranking.map((r,i)=>{
-                if(tipoRankingAtual === "turma"){
-                    let statusClass = i<4?"tag-classificado":(i<6?"tag-reserva":"tag-participante");
-                    let statusText = i<4?"Classificado":(i<6?"Reserva":"Participante");
-                    return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
-                } else if(tipoRankingAtual === "global") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
-                else if(tipoRankingAtual === "precisao-global") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
-                else if(tipoRankingAtual === "precisao-turma") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
-                else if(tipoRankingAtual === "velocidade-global") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
-                else if(tipoRankingAtual === "velocidade-turma") return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
-                else return `<tr><td style="text-align:center">${i+1}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
-            }).join("");
-            tabelaBody.innerHTML = html || `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+
+            let html = "";
+            for (let i = 0; i < ranking.length; i++) {
+                const r = ranking[i];
+                const pos = i + 1;
+
+                if (tipoRankingAtual === "turma") {
+                    let statusClass = pos <= 4 ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
+                    let statusText = pos <= 4 ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.turma}</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                                <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
+                             </tr>`;
+                } 
+                else if (tipoRankingAtual === "global") {
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.turma}</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                             </tr>`;
+                }
+                else if (tipoRankingAtual === "precisao-global") {
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.turma}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                             </tr>`;
+                }
+                else if (tipoRankingAtual === "precisao-turma") {
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                             </tr>`;
+                }
+                else if (tipoRankingAtual === "velocidade-global") {
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.turma}</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                             </tr>`;
+                }
+                else if (tipoRankingAtual === "velocidade-turma") {
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                             </tr>`;
+                }
+                else {
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.turma}</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                             </tr>`;
+                }
+            }
+
+            if (html === "") {
+                html = `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+            }
+            tabelaBody.innerHTML = html;
         }
+
         function mudarTipoRanking(tipo) {
             tipoRankingAtual = tipo;
             const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
@@ -1362,7 +1445,14 @@
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
             let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
-                html += `<tr><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td><td style="text-align:center">${a.turma}</td><td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td><td style="text-align:center">${a.pontos}</td><td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td><td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
+                html += `<tr>
+                            <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
+                            <td style="text-align:center">${a.turma}</td>
+                            <td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td>
+                            <td style="text-align:center">${a.pontos}</td>
+                            <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
+                            <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
+                         </tr>`;
             });
             html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
