@@ -317,12 +317,20 @@
             <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
         </div>
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
-        <select id="filtro-modalidade" onchange="renderizarRanking()"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option></select>
-        <select id="filtro-turma" onchange="renderizarRanking()"><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select>
+        <select id="filtro-modalidade" onchange="renderizarRanking()">
+            <option value="2-5">Tabuadas 2-5</option>
+            <option value="6-9">Tabuadas 6-9</option>
+            <option value="0-10">Completa 0-10</option>
+        </select>
+        <select id="filtro-turma" onchange="renderizarRanking()">
+            <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+        </select>
         <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
         <div id="ultima-sincronizacao" class="info-sincronizacao">Última atualização: --</div>
         <h3 id="titulo-ranking">Ranking</h3>
-        <div class="tabela-container"><table style="width:100%"><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
+        <div class="tabela-container"><table style="width:100%"><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody><tr></div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
 
@@ -330,7 +338,11 @@
     <div id="tela-perfil" class="card hidden">
         <h2>👤 Meu Perfil</h2>
         <input type="text" id="perfil-nome" placeholder="Seu nome">
-        <select id="perfil-turma"><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select>
+        <select id="perfil-turma">
+            <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+        </select>
         <button onclick="carregarPerfil()">🔍 Buscar</button>
         <div id="perfil-conteudo" class="hidden">
             <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
@@ -738,6 +750,7 @@
 
         async function salvarPartida(res) {
             let partida = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro:"partida" };
+            // Atualiza localStorage imediatamente
             let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS)||"[]");
             if(!local.some(p=>p.idPartida===partida.idPartida || p.data===partida.data)) local.unshift(partida);
             local = local.slice(0,2000);
@@ -1273,7 +1286,7 @@
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
                                 <td style="text-align:center">${jogos}</td>
                                 <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                              `;
+                              </tr>`;
                 }
                 if (html === "") {
                     html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
@@ -1284,32 +1297,32 @@
             else if(tipoRankingAtual === "global"){
                 ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
                 titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
             } 
             else if(tipoRankingAtual === "precisao-global"){
                 ranking = await obterRankingPorPrecisao(modalidade, null);
                 titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
             } 
             else if(tipoRankingAtual === "precisao-turma"){
                 ranking = await obterRankingPorPrecisao(modalidade, turma);
                 titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
             } 
             else if(tipoRankingAtual === "velocidade-global"){
                 ranking = await obterRankingPorVelocidade(modalidade, null);
                 titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
             } 
             else if(tipoRankingAtual === "velocidade-turma"){
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
                 titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
             }
             else {
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
             }
 
             tituloEl.innerText = titulo;
@@ -1327,7 +1340,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              `;
+                              </tr>`;
                 }
                 else if (tipoRankingAtual === "precisao-turma") {
                     html += `<tr>
@@ -1336,7 +1349,7 @@
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              `;
+                              </tr>`;
                 }
                 else if (tipoRankingAtual === "velocidade-turma") {
                     html += `<tr>
@@ -1345,7 +1358,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              `;
+                              </tr>`;
                 }
                 else {
                     html += `<tr>
@@ -1355,7 +1368,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              `;
+                              </tr>`;
                 }
             }
 
@@ -1496,7 +1509,7 @@
             let container = document.getElementById("lista-alunos-container");
             if(!container) return;
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
-            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th>`;
+            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
                 html += `<tr>
                             <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
@@ -1505,9 +1518,9 @@
                             <td style="text-align:center">${a.pontos}</td>
                             <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
                             <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                           `;
+                           </tr>`;
             });
-            html += '</tbody><tr><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         async function excluirRegistro(chave){
