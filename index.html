@@ -665,7 +665,6 @@
                 let snap = await database.ref(CAMINHO_RANKING).once("value");
                 let dados = snap.val() || {};
                 let online = Object.values(dados);
-                // Substitui completamente o localStorage pelos dados do Firebase
                 localStorage.setItem(STORAGE_RANKING, JSON.stringify(online));
                 return online;
             } catch (e) {
@@ -680,7 +679,6 @@
                 let dados = snap.val() || {};
                 let online = Object.values(dados);
                 online.sort(ordenarPorDataDesc);
-                // Substitui completamente o localStorage pelos dados do Firebase
                 localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(online));
                 return online;
             } catch (e) {
@@ -691,14 +689,12 @@
             }
         }
 
-        // Botão de sincronização manual
         async function forcarSincronizacao() {
             if (!navigator.onLine) {
                 alert("Sem conexão com a internet. Conecte-se e tente novamente.");
                 return;
             }
             try {
-                // Busca dados frescos do Firebase e substitui o localStorage
                 let snapRanking = await database.ref(CAMINHO_RANKING).once("value");
                 let rankingOnline = Object.values(snapRanking.val() || {});
                 localStorage.setItem(STORAGE_RANKING, JSON.stringify(rankingOnline));
@@ -709,7 +705,7 @@
                 localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasOnline));
                 
                 mostrarToast("✅ Dados sincronizados com sucesso!");
-                await renderizarRanking(); // atualiza a tela
+                await renderizarRanking();
             } catch (e) {
                 alert("Erro na sincronização: " + e.message);
             }
@@ -1209,7 +1205,7 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== RENDERIZAÇÃO RANKING (COM COLUNA JOGOS) ====================
+        // ==================== RENDERIZAÇÃO RANKING (COM COLUNA JOGOS E TÍTULO CORRIGIDO) ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
             const tabelaBody = document.getElementById("tabela-ranking-body");
@@ -1222,9 +1218,8 @@
             let titulo = "";
 
             if(tipoRankingAtual === "turma"){
-                // Obtém todas as partidas para contar quantos jogos cada aluno fez
                 const todasPartidas = await obterPartidas();
-                const mapaJogos = new Map(); // chave "nome|turma" -> contagem
+                const mapaJogos = new Map();
                 todasPartidas.forEach(p => {
                     if(p.modalidade === modalidade && p.turma === turma) {
                         const chave = `${normalizarNome(p.nome)}|${p.turma}`;
@@ -1234,7 +1229,9 @@
                 
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th></tr>`;
+                // CORREÇÃO: atualiza o título ANTES de retornar
+                tituloEl.innerText = titulo;
+                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
                 
                 let html = "";
                 for (let i = 0; i < ranking.length; i++) {
@@ -1298,23 +1295,13 @@
                 const r = ranking[i];
                 const pos = i + 1;
 
-                if (tipoRankingAtual === "global") {
+                if (tipoRankingAtual === "global" || tipoRankingAtual === "precisao-global" || tipoRankingAtual === "velocidade-global") {
                     html += `<tr>
                                 <td style="text-align:center">${pos}º</td>
                                 <td style="text-align:left">${escaparHtml(r.nome)}</td>
                                 <td style="text-align:center">${r.turma}</td>
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
-                }
-                else if (tipoRankingAtual === "precisao-global") {
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.turma}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
                               </tr>`;
                 }
@@ -1324,16 +1311,6 @@
                                 <td style="text-align:left">${escaparHtml(r.nome)}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
-                }
-                else if (tipoRankingAtual === "velocidade-global") {
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.turma}</td>
-                                <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
                               </tr>`;
                 }
@@ -1360,7 +1337,7 @@
             }
 
             if (html === "") {
-                html = `<tr><td colspan="7" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+                html = `<tr><td colspan="6" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
             }
             tabelaBody.innerHTML = html;
         }
@@ -1505,7 +1482,7 @@
                             <td style="text-align:center">${a.pontos}</td>
                             <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
                             <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                          </tr>`;
+                           </tr>`;
             });
             html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
