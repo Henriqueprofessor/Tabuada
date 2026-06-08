@@ -679,15 +679,13 @@
         }
         function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-        // ==================== RANKING (substituição total, sem merge) ====================
+        // ==================== RANKING E PARTIDAS (substituição total quando online) ====================
         async function obterRanking() {
             try {
                 let snap = await database.ref(CAMINHO_RANKING).once("value");
                 let dados = snap.val() || {};
                 let online = Object.values(dados);
-                // Substitui completamente o localStorage pelos dados do Firebase
                 localStorage.setItem(STORAGE_RANKING, JSON.stringify(online));
-                // Atualiza timestamp da última sincronização
                 localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
                 atualizarDisplayUltimaSincronizacao();
                 return online;
@@ -728,7 +726,6 @@
                 partidasOnline.sort(ordenarPorDataDesc);
                 localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasOnline));
                 
-                // Atualiza timestamp da última sincronização manual
                 localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
                 atualizarDisplayUltimaSincronizacao();
                 
@@ -1233,7 +1230,7 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== RENDERIZAÇÃO RANKING (COM COLUNA JOGOS E TÍTULO CORRIGIDO) ====================
+        // ==================== RENDERIZAÇÃO RANKING ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
             const tabelaBody = document.getElementById("tabela-ranking-body");
@@ -1276,10 +1273,10 @@
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
                                 <td style="text-align:center">${jogos}</td>
                                 <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                              </tr>`;
+                              `;
                 }
                 if (html === "") {
-                    html = `<td><td colspan="8" class="sem-registros">Nenhum resultado registrado.<td></table>`;
+                    html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
                 }
                 tabelaBody.innerHTML = html;
                 return;
@@ -1287,32 +1284,32 @@
             else if(tipoRankingAtual === "global"){
                 ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
                 titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
             } 
             else if(tipoRankingAtual === "precisao-global"){
                 ranking = await obterRankingPorPrecisao(modalidade, null);
                 titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
             } 
             else if(tipoRankingAtual === "precisao-turma"){
                 ranking = await obterRankingPorPrecisao(modalidade, turma);
                 titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
             } 
             else if(tipoRankingAtual === "velocidade-global"){
                 ranking = await obterRankingPorVelocidade(modalidade, null);
                 titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
             } 
             else if(tipoRankingAtual === "velocidade-turma"){
                 ranking = await obterRankingPorVelocidade(modalidade, turma);
                 titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
             }
             else {
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
             }
 
             tituloEl.innerText = titulo;
@@ -1330,7 +1327,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
+                              `;
                 }
                 else if (tipoRankingAtual === "precisao-turma") {
                     html += `<tr>
@@ -1339,7 +1336,7 @@
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
+                              `;
                 }
                 else if (tipoRankingAtual === "velocidade-turma") {
                     html += `<tr>
@@ -1348,7 +1345,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
+                              `;
                 }
                 else {
                     html += `<tr>
@@ -1358,7 +1355,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
+                              `;
                 }
             }
 
@@ -1499,7 +1496,7 @@
             let container = document.getElementById("lista-alunos-container");
             if(!container) return;
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
-            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
+            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th>`;
             alunosFiltrados.forEach(a=>{
                 html += `<tr>
                             <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
@@ -1508,9 +1505,9 @@
                             <td style="text-align:center">${a.pontos}</td>
                             <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
                             <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                           </tr>`;
+                           `;
             });
-            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody><tr><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         async function excluirRegistro(chave){
