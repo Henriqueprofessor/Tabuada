@@ -312,6 +312,7 @@
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option></select>
         <select id="filtro-turma" onchange="renderizarRanking()"><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select>
+        <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
         <h3 id="titulo-ranking">Ranking</h3>
         <div class="tabela-container"><table style="width:100%"><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -658,32 +659,62 @@
         }
         function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-        // ==================== RANKING ====================
+        // ==================== RANKING (substituição, sem merge) ====================
         async function obterRanking() {
-            let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
             try {
                 let snap = await database.ref(CAMINHO_RANKING).once("value");
-                let dados = snap.val()||{};
+                let dados = snap.val() || {};
                 let online = Object.values(dados);
-                let merge = [...online];
-                local.forEach(l=>{ if(!online.some(o=>o.data===l.data)) merge.push(l); });
-                localStorage.setItem(STORAGE_RANKING,JSON.stringify(merge));
-                return merge;
-            } catch(e) { return local; }
+                // Substitui completamente o localStorage pelos dados do Firebase
+                localStorage.setItem(STORAGE_RANKING, JSON.stringify(online));
+                return online;
+            } catch (e) {
+                console.warn("Falha ao acessar Firebase (ranking), usando dados locais:", e);
+                return JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
+            }
         }
+
         async function obterPartidas() {
-            let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS)||"[]");
             try {
                 let snap = await database.ref(CAMINHO_PARTIDAS).once("value");
-                let dados = snap.val()||{};
+                let dados = snap.val() || {};
                 let online = Object.values(dados);
-                let merge = [...online];
-                local.forEach(l=>{ if(!online.some(o=>o.idPartida===l.idPartida || o.data===l.data)) merge.push(l); });
-                merge.sort(ordenarPorDataDesc);
-                localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(merge));
-                return merge;
-            } catch(e) { return local.sort(ordenarPorDataDesc); }
+                online.sort(ordenarPorDataDesc);
+                // Substitui completamente o localStorage pelos dados do Firebase
+                localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(online));
+                return online;
+            } catch (e) {
+                console.warn("Falha ao acessar Firebase (partidas), usando partidas locais:", e);
+                let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS) || "[]");
+                local.sort(ordenarPorDataDesc);
+                return local;
+            }
         }
+
+        // Botão de sincronização manual
+        async function forcarSincronizacao() {
+            if (!navigator.onLine) {
+                alert("Sem conexão com a internet. Conecte-se e tente novamente.");
+                return;
+            }
+            try {
+                // Busca dados frescos do Firebase e substitui o localStorage
+                let snapRanking = await database.ref(CAMINHO_RANKING).once("value");
+                let rankingOnline = Object.values(snapRanking.val() || {});
+                localStorage.setItem(STORAGE_RANKING, JSON.stringify(rankingOnline));
+                
+                let snapPartidas = await database.ref(CAMINHO_PARTIDAS).once("value");
+                let partidasOnline = Object.values(snapPartidas.val() || {});
+                partidasOnline.sort(ordenarPorDataDesc);
+                localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasOnline));
+                
+                mostrarToast("✅ Dados sincronizados com sucesso!");
+                await renderizarRanking(); // atualiza a tela
+            } catch (e) {
+                alert("Erro na sincronização: " + e.message);
+            }
+        }
+
         async function salvarPartida(res) {
             let partida = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro:"partida" };
             let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS)||"[]");
@@ -1221,7 +1252,7 @@
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
                                 <td style="text-align:center">${jogos}</td>
                                 <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                             </td>`;
+                              </tr>`;
                 }
                 if (html === "") {
                     html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
@@ -1237,7 +1268,7 @@
             else if(tipoRankingAtual === "precisao-global"){
                 ranking = await obterRankingPorPrecisao(modalidade, null);
                 titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
             } 
             else if(tipoRankingAtual === "precisao-turma"){
                 ranking = await obterRankingPorPrecisao(modalidade, turma);
@@ -1275,7 +1306,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                             </tr>`;
+                              </tr>`;
                 }
                 else if (tipoRankingAtual === "precisao-global") {
                     html += `<tr>
@@ -1285,7 +1316,7 @@
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                             </td>`;
+                              </tr>`;
                 }
                 else if (tipoRankingAtual === "precisao-turma") {
                     html += `<tr>
@@ -1294,7 +1325,7 @@
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                             </tr>`;
+                              </tr>`;
                 }
                 else if (tipoRankingAtual === "velocidade-global") {
                     html += `<tr>
@@ -1304,7 +1335,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                             </tr>`;
+                              </tr>`;
                 }
                 else if (tipoRankingAtual === "velocidade-turma") {
                     html += `<tr>
@@ -1313,7 +1344,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                             </tr>`;
+                              </tr>`;
                 }
                 else {
                     // fallback
@@ -1324,7 +1355,7 @@
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                             </tr>`;
+                              </tr>`;
                 }
             }
 
@@ -1465,7 +1496,7 @@
             let container = document.getElementById("lista-alunos-container");
             if(!container) return;
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
-            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></thead><tbody>';
+            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
             alunosFiltrados.forEach(a=>{
                 html += `<tr>
                             <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
@@ -1476,7 +1507,7 @@
                             <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
                           </tr>`;
             });
-            html += '</tbody><table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         async function excluirRegistro(chave){
