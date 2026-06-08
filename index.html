@@ -1178,7 +1178,7 @@
             return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
         }
 
-        // ==================== RENDERIZAÇÃO RANKING (CORRIGIDA) ====================
+        // ==================== RENDERIZAÇÃO RANKING (COM COLUNA JOGOS) ====================
         async function renderizarRanking() {
             const tabelaHead = document.getElementById("tabela-head-ranking");
             const tabelaBody = document.getElementById("tabela-ranking-body");
@@ -1191,19 +1191,53 @@
             let titulo = "";
 
             if(tipoRankingAtual === "turma"){
+                // Obtém todas as partidas para contar quantos jogos cada aluno fez
+                const todasPartidas = await obterPartidas();
+                const mapaJogos = new Map(); // chave "nome|turma" -> contagem
+                todasPartidas.forEach(p => {
+                    if(p.modalidade === modalidade && p.turma === turma) {
+                        const chave = `${normalizarNome(p.nome)}|${p.turma}`;
+                        mapaJogos.set(chave, (mapaJogos.get(chave) || 0) + 1);
+                    }
+                });
+                
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Status</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th></tr>`;
+                
+                let html = "";
+                for (let i = 0; i < ranking.length; i++) {
+                    const r = ranking[i];
+                    const pos = i + 1;
+                    let statusClass = pos <= 4 ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
+                    let statusText = pos <= 4 ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
+                    const jogos = mapaJogos.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
+                    html += `<tr>
+                                <td style="text-align:center">${pos}º</td>
+                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                                <td style="text-align:center">${r.turma}</td>
+                                <td style="text-align:center">${r.pontos}</td>
+                                <td style="text-align:center">${r.acertos}/20</td>
+                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                                <td style="text-align:center">${jogos}</td>
+                                <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
+                             </td>`;
+                }
+                if (html === "") {
+                    html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+                }
+                tabelaBody.innerHTML = html;
+                return;
             } 
             else if(tipoRankingAtual === "global"){
                 ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
                 titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `</table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
             } 
             else if(tipoRankingAtual === "precisao-global"){
                 ranking = await obterRankingPorPrecisao(modalidade, null);
                 titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
             } 
             else if(tipoRankingAtual === "precisao-turma"){
                 ranking = await obterRankingPorPrecisao(modalidade, turma);
@@ -1233,20 +1267,7 @@
                 const r = ranking[i];
                 const pos = i + 1;
 
-                if (tipoRankingAtual === "turma") {
-                    let statusClass = pos <= 4 ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
-                    let statusText = pos <= 4 ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.turma}</td>
-                                <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                                <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                             </tr>`;
-                } 
-                else if (tipoRankingAtual === "global") {
+                if (tipoRankingAtual === "global") {
                     html += `<tr>
                                 <td style="text-align:center">${pos}º</td>
                                 <td style="text-align:left">${escaparHtml(r.nome)}</td>
@@ -1264,7 +1285,7 @@
                                 <td style="text-align:center">${r.acertos}/20</td>
                                 <td style="text-align:center">${r.pontos}</td>
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                             </tr>`;
+                             </td>`;
                 }
                 else if (tipoRankingAtual === "precisao-turma") {
                     html += `<tr>
@@ -1295,6 +1316,7 @@
                              </tr>`;
                 }
                 else {
+                    // fallback
                     html += `<tr>
                                 <td style="text-align:center">${pos}º</td>
                                 <td style="text-align:left">${escaparHtml(r.nome)}</td>
@@ -1443,7 +1465,7 @@
             let container = document.getElementById("lista-alunos-container");
             if(!container) return;
             if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
-            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
+            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></thead><tbody>';
             alunosFiltrados.forEach(a=>{
                 html += `<tr>
                             <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
@@ -1452,9 +1474,9 @@
                             <td style="text-align:center">${a.pontos}</td>
                             <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
                             <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                         </tr>`;
+                          </tr>`;
             });
-            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+            html += '</tbody><table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
         }
         async function excluirRegistro(chave){
