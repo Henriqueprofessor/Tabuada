@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Copa Tabuada CEIB 2026 - Sistema Completo</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎮%3C/text%3E%3C/svg%3E">
@@ -73,8 +72,7 @@
             margin-bottom: 12px;
             text-align: left;
         }
-        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 8px; transition: all 0.2s; }
-        .status-jogo span.combo-flash { background: #ffc107; color: #000; }
+        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 8px; }
         .comparacao {
             background: #e9ecef;
             border-radius: 10px;
@@ -115,24 +113,10 @@
         .negativo { color: #dc3545; }
         .neutro { color: #ffc107; }
         #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
-        #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear, background 0.2s ease; }
-        #progresso.pulsando { animation: pulse 0.5s ease-in-out infinite; }
-        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+        #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; }
-        #pergunta.erro-visual { animation: piscarVermelho 0.3s ease-in-out; }
-        @keyframes piscarVermelho { 0%{background:#fff;} 50%{background:#ffcccc;} 100%{background:#fff;} }
         .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .btn-opcao { background: #6c757d; padding: 14px; font-size: 20px; border-radius: 8px; }
-        #dica-resposta {
-            display: block;
-            width: 100%;
-            margin: 15px 0;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-        }
         .resumo-resultado {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -162,7 +146,6 @@
         .percentual { font-size: 18px; font-weight: bold; margin: 4px 0; }
         .detalhes { font-size: 11px; color: #6c757d; }
         .mensagem { font-size: 11px; margin-top: 6px; font-weight: 500; }
-        .resumo-mapa { margin-top: 16px; padding-top: 12px; border-top: 1px solid #dee2e6; }
         .media-geral { font-size: 16px; margin-bottom: 8px; }
         .dica-melhoria { background: #e7f5ff; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #0a58ca; }
         .abas-filtro { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
@@ -189,13 +172,7 @@
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
         .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
-        .info-sincronizacao {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
+        .info-sincronizacao { font-size: 12px; color: #6c757d; margin-top: 5px; margin-bottom: 10px; text-align: center; }
         @media (max-width: 700px) {
             .status-jogo { grid-template-columns: repeat(2, 1fr); }
             .comparacao { flex-direction: column; }
@@ -203,1389 +180,1288 @@
     </style>
 </head>
 <body>
-    <div id="toast-pontuacao"></div>
-    <button id="btn-som" class="botao-som">🔊 SOM LIGADO</button>
+<div id="toast-pontuacao"></div>
+<button id="btn-som" class="botao-som">🔊 SOM LIGADO</button>
 
-    <!-- TELA INICIAL -->
-    <div id="tela-inicial" class="card">
-        <h1>Copa Tabuada CEIB 2026</h1>
-        <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="mostrarTela('tela-single')" class="botao-verde">🎮 Single Player</button>
-            <button onclick="window.open('https://henriqueprofessor.github.io/TABUADA-FINAL/final.html', '_blank')" class="botao-verde" style="background:#e67e22;">🚀 Acessar Fase Final</button>
-        </div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-            <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
-            <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
-            <button onclick="mostrarTela('tela-painel')" class="botao-painel">🔧 Painel do Professor</button>
-        </div>
+<div id="tela-inicial" class="card">
+    <h1>Copa Tabuada CEIB 2026</h1>
+    <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button onclick="mostrarTela('tela-single')" class="botao-verde">🎮 Single Player</button>
+        <button onclick="window.open('https://henriqueprofessor.github.io/TABUADA-FINAL/final.html', '_blank')" class="botao-verde" style="background:#e67e22;">🚀 Acessar Fase Final</button>
     </div>
-
-    <!-- SINGLE PLAYER: ESCOLHA -->
-    <div id="tela-single" class="card hidden">
-        <h2>Single Player</h2>
-        <label for="nome-aluno">Nome completo</label>
-        <input type="text" id="nome-aluno" placeholder="Ex: Maria Eduarda">
-        <label for="turma-aluno">Turma</label>
-        <select id="turma-aluno">
-            <option value="">Selecione a turma</option>
-            <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
-            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
-            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
-        </select>
-        <label for="modalidade-tabuada">Modalidade</label>
-        <select id="modalidade-tabuada">
-            <option value="2-5">Tabuadas do 2 ao 5</option>
-            <option value="6-9">Tabuadas do 6 ao 9</option>
-            <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
-        </select>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="registrarAluno(false)">🏆 Classificatória</button>
-            <button class="botao-treino" onclick="registrarAluno(true)">🎯 Modo Treino</button>
-        </div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar</button>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+        <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
+        <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
+        <button onclick="mostrarTela('tela-painel')" class="botao-painel">🔧 Painel do Professor</button>
     </div>
+</div>
 
-    <!-- TELA DE PREPARAÇÃO (CLASSIFICATÓRIA) -->
-    <div id="tela-preparacao" class="card hidden">
-        <h2>🏁 Preparação para a Classificatória</h2>
-        <div id="preparacao-conteudo" style="text-align: left; margin: 20px 0;"></div>
-        <button id="btn-comecar-partida" class="botao-verde">🎮 Começar Partida</button>
-        <button onclick="mostrarTela('tela-single')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar e alterar dados</button>
+<div id="tela-single" class="card hidden">
+    <h2>Single Player</h2>
+    <label for="nome-aluno">Nome completo</label>
+    <input type="text" id="nome-aluno" placeholder="Ex: Maria Eduarda">
+    <label for="turma-aluno">Turma</label>
+    <select id="turma-aluno">
+        <option value="">Selecione a turma</option>
+        <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+        <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+        <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+    </select>
+    <label for="modalidade-tabuada">Modalidade</label>
+    <select id="modalidade-tabuada">
+        <option value="2-5">Tabuadas do 2 ao 5</option>
+        <option value="6-9">Tabuadas do 6 ao 9</option>
+        <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
+    </select>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="registrarAluno(false)">🏆 Classificatória</button>
+        <button class="botao-treino" onclick="registrarAluno(true)">🎯 Modo Treino</button>
     </div>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar</button>
+</div>
 
-    <!-- TELA DE JOGO (SINGLE) -->
-    <div id="tela-jogo" class="card hidden">
-        <h2 id="titulo-jogo">Classificatória</h2>
-        <div id="modo-badge" class="hidden" style="background:#fd7e14;padding:5px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;">🏆 MODO CLASSIFICATÓRIO</div>
-        <div id="barra-tempo" title="Acompanhe seu desempenho"><div id="progresso"></div></div>
-        <div id="pergunta">X x Y = ?</div>
-        <div class="lista-opcoes">
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-            <button class="btn-opcao" onclick="verificarResposta(this)"></button>
-        </div>
-        <div id="dica-resposta" class="hidden"></div>
-        <div class="status-jogo">
-            <span id="info-pergunta">Pergunta: 1 / 20</span>
-            <span id="info-pontos">Pontos: 0</span>
-            <span id="info-acertos">Acertos: 0</span>
-            <span id="info-sequencia">Sequência: 0</span>
-            <span id="info-media-tempo">Média: -- s</span>
-        </div>
-        <div class="comparacao">
-            <div class="comparacao-item"><div class="comparacao-rotulo">🏆 Sua melhor média</div><div class="comparacao-valor" id="melhor-media-aluno">-- s</div></div>
-            <div class="comparacao-item"><div class="comparacao-rotulo">👥 Média da Turma</div><div class="comparacao-valor" id="media-turma">-- s</div></div>
-        </div>
-        <div id="feedback-comparacao" class="feedback-comparacao">📊 Compare seu desempenho</div>
-        <button class="botao-forcar" onclick="forcarFinalizacao()" style="background:#dc3545;">⚠️ Forçar Finalização</button>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">🚪 Sair</button>
+<div id="tela-preparacao" class="card hidden">
+    <h2>🏁 Preparação para a Classificatória</h2>
+    <div id="preparacao-conteudo" style="text-align: left; margin: 20px 0;"></div>
+    <button id="btn-comecar-partida" class="botao-verde">🎮 Começar Partida</button>
+    <button onclick="mostrarTela('tela-single')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar e alterar dados</button>
+</div>
+
+<div id="tela-jogo" class="card hidden">
+    <h2 id="titulo-jogo">Classificatória</h2>
+    <div id="modo-badge" class="hidden" style="background:#fd7e14;padding:5px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;">🏆 MODO CLASSIFICATÓRIO</div>
+    <div id="barra-tempo"><div id="progresso"></div></div>
+    <div id="pergunta">X x Y = ?</div>
+    <div class="lista-opcoes">
+        <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+        <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+        <button class="btn-opcao" onclick="verificarResposta(this)"></button>
+        <button class="btn-opcao" onclick="verificarResposta(this)"></button>
     </div>
-
-    <!-- TELA DE RESULTADO -->
-    <div id="tela-resultado" class="card hidden">
-        <h2 id="resultado-titulo">Resultado</h2>
-        <p id="feedback-pontos"></p>
-        <div class="resumo-resultado">
-            <div><strong>Turma:</strong> <span id="resumo-turma"></span></div>
-            <div><strong>Modalidade:</strong> <span id="resumo-modalidade"></span></div>
-            <div><strong>Pontuação:</strong> <span id="resumo-pontos"></span></div>
-            <div><strong>Acertos:</strong> <span id="resumo-acertos"></span></div>
-            <div><strong>Erros:</strong> <span id="resumo-erros"></span></div>
-            <div><strong>Seu tempo médio:</strong> <span id="resumo-tempo"></span></div>
-            <div><strong>Sua melhor média:</strong> <span id="resumo-melhor-media">-- s</span></div>
-            <div><strong>Média da Turma:</strong> <span id="resumo-media-turma">-- s</span></div>
-            <div><strong>Maior sequência:</strong> <span id="resumo-sequencia"></span></div>
-            <div><strong>Status:</strong> <span id="resumo-status"></span></div>
-        </div>
-        <div id="feedback-ranking-container" class="feedback-ranking"></div>
-        <div id="novas-conquistas" style="background:#e7f5ff;border-radius:12px;padding:12px;margin:16px 0;"></div>
-        <div id="mapa-tabuadas-container"></div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Início</button>
+    <div id="dica-resposta" class="hidden"></div>
+    <div class="status-jogo">
+        <span id="info-pergunta">Pergunta: 1 / 20</span>
+        <span id="info-pontos">Pontos: 0</span>
+        <span id="info-acertos">Acertos: 0</span>
+        <span id="info-sequencia">Sequência: 0</span>
+        <span id="info-media-tempo">Média: -- s</span>
     </div>
-
-    <!-- RANKINGS -->
-    <div id="tela-ranking" class="card hidden">
-        <h2>Rankings</h2>
-        <div class="abas-filtro">
-            <button class="aba" id="aba-turma" onclick="mudarTipoRanking('turma')">🏆 Por Turma</button>
-            <button class="aba" id="aba-global" onclick="mudarTipoRanking('global')">🌍 Global</button>
-            <button class="aba" id="aba-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão Global</button>
-            <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
-            <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
-            <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
-        </div>
-        <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
-        <select id="filtro-modalidade" onchange="renderizarRanking()">
-            <option value="2-5">Tabuadas 2-5</option>
-            <option value="6-9">Tabuadas 6-9</option>
-            <option value="0-10">Completa 0-10</option>
-        </select>
-        <select id="filtro-turma" onchange="renderizarRanking()">
-            <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
-            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
-            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
-        </select>
-        <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
-        <div id="ultima-sincronizacao" class="info-sincronizacao">Última atualização: --</div>
-        <h3 id="titulo-ranking">Ranking</h3>
-        <div class="tabela-container"><table style="width:100%"><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody><tr></div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+    <div class="comparacao">
+        <div class="comparacao-item"><div class="comparacao-rotulo">🏆 Sua melhor média</div><div class="comparacao-valor" id="melhor-media-aluno">-- s</div></div>
+        <div class="comparacao-item"><div class="comparacao-rotulo">👥 Média da Turma</div><div class="comparacao-valor" id="media-turma">-- s</div></div>
     </div>
+    <div id="feedback-comparacao" class="feedback-comparacao">📊 Compare seu desempenho</div>
+    <button class="botao-forcar" onclick="forcarFinalizacao()">⚠️ Forçar Finalização</button>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">🚪 Sair</button>
+</div>
 
-    <!-- PERFIL -->
-    <div id="tela-perfil" class="card hidden">
-        <h2>👤 Meu Perfil</h2>
-        <input type="text" id="perfil-nome" placeholder="Seu nome">
-        <select id="perfil-turma">
-            <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
-            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
-            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
-        </select>
-        <button onclick="carregarPerfil()">🔍 Buscar</button>
-        <div id="perfil-conteudo" class="hidden">
-            <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
-            <h3>🏅 Conquistas</h3><div id="perfil-conquistas" class="conquistas-grid"></div>
-            <h3>🗺️ Mapa de Tabuadas</h3><div id="perfil-mapa"></div>
-        </div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+<div id="tela-resultado" class="card hidden">
+    <h2 id="resultado-titulo">Resultado</h2>
+    <p id="feedback-pontos"></p>
+    <div class="resumo-resultado">
+        <div><strong>Turma:</strong> <span id="resumo-turma"></span></div>
+        <div><strong>Modalidade:</strong> <span id="resumo-modalidade"></span></div>
+        <div><strong>Pontuação:</strong> <span id="resumo-pontos"></span></div>
+        <div><strong>Acertos:</strong> <span id="resumo-acertos"></span></div>
+        <div><strong>Erros:</strong> <span id="resumo-erros"></span></div>
+        <div><strong>Seu tempo médio:</strong> <span id="resumo-tempo"></span></div>
+        <div><strong>Sua melhor média:</strong> <span id="resumo-melhor-media">-- s</span></div>
+        <div><strong>Média da Turma:</strong> <span id="resumo-media-turma">-- s</span></div>
+        <div><strong>Maior sequência:</strong> <span id="resumo-sequencia"></span></div>
+        <div><strong>Status:</strong> <span id="resumo-status"></span></div>
     </div>
+    <div id="feedback-ranking-container" class="feedback-ranking"></div>
+    <div id="novas-conquistas" style="background:#e7f5ff;border-radius:12px;padding:12px;margin:16px 0;"></div>
+    <div id="mapa-tabuadas-container"></div>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Início</button>
+</div>
 
-    <!-- PAINEL DO PROFESSOR -->
-    <div id="tela-painel" class="card hidden">
-        <h2>🔧 Painel do Professor</h2>
-        <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()">🔓 Acessar</button></div>
-        <div id="painel-conteudo" class="hidden">
-            <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos.</div>
-            <div class="painel-botoes">
-                <button onclick="exportarCSV()">📎 Exportar CSV</button>
-                <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
-                <button onclick="mostrarEstatisticas()">📈 Estatísticas</button>
-                <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
+<div id="tela-ranking" class="card hidden">
+    <h2>Rankings</h2>
+    <div class="abas-filtro">
+        <button class="aba" id="aba-turma" onclick="mudarTipoRanking('turma')">🏆 Por Turma</button>
+        <button class="aba" id="aba-global" onclick="mudarTipoRanking('global')">🌍 Global</button>
+        <button class="aba" id="aba-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão Global</button>
+        <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
+        <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
+        <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
+    </div>
+    <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
+    <select id="filtro-modalidade" onchange="renderizarRanking()">
+        <option value="2-5">Tabuadas 2-5</option>
+        <option value="6-9">Tabuadas 6-9</option>
+        <option value="0-10">Completa 0-10</option>
+    </select>
+    <select id="filtro-turma" onchange="renderizarRanking()">
+        <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+        <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+        <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+    </select>
+    <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
+    <div id="ultima-sincronizacao" class="info-sincronizacao">Última atualização: --</div>
+    <h3 id="titulo-ranking">Ranking</h3>
+    <div class="tabela-container"><table><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+</div>
+
+<div id="tela-perfil" class="card hidden">
+    <h2>👤 Meu Perfil</h2>
+    <input type="text" id="perfil-nome" placeholder="Seu nome">
+    <select id="perfil-turma">
+        <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+        <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+        <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+    </select>
+    <button onclick="carregarPerfil()">🔍 Buscar</button>
+    <div id="perfil-conteudo" class="hidden">
+        <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
+        <h3>🏅 Conquistas</h3><div id="perfil-conquistas" class="conquistas-grid"></div>
+        <h3>🗺️ Mapa de Tabuadas</h3><div id="perfil-mapa"></div>
+    </div>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+</div>
+
+<div id="tela-painel" class="card hidden">
+    <h2>🔧 Painel do Professor</h2>
+    <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()">🔓 Acessar</button></div>
+    <div id="painel-conteudo" class="hidden">
+        <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos.</div>
+        <div class="painel-botoes">
+            <button onclick="exportarCSV()">📎 Exportar CSV</button>
+            <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
+            <button onclick="mostrarEstatisticas()">📈 Estatísticas</button>
+            <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
+        </div>
+        <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option><option value="todas">📚 TODAS</option></select><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
+        <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
+        <div id="painel-estatisticas" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"></div>
+    </div>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script>
+// ==================== FIREBASE CONFIG ====================
+const firebaseConfig = {
+    apiKey: "AIzaSyCSs7aCPTYSebSG6UHSSCMA76p-ZGit9Xc",
+    authDomain: "copa-tabuada-ceib.firebaseapp.com",
+    databaseURL: "https://copa-tabuada-ceib-default-rtdb.firebaseio.com",
+    projectId: "copa-tabuada-ceib",
+    storageBucket: "copa-tabuada-ceib.firebasestorage.app",
+    messagingSenderId: "988790838693",
+    appId: "1:988790838693:web:152da1598c4e14c906844c"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const CAMINHO_RANKING = "resultados";
+const CAMINHO_PARTIDAS = "partidas";
+const SENHA_PROFESSOR_HASH = "68accac682c485d39a223b9c57ae8423271ec0e1129f5298cc5455656d23c3e7";
+const SENHA_PROFESSOR_HASH_FALLBACK = "1ojwkhau4c9";
+const PROFESSOR_SESSION_MS = 30 * 60 * 1000;
+const STORAGE_RANKING = "rankingCEIB";
+const STORAGE_PARTIDAS = "partidasCEIB";
+const STORAGE_LAST_SYNC = "lastSyncTime";
+const TOTAL_PERGUNTAS = 20;
+const MODALIDADES = {
+    "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
+    "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
+    "0-10": { nome: "Completa - Tabuadas do 0 ao 10", fatores: [0,1,2,3,4,5,6,7,8,9,10] }
+};
+const CONQUISTAS = [
+    { icone: "🏆", nome: "Mestre da Tabuada", descricao: "17.000+ pontos", criterio: (r) => r.pontos >= 17000 },
+    { icone: "📚", nome: "Domínio Total", descricao: "20/20 acertos", criterio: (r) => r.acertos === 20 },
+    { icone: "🚀", nome: "Velocidade Relâmpago", descricao: "Tempo < 1.2s e acertos 20/20", criterio: (r) => r.acertos === 20 && r.tempoMedio < 1.2 },
+    { icone: "⚡", nome: "Sequência Perfeita", descricao: "20 acertos consecutivos", criterio: (r) => r.maiorSequencia === 20 },
+    { icone: "📚", nome: "Treinador Dedicado", descricao: "5 partidas", criterio: (r, h) => h.length >= 5 },
+    { icone: "🎓", nome: "Veterano", descricao: "10 partidas", criterio: (r, h) => h.length >= 10 },
+    { icone: "🐢", nome: "Tartaruga Ninja", descricao: "Completou com <5 acertos", criterio: (r) => r.acertos < 5 },
+    { icone: "🎲", nome: "Rei do Chute", descricao: "3 acertos em <0.8s", criterio: (r) => r.temposRapidos && r.temposRapidos >= 3 },
+    { icone: "🍀", nome: "Sorte de Principiante", descricao: "Acertou a primeira", criterio: (r) => r.acertouPrimeira === true },
+    { icone: "🔥", nome: "Em Chamas", descricao: "15 acertos seguidos", criterio: (r) => r.maiorSequencia >= 15 },
+    { icone: "📈", nome: "Boa Sequência", descricao: "10 acertos seguidos", criterio: (r) => r.maiorSequencia >= 10 },
+    { icone: "🆕", nome: "Primeira Vitória", descricao: "Primeira partida", criterio: (r, h) => h.length === 1 },
+    { icone: "👑", nome: "Lenda da Tabuada", descricao: "20 partidas", criterio: (r, h) => h.length >= 20 },
+    { icone: "🏅", nome: "Colecionador", descricao: "5 conquistas", criterio: (r, h, c) => c.length >= 5 }
+];
+
+// ==================== VARIÁVEIS GLOBAIS ====================
+let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
+let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
+let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
+let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
+let alunosData=[], alunosFiltrados=[];
+let melhorMediaAluno = null, mediaTurma = null;
+let somAtivo = true, jaToCouSomSuperacao = false;
+
+// ==================== FUNÇÕES AUXILIARES ====================
+function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
+function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
+function criarChaveResultado(res) { return encodeURIComponent(`${res.modalidade}|${res.turma}|${normalizarNome(res.nome)}`).replace(/[.#$\[\]/]/g,"_"); }
+function criarChavePartida(res) { return `partida_${Date.now()}_${Math.random().toString(36).slice(2,8)}`; }
+function ordenarPorDataDesc(a,b) { return new Date(b.data || 0) - new Date(a.data || 0); }
+function resultadoCombinaFiltro(r, turma, modalidade) {
+    if(turma !== "todas" && r.turma !== turma) return false;
+    if(modalidade !== "todas" && r.modalidade !== modalidade) return false;
+    return true;
+}
+function formatarDataHora(timestamp) {
+    if (!timestamp) return "--";
+    const d = new Date(timestamp);
+    return d.toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" });
+}
+function atualizarDisplayUltimaSincronizacao() {
+    const lastSync = localStorage.getItem(STORAGE_LAST_SYNC);
+    const el = document.getElementById("ultima-sincronizacao");
+    if (el) el.innerText = lastSync ? `Última atualização: ${formatarDataHora(parseInt(lastSync))}` : "Última atualização: --";
+}
+async function gerarHashSenha(valor) {
+    if (!window.crypto?.subtle) return gerarHashSenhaFallback(valor);
+    const bytes = new TextEncoder().encode(valor);
+    const hash = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+function gerarHashSenhaFallback(valor, seed = 0) {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0, ch; i < valor.length; i++) {
+        ch = valor.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+function professorAutenticado() {
+    let ts = Number(sessionStorage.getItem("professorCEIBAuth") || 0);
+    return ts && Date.now() - ts < PROFESSOR_SESSION_MS;
+}
+function exigirProfessorAutenticado() {
+    if(professorAutenticado()) {
+        sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
+        return true;
+    }
+    alert("A sessão do professor expirou. Digite a senha novamente.");
+    document.getElementById("painel-conteudo").classList.add("hidden");
+    document.getElementById("senha-professor").focus();
+    return false;
+}
+function calcularConquistas(resultado, historico) {
+    let desbloqueadas = CONQUISTAS.filter(c => c.nome !== "Colecionador" && c.criterio(resultado, historico, []));
+    let colecionador = CONQUISTAS.find(c => c.nome === "Colecionador");
+    if(colecionador && colecionador.criterio(resultado, historico, desbloqueadas)) desbloqueadas.push(colecionador);
+    return desbloqueadas;
+}
+function calcularDificuldades(partidas, modalidade) {
+    let fatores = MODALIDADES[modalidade]?.fatores || [];
+    let mapa = {};
+    fatores.forEach(f=>mapa[f]={total:0, acertos:0, tempoTotal:0, peso:1, origem:"sem historico"});
+    partidas.forEach(p=>{
+        if(p.modalidade !== modalidade || !p.desempenhoTabuadas) return;
+        Object.entries(p.desempenhoTabuadas).forEach(([tab,d])=>{
+            if(!mapa[tab]) mapa[tab]={total:0, acertos:0, tempoTotal:0, peso:1, origem:"historico"};
+            mapa[tab].total += d.total || 0;
+            mapa[tab].acertos += d.acertos || 0;
+            mapa[tab].tempoTotal += d.tempoTotal || 0;
+        });
+    });
+    Object.keys(mapa).forEach(tab=>{
+        let d = mapa[tab];
+        let precisao = d.total ? d.acertos / d.total : 0;
+        let taxaErro = d.total ? 1 - precisao : 0.45;
+        let tempoMedio = d.total && d.tempoTotal ? d.tempoTotal / d.total : 0;
+        let poucoTreino = d.total < 4 ? 1.4 : 0;
+        let lento = tempoMedio > 4 ? 0.8 : tempoMedio > 3 ? 0.45 : 0;
+        d.precisao = precisao;
+        d.tempoMedio = tempoMedio;
+        d.peso = 1 + taxaErro * 5 + poucoTreino + lento;
+        if(!d.total) d.motivo = "ainda apareceu pouco";
+        else if(precisao < 0.6) d.motivo = "muitos erros recentes";
+        else if(precisao < 0.8) d.motivo = "precisa consolidar";
+        else if(lento) d.motivo = "boa precisão, mas resposta lenta";
+        else d.motivo = "em bom ritmo";
+    });
+    return mapa;
+}
+async function carregarFocoTreino(nome, turma, modalidade) {
+    let historico = await obterHistoricoAluno(nome, turma, modalidade);
+    dificuldadesHistoricas = calcularDificuldades(historico, modalidade);
+    focoTreinoTabuadas = Object.entries(dificuldadesHistoricas)
+        .filter(([tab,d]) => d.total < 4 || d.precisao < 0.85 || d.tempoMedio > 3)
+        .sort((a,b)=>b[1].peso-a[1].peso)
+        .slice(0,3)
+        .map(([tab])=>Number(tab));
+    return focoTreinoTabuadas;
+}
+function descreverFocoTreino() {
+    if(!focoTreinoTabuadas.length) return "Treino equilibrado: nenhuma tabuada fraca foi detectada ainda.";
+    return focoTreinoTabuadas.map(tab => {
+        let d = dificuldadesHistoricas[tab] || {};
+        let precisao = d.total ? `${Math.round((d.precisao || 0) * 100)}%` : "sem dados";
+        return `Tabuada do ${tab}: ${d.motivo || "reforço"} (${precisao})`;
+    }).join("<br>");
+}
+function gerarPlanoTreinoResultado() {
+    let itens = Object.entries(desempenhoTabuadas).map(([tab,d]) => {
+        let precisao = d.total ? d.acertos / d.total : 0;
+        let tempoMedio = d.total && d.tempoTotal ? d.tempoTotal / d.total : 10;
+        let prioridade = (1 - precisao) * 5 + (tempoMedio > 4 ? 1 : tempoMedio > 3 ? 0.5 : 0) + (d.total < 2 ? 0.5 : 0);
+        return { tab:Number(tab), total:d.total, acertos:d.acertos, precisao, tempoMedio, prioridade };
+    }).filter(item => item.total > 0).sort((a,b)=>b.prioridade-a.prioridade).slice(0,3);
+    if(!itens.length) return "";
+    let linhas = itens.map(item => {
+        let pct = Math.round(item.precisao * 100);
+        let motivo = pct < 70 ? "reforçar precisão" : item.tempoMedio > 3 ? "ganhar velocidade" : "manter no aquecimento";
+        return `<li>Tabuada do ${item.tab}: ${pct}% de acerto, média ${item.tempoMedio.toFixed(2)}s - ${motivo}</li>`;
+    }).join("");
+    return `<div class="feedback-ranking"><strong>Plano de treino recomendado</strong><ul style="text-align:left;margin:8px 0 0;">${linhas}</ul></div>`;
+}
+function escolherPorPeso(itens, pesoFn) {
+    let total = itens.reduce((s,item)=>s+Math.max(0.1,pesoFn(item)),0);
+    let alvo = Math.random() * total;
+    for(let item of itens){
+        alvo -= Math.max(0.1,pesoFn(item));
+        if(alvo <= 0) return item;
+    }
+    return itens[itens.length-1];
+}
+function escolherFatorAdaptativo() {
+    let fatores = MODALIDADES[modalidadeAtual].fatores;
+    let contagem = {};
+    fatores.forEach(f=>contagem[f]=0);
+    perguntasGeradas.forEach(p=>{ if(contagem[p.fA] !== undefined) contagem[p.fA]++; });
+    let candidatos = fatores;
+    if(modoTreino && focoTreinoTabuadas.length && Math.random() < 0.8) candidatos = focoTreinoTabuadas;
+    let minVezes = Math.min(...candidatos.map(f=>contagem[f]||0));
+    let menosUsadas = candidatos.filter(f=>(contagem[f]||0)===minVezes);
+    return escolherPorPeso(menosUsadas, f => {
+        let atual = desempenhoTabuadas[f];
+        let erroAtual = atual && atual.total ? 1 - atual.acertos/atual.total : 0;
+        let tempoAtual = atual && atual.total && atual.tempoTotal ? atual.tempoTotal / atual.total : 0;
+        let lentoAtual = tempoAtual > 4 ? 0.8 : tempoAtual > 3 ? 0.4 : 0;
+        let hist = dificuldadesHistoricas[f]?.peso || 1;
+        return hist + erroAtual * 3 + lentoAtual;
+    });
+}
+function gerarPerguntaAdaptativa(modalidade) {
+    let fA, fB, chave, tentativas=0;
+    do {
+        fA = escolherFatorAdaptativo();
+        fB = Math.floor(Math.random()*11);
+        chave = `${fA}x${fB}`;
+        tentativas++;
+    } while(perguntasGeradas.slice(-5).some(p=>p.chave===chave) && tentativas < 20);
+    perguntasGeradas.push({fA,fB,chave});
+    return {fA,fB,resposta:fA*fB};
+}
+function embaralharLista(lista) {
+    let copia = [...lista];
+    for(let i=copia.length-1;i>0;i--){
+        let j = Math.floor(Math.random()*(i+1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
+}
+function adicionarDistrator(lista, valor, tipo, prioridade) {
+    if(!Number.isFinite(valor)) return;
+    valor = Math.round(valor);
+    if(valor < 0 || valor > 120) return;
+    if(!lista.some(c=>c.valor===valor)) lista.push({valor, tipo, prioridade});
+}
+function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes, modalidadeBase=modalidadeAtual) {
+    let candidatos = [];
+    let fatores = MODALIDADES[modalidadeBase]?.fatores || [0,1,2,3,4,5,6,7,8,9,10];
+    [fB-1,fB+1,fB-2,fB+2].forEach((n,idx)=>{
+        if(n>=0 && n<=10) adicionarDistrator(candidatos, fA*n, "fator-vizinho", idx<2 ? 1 : 2);
+    });
+    [fA-1,fA+1,fA-2,fA+2].forEach((n,idx)=>{
+        if(n>=0 && n<=10) adicionarDistrator(candidatos, n*fB, "tabuada-vizinha", idx<2 ? 1 : 2);
+    });
+    adicionarDistrator(candidatos, resposta + fA, "proximo-passo", 1);
+    adicionarDistrator(candidatos, resposta - fA, "passo-anterior", 1);
+    adicionarDistrator(candidatos, resposta + fB, "incremento-fator", 2);
+    adicionarDistrator(candidatos, resposta - fB, "decremento-fator", 2);
+    adicionarDistrator(candidatos, fA + fB, "soma", resposta <= 25 ? 1 : 3);
+    adicionarDistrator(candidatos, resposta + (fA + fB), "soma-extra", 3);
+    adicionarDistrator(candidatos, Math.floor(resposta / 2), "metade", 3);
+    adicionarDistrator(candidatos, resposta * 2, "dobro", 3);
+    if(resposta >= 10 && resposta < 100) {
+        let invertido = Number(String(resposta).split("").reverse().join(""));
+        adicionarDistrator(candidatos, invertido, "invertido", 2);
+    }
+    fatores.forEach(tab=>{
+        for(let n=0;n<=10;n++){
+            let prod = tab*n;
+            if(Math.abs(prod-resposta) <= 18) adicionarDistrator(candidatos, prod, "produto-real", 2);
+        }
+    });
+    if(resposta === 0) {
+        [fA+fB, Math.max(fA,fB), 1, 2, 5, 10].forEach(v=>adicionarDistrator(candidatos, v, "zero-especial", 1));
+    }
+    if(resposta === 1) {
+        [0,2,10,11].forEach(v=>adicionarDistrator(candidatos, v, "um-especial", 1));
+    }
+    candidatos = candidatos
+        .filter(c=>c.valor !== resposta)
+        .sort((a,b)=>a.prioridade-b.prioridade || Math.abs(a.valor-resposta)-Math.abs(b.valor-resposta));
+    let ops = [resposta];
+    for(let prioridade of [1,2,3]){
+        let grupo = embaralharLista(candidatos.filter(c=>c.prioridade===prioridade));
+        for(let cand of grupo){
+            if(ops.length >= totalOpcoes) break;
+            if(!ops.includes(cand.valor)) ops.push(cand.valor);
+        }
+        if(ops.length >= totalOpcoes) break;
+    }
+    while(ops.length < totalOpcoes){
+        let ruido = sortearItem([-15,-12,-9,-6,-4,-2,2,4,6,9,12,15]);
+        let v = Math.max(0, Math.min(120, resposta + ruido));
+        if(v !== resposta && !ops.includes(v)) ops.push(v);
+    }
+    return ops.sort((a,b)=>a-b);
+}
+function calcularPontosResposta(tempo) {
+    let base = 300;
+    let bonusVelocidade = Math.max(0, Math.round((10 - tempo) * 60));
+    let bonusSequencia = Math.min(120, (sequenciaAtual + 1) * 10);
+    if(tempo < 0.45) bonusVelocidade = Math.round(bonusVelocidade * 0.25);
+    else if(tempo < 0.75) bonusVelocidade = Math.round(bonusVelocidade * 0.6);
+    return base + bonusVelocidade + bonusSequencia;
+}
+function dicaMultiplicacao(fA, fB, resposta) {
+    if(fA === 0 || fB === 0) return `Qualquer numero vezes 0 resulta em 0.`;
+    if(fA === 1) return `Todo numero vezes 1 continua o mesmo: ${fB}.`;
+    if(fB === 1) return `Todo numero vezes 1 continua o mesmo: ${fA}.`;
+    if(fB === 10) return `${fA} vezes 10 e ${fA} com um zero no final.`;
+    return `${fA} x ${fB} e o mesmo que somar ${fA}, ${fB} vezes.`;
+}
+function mostrarTela(id) {
+    const telas = ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-painel","tela-preparacao"];
+    telas.forEach(t=>{ let el=document.getElementById(t); if(el) el.classList.add("hidden"); });
+    let alvo = document.getElementById(id);
+    if(alvo) alvo.classList.remove("hidden");
+    if (id === "tela-ranking") atualizarDisplayUltimaSincronizacao();
+}
+function tocarBeep() {
+    if (!somAtivo) return;
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = 880;
+        gainNode.gain.value = 0.3;
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    } catch(e) {}
+}
+function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
+
+// ==================== RANKING E PARTIDAS (SUBSTITUIÇÃO TOTAL QUANDO ONLINE) ====================
+async function obterRanking() {
+    try {
+        let snap = await database.ref(CAMINHO_RANKING).once("value");
+        let dados = snap.val() || {};
+        let online = Object.values(dados);
+        localStorage.setItem(STORAGE_RANKING, JSON.stringify(online));
+        localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
+        atualizarDisplayUltimaSincronizacao();
+        return online;
+    } catch (e) {
+        console.warn("Falha ao acessar Firebase (ranking), usando dados locais:", e);
+        return JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
+    }
+}
+async function obterPartidas() {
+    try {
+        let snap = await database.ref(CAMINHO_PARTIDAS).once("value");
+        let dados = snap.val() || {};
+        let online = Object.values(dados);
+        online.sort(ordenarPorDataDesc);
+        localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(online));
+        return online;
+    } catch (e) {
+        console.warn("Falha ao acessar Firebase (partidas), usando partidas locais:", e);
+        let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS) || "[]");
+        local.sort(ordenarPorDataDesc);
+        return local;
+    }
+}
+async function forcarSincronizacao() {
+    if (!navigator.onLine) {
+        alert("Sem conexão com a internet. Conecte-se e tente novamente.");
+        return;
+    }
+    try {
+        let snapRanking = await database.ref(CAMINHO_RANKING).once("value");
+        let rankingOnline = Object.values(snapRanking.val() || {});
+        localStorage.setItem(STORAGE_RANKING, JSON.stringify(rankingOnline));
+        let snapPartidas = await database.ref(CAMINHO_PARTIDAS).once("value");
+        let partidasOnline = Object.values(snapPartidas.val() || {});
+        partidasOnline.sort(ordenarPorDataDesc);
+        localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasOnline));
+        localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
+        atualizarDisplayUltimaSincronizacao();
+        mostrarToast("✅ Dados sincronizados com sucesso!");
+        await renderizarRanking();
+    } catch (e) {
+        alert("Erro na sincronização: " + e.message);
+    }
+}
+async function salvarPartida(res) {
+    let partida = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro:"partida" };
+    let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS)||"[]");
+    if(!local.some(p=>p.idPartida===partida.idPartida || p.data===partida.data)) local.unshift(partida);
+    local = local.slice(0,2000);
+    localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(local));
+    try {
+        await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).set(partida);
+    } catch(e) { console.warn("Partida salva apenas localmente", e); }
+    return partida;
+}
+async function obterHistoricoAluno(nome, turma, modalidade=null) {
+    let partidas = await obterPartidas();
+    let historico = partidas.filter(p => normalizarNome(p.nome) === normalizarNome(nome) && p.turma === turma && (!modalidade || p.modalidade === modalidade));
+    if(historico.length) return historico.sort(ordenarPorDataDesc);
+    let ranking = await obterRanking();
+    return ranking.filter(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma && (!modalidade || r.modalidade === modalidade)).sort(ordenarPorDataDesc);
+}
+async function obterRankingPorPontos(modalidade, turma=null){
+    let rank = await obterRanking();
+    let filt = rank.filter(r=>r.modalidade===modalidade);
+    if(turma) filt = filt.filter(r=>r.turma===turma);
+    let mapa = new Map();
+    filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.pontos>mapa.get(chave).pontos) mapa.set(chave,r); });
+    return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
+}
+async function obterRankingPorPrecisao(modalidade, turma=null){
+    let rank = await obterRanking();
+    let filt = rank.filter(r=>r.modalidade===modalidade);
+    if(turma) filt = filt.filter(r=>r.turma===turma);
+    let mapa = new Map();
+    filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.acertos>mapa.get(chave).acertos) mapa.set(chave,r); });
+    return Array.from(mapa.values()).sort((a,b)=>b.acertos-a.acertos || a.tempoMedio-b.tempoMedio);
+}
+async function obterRankingPorVelocidade(modalidade, turma=null){
+    let rank = await obterRanking();
+    let filt = rank.filter(r=>r.modalidade===modalidade && r.acertos===20);
+    if(turma) filt = filt.filter(r=>r.turma===turma);
+    let mapa = new Map();
+    filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.tempoMedio<mapa.get(chave).tempoMedio) mapa.set(chave,r); });
+    return Array.from(mapa.values()).sort((a,b)=>a.tempoMedio-b.tempoMedio || b.acertos-a.acertos);
+}
+async function salvarResultado(res){
+    let chave = criarChaveResultado(res);
+    try {
+        let anterior = await database.ref(`${CAMINHO_RANKING}/${chave}`).once("value");
+        let anteriorVal = anterior.val();
+        if(!anteriorVal || res.pontos > anteriorVal.pontos){
+            await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro:"recorde" });
+        }
+    } catch(e) { console.warn("Recorde salvo apenas localmente", e); }
+    let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
+    let idx = local.findIndex(r=>`${r.modalidade}|${r.turma}|${normalizarNome(r.nome)}` === `${res.modalidade}|${r.turma}|${normalizarNome(res.nome)}`);
+    if(idx===-1) local.push(res);
+    else if(res.pontos > local[idx].pontos) local[idx]=res;
+    localStorage.setItem(STORAGE_RANKING,JSON.stringify(local));
+    return res;
+}
+async function carregarMediasReferencia(nome, turma, modalidade) {
+    const partidas = await obterPartidas();
+    const base = partidas.length ? partidas : await obterRanking();
+    const partidasAluno = base.filter(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma && r.modalidade === modalidade);
+    const relevantesAluno = partidasAluno.filter(p => p.acertos >= 10);
+    melhorMediaAluno = relevantesAluno.length ? Math.min(...relevantesAluno.map(p => p.tempoMedio)) : null;
+    const partidasTurma = base.filter(r => r.turma === turma && r.modalidade === modalidade && r.acertos >= 10);
+    const melhoresPorAluno = new Map();
+    partidasTurma.forEach(p => { const chave = normalizarNome(p.nome); if (!melhoresPorAluno.has(chave) || p.tempoMedio < melhoresPorAluno.get(chave)) melhoresPorAluno.set(chave, p.tempoMedio); });
+    const tempos = Array.from(melhoresPorAluno.values());
+    mediaTurma = tempos.length ? tempos.reduce((a,b)=>a+b,0)/tempos.length : null;
+    return { melhorMediaAluno, mediaTurma };
+}
+
+// ==================== SINGLE PLAYER ====================
+async function registrarAluno(treino) {
+    let nome = document.getElementById("nome-aluno").value.trim();
+    let turma = document.getElementById("turma-aluno").value;
+    if(!nome||!turma){ alert("Preencha nome e turma"); return; }
+    alunoAtual=nome; turmaAtual=turma; modalidadeAtual=document.getElementById("modalidade-tabuada").value; modoTreino=treino;
+    if (!modoTreino) {
+        const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
+        await carregarFocoTreino(nome, turma, modalidadeAtual);
+        melhorMediaAluno = medias.melhorMediaAluno;
+        mediaTurma = medias.mediaTurma;
+        const div = document.getElementById("preparacao-conteudo");
+        let msgMotivacional = "";
+        if (melhorMediaAluno) {
+            if (mediaTurma && melhorMediaAluno < mediaTurma) msgMotivacional = "🚀 Você já é mais rápido que a média da turma! Continue assim!";
+            else if (mediaTurma && melhorMediaAluno > mediaTurma) msgMotivacional = "💪 Você está abaixo da média da turma, mas com treino vai superar!";
+            else msgMotivacional = "🏆 Esta é sua chance de bater seu próprio recorde!";
+        } else {
+            msgMotivacional = "🎯 Esta é sua primeira partida! Vamos criar sua melhor média!";
+        }
+        div.innerHTML = `
+            <p><strong>👤 Aluno:</strong> ${escaparHtml(nome)}</p>
+            <p><strong>🏫 Turma:</strong> ${turma}</p>
+            <p><strong>📚 Modalidade:</strong> ${MODALIDADES[modalidadeAtual].nome}</p>
+            <hr>
+            <p><strong>🏆 Sua melhor média:</strong> ${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+" s" : "---"}</p>
+            <p><strong>👥 Média da turma:</strong> ${mediaTurma ? mediaTurma.toFixed(2)+" s" : "---"}</p>
+            <p><strong>🎯 Foco recomendado para treino:</strong><br>${descreverFocoTreino()}</p>
+            <hr>
+            <div style="background:#e7f5ff; padding:12px; border-radius:8px; text-align:center;">
+                ${msgMotivacional}<br>
+                ⏱️ Você terá 10 segundos por pergunta. Acertar rápido dá mais pontos!<br>
+                🎯 Tente superar sua melhor média e ajudar sua turma!
             </div>
-            <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option><option value="todas">📚 TODAS</option></select><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
-            <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
-            <div id="painel-estatisticas" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"></div>
-        </div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-    <script>
-        // FIREBASE (configuração original)
-        const firebaseConfig = {
-            apiKey: "AIzaSyCSs7aCPTYSebSG6UHSSCMA76p-ZGit9Xc",
-            authDomain: "copa-tabuada-ceib.firebaseapp.com",
-            databaseURL: "https://copa-tabuada-ceib-default-rtdb.firebaseio.com",
-            projectId: "copa-tabuada-ceib",
-            storageBucket: "copa-tabuada-ceib.firebasestorage.app",
-            messagingSenderId: "988790838693",
-            appId: "1:988790838693:web:152da1598c4e14c906844c"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const CAMINHO_RANKING = "resultados";
-        const CAMINHO_PARTIDAS = "partidas";
-        const SENHA_PROFESSOR_HASH = "68accac682c485d39a223b9c57ae8423271ec0e1129f5298cc5455656d23c3e7";
-        const SENHA_PROFESSOR_HASH_FALLBACK = "1ojwkhau4c9";
-        const PROFESSOR_SESSION_MS = 30 * 60 * 1000;
-        const STORAGE_RANKING = "rankingCEIB";
-        const STORAGE_PARTIDAS = "partidasCEIB";
-        const STORAGE_LAST_SYNC = "lastSyncTime";
-        const TOTAL_PERGUNTAS = 20;
-        const MODALIDADES = {
-            "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
-            "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
-            "0-10": { nome: "Completa - Tabuadas do 0 ao 10", fatores: [0,1,2,3,4,5,6,7,8,9,10] }
-        };
-        const CONQUISTAS = [
-            { icone: "🏆", nome: "Mestre da Tabuada", descricao: "17.000+ pontos", criterio: (r) => r.pontos >= 17000 },
-            { icone: "📚", nome: "Domínio Total", descricao: "20/20 acertos", criterio: (r) => r.acertos === 20 },
-            { icone: "🚀", nome: "Velocidade Relâmpago", descricao: "Tempo < 1.2s e acertos 20/20", criterio: (r) => r.acertos === 20 && r.tempoMedio < 1.2 },
-            { icone: "⚡", nome: "Sequência Perfeita", descricao: "20 acertos consecutivos", criterio: (r) => r.maiorSequencia === 20 },
-            { icone: "📚", nome: "Treinador Dedicado", descricao: "5 partidas", criterio: (r, h) => h.length >= 5 },
-            { icone: "🎓", nome: "Veterano", descricao: "10 partidas", criterio: (r, h) => h.length >= 10 },
-            { icone: "🐢", nome: "Tartaruga Ninja", descricao: "Completou com <5 acertos", criterio: (r) => r.acertos < 5 },
-            { icone: "🎲", nome: "Rei do Chute", descricao: "3 acertos em <0.8s", criterio: (r) => r.temposRapidos && r.temposRapidos >= 3 },
-            { icone: "🍀", nome: "Sorte de Principiante", descricao: "Acertou a primeira", criterio: (r) => r.acertouPrimeira === true },
-            { icone: "🔥", nome: "Em Chamas", descricao: "15 acertos seguidos", criterio: (r) => r.maiorSequencia >= 15 },
-            { icone: "📈", nome: "Boa Sequência", descricao: "10 acertos seguidos", criterio: (r) => r.maiorSequencia >= 10 },
-            { icone: "🆕", nome: "Primeira Vitória", descricao: "Primeira partida", criterio: (r, h) => h.length === 1 },
-            { icone: "👑", nome: "Lenda da Tabuada", descricao: "20 partidas", criterio: (r, h) => h.length >= 20 },
-            { icone: "🏅", nome: "Colecionador", descricao: "5 conquistas", criterio: (r, h, c) => c.length >= 5 }
-        ];
-
-        // Variáveis globais (single player)
-        let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
-        let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
-        let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
-        let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
-        let alunosData=[], alunosFiltrados=[];
-        let melhorMediaAluno = null, mediaTurma = null;
-        let somAtivo = true, jaToCouSomSuperacao = false;
-
-        function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
-        function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
-        function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
-        function criarChaveResultado(res) { return encodeURIComponent(`${res.modalidade}|${res.turma}|${normalizarNome(res.nome)}`).replace(/[.#$\[\]/]/g,"_"); }
-        function criarChavePartida(res) { return `partida_${Date.now()}_${Math.random().toString(36).slice(2,8)}`; }
-        function ordenarPorDataDesc(a,b) { return new Date(b.data || 0) - new Date(a.data || 0); }
-        function resultadoCombinaFiltro(r, turma, modalidade) {
-            if(turma !== "todas" && r.turma !== turma) return false;
-            if(modalidade !== "todas" && r.modalidade !== modalidade) return false;
-            return true;
+        `;
+        mostrarTela("tela-preparacao");
+        window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
+    } else {
+        await carregarFocoTreino(nome, turma, modalidadeAtual);
+        iniciarPartidaTreino();
+    }
+}
+function iniciarPartidaTreino() {
+    modoTreino = true;
+    reiniciarVariaveisJogo();
+    document.getElementById("titulo-jogo").innerText = "🎯 Modo Treino";
+    document.getElementById("modo-badge").innerText = "🎯 MODO TREINO";
+    document.getElementById("modo-badge").style.background = "#fd7e14";
+    document.getElementById("modo-badge").classList.remove("hidden");
+    document.getElementById("barra-tempo").classList.remove("hidden");
+    document.getElementById("info-media-tempo").innerText = "Média: -- s";
+    document.getElementById("melhor-media-aluno").innerText = "---";
+    document.getElementById("media-turma").innerText = "---";
+    document.getElementById("feedback-comparacao").innerHTML = descreverFocoTreino();
+    mostrarTela("tela-jogo");
+    proximaPergunta();
+}
+function iniciarPartidaClassificatoria() {
+    if (!window._pendingGame) return;
+    const { nome, turma, modalidade } = window._pendingGame;
+    alunoAtual = nome; turmaAtual = turma; modalidadeAtual = modalidade; modoTreino = false;
+    reiniciarVariaveisJogo();
+    document.getElementById("titulo-jogo").innerText = MODALIDADES[modalidadeAtual].nome;
+    document.getElementById("modo-badge").innerText = "🏆 MODO CLASSIFICATÓRIO";
+    document.getElementById("modo-badge").style.background = "#198754";
+    document.getElementById("modo-badge").classList.remove("hidden");
+    document.getElementById("barra-tempo").classList.remove("hidden");
+    document.getElementById("info-media-tempo").innerText = "Média: -- s";
+    document.getElementById("melhor-media-aluno").innerText = melhorMediaAluno ? `${melhorMediaAluno.toFixed(2)} s` : "---";
+    document.getElementById("media-turma").innerText = mediaTurma ? `${mediaTurma.toFixed(2)} s` : "---";
+    document.getElementById("feedback-comparacao").innerHTML = "📊 Acompanhe seu desempenho durante a partida!";
+    jaToCouSomSuperacao = false;
+    mostrarTela("tela-jogo");
+    proximaPergunta();
+}
+function reiniciarVariaveisJogo() {
+    perguntaAtual=0; pontosAcumulados=0; acertos=0; erros=0; sequenciaAtual=0; maiorSequencia=0;
+    temposCorretas=[]; temposRespostas=[]; desempenhoTabuadas={};
+    perguntasGeradas=[]; tabuadaAtualPergunta=null;
+    acertouPrimeira=false; temposRapidos=0;
+    jogoAtivo=true; finalizando=false;
+    if(timerInterval) clearInterval(timerInterval);
+    if(timerTimeout) clearTimeout(timerTimeout);
+}
+function atualizarMediaTempo() {
+    let mediaSpan = document.getElementById("info-media-tempo");
+    if(mediaSpan && temposCorretas.length > 0) {
+        let soma = temposCorretas.reduce((a,b)=>a+b,0);
+        let media = soma / temposCorretas.length;
+        mediaSpan.innerText = `Média: ${media.toFixed(2)} s`;
+        if (!modoTreino) atualizarFeedbackComparacao();
+    } else if(mediaSpan && temposCorretas.length === 0) {
+        mediaSpan.innerText = "Média: -- s";
+    }
+}
+function atualizarFeedbackComparacao() {
+    if (modoTreino) return;
+    const mediaAtual = temposCorretas.length ? temposCorretas.reduce((a,b)=>a+b,0) / temposCorretas.length : null;
+    if (!mediaAtual) {
+        document.getElementById("feedback-comparacao").innerHTML = "📊 Responda algumas perguntas para ver a comparação.";
+        return;
+    }
+    let feedbackHtml = "";
+    let corClasse = "";
+    if (melhorMediaAluno !== null) {
+        const diff = mediaAtual - melhorMediaAluno;
+        if (diff < -0.05) { feedbackHtml += `🚀 Você está ${Math.abs(diff).toFixed(2)}s <strong>mais rápido</strong> que sua melhor média! `; corClasse = "positivo"; }
+        else if (diff > 0.05) { feedbackHtml += `🐢 Você está ${diff.toFixed(2)}s <strong>mais lento</strong> que sua melhor média. Continue treinando! `; corClasse = "negativo"; }
+        else { feedbackHtml += `📊 Você está no ritmo da sua melhor média! `; corClasse = "neutro"; }
+    } else { feedbackHtml += `🎯 Esta é sua primeira partida? Vamos criar sua média! `; }
+    let estaAcimaDaTurma = false;
+    if (mediaTurma !== null) {
+        const diffTurma = mediaAtual - mediaTurma;
+        if (diffTurma < -0.05) { feedbackHtml += `👥 Você está ${Math.abs(diffTurma).toFixed(2)}s <strong>mais rápido</strong> que a média da sua turma! 🏆`; estaAcimaDaTurma = true; }
+        else if (diffTurma > 0.05) { feedbackHtml += `👥 Você está ${diffTurma.toFixed(2)}s <strong>mais lento</strong> que a média da turma. Continue se dedicando!`; }
+        else { feedbackHtml += `👥 Você está no ritmo da sua turma! 👍`; }
+    } else { feedbackHtml += `👥 Ainda não há dados suficientes da sua turma.`; }
+    if (mediaTurma !== null && estaAcimaDaTurma && !jaToCouSomSuperacao) { tocarBeep(); jaToCouSomSuperacao = true; }
+    else if (!estaAcimaDaTurma) { jaToCouSomSuperacao = false; }
+    const feedbackDiv = document.getElementById("feedback-comparacao");
+    feedbackDiv.innerHTML = feedbackHtml;
+    feedbackDiv.className = `feedback-comparacao ${corClasse}`;
+}
+function gerarOpcoes() {
+    let ultima = perguntasGeradas[perguntasGeradas.length-1];
+    let ops = gerarDistratoresInteligentes(ultima?.fA || tabuadaAtualPergunta || 1, ultima?.fB || 1, respostaCorreta, 4, modalidadeAtual);
+    const botoes = document.querySelectorAll(".btn-opcao");
+    botoes.forEach((btn, i) => { if(i < ops.length) btn.innerText = ops[i]; btn.disabled = false; });
+}
+function proximaPergunta() {
+    if(finalizando) return;
+    perguntaAtual++;
+    if(perguntaAtual > TOTAL_PERGUNTAS){ finalizarCircuito(); return; }
+    perguntaAberta=true;
+    alternarBotoes(false);
+    atualizarStatus();
+    let pergunta = gerarPerguntaAdaptativa(modalidadeAtual);
+    let fA = pergunta.fA, fB = pergunta.fB;
+    tabuadaAtualPergunta = fA;
+    respostaCorreta = pergunta.resposta;
+    document.getElementById("pergunta").innerText = `${fA} x ${fB} = ?`;
+    gerarOpcoes();
+    iniciarCronometro();
+}
+function iniciarCronometro() {
+    tempoInicio = performance.now();
+    let progresso = document.getElementById("progresso");
+    if (progresso) {
+        progresso.style.width = "100%";
+        progresso.style.background = "#198754";
+    }
+    let tempoRest = 10000;
+    clearInterval(timerInterval);
+    clearTimeout(timerTimeout);
+    timerInterval = setInterval(() => {
+        if (finalizando) return;
+        tempoRest -= 100;
+        let pct = Math.max(tempoRest / 10000 * 100, 0);
+        if (progresso) progresso.style.width = pct + "%";
+        if (pct < 40 && progresso) progresso.style.background = "#dc3545";
+        else if (progresso && tempoRest > 2000 && !modoTreino && melhorMediaAluno) {
+            // opcional
+        } else if (progresso && tempoRest > 2000) {
+            progresso.style.background = "#198754";
         }
-        function formatarDataHora(timestamp) {
-            if (!timestamp) return "--";
-            const d = new Date(timestamp);
-            return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        }
-        function atualizarDisplayUltimaSincronizacao() {
-            const lastSync = localStorage.getItem(STORAGE_LAST_SYNC);
-            const el = document.getElementById("ultima-sincronizacao");
-            if (el) el.innerText = lastSync ? `Última atualização: ${formatarDataHora(parseInt(lastSync))}` : "Última atualização: --";
-        }
-        async function gerarHashSenha(valor) {
-            if (!window.crypto?.subtle) return gerarHashSenhaFallback(valor);
-            const bytes = new TextEncoder().encode(valor);
-            const hash = await crypto.subtle.digest("SHA-256", bytes);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
-        }
-        function gerarHashSenhaFallback(valor, seed = 0) {
-            let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-            for (let i = 0, ch; i < valor.length; i++) {
-                ch = valor.charCodeAt(i);
-                h1 = Math.imul(h1 ^ ch, 2654435761);
-                h2 = Math.imul(h2 ^ ch, 1597334677);
-            }
-            h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-            h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-            return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
-        }
-        function professorAutenticado() {
-            let ts = Number(sessionStorage.getItem("professorCEIBAuth") || 0);
-            return ts && Date.now() - ts < PROFESSOR_SESSION_MS;
-        }
-        function exigirProfessorAutenticado() {
-            if(professorAutenticado()) {
-                sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
-                return true;
-            }
-            alert("A sessão do professor expirou. Digite a senha novamente.");
-            document.getElementById("painel-conteudo").classList.add("hidden");
-            document.getElementById("senha-professor").focus();
-            return false;
-        }
-        function calcularConquistas(resultado, historico) {
-            let desbloqueadas = CONQUISTAS.filter(c => c.nome !== "Colecionador" && c.criterio(resultado, historico, []));
-            let colecionador = CONQUISTAS.find(c => c.nome === "Colecionador");
-            if(colecionador && colecionador.criterio(resultado, historico, desbloqueadas)) desbloqueadas.push(colecionador);
-            return desbloqueadas;
-        }
-        function calcularDificuldades(partidas, modalidade) {
-            let fatores = MODALIDADES[modalidade]?.fatores || [];
-            let mapa = {};
-            fatores.forEach(f=>mapa[f]={total:0, acertos:0, tempoTotal:0, peso:1, origem:"sem historico"});
-            partidas.forEach(p=>{
-                if(p.modalidade !== modalidade || !p.desempenhoTabuadas) return;
-                Object.entries(p.desempenhoTabuadas).forEach(([tab,d])=>{
-                    if(!mapa[tab]) mapa[tab]={total:0, acertos:0, tempoTotal:0, peso:1, origem:"historico"};
-                    mapa[tab].total += d.total || 0;
-                    mapa[tab].acertos += d.acertos || 0;
-                    mapa[tab].tempoTotal += d.tempoTotal || 0;
-                });
-            });
-            Object.keys(mapa).forEach(tab=>{
-                let d = mapa[tab];
-                let precisao = d.total ? d.acertos / d.total : 0;
-                let taxaErro = d.total ? 1 - precisao : 0.45;
-                let tempoMedio = d.total && d.tempoTotal ? d.tempoTotal / d.total : 0;
-                let poucoTreino = d.total < 4 ? 1.4 : 0;
-                let lento = tempoMedio > 4 ? 0.8 : tempoMedio > 3 ? 0.45 : 0;
-                d.precisao = precisao;
-                d.tempoMedio = tempoMedio;
-                d.peso = 1 + taxaErro * 5 + poucoTreino + lento;
-                if(!d.total) d.motivo = "ainda apareceu pouco";
-                else if(precisao < 0.6) d.motivo = "muitos erros recentes";
-                else if(precisao < 0.8) d.motivo = "precisa consolidar";
-                else if(lento) d.motivo = "boa precisão, mas resposta lenta";
-                else d.motivo = "em bom ritmo";
-            });
-            return mapa;
-        }
-        async function carregarFocoTreino(nome, turma, modalidade) {
-            let historico = await obterHistoricoAluno(nome, turma, modalidade);
-            dificuldadesHistoricas = calcularDificuldades(historico, modalidade);
-            focoTreinoTabuadas = Object.entries(dificuldadesHistoricas)
-                .filter(([tab,d]) => d.total < 4 || d.precisao < 0.85 || d.tempoMedio > 3)
-                .sort((a,b)=>b[1].peso-a[1].peso)
-                .slice(0,3)
-                .map(([tab])=>Number(tab));
-            return focoTreinoTabuadas;
-        }
-        function descreverFocoTreino() {
-            if(!focoTreinoTabuadas.length) return "Treino equilibrado: nenhuma tabuada fraca foi detectada ainda.";
-            return focoTreinoTabuadas.map(tab => {
-                let d = dificuldadesHistoricas[tab] || {};
-                let precisao = d.total ? `${Math.round((d.precisao || 0) * 100)}%` : "sem dados";
-                return `Tabuada do ${tab}: ${d.motivo || "reforço"} (${precisao})`;
-            }).join("<br>");
-        }
-        function gerarPlanoTreinoResultado() {
-            let itens = Object.entries(desempenhoTabuadas).map(([tab,d]) => {
-                let precisao = d.total ? d.acertos / d.total : 0;
-                let tempoMedio = d.total && d.tempoTotal ? d.tempoTotal / d.total : 10;
-                let prioridade = (1 - precisao) * 5 + (tempoMedio > 4 ? 1 : tempoMedio > 3 ? 0.5 : 0) + (d.total < 2 ? 0.5 : 0);
-                return { tab:Number(tab), total:d.total, acertos:d.acertos, precisao, tempoMedio, prioridade };
-            }).filter(item => item.total > 0).sort((a,b)=>b.prioridade-a.prioridade).slice(0,3);
-            if(!itens.length) return "";
-            let linhas = itens.map(item => {
-                let pct = Math.round(item.precisao * 100);
-                let motivo = pct < 70 ? "reforçar precisão" : item.tempoMedio > 3 ? "ganhar velocidade" : "manter no aquecimento";
-                return `<li>Tabuada do ${item.tab}: ${pct}% de acerto, média ${item.tempoMedio.toFixed(2)}s - ${motivo}</li>`;
-            }).join("");
-            return `<div class="feedback-ranking"><strong>Plano de treino recomendado</strong><ul style="text-align:left;margin:8px 0 0;">${linhas}</ul></div>`;
-        }
-        function escolherPorPeso(itens, pesoFn) {
-            let total = itens.reduce((s,item)=>s+Math.max(0.1,pesoFn(item)),0);
-            let alvo = Math.random() * total;
-            for(let item of itens){
-                alvo -= Math.max(0.1,pesoFn(item));
-                if(alvo <= 0) return item;
-            }
-            return itens[itens.length-1];
-        }
-        function escolherFatorAdaptativo() {
-            let fatores = MODALIDADES[modalidadeAtual].fatores;
-            let contagem = {};
-            fatores.forEach(f=>contagem[f]=0);
-            perguntasGeradas.forEach(p=>{ if(contagem[p.fA] !== undefined) contagem[p.fA]++; });
-            let candidatos = fatores;
-            if(modoTreino && focoTreinoTabuadas.length && Math.random() < 0.8) candidatos = focoTreinoTabuadas;
-            let minVezes = Math.min(...candidatos.map(f=>contagem[f]||0));
-            let menosUsadas = candidatos.filter(f=>(contagem[f]||0)===minVezes);
-            return escolherPorPeso(menosUsadas, f => {
-                let atual = desempenhoTabuadas[f];
-                let erroAtual = atual && atual.total ? 1 - atual.acertos/atual.total : 0;
-                let tempoAtual = atual && atual.total && atual.tempoTotal ? atual.tempoTotal / atual.total : 0;
-                let lentoAtual = tempoAtual > 4 ? 0.8 : tempoAtual > 3 ? 0.4 : 0;
-                let hist = dificuldadesHistoricas[f]?.peso || 1;
-                return hist + erroAtual * 3 + lentoAtual;
-            });
-        }
-        function gerarPerguntaAdaptativa(modalidade) {
-            let fA, fB, chave, tentativas=0;
-            do {
-                fA = escolherFatorAdaptativo();
-                fB = Math.floor(Math.random()*11);
-                chave = `${fA}x${fB}`;
-                tentativas++;
-            } while(perguntasGeradas.slice(-5).some(p=>p.chave===chave) && tentativas < 20);
-            perguntasGeradas.push({fA,fB,chave});
-            return {fA,fB,resposta:fA*fB};
-        }
-        function embaralharLista(lista) {
-            let copia = [...lista];
-            for(let i=copia.length-1;i>0;i--){
-                let j = Math.floor(Math.random()*(i+1));
-                [copia[i], copia[j]] = [copia[j], copia[i]];
-            }
-            return copia;
-        }
-        function adicionarDistrator(lista, valor, tipo, prioridade) {
-            if(!Number.isFinite(valor)) return;
-            valor = Math.round(valor);
-            if(valor < 0 || valor > 120) return;
-            if(!lista.some(c=>c.valor===valor)) lista.push({valor, tipo, prioridade});
-        }
-        function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes, modalidadeBase=modalidadeAtual) {
-            let candidatos = [];
-            let fatores = MODALIDADES[modalidadeBase]?.fatores || [0,1,2,3,4,5,6,7,8,9,10];
-            [fB-1,fB+1,fB-2,fB+2].forEach((n,idx)=>{
-                if(n>=0 && n<=10) adicionarDistrator(candidatos, fA*n, "fator-vizinho", idx<2 ? 1 : 2);
-            });
-            [fA-1,fA+1,fA-2,fA+2].forEach((n,idx)=>{
-                if(n>=0 && n<=10) adicionarDistrator(candidatos, n*fB, "tabuada-vizinha", idx<2 ? 1 : 2);
-            });
-            adicionarDistrator(candidatos, resposta + fA, "proximo-passo", 1);
-            adicionarDistrator(candidatos, resposta - fA, "passo-anterior", 1);
-            adicionarDistrator(candidatos, resposta + fB, "incremento-fator", 2);
-            adicionarDistrator(candidatos, resposta - fB, "decremento-fator", 2);
-            adicionarDistrator(candidatos, fA + fB, "soma", resposta <= 25 ? 1 : 3);
-            adicionarDistrator(candidatos, resposta + (fA + fB), "soma-extra", 3);
-            adicionarDistrator(candidatos, Math.floor(resposta / 2), "metade", 3);
-            adicionarDistrator(candidatos, resposta * 2, "dobro", 3);
-            if(resposta >= 10 && resposta < 100) {
-                let invertido = Number(String(resposta).split("").reverse().join(""));
-                adicionarDistrator(candidatos, invertido, "invertido", 2);
-            }
-            fatores.forEach(tab=>{
-                for(let n=0;n<=10;n++){
-                    let prod = tab*n;
-                    if(Math.abs(prod-resposta) <= 18) adicionarDistrator(candidatos, prod, "produto-real", 2);
-                }
-            });
-            if(resposta === 0) {
-                [fA+fB, Math.max(fA,fB), 1, 2, 5, 10].forEach(v=>adicionarDistrator(candidatos, v, "zero-especial", 1));
-            }
-            if(resposta === 1) {
-                [0,2,10,11].forEach(v=>adicionarDistrator(candidatos, v, "um-especial", 1));
-            }
-            candidatos = candidatos
-                .filter(c=>c.valor !== resposta)
-                .sort((a,b)=>a.prioridade-b.prioridade || Math.abs(a.valor-resposta)-Math.abs(b.valor-resposta));
-            let ops = [resposta];
-            for(let prioridade of [1,2,3]){
-                let grupo = embaralharLista(candidatos.filter(c=>c.prioridade===prioridade));
-                for(let cand of grupo){
-                    if(ops.length >= totalOpcoes) break;
-                    if(!ops.includes(cand.valor)) ops.push(cand.valor);
-                }
-                if(ops.length >= totalOpcoes) break;
-            }
-            while(ops.length < totalOpcoes){
-                let ruido = sortearItem([-15,-12,-9,-6,-4,-2,2,4,6,9,12,15]);
-                let v = Math.max(0, Math.min(120, resposta + ruido));
-                if(v !== resposta && !ops.includes(v)) ops.push(v);
-            }
-            return ops.sort((a,b)=>a-b);
-        }
-        function calcularPontosResposta(tempo) {
-            let base = 300;
-            let bonusVelocidade = Math.max(0, Math.round((10 - tempo) * 60));
-            let bonusSequencia = Math.min(120, (sequenciaAtual + 1) * 10);
-            if(tempo < 0.45) bonusVelocidade = Math.round(bonusVelocidade * 0.25);
-            else if(tempo < 0.75) bonusVelocidade = Math.round(bonusVelocidade * 0.6);
-            return base + bonusVelocidade + bonusSequencia;
-        }
-        function dicaMultiplicacao(fA, fB, resposta) {
-            if(fA === 0 || fB === 0) return `Qualquer numero vezes 0 resulta em 0.`;
-            if(fA === 1) return `Todo numero vezes 1 continua o mesmo: ${fB}.`;
-            if(fB === 1) return `Todo numero vezes 1 continua o mesmo: ${fA}.`;
-            if(fB === 10) return `${fA} vezes 10 e ${fA} com um zero no final.`;
-            return `${fA} x ${fB} e o mesmo que somar ${fA}, ${fB} vezes.`;
-        }
-        function mostrarTela(id) {
-            const telas = ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-painel","tela-preparacao"];
-            telas.forEach(t=>{ let el=document.getElementById(t); if(el) el.classList.add("hidden"); });
-            let alvo = document.getElementById(id);
-            if(alvo) alvo.classList.remove("hidden");
-            if (id === "tela-ranking") atualizarDisplayUltimaSincronizacao();
-        }
-        function tocarBeep() {
-            if (!somAtivo) return;
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.frequency.value = 880;
-                gainNode.gain.value = 0.3;
-                oscillator.start();
-                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
-                oscillator.stop(audioCtx.currentTime + 0.5);
-            } catch(e) {}
-        }
-        function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
-
-        // ==================== RANKING E PARTIDAS (substituição total quando online) ====================
-        async function obterRanking() {
-            try {
-                let snap = await database.ref(CAMINHO_RANKING).once("value");
-                let dados = snap.val() || {};
-                let online = Object.values(dados);
-                localStorage.setItem(STORAGE_RANKING, JSON.stringify(online));
-                localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
-                atualizarDisplayUltimaSincronizacao();
-                return online;
-            } catch (e) {
-                console.warn("Falha ao acessar Firebase (ranking), usando dados locais:", e);
-                return JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
-            }
-        }
-
-        async function obterPartidas() {
-            try {
-                let snap = await database.ref(CAMINHO_PARTIDAS).once("value");
-                let dados = snap.val() || {};
-                let online = Object.values(dados);
-                online.sort(ordenarPorDataDesc);
-                localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(online));
-                return online;
-            } catch (e) {
-                console.warn("Falha ao acessar Firebase (partidas), usando partidas locais:", e);
-                let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS) || "[]");
-                local.sort(ordenarPorDataDesc);
-                return local;
-            }
-        }
-
-        async function forcarSincronizacao() {
-            if (!navigator.onLine) {
-                alert("Sem conexão com a internet. Conecte-se e tente novamente.");
-                return;
-            }
-            try {
-                let snapRanking = await database.ref(CAMINHO_RANKING).once("value");
-                let rankingOnline = Object.values(snapRanking.val() || {});
-                localStorage.setItem(STORAGE_RANKING, JSON.stringify(rankingOnline));
-                
-                let snapPartidas = await database.ref(CAMINHO_PARTIDAS).once("value");
-                let partidasOnline = Object.values(snapPartidas.val() || {});
-                partidasOnline.sort(ordenarPorDataDesc);
-                localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasOnline));
-                
-                localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
-                atualizarDisplayUltimaSincronizacao();
-                
-                mostrarToast("✅ Dados sincronizados com sucesso!");
-                await renderizarRanking();
-            } catch (e) {
-                alert("Erro na sincronização: " + e.message);
-            }
-        }
-
-        async function salvarPartida(res) {
-            let partida = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro:"partida" };
-            // Atualiza localStorage imediatamente
-            let local = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS)||"[]");
-            if(!local.some(p=>p.idPartida===partida.idPartida || p.data===partida.data)) local.unshift(partida);
-            local = local.slice(0,2000);
-            localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(local));
-            try {
-                await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).set(partida);
-            } catch(e) { console.warn("Partida salva apenas localmente", e); }
-            return partida;
-        }
-        async function obterHistoricoAluno(nome, turma, modalidade=null) {
-            let partidas = await obterPartidas();
-            let historico = partidas.filter(p => normalizarNome(p.nome) === normalizarNome(nome) && p.turma === turma && (!modalidade || p.modalidade === modalidade));
-            if(historico.length) return historico.sort(ordenarPorDataDesc);
-            let ranking = await obterRanking();
-            return ranking.filter(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma && (!modalidade || r.modalidade === modalidade)).sort(ordenarPorDataDesc);
-        }
-        async function obterRankingPorPontos(modalidade, turma=null){
-            let rank = await obterRanking();
-            let filt = rank.filter(r=>r.modalidade===modalidade);
-            if(turma) filt = filt.filter(r=>r.turma===turma);
-            let mapa = new Map();
-            filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.pontos>mapa.get(chave).pontos) mapa.set(chave,r); });
-            return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
-        }
-        async function obterRankingPorPrecisao(modalidade, turma=null){
-            let rank = await obterRanking();
-            let filt = rank.filter(r=>r.modalidade===modalidade);
-            if(turma) filt = filt.filter(r=>r.turma===turma);
-            let mapa = new Map();
-            filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.acertos>mapa.get(chave).acertos) mapa.set(chave,r); });
-            return Array.from(mapa.values()).sort((a,b)=>b.acertos-a.acertos || a.tempoMedio-b.tempoMedio);
-        }
-        async function obterRankingPorVelocidade(modalidade, turma=null){
-            let rank = await obterRanking();
-            let filt = rank.filter(r=>r.modalidade===modalidade && r.acertos===20);
-            if(turma) filt = filt.filter(r=>r.turma===turma);
-            let mapa = new Map();
-            filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.tempoMedio<mapa.get(chave).tempoMedio) mapa.set(chave,r); });
-            return Array.from(mapa.values()).sort((a,b)=>a.tempoMedio-b.tempoMedio || b.acertos-a.acertos);
-        }
-        async function salvarResultado(res){
-            let chave = criarChaveResultado(res);
-            try {
-                let anterior = await database.ref(`${CAMINHO_RANKING}/${chave}`).once("value");
-                let anteriorVal = anterior.val();
-                if(!anteriorVal || res.pontos > anteriorVal.pontos){
-                    await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro:"recorde" });
-                }
-            } catch(e) { console.warn("Recorde salvo apenas localmente", e); }
-            let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
-            let idx = local.findIndex(r=>`${r.modalidade}|${r.turma}|${normalizarNome(r.nome)}` === `${res.modalidade}|${r.turma}|${normalizarNome(res.nome)}`);
-            if(idx===-1) local.push(res);
-            else if(res.pontos > local[idx].pontos) local[idx]=res;
-            localStorage.setItem(STORAGE_RANKING,JSON.stringify(local));
-            return res;
-        }
-        async function carregarMediasReferencia(nome, turma, modalidade) {
-            const partidas = await obterPartidas();
-            const base = partidas.length ? partidas : await obterRanking();
-            const partidasAluno = base.filter(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma && r.modalidade === modalidade);
-            const relevantesAluno = partidasAluno.filter(p => p.acertos >= 10);
-            melhorMediaAluno = relevantesAluno.length ? Math.min(...relevantesAluno.map(p => p.tempoMedio)) : null;
-            const partidasTurma = base.filter(r => r.turma === turma && r.modalidade === modalidade && r.acertos >= 10);
-            const melhoresPorAluno = new Map();
-            partidasTurma.forEach(p => { const chave = normalizarNome(p.nome); if (!melhoresPorAluno.has(chave) || p.tempoMedio < melhoresPorAluno.get(chave)) melhoresPorAluno.set(chave, p.tempoMedio); });
-            const tempos = Array.from(melhoresPorAluno.values());
-            mediaTurma = tempos.length ? tempos.reduce((a,b)=>a+b,0)/tempos.length : null;
-            return { melhorMediaAluno, mediaTurma };
-        }
-
-        // ==================== SINGLE PLAYER ====================
-        async function registrarAluno(treino) {
-            let nome = document.getElementById("nome-aluno").value.trim();
-            let turma = document.getElementById("turma-aluno").value;
-            if(!nome||!turma){ alert("Preencha nome e turma"); return; }
-            alunoAtual=nome; turmaAtual=turma; modalidadeAtual=document.getElementById("modalidade-tabuada").value; modoTreino=treino;
-            if (!modoTreino) {
-                const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
-                await carregarFocoTreino(nome, turma, modalidadeAtual);
-                melhorMediaAluno = medias.melhorMediaAluno;
-                mediaTurma = medias.mediaTurma;
-                const div = document.getElementById("preparacao-conteudo");
-                let msgMotivacional = "";
-                if (melhorMediaAluno) {
-                    if (mediaTurma && melhorMediaAluno < mediaTurma) msgMotivacional = "🚀 Você já é mais rápido que a média da turma! Continue assim!";
-                    else if (mediaTurma && melhorMediaAluno > mediaTurma) msgMotivacional = "💪 Você está abaixo da média da turma, mas com treino vai superar!";
-                    else msgMotivacional = "🏆 Esta é sua chance de bater seu próprio recorde!";
-                } else {
-                    msgMotivacional = "🎯 Esta é sua primeira partida! Vamos criar sua melhor média!";
-                }
-                div.innerHTML = `
-                    <p><strong>👤 Aluno:</strong> ${escaparHtml(nome)}</p>
-                    <p><strong>🏫 Turma:</strong> ${turma}</p>
-                    <p><strong>📚 Modalidade:</strong> ${MODALIDADES[modalidadeAtual].nome}</p>
-                    <hr>
-                    <p><strong>🏆 Sua melhor média:</strong> ${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+" s" : "---"}</p>
-                    <p><strong>👥 Média da turma:</strong> ${mediaTurma ? mediaTurma.toFixed(2)+" s" : "---"}</p>
-                    <p><strong>🎯 Foco recomendado para treino:</strong><br>${descreverFocoTreino()}</p>
-                    <hr>
-                    <div style="background:#e7f5ff; padding:12px; border-radius:8px; text-align:center;">
-                        ${msgMotivacional}<br>
-                        ⏱️ Você terá 10 segundos por pergunta. Acertar rápido dá mais pontos!<br>
-                        🎯 Tente superar sua melhor média e ajudar sua turma!
-                    </div>
-                `;
-                mostrarTela("tela-preparacao");
-                window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
-            } else {
-                await carregarFocoTreino(nome, turma, modalidadeAtual);
-                iniciarPartidaTreino();
-            }
-        }
-        function iniciarPartidaTreino() {
-            modoTreino = true;
-            reiniciarVariaveisJogo();
-            document.getElementById("titulo-jogo").innerText = "🎯 Modo Treino";
-            document.getElementById("modo-badge").innerText = "🎯 MODO TREINO";
-            document.getElementById("modo-badge").style.background = "#fd7e14";
-            document.getElementById("modo-badge").classList.remove("hidden");
-            document.getElementById("barra-tempo").classList.remove("hidden");
-            document.getElementById("info-media-tempo").innerText = "Média: -- s";
-            document.getElementById("melhor-media-aluno").innerText = "---";
-            document.getElementById("media-turma").innerText = "---";
-            document.getElementById("feedback-comparacao").innerHTML = descreverFocoTreino();
-            mostrarTela("tela-jogo");
-            proximaPergunta();
-        }
-        function iniciarPartidaClassificatoria() {
-            if (!window._pendingGame) return;
-            const { nome, turma, modalidade } = window._pendingGame;
-            alunoAtual = nome; turmaAtual = turma; modalidadeAtual = modalidade; modoTreino = false;
-            reiniciarVariaveisJogo();
-            document.getElementById("titulo-jogo").innerText = MODALIDADES[modalidadeAtual].nome;
-            document.getElementById("modo-badge").innerText = "🏆 MODO CLASSIFICATÓRIO";
-            document.getElementById("modo-badge").style.background = "#198754";
-            document.getElementById("modo-badge").classList.remove("hidden");
-            document.getElementById("barra-tempo").classList.remove("hidden");
-            document.getElementById("info-media-tempo").innerText = "Média: -- s";
-            document.getElementById("melhor-media-aluno").innerText = melhorMediaAluno ? `${melhorMediaAluno.toFixed(2)} s` : "---";
-            document.getElementById("media-turma").innerText = mediaTurma ? `${mediaTurma.toFixed(2)} s` : "---";
-            document.getElementById("feedback-comparacao").innerHTML = "📊 Acompanhe seu desempenho durante a partida!";
-            jaToCouSomSuperacao = false;
-            mostrarTela("tela-jogo");
-            proximaPergunta();
-        }
-        function reiniciarVariaveisJogo() {
-            perguntaAtual=0; pontosAcumulados=0; acertos=0; erros=0; sequenciaAtual=0; maiorSequencia=0;
-            temposCorretas=[]; temposRespostas=[]; desempenhoTabuadas={};
-            perguntasGeradas=[]; tabuadaAtualPergunta=null;
-            acertouPrimeira=false; temposRapidos=0;
-            jogoAtivo=true; finalizando=false;
-            if(timerInterval) clearInterval(timerInterval);
-            if(timerTimeout) clearTimeout(timerTimeout);
-        }
-        function atualizarMediaTempo() {
-            let mediaSpan = document.getElementById("info-media-tempo");
-            if(mediaSpan && temposCorretas.length > 0) {
-                let soma = temposCorretas.reduce((a,b)=>a+b,0);
-                let media = soma / temposCorretas.length;
-                mediaSpan.innerText = `Média: ${media.toFixed(2)} s`;
-                if (!modoTreino) atualizarFeedbackComparacao();
-            } else if(mediaSpan && temposCorretas.length === 0) {
-                mediaSpan.innerText = "Média: -- s";
-            }
-        }
-        function atualizarFeedbackComparacao() {
-            if (modoTreino) return;
-            const mediaAtual = temposCorretas.length ? temposCorretas.reduce((a,b)=>a+b,0) / temposCorretas.length : null;
-            if (!mediaAtual) {
-                document.getElementById("feedback-comparacao").innerHTML = "📊 Responda algumas perguntas para ver a comparação.";
-                return;
-            }
-            let feedbackHtml = "";
-            let corClasse = "";
-            if (melhorMediaAluno !== null) {
-                const diff = mediaAtual - melhorMediaAluno;
-                if (diff < -0.05) { feedbackHtml += `🚀 Você está ${Math.abs(diff).toFixed(2)}s <strong>mais rápido</strong> que sua melhor média! `; corClasse = "positivo"; }
-                else if (diff > 0.05) { feedbackHtml += `🐢 Você está ${diff.toFixed(2)}s <strong>mais lento</strong> que sua melhor média. Continue treinando! `; corClasse = "negativo"; }
-                else { feedbackHtml += `📊 Você está no ritmo da sua melhor média! `; corClasse = "neutro"; }
-            } else { feedbackHtml += `🎯 Esta é sua primeira partida? Vamos criar sua média! `; }
-            let estaAcimaDaTurma = false;
-            if (mediaTurma !== null) {
-                const diffTurma = mediaAtual - mediaTurma;
-                if (diffTurma < -0.05) { feedbackHtml += `👥 Você está ${Math.abs(diffTurma).toFixed(2)}s <strong>mais rápido</strong> que a média da sua turma! 🏆`; estaAcimaDaTurma = true; }
-                else if (diffTurma > 0.05) { feedbackHtml += `👥 Você está ${diffTurma.toFixed(2)}s <strong>mais lento</strong> que a média da turma. Continue se dedicando!`; }
-                else { feedbackHtml += `👥 Você está no ritmo da sua turma! 👍`; }
-            } else { feedbackHtml += `👥 Ainda não há dados suficientes da sua turma.`; }
-            if (mediaTurma !== null && estaAcimaDaTurma && !jaToCouSomSuperacao) { tocarBeep(); jaToCouSomSuperacao = true; }
-            else if (!estaAcimaDaTurma) { jaToCouSomSuperacao = false; }
-            const feedbackDiv = document.getElementById("feedback-comparacao");
-            feedbackDiv.innerHTML = feedbackHtml;
-            feedbackDiv.className = `feedback-comparacao ${corClasse}`;
-        }
-        function gerarOpcoes() {
-            let ultima = perguntasGeradas[perguntasGeradas.length-1];
-            let ops = gerarDistratoresInteligentes(ultima?.fA || tabuadaAtualPergunta || 1, ultima?.fB || 1, respostaCorreta, 4, modalidadeAtual);
-            const botoes = document.querySelectorAll(".btn-opcao");
-            botoes.forEach((btn, i) => { if(i < ops.length) btn.innerText = ops[i]; btn.disabled = false; });
-        }
-        function proximaPergunta() {
-            if(finalizando) return;
-            perguntaAtual++;
-            if(perguntaAtual > TOTAL_PERGUNTAS){ finalizarCircuito(); return; }
-            perguntaAberta=true;
-            alternarBotoes(false);
-            atualizarStatus();
-            let pergunta = gerarPerguntaAdaptativa(modalidadeAtual);
-            let fA = pergunta.fA, fB = pergunta.fB;
-            tabuadaAtualPergunta = fA;
-            respostaCorreta = pergunta.resposta;
-            document.getElementById("pergunta").innerText = `${fA} x ${fB} = ?`;
-            gerarOpcoes();
-            iniciarCronometro();
-        }
-        function iniciarCronometro() {
-            tempoInicio = performance.now();
-            let progresso = document.getElementById("progresso");
-            if (progresso) {
-                progresso.style.width = "100%";
-                progresso.style.background = "#198754";
-                progresso.classList.remove("pulsando");
-            }
-            let tempoRest = 10000;
-            clearInterval(timerInterval);
-            clearTimeout(timerTimeout);
-            timerInterval = setInterval(() => {
-                if (finalizando) return;
-                tempoRest -= 100;
-                let pct = Math.max(tempoRest / 10000 * 100, 0);
-                if (progresso) progresso.style.width = pct + "%";
-                let tempoGasto = (10000 - tempoRest) / 1000;
-                if (tempoRest > 2000) {
-                    atualizarCorBarraPorMedia(tempoGasto);
-                }
-                if (pct < 40 && progresso) {
-                    progresso.style.background = "#dc3545";
-                    if (pct < 20) progresso.classList.add("pulsando");
-                    else progresso.classList.remove("pulsando");
-                } else if (progresso && tempoRest > 2000 && !modoTreino && melhorMediaAluno) {
-                    // mantém a cor definida pela média
-                } else if (progresso && tempoRest > 2000 && !progresso.style.background) {
-                    progresso.style.background = "#198754";
-                }
-            }, 100);
-            timerTimeout = setTimeout(() => { if (perguntaAberta) processarResposta(0, false); }, 10000);
-        }
-        function atualizarCorBarraPorMedia(tempoGasto) {
-            if (modoTreino || !melhorMediaAluno) return false;
-            let progressoDiv = document.getElementById("progresso");
-            if (!progressoDiv) return false;
-            let tempoRestante = 10 - tempoGasto;
-            if (tempoRestante <= 2) return false;
-            
-            let relacao = tempoGasto / melhorMediaAluno;
-            let novaCor = "";
-            if (relacao <= 0.7) novaCor = "#00cc66";
-            else if (relacao <= 0.9) novaCor = "#2ecc71";
-            else if (relacao <= 1.1) novaCor = "#f39c12";
-            else novaCor = "#e67e22";
-            
-            progressoDiv.style.background = novaCor;
-            
-            let diferenca = (tempoGasto - melhorMediaAluno).toFixed(2);
-            let tooltipMsg = (diferenca <= 0) 
-                ? `🚀 Rápido! ${Math.abs(diferenca)}s abaixo da média` 
-                : `🐢 Lento... ${diferenca}s acima da média`;
-            let barraDiv = document.getElementById("barra-tempo");
-            if (barraDiv) barraDiv.title = `Melhor média: ${melhorMediaAluno.toFixed(2)}s | Agora: ${tempoGasto.toFixed(2)}s | ${tooltipMsg}`;
-            return true;
-        }
-        function exibirComboVisual(sequencia) {
-            let elem = document.getElementById("info-sequencia");
-            if (!elem) return;
-            let mensagem = "";
-            if (sequencia === 5) mensagem = "🔥 Combo 5!";
-            else if (sequencia === 10) mensagem = "⚡ Combo 10!";
-            else if (sequencia === 15) mensagem = "💥 Combo 15!";
-            else if (sequencia === 20) mensagem = "🏆 Combo PERFEITO!";
-            else return;
-            
-            elem.style.transition = "all 0.2s";
-            elem.style.backgroundColor = "#ffc107";
-            elem.style.color = "#000";
-            setTimeout(() => {
-                elem.style.backgroundColor = "";
-                elem.style.color = "";
-            }, 500);
-            
-            mostrarToast(mensagem);
-            if (sequencia === 5) tocarSomCombo("combo");
-            else if (sequencia === 10) tocarSomCombo("superCombo");
-            else if (sequencia >= 15) tocarSomCombo("megaCombo");
-        }
-        function tocarSomCombo(tipo) {
-            if (!somAtivo) return;
-            const SONS = { combo: { freq: 1200, duration: 0.2 }, superCombo: { freq: 1500, duration: 0.3 }, megaCombo: { freq: 1800, duration: 0.4 } };
-            let cfg = SONS[tipo] || SONS.combo;
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = cfg.freq;
-                gain.gain.value = 0.3;
-                osc.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + cfg.duration);
-                osc.stop(audioCtx.currentTime + cfg.duration);
-                setTimeout(() => audioCtx.close(), cfg.duration * 1000);
-            } catch(e) {}
-        }
-        function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
-        function verificarResposta(btn) {
-            if(!perguntaAberta||finalizando) return;
-            clearInterval(timerInterval); clearTimeout(timerTimeout);
-            let tempoGasto = (performance.now()-tempoInicio)/1000;
-            let acertou = parseInt(btn.innerText)===respostaCorreta && tempoGasto<=10;
-            let pontos = (!modoTreino && acertou) ? calcularPontosResposta(tempoGasto) : 0;
-            processarResposta(pontos,acertou,tempoGasto);
-        }
-        function processarResposta(pontos,acertou,tempo) {
-            if(finalizando) return;
-            perguntaAberta=false;
-            alternarBotoes(true);
-            temposRespostas.push({acertou, tempo});
-            if(perguntaAtual===1 && acertou) acertouPrimeira=true;
-            if(acertou && tempo<0.8) temposRapidos++;
-            if(!modoTreino && !acertou){
-                let pDiv=document.getElementById("pergunta");
-                if(pDiv) pDiv.classList.add("erro-visual");
-                setTimeout(()=>{ if(pDiv) pDiv.classList.remove("erro-visual"); },300);
-            } else if(!modoTreino && pontos>0) mostrarToast(`+${pontos} pontos! 🎉`);
-            if(modoTreino){
-                let dicaDiv = document.getElementById("dica-resposta");
-                if(dicaDiv){
-                    dicaDiv.classList.remove("hidden");
-                    if(acertou){
-                        dicaDiv.innerHTML = "✅ Correto! Muito bem!";
-                        dicaDiv.style.background = "#d1e7dd";
-                        dicaDiv.style.color = "#0f5132";
-                    } else {
-                        let ultima = perguntasGeradas[perguntasGeradas.length-1] || {};
-                        dicaDiv.innerHTML = `❌ Errado! A resposta correta é ${respostaCorreta}. ${dicaMultiplicacao(ultima.fA, ultima.fB, respostaCorreta)}`;
-                        dicaDiv.style.background = "#f8d7da";
-                        dicaDiv.style.color = "#842029";
-                    }
-                    setTimeout(() => dicaDiv.classList.add("hidden"), 2000);
-                }
-            }
-            pontosAcumulados+=pontos;
-            if(perguntaAtual<=TOTAL_PERGUNTAS){
-                let tab=tabuadaAtualPergunta;
-                if(tab !== null && !isNaN(tab)){
-                    if(!desempenhoTabuadas[tab]) desempenhoTabuadas[tab]={acertos:0,total:0,tempoTotal:0};
-                    desempenhoTabuadas[tab].total++;
-                    desempenhoTabuadas[tab].tempoTotal += tempo || 10;
-                    if(acertou) desempenhoTabuadas[tab].acertos++;
-                }
-            }
+    }, 100);
+    timerTimeout = setTimeout(() => { if (perguntaAberta) processarResposta(0, false); }, 10000);
+}
+function exibirComboVisual(sequencia) {
+    let elem = document.getElementById("info-sequencia");
+    if (!elem) return;
+    let mensagem = "";
+    if (sequencia === 5) mensagem = "🔥 Combo 5!";
+    else if (sequencia === 10) mensagem = "⚡ Combo 10!";
+    else if (sequencia === 15) mensagem = "💥 Combo 15!";
+    else if (sequencia === 20) mensagem = "🏆 Combo PERFEITO!";
+    else return;
+    elem.style.backgroundColor = "#ffc107";
+    elem.style.color = "#000";
+    setTimeout(() => {
+        elem.style.backgroundColor = "";
+        elem.style.color = "";
+    }, 500);
+    mostrarToast(mensagem);
+}
+function tocarSomCombo(tipo) { /* opcional */ }
+function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
+function verificarResposta(btn) {
+    if(!perguntaAberta||finalizando) return;
+    clearInterval(timerInterval); clearTimeout(timerTimeout);
+    let tempoGasto = (performance.now()-tempoInicio)/1000;
+    let acertou = parseInt(btn.innerText)===respostaCorreta && tempoGasto<=10;
+    let pontos = (!modoTreino && acertou) ? calcularPontosResposta(tempoGasto) : 0;
+    processarResposta(pontos,acertou,tempoGasto);
+}
+function processarResposta(pontos,acertou,tempo) {
+    if(finalizando) return;
+    perguntaAberta=false;
+    alternarBotoes(true);
+    temposRespostas.push({acertou, tempo});
+    if(perguntaAtual===1 && acertou) acertouPrimeira=true;
+    if(acertou && tempo<0.8) temposRapidos++;
+    if(!modoTreino && !acertou){
+        let pDiv=document.getElementById("pergunta");
+        if(pDiv) pDiv.classList.add("erro-visual");
+        setTimeout(()=>{ if(pDiv) pDiv.classList.remove("erro-visual"); },300);
+    } else if(!modoTreino && pontos>0) mostrarToast(`+${pontos} pontos! 🎉`);
+    if(modoTreino){
+        let dicaDiv = document.getElementById("dica-resposta");
+        if(dicaDiv){
+            dicaDiv.classList.remove("hidden");
             if(acertou){
-                acertos++; sequenciaAtual++; maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
-                if(tempo) temposCorretas.push(tempo);
-                atualizarMediaTempo();
-                if ([5, 10, 15, 20].includes(sequenciaAtual)) {
-                    exibirComboVisual(sequenciaAtual);
-                }
-            } else { erros++; sequenciaAtual = 0; }
-            atualizarStatus();
-            setTimeout(()=>{ if(!finalizando) proximaPergunta(); },250);
-        }
-        function atualizarStatus() {
-            document.getElementById("info-pergunta").innerText = `Pergunta: ${Math.min(perguntaAtual,20)} / 20`;
-            document.getElementById("info-pontos").innerText = `Pontos: ${pontosAcumulados}`;
-            document.getElementById("info-acertos").innerText = `Acertos: ${acertos}`;
-            document.getElementById("info-sequencia").innerText = `Sequência: ${sequenciaAtual}`;
-        }
-        function alternarBotoes(des) { document.querySelectorAll(".btn-opcao").forEach(b=>b.disabled=des); }
-        function forcarFinalizacao() { if(jogoAtivo && confirm("Forçar finalização?")){ clearInterval(timerInterval); clearTimeout(timerTimeout); finalizarCircuito(); } }
-        async function finalizarCircuito() {
-            if(finalizando) return;
-            finalizando=true; jogoAtivo=false;
-            clearInterval(timerInterval); clearTimeout(timerTimeout);
-            let tempoMedio = temposCorretas.length? temposCorretas.reduce((a,b)=>a+b,0)/temposCorretas.length : 10;
-            let resultado = { nome:alunoAtual, turma:turmaAtual, modalidade:modalidadeAtual, pontos:pontosAcumulados, acertos:acertos, erros:erros, tempoMedio:tempoMedio, maiorSequencia:maiorSequencia, desempenhoTabuadas:desempenhoTabuadas, data:new Date().toISOString(), idPartida:criarChavePartida({nome:alunoAtual}), temposRapidos:temposRapidos, acertouPrimeira:acertouPrimeira };
-            if(modoTreino){
-                document.getElementById("resultado-titulo").innerHTML="🎯 Resultado do Treino";
-                document.getElementById("feedback-pontos").innerHTML=`${alunoAtual}, treino concluído!`;
-                document.getElementById("resumo-pontos").innerText=`${pontosAcumulados} pts (treino)`;
-                document.getElementById("resumo-status").innerHTML="Modo Treino";
-                document.getElementById("resumo-turma").innerText=turmaAtual;
-                document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[modalidadeAtual].nome;
-                document.getElementById("resumo-acertos").innerText=`${acertos}/20`;
-                document.getElementById("resumo-erros").innerText=erros;
-                document.getElementById("resumo-tempo").innerText=`${tempoMedio.toFixed(2)}s`;
-                document.getElementById("resumo-sequencia").innerText=maiorSequencia;
-                document.getElementById("resumo-melhor-media").innerText="--";
-                document.getElementById("resumo-media-turma").innerText="--";
-                document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
-                document.getElementById("novas-conquistas").innerHTML="";
-                document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
-                mostrarTela("tela-resultado");
-                return;
-            }
-            try{
-                await salvarPartida(resultado);
-                let salvo = await salvarResultado(resultado);
-                await preencherResultado(salvo);
-                mostrarTela("tela-resultado");
-            }catch(e){
-                alert("Erro ao salvar. Resultado salvo localmente.");
-                await salvarPartida(resultado);
-                await preencherResultado(resultado);
-                mostrarTela("tela-resultado");
-            }
-        }
-        async function preencherResultado(r) {
-            let rankingTurma = await obterRankingPorPontos(r.modalidade, r.turma);
-            let posTurma = rankingTurma.findIndex(i=>i.data===r.data)+1;
-            let status = posTurma<=4?"Classificado":(posTurma<=6?"Reserva":"Participante");
-            document.getElementById("feedback-pontos").innerHTML=`${r.nome}, você concluiu!`;
-            document.getElementById("resumo-turma").innerText=r.turma;
-            document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[r.modalidade]?.nome||r.modalidade;
-            document.getElementById("resumo-pontos").innerText=`${r.pontos} pts`;
-            document.getElementById("resumo-acertos").innerText=`${r.acertos}/20`;
-            document.getElementById("resumo-erros").innerText=r.erros;
-            document.getElementById("resumo-tempo").innerText=`${r.tempoMedio.toFixed(2)}s`;
-            document.getElementById("resumo-sequencia").innerText=r.maiorSequencia;
-            document.getElementById("resumo-status").innerHTML=`<span class="tag ${status==='Classificado'?'tag-classificado':status==='Reserva'?'tag-reserva':'tag-participante'}">${status}</span>`;
-            const medias = await carregarMediasReferencia(r.nome, r.turma, r.modalidade);
-            document.getElementById("resumo-melhor-media").innerText = medias.melhorMediaAluno ? `${medias.melhorMediaAluno.toFixed(2)} s` : "---";
-            document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
-            if(r.desempenhoTabuadas) desempenhoTabuadas=r.desempenhoTabuadas;
-            document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
-            let historico = await obterHistoricoAluno(r.nome, r.turma, r.modalidade);
-            let conquistas = calcularConquistas(r, historico).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
-            document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
-            await gerarFeedbackRanking(r, posTurma);
-        }
-        async function gerarFeedbackRanking(resultado, posTurmaAtual) {
-            let todasPartidas = await obterHistoricoAluno(resultado.nome, resultado.turma, resultado.modalidade);
-            let partidasAnteriores = todasPartidas.filter(p => p.data !== resultado.data).sort(ordenarPorDataDesc);
-            let feedbackHtml = "";
-            if(partidasAnteriores.length === 0) {
-                feedbackHtml = `<div class="feedback-ranking"><strong>🎉 PARABÉNS PELA SUA PRIMEIRA PARTIDA! 🎉</strong><br><br>📊 Você entrou no ranking da Turma ${resultado.turma} na <strong>${posTurmaAtual}ª posição</strong>!<br><br>Continue assim! 💪</div>`;
+                dicaDiv.innerHTML = "✅ Correto! Muito bem!";
+                dicaDiv.style.background = "#d1e7dd";
+                dicaDiv.style.color = "#0f5132";
             } else {
-                let partidaAnterior = partidasAnteriores[0];
-                let rankingTurmaAnterior = await obterRankingPorPontosAntigo(resultado.modalidade, resultado.turma, resultado.data);
-                let posTurmaAnterior = rankingTurmaAnterior.findIndex(p => p.data === partidaAnterior.data) + 1;
-                let feedback = "";
-                if(posTurmaAtual < posTurmaAnterior) feedback = `✅ Você SUBIU para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º)! 🚀`;
-                else if(posTurmaAtual > posTurmaAnterior) feedback = `📉 Você caiu para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º).`;
-                else feedback = `📊 Você manteve o <strong>${posTurmaAtual}º lugar</strong> na turma! 🎯`;
-                feedbackHtml = `<div class="feedback-ranking"><strong>${feedback}</strong></div>`;
+                let ultima = perguntasGeradas[perguntasGeradas.length-1] || {};
+                dicaDiv.innerHTML = `❌ Errado! A resposta correta é ${respostaCorreta}. ${dicaMultiplicacao(ultima.fA, ultima.fB, respostaCorreta)}`;
+                dicaDiv.style.background = "#f8d7da";
+                dicaDiv.style.color = "#842029";
             }
-            document.getElementById("feedback-ranking-container").innerHTML = feedbackHtml;
+            setTimeout(() => dicaDiv.classList.add("hidden"), 2000);
         }
-        async function obterRankingPorPontosAntigo(modalidade, turma, dataAtual) {
-            let rank = await obterRanking();
-            let filt = rank.filter(r => r.modalidade === modalidade && r.turma === turma && r.data !== dataAtual);
-            let mapa = new Map();
-            filt.forEach(r => { let chave = `${r.nome}|${r.turma}`; if(!mapa.has(chave) || r.pontos > mapa.get(chave).pontos) mapa.set(chave, r); });
-            return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
+    }
+    pontosAcumulados+=pontos;
+    if(perguntaAtual<=TOTAL_PERGUNTAS){
+        let tab=tabuadaAtualPergunta;
+        if(tab !== null && !isNaN(tab)){
+            if(!desempenhoTabuadas[tab]) desempenhoTabuadas[tab]={acertos:0,total:0,tempoTotal:0};
+            desempenhoTabuadas[tab].total++;
+            desempenhoTabuadas[tab].tempoTotal += tempo || 10;
+            if(acertou) desempenhoTabuadas[tab].acertos++;
         }
-        function renderizarMapa() {
-            let fatores = MODALIDADES[modalidadeAtual]?.fatores||[];
-            let html = `<div class="mapa-tabuadas"><h3>🗺️ Meu Mapa de Tabuadas</h3><div class="grade-tabuadas">`;
-            for(let tab of fatores){
-                let d = desempenhoTabuadas[tab];
-                let pct = d && d.total ? Math.round(d.acertos/d.total*100) : null;
-                let cor,simbolo,msg;
-                if(pct===null){ cor="#e9ecef"; simbolo="❓"; msg="Não sorteada"; }
-                else if(pct===100){ cor="#198754"; simbolo="✅"; msg="Domínio completo!"; }
-                else if(pct>=80){ cor="#ffc107"; simbolo="⚠️"; msg="Bom, pode melhorar"; }
-                else if(pct>=60){ cor="#fd7e14"; simbolo="🔶"; msg="Atenção!"; }
-                else{ cor="#dc3545"; simbolo="❌"; msg="Reforço necessário!"; }
-                let larg = pct||0;
-                html += `<div class="card-tabuada" style="border-left:4px solid ${cor}"><div><strong>Tabuada ${tab}</strong> <span>${simbolo}</span></div>
-                        <div class="barra-container"><div class="barra" style="width:${larg}%;background:${cor}"></div></div>
-                        <div class="percentual">${pct!==null?pct+"%":"—"}</div>
-                        <div class="detalhes">${pct!==null?`${d.acertos}/${d.total} acertos`:"Não apareceu"}</div>
-                        <div class="mensagem">${msg}</div></div>`;
+    }
+    if(acertou){
+        acertos++; sequenciaAtual++; maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
+        if(tempo) temposCorretas.push(tempo);
+        atualizarMediaTempo();
+        if ([5, 10, 15, 20].includes(sequenciaAtual)) {
+            exibirComboVisual(sequenciaAtual);
+        }
+    } else { erros++; sequenciaAtual = 0; }
+    atualizarStatus();
+    setTimeout(()=>{ if(!finalizando) proximaPergunta(); },250);
+}
+function atualizarStatus() {
+    document.getElementById("info-pergunta").innerText = `Pergunta: ${Math.min(perguntaAtual,20)} / 20`;
+    document.getElementById("info-pontos").innerText = `Pontos: ${pontosAcumulados}`;
+    document.getElementById("info-acertos").innerText = `Acertos: ${acertos}`;
+    document.getElementById("info-sequencia").innerText = `Sequência: ${sequenciaAtual}`;
+}
+function alternarBotoes(des) { document.querySelectorAll(".btn-opcao").forEach(b=>b.disabled=des); }
+function forcarFinalizacao() { if(jogoAtivo && confirm("Forçar finalização?")){ clearInterval(timerInterval); clearTimeout(timerTimeout); finalizarCircuito(); } }
+async function finalizarCircuito() {
+    if(finalizando) return;
+    finalizando=true; jogoAtivo=false;
+    clearInterval(timerInterval); clearTimeout(timerTimeout);
+    let tempoMedio = temposCorretas.length? temposCorretas.reduce((a,b)=>a+b,0)/temposCorretas.length : 10;
+    let resultado = { nome:alunoAtual, turma:turmaAtual, modalidade:modalidadeAtual, pontos:pontosAcumulados, acertos:acertos, erros:erros, tempoMedio:tempoMedio, maiorSequencia:maiorSequencia, desempenhoTabuadas:desempenhoTabuadas, data:new Date().toISOString(), idPartida:criarChavePartida({nome:alunoAtual}), temposRapidos:temposRapidos, acertouPrimeira:acertouPrimeira };
+    if(modoTreino){
+        document.getElementById("resultado-titulo").innerHTML="🎯 Resultado do Treino";
+        document.getElementById("feedback-pontos").innerHTML=`${alunoAtual}, treino concluído!`;
+        document.getElementById("resumo-pontos").innerText=`${pontosAcumulados} pts (treino)`;
+        document.getElementById("resumo-status").innerHTML="Modo Treino";
+        document.getElementById("resumo-turma").innerText=turmaAtual;
+        document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[modalidadeAtual].nome;
+        document.getElementById("resumo-acertos").innerText=`${acertos}/20`;
+        document.getElementById("resumo-erros").innerText=erros;
+        document.getElementById("resumo-tempo").innerText=`${tempoMedio.toFixed(2)}s`;
+        document.getElementById("resumo-sequencia").innerText=maiorSequencia;
+        document.getElementById("resumo-melhor-media").innerText="--";
+        document.getElementById("resumo-media-turma").innerText="--";
+        document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
+        document.getElementById("novas-conquistas").innerHTML="";
+        document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
+        mostrarTela("tela-resultado");
+        return;
+    }
+    try{
+        await salvarPartida(resultado);
+        let salvo = await salvarResultado(resultado);
+        await preencherResultado(salvo);
+        mostrarTela("tela-resultado");
+    }catch(e){
+        alert("Erro ao salvar. Resultado salvo localmente.");
+        await salvarPartida(resultado);
+        await preencherResultado(resultado);
+        mostrarTela("tela-resultado");
+    }
+}
+async function preencherResultado(r) {
+    let rankingTurma = await obterRankingPorPontos(r.modalidade, r.turma);
+    let posTurma = rankingTurma.findIndex(i=>i.data===r.data)+1;
+    let status = posTurma<=4?"Classificado":(posTurma<=6?"Reserva":"Participante");
+    document.getElementById("feedback-pontos").innerHTML=`${r.nome}, você concluiu!`;
+    document.getElementById("resumo-turma").innerText=r.turma;
+    document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[r.modalidade]?.nome||r.modalidade;
+    document.getElementById("resumo-pontos").innerText=`${r.pontos} pts`;
+    document.getElementById("resumo-acertos").innerText=`${r.acertos}/20`;
+    document.getElementById("resumo-erros").innerText=r.erros;
+    document.getElementById("resumo-tempo").innerText=`${r.tempoMedio.toFixed(2)}s`;
+    document.getElementById("resumo-sequencia").innerText=r.maiorSequencia;
+    document.getElementById("resumo-status").innerHTML=`<span class="tag ${status==='Classificado'?'tag-classificado':status==='Reserva'?'tag-reserva':'tag-participante'}">${status}</span>`;
+    const medias = await carregarMediasReferencia(r.nome, r.turma, r.modalidade);
+    document.getElementById("resumo-melhor-media").innerText = medias.melhorMediaAluno ? `${medias.melhorMediaAluno.toFixed(2)} s` : "---";
+    document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
+    if(r.desempenhoTabuadas) desempenhoTabuadas=r.desempenhoTabuadas;
+    document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
+    let historico = await obterHistoricoAluno(r.nome, r.turma, r.modalidade);
+    let conquistas = calcularConquistas(r, historico).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
+    document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
+    await gerarFeedbackRanking(r, posTurma);
+}
+async function gerarFeedbackRanking(resultado, posTurmaAtual) {
+    let todasPartidas = await obterHistoricoAluno(resultado.nome, resultado.turma, resultado.modalidade);
+    let partidasAnteriores = todasPartidas.filter(p => p.data !== resultado.data).sort(ordenarPorDataDesc);
+    let feedbackHtml = "";
+    if(partidasAnteriores.length === 0) {
+        feedbackHtml = `<div class="feedback-ranking"><strong>🎉 PARABÉNS PELA SUA PRIMEIRA PARTIDA! 🎉</strong><br><br>📊 Você entrou no ranking da Turma ${resultado.turma} na <strong>${posTurmaAtual}ª posição</strong>!<br><br>Continue assim! 💪</div>`;
+    } else {
+        let partidaAnterior = partidasAnteriores[0];
+        let rankingTurmaAnterior = await obterRankingPorPontosAntigo(resultado.modalidade, resultado.turma, resultado.data);
+        let posTurmaAnterior = rankingTurmaAnterior.findIndex(p => p.data === partidaAnterior.data) + 1;
+        let feedback = "";
+        if(posTurmaAtual < posTurmaAnterior) feedback = `✅ Você SUBIU para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º)! 🚀`;
+        else if(posTurmaAtual > posTurmaAnterior) feedback = `📉 Você caiu para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º).`;
+        else feedback = `📊 Você manteve o <strong>${posTurmaAtual}º lugar</strong> na turma! 🎯`;
+        feedbackHtml = `<div class="feedback-ranking"><strong>${feedback}</strong></div>`;
+    }
+    document.getElementById("feedback-ranking-container").innerHTML = feedbackHtml;
+}
+async function obterRankingPorPontosAntigo(modalidade, turma, dataAtual) {
+    let rank = await obterRanking();
+    let filt = rank.filter(r => r.modalidade === modalidade && r.turma === turma && r.data !== dataAtual);
+    let mapa = new Map();
+    filt.forEach(r => { let chave = `${r.nome}|${r.turma}`; if(!mapa.has(chave) || r.pontos > mapa.get(chave).pontos) mapa.set(chave, r); });
+    return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
+}
+function renderizarMapa() {
+    let fatores = MODALIDADES[modalidadeAtual]?.fatores||[];
+    let html = `<div class="mapa-tabuadas"><h3>🗺️ Meu Mapa de Tabuadas</h3><div class="grade-tabuadas">`;
+    for(let tab of fatores){
+        let d = desempenhoTabuadas[tab];
+        let pct = d && d.total ? Math.round(d.acertos/d.total*100) : null;
+        let cor,simbolo,msg;
+        if(pct===null){ cor="#e9ecef"; simbolo="❓"; msg="Não sorteada"; }
+        else if(pct===100){ cor="#198754"; simbolo="✅"; msg="Domínio completo!"; }
+        else if(pct>=80){ cor="#ffc107"; simbolo="⚠️"; msg="Bom, pode melhorar"; }
+        else if(pct>=60){ cor="#fd7e14"; simbolo="🔶"; msg="Atenção!"; }
+        else{ cor="#dc3545"; simbolo="❌"; msg="Reforço necessário!"; }
+        let larg = pct||0;
+        html += `<div class="card-tabuada" style="border-left:4px solid ${cor}"><div><strong>Tabuada ${tab}</strong> <span>${simbolo}</span></div>
+                <div class="barra-container"><div class="barra" style="width:${larg}%;background:${cor}"></div></div>
+                <div class="percentual">${pct!==null?pct+"%":"—"}</div>
+                <div class="detalhes">${pct!==null?`${d.acertos}/${d.total} acertos`:"Não apareceu"}</div>
+                <div class="mensagem">${msg}</div></div>`;
+    }
+    html += `</div><div class="resumo-mapa"><div class="media-geral">📊 Média: ${Math.round(Object.values(desempenhoTabuadas).filter(d=>d.total>0).reduce((s,d)=>s+d.acertos/d.total*100,0)/Object.values(desempenhoTabuadas).filter(d=>d.total>0).length||0)}%</div>
+            <div class="dica-melhoria">💡 ${gerarDicaMelhoria()}</div></div></div>`;
+    return html;
+}
+function gerarDicaMelhoria() {
+    let piores = Object.entries(desempenhoTabuadas).filter(([t,d])=>d.total>0 && d.acertos/d.total<0.8).sort((a,b)=>(a[1].acertos/a[1].total)-(b[1].acertos/b[1].total));
+    if(piores.length===0) return "Parabéns! Você domina todas as tabuadas! 🎉";
+    return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
+}
+
+// ==================== RENDERIZAÇÃO RANKING ====================
+async function renderizarRanking() {
+    const tabelaHead = document.getElementById("tabela-head-ranking");
+    const tabelaBody = document.getElementById("tabela-ranking-body");
+    const tituloEl = document.getElementById("titulo-ranking");
+    if(!tabelaBody || !tituloEl) return;
+
+    let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
+    let turma = document.getElementById("filtro-turma")?.value || "901";
+    let ranking = [];
+    let titulo = "";
+
+    if(tipoRankingAtual === "turma"){
+        const todasPartidas = await obterPartidas();
+        const mapaJogos = new Map();
+        todasPartidas.forEach(p => {
+            if(p.modalidade === modalidade && p.turma === turma) {
+                const chave = `${normalizarNome(p.nome)}|${p.turma}`;
+                mapaJogos.set(chave, (mapaJogos.get(chave) || 0) + 1);
             }
-            html += `</div><div class="resumo-mapa"><div class="media-geral">📊 Média: ${Math.round(Object.values(desempenhoTabuadas).filter(d=>d.total>0).reduce((s,d)=>s+d.acertos/d.total*100,0)/Object.values(desempenhoTabuadas).filter(d=>d.total>0).length||0)}%</div>
-                    <div class="dica-melhoria">💡 ${gerarDicaMelhoria()}</div></div></div>`;
-            return html;
+        });
+        ranking = await obterRankingPorPontos(modalidade, turma);
+        titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
+        tituloEl.innerText = titulo;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th></tr>`;
+        let html = "";
+        for (let i = 0; i < ranking.length; i++) {
+            const r = ranking[i];
+            const pos = i + 1;
+            let statusClass = pos <= 4 ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
+            let statusText = pos <= 4 ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
+            const jogos = mapaJogos.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
+            html += `<tr>
+                        <td style="text-align:center">${pos}º</td>
+                        <td style="text-align:left">${escaparHtml(r.nome)}</td>
+                        <td style="text-align:center">${r.turma}</td>
+                        <td style="text-align:center">${r.pontos}</td>
+                        <td style="text-align:center">${r.acertos}/20</td>
+                        <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                        <td style="text-align:center">${jogos}</td>
+                        <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
+                      </tr>`;
         }
-        function gerarDicaMelhoria() {
-            let piores = Object.entries(desempenhoTabuadas).filter(([t,d])=>d.total>0 && d.acertos/d.total<0.8).sort((a,b)=>(a[1].acertos/a[1].total)-(b[1].acertos/b[1].total));
-            if(piores.length===0) return "Parabéns! Você domina todas as tabuadas! 🎉";
-            return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
-        }
+        if (html === "") html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+        tabelaBody.innerHTML = html;
+        return;
+    } 
+    else if(tipoRankingAtual === "global"){
+        ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
+        titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+    } 
+    else if(tipoRankingAtual === "precisao-global"){
+        ranking = await obterRankingPorPrecisao(modalidade, null);
+        titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+    } 
+    else if(tipoRankingAtual === "precisao-turma"){
+        ranking = await obterRankingPorPrecisao(modalidade, turma);
+        titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+    } 
+    else if(tipoRankingAtual === "velocidade-global"){
+        ranking = await obterRankingPorVelocidade(modalidade, null);
+        titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+    } 
+    else if(tipoRankingAtual === "velocidade-turma"){
+        ranking = await obterRankingPorVelocidade(modalidade, turma);
+        titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+    } else {
+        ranking = await obterRankingPorPontos(modalidade, turma);
+        titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+    }
 
-        // ==================== RENDERIZAÇÃO RANKING ====================
-        async function renderizarRanking() {
-            const tabelaHead = document.getElementById("tabela-head-ranking");
-            const tabelaBody = document.getElementById("tabela-ranking-body");
-            const tituloEl = document.getElementById("titulo-ranking");
-            if(!tabelaBody || !tituloEl) return;
+    tituloEl.innerText = titulo;
+    let html = "";
+    for (let i = 0; i < ranking.length; i++) {
+        const r = ranking[i];
+        const pos = i + 1;
+        html += `<tr>
+                    <td style="text-align:center">${pos}º</td>
+                    <td style="text-align:left">${escaparHtml(r.nome)}</td>`;
+        if (tipoRankingAtual !== "velocidade-turma" && tipoRankingAtual !== "precisao-turma") html += `<td style="text-align:center">${r.turma}</td>`;
+        if (tipoRankingAtual === "precisao-global" || tipoRankingAtual === "precisao-turma") {
+            html += `<td style="text-align:center">${r.acertos}/20</td>`;
+            html += `<td style="text-align:center">${r.pontos}</td>`;
+        } else if (tipoRankingAtual === "velocidade-global" || tipoRankingAtual === "velocidade-turma") {
+            html += `<td style="text-align:center">${r.pontos}</td>`;
+            html += `<td style="text-align:center">${r.acertos}/20</td>`;
+        } else {
+            html += `<td style="text-align:center">${r.pontos}</td>`;
+            html += `<td style="text-align:center">${r.acertos}/20</td>`;
+        }
+        html += `<td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
+                </tr>`;
+    }
+    if (html === "") html = `<tr><td colspan="6" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+    tabelaBody.innerHTML = html;
+}
 
-            let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
-            let turma = document.getElementById("filtro-turma")?.value || "901";
-            let ranking = [];
-            let titulo = "";
+function mudarTipoRanking(tipo) {
+    tipoRankingAtual = tipo;
+    const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
+    abas.forEach(abaId=>{ let el=document.getElementById(abaId); if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); });
+    const isGlobal = (tipo === "global" || tipo === "precisao-global" || tipo === "velocidade-global");
+    document.getElementById("filtro-modalidade").classList.toggle("hidden", false);
+    document.getElementById("filtro-turma").classList.toggle("hidden", isGlobal);
+    document.getElementById("observacao-velocidade").classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
+    renderizarRanking();
+}
 
-            if(tipoRankingAtual === "turma"){
-                const todasPartidas = await obterPartidas();
-                const mapaJogos = new Map();
-                todasPartidas.forEach(p => {
-                    if(p.modalidade === modalidade && p.turma === turma) {
-                        const chave = `${normalizarNome(p.nome)}|${p.turma}`;
-                        mapaJogos.set(chave, (mapaJogos.get(chave) || 0) + 1);
-                    }
-                });
-                
-                ranking = await obterRankingPorPontos(modalidade, turma);
-                titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-                tituloEl.innerText = titulo;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
-                
-                let html = "";
-                for (let i = 0; i < ranking.length; i++) {
-                    const r = ranking[i];
-                    const pos = i + 1;
-                    let statusClass = pos <= 4 ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
-                    let statusText = pos <= 4 ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
-                    const jogos = mapaJogos.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.turma}</td>
-                                <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                                <td style="text-align:center">${jogos}</td>
-                                <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                              </tr>`;
-                }
-                if (html === "") {
-                    html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
-                }
-                tabelaBody.innerHTML = html;
-                return;
-            } 
-            else if(tipoRankingAtual === "global"){
-                ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
-                titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-            } 
-            else if(tipoRankingAtual === "precisao-global"){
-                ranking = await obterRankingPorPrecisao(modalidade, null);
-                titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
-            } 
-            else if(tipoRankingAtual === "precisao-turma"){
-                ranking = await obterRankingPorPrecisao(modalidade, turma);
-                titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
-            } 
-            else if(tipoRankingAtual === "velocidade-global"){
-                ranking = await obterRankingPorVelocidade(modalidade, null);
-                titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-            } 
-            else if(tipoRankingAtual === "velocidade-turma"){
-                ranking = await obterRankingPorVelocidade(modalidade, turma);
-                titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-            }
-            else {
-                ranking = await obterRankingPorPontos(modalidade, turma);
-                titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`;
-                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
-            }
+// ==================== PERFIL ====================
+async function carregarPerfil() {
+    let nome = document.getElementById("perfil-nome").value.trim();
+    let turma = document.getElementById("perfil-turma").value;
+    if(!nome||!turma){ alert("Digite nome e turma"); return; }
+    let partidas = await obterHistoricoAluno(nome, turma);
+    if(partidas.length===0){ alert("Nenhuma partida"); return; }
+    let melhor = partidas.reduce((a,b)=>a.pontos>b.pontos?a:b);
+    let mediaAcertos = partidas.reduce((s,p)=>s+p.acertos,0)/partidas.length;
+    document.getElementById("perfil-melhor-pontos").innerHTML=`<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
+    document.getElementById("perfil-media-acertos").innerHTML=`<span class="estatistica-destaque">${mediaAcertos.toFixed(1)}</span> /20`;
+    document.getElementById("perfil-melhor-tempo").innerHTML=`<span class="estatistica-destaque">${melhor.tempoMedio.toFixed(2)}</span> s`;
+    document.getElementById("perfil-total-partidas").innerHTML=`<span class="estatistica-destaque">${partidas.length}</span>`;
+    document.getElementById("perfil-melhor-sequencia").innerHTML=`<span class="estatistica-destaque">${melhor.maiorSequencia}</span>`;
+    let rankingTurma = await obterRankingPorPontos(melhor.modalidade, turma);
+    let pos = rankingTurma.findIndex(r=>r.data===melhor.data)+1;
+    let status = pos<=4?"Classificado":(pos<=6?"Reserva":"Participante");
+    document.getElementById("perfil-melhor-status").innerHTML=`<span class="tag tag-${status==='Classificado'?'classificado':status==='Reserva'?'reserva':'participante'}">${status}</span>`;
+    let conquistas = calcularConquistas(melhor, partidas).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
+    document.getElementById("perfil-conquistas").innerHTML = conquistas || "Nenhuma conquista ainda";
+    if(melhor.desempenhoTabuadas){
+        desempenhoTabuadas = melhor.desempenhoTabuadas;
+        modalidadeAtual = melhor.modalidade;
+        document.getElementById("perfil-mapa").innerHTML = renderizarMapa();
+    }
+    document.getElementById("perfil-conteudo").classList.remove("hidden");
+}
 
-            tituloEl.innerText = titulo;
-
-            let html = "";
-            for (let i = 0; i < ranking.length; i++) {
-                const r = ranking[i];
-                const pos = i + 1;
-
-                if (tipoRankingAtual === "global" || tipoRankingAtual === "precisao-global" || tipoRankingAtual === "velocidade-global") {
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.turma}</td>
-                                <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
-                }
-                else if (tipoRankingAtual === "precisao-turma") {
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
-                }
-                else if (tipoRankingAtual === "velocidade-turma") {
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
-                }
-                else {
-                    html += `<tr>
-                                <td style="text-align:center">${pos}º</td>
-                                <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                                <td style="text-align:center">${r.turma}</td>
-                                <td style="text-align:center">${r.pontos}</td>
-                                <td style="text-align:center">${r.acertos}/20</td>
-                                <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                              </tr>`;
-                }
-            }
-
-            if (html === "") {
-                html = `<tr><td colspan="6" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
-            }
-            tabelaBody.innerHTML = html;
+// ==================== PAINEL DO PROFESSOR ====================
+async function autenticarProfessor(){
+    let inputSenha = document.getElementById("senha-professor");
+    let s = inputSenha.value;
+    try {
+        let hashSenha = await gerarHashSenha(s);
+        if(hashSenha !== SENHA_PROFESSOR_HASH && hashSenha !== SENHA_PROFESSOR_HASH_FALLBACK) {
+            alert("Senha incorreta");
+            return;
         }
-
-        function mudarTipoRanking(tipo) {
-            tipoRankingAtual = tipo;
-            const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
-            abas.forEach(abaId=>{ let el=document.getElementById(abaId); if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); });
-            const isGlobal = (tipo === "global" || tipo === "precisao-global" || tipo === "velocidade-global");
-            document.getElementById("filtro-modalidade").classList.toggle("hidden", false);
-            document.getElementById("filtro-turma").classList.toggle("hidden", isGlobal);
-            document.getElementById("observacao-velocidade").classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
-            renderizarRanking();
+        sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
+        inputSenha.value = "";
+        document.getElementById("painel-conteudo").classList.remove("hidden");
+        mostrarToast("🔓 Acesso concedido!");
+    } catch(e) {
+        alert("Não foi possível validar a senha neste navegador.");
+        console.warn(e);
+    }
+}
+function abrirResetTurma(){ if(!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
+async function confirmarReset(){
+    if(!exigirProfessorAutenticado()) return;
+    let turma = document.getElementById("reset-turma").value;
+    let modalidade = document.getElementById("reset-modalidade").value;
+    if(!confirm(`⚠️ Resetar ${turma==="todas"?"TODAS":turma} - ${modalidade==="todas"?"TODAS":MODALIDADES[modalidade]?.nome}?`)) return;
+    let rank = await obterRanking();
+    let novos = rank.filter(r=>!resultadoCombinaFiltro(r, turma, modalidade));
+    for(let item of rank){
+        if(!novos.includes(item)){
+            let chave = criarChaveResultado(item);
+            await database.ref(`${CAMINHO_RANKING}/${chave}`).remove();
         }
-
-        // ==================== PERFIL ====================
-        async function carregarPerfil() {
-            let nome = document.getElementById("perfil-nome").value.trim();
-            let turma = document.getElementById("perfil-turma").value;
-            if(!nome||!turma){ alert("Digite nome e turma"); return; }
-            let partidas = await obterHistoricoAluno(nome, turma);
-            if(partidas.length===0){ alert("Nenhuma partida"); return; }
-            let melhor = partidas.reduce((a,b)=>a.pontos>b.pontos?a:b);
-            let mediaAcertos = partidas.reduce((s,p)=>s+p.acertos,0)/partidas.length;
-            document.getElementById("perfil-melhor-pontos").innerHTML=`<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
-            document.getElementById("perfil-media-acertos").innerHTML=`<span class="estatistica-destaque">${mediaAcertos.toFixed(1)}</span> /20`;
-            document.getElementById("perfil-melhor-tempo").innerHTML=`<span class="estatistica-destaque">${melhor.tempoMedio.toFixed(2)}</span> s`;
-            document.getElementById("perfil-total-partidas").innerHTML=`<span class="estatistica-destaque">${partidas.length}</span>`;
-            document.getElementById("perfil-melhor-sequencia").innerHTML=`<span class="estatistica-destaque">${melhor.maiorSequencia}</span>`;
-            let rankingTurma = await obterRankingPorPontos(melhor.modalidade, turma);
-            let pos = rankingTurma.findIndex(r=>r.data===melhor.data)+1;
-            let status = pos<=4?"Classificado":(pos<=6?"Reserva":"Participante");
-            document.getElementById("perfil-melhor-status").innerHTML=`<span class="tag tag-${status==='Classificado'?'classificado':status==='Reserva'?'reserva':'participante'}">${status}</span>`;
-            let conquistas = calcularConquistas(melhor, partidas).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
-            document.getElementById("perfil-conquistas").innerHTML = conquistas || "Nenhuma conquista ainda";
-            if(melhor.desempenhoTabuadas){
-                desempenhoTabuadas = melhor.desempenhoTabuadas;
-                modalidadeAtual = melhor.modalidade;
-                document.getElementById("perfil-mapa").innerHTML = renderizarMapa();
-            }
-            document.getElementById("perfil-conteudo").classList.remove("hidden");
-        }
-
-        // ==================== PAINEL DO PROFESSOR ====================
-        async function autenticarProfessor(){
-            let inputSenha = document.getElementById("senha-professor");
-            let s = inputSenha.value;
-            try {
-                let hashSenha = await gerarHashSenha(s);
-                if(hashSenha !== SENHA_PROFESSOR_HASH && hashSenha !== SENHA_PROFESSOR_HASH_FALLBACK) {
-                    alert("Senha incorreta");
-                    return;
-                }
-                sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
-                inputSenha.value = "";
-                document.getElementById("painel-conteudo").classList.remove("hidden");
-                mostrarToast("🔓 Acesso concedido!");
-            } catch(e) {
-                alert("Não foi possível validar a senha neste navegador.");
-                console.warn(e);
-            }
-        }
-        function abrirResetTurma(){ if(!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
-        async function confirmarReset(){
-            if(!exigirProfessorAutenticado()) return;
-            let turma = document.getElementById("reset-turma").value;
-            let modalidade = document.getElementById("reset-modalidade").value;
-            if(!confirm(`⚠️ Resetar ${turma==="todas"?"TODAS":turma} - ${modalidade==="todas"?"TODAS":MODALIDADES[modalidade]?.nome}?`)) return;
-            let rank = await obterRanking();
-            let novos = rank.filter(r=>!resultadoCombinaFiltro(r, turma, modalidade));
-            for(let item of rank){
-                if(!novos.includes(item)){
-                    let chave = criarChaveResultado(item);
-                    await database.ref(`${CAMINHO_RANKING}/${chave}`).remove();
-                }
-            }
-            let partidas = await obterPartidas();
-            let partidasNovas = partidas.filter(p=>!resultadoCombinaFiltro(p, turma, modalidade));
-            for(let partida of partidas){
-                if(!partidasNovas.includes(partida) && partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).remove();
-            }
-            localStorage.setItem(STORAGE_RANKING,JSON.stringify(novos));
-            localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(partidasNovas));
-            mostrarToast("✅ Reset concluído!");
-            renderizarRanking();
-            document.getElementById("painel-reset").classList.add("hidden");
-        }
-        async function exportarCSV(){
-            if(!exigirProfessorAutenticado()) return;
-            let rank = await obterRanking();
-            let partidas = await obterPartidas();
-            let csv = "Tipo,Nome,Turma,Modalidade,Pontos,Acertos,Erros,Tempo,Sequencia,Data,IdPartida\n";
-            rank.forEach(r=>{ csv+=`"recorde","${r.nome}",${r.turma},"${MODALIDADES[r.modalidade]?.nome}",${r.pontos},${r.acertos},${r.erros||0},${r.tempoMedio.toFixed(2)},${r.maiorSequencia||0},"${r.data}","${r.idPartida||""}"\n`; });
-            partidas.forEach(r=>{ csv+=`"partida","${r.nome}",${r.turma},"${MODALIDADES[r.modalidade]?.nome}",${r.pontos},${r.acertos},${r.erros||0},${r.tempoMedio.toFixed(2)},${r.maiorSequencia||0},"${r.data}","${r.idPartida||""}"\n`; });
-            let blob = new Blob([csv],{type:"text/csv"});
-            let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="copa_tabuada.csv"; a.click();
-            mostrarToast("📎 Download iniciado");
-        }
-        async function mostrarEstatisticas(){
-            if(!exigirProfessorAutenticado()) return;
-            let rank = await obterRanking();
-            let partidas = await obterPartidas();
-            let base = partidas.length ? partidas : rank;
-            let totalAlunos = new Set(base.map(r=>`${normalizarNome(r.nome)}|${r.turma}`)).size;
-            let mediaPts = base.length ? base.reduce((s,r)=>s+r.pontos,0)/base.length : 0;
-            let mediaAcertos = base.length ? base.reduce((s,r)=>s+r.acertos,0)/base.length : 0;
-            document.getElementById("painel-estatisticas").innerHTML = `<p>Total alunos: ${totalAlunos}</p><p>Partidas registradas: ${base.length}</p><p>Recordes no ranking: ${rank.length}</p><p>Media pontos: ${Math.round(mediaPts)}</p><p>Media acertos: ${mediaAcertos.toFixed(1)}/20</p>`;
-            document.getElementById("painel-estatisticas").classList.remove("hidden");
-        }
-        async function abrirGerenciarAlunos(){
-            if(!exigirProfessorAutenticado()) return;
-            document.getElementById("painel-alunos").classList.remove("hidden");
-            await carregarListaAlunos();
-        }
-        function fecharGerenciarAlunos(){ document.getElementById("painel-alunos").classList.add("hidden"); }
-        async function carregarListaAlunos(){
-            let rank = await obterRanking();
-            alunosData = [...rank];
-            filtrarAlunos();
-        }
-        function filtrarAlunos(){
-            let filtroNome = document.getElementById("filtro-alunos").value.toLowerCase();
-            let filtroTurma = document.getElementById("filtro-turma-alunos").value;
-            alunosFiltrados = alunosData.filter(a=>{
-                let matchNome = !filtroNome || a.nome.toLowerCase().includes(filtroNome);
-                let matchTurma = !filtroTurma || a.turma === filtroTurma;
-                return matchNome && matchTurma;
-            });
-            alunosFiltrados.sort((a,b)=>a.turma.localeCompare(b.turma) || a.nome.localeCompare(b.nome));
-            renderizarListaAlunos();
-        }
-        function renderizarListaAlunos(){
-            let container = document.getElementById("lista-alunos-container");
-            if(!container) return;
-            if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
-            let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
-            alunosFiltrados.forEach(a=>{
-                html += `<tr>
-                            <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
-                            <td style="text-align:center">${a.turma}</td>
-                            <td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td>
-                            <td style="text-align:center">${a.pontos}</td>
-                            <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
-                            <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                           </tr>`;
-            });
-            html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
-            container.innerHTML = html;
-        }
-        async function excluirRegistro(chave){
-            if(!exigirProfessorAutenticado()) return;
-            if(!confirm("Excluir permanentemente?")) return;
-            let [modalidade, turma, nome] = chave.split("|");
-            let registro = alunosData.find(a=>a.modalidade===modalidade && a.turma===turma && normalizarNome(a.nome)===nome);
-            if(registro){
-                let firebaseChave = criarChaveResultado({modalidade,turma,nome});
+    }
+    let partidas = await obterPartidas();
+    let partidasNovas = partidas.filter(p=>!resultadoCombinaFiltro(p, turma, modalidade));
+    for(let partida of partidas){
+        if(!partidasNovas.includes(partida) && partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).remove();
+    }
+    localStorage.setItem(STORAGE_RANKING,JSON.stringify(novos));
+    localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(partidasNovas));
+    mostrarToast("✅ Reset concluído!");
+    renderizarRanking();
+    document.getElementById("painel-reset").classList.add("hidden");
+}
+async function exportarCSV(){
+    if(!exigirProfessorAutenticado()) return;
+    let rank = await obterRanking();
+    let partidas = await obterPartidas();
+    let csv = "Tipo,Nome,Turma,Modalidade,Pontos,Acertos,Erros,Tempo,Sequencia,Data,IdPartida\n";
+    rank.forEach(r=>{ csv+=`"recorde","${r.nome}",${r.turma},"${MODALIDADES[r.modalidade]?.nome}",${r.pontos},${r.acertos},${r.erros||0},${r.tempoMedio.toFixed(2)},${r.maiorSequencia||0},"${r.data}","${r.idPartida||""}"\n`; });
+    partidas.forEach(r=>{ csv+=`"partida","${r.nome}",${r.turma},"${MODALIDADES[r.modalidade]?.nome}",${r.pontos},${r.acertos},${r.erros||0},${r.tempoMedio.toFixed(2)},${r.maiorSequencia||0},"${r.data}","${r.idPartida||""}"\n`; });
+    let blob = new Blob([csv],{type:"text/csv"});
+    let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="copa_tabuada.csv"; a.click();
+    mostrarToast("📎 Download iniciado");
+}
+async function mostrarEstatisticas(){
+    if(!exigirProfessorAutenticado()) return;
+    let rank = await obterRanking();
+    let partidas = await obterPartidas();
+    let base = partidas.length ? partidas : rank;
+    let totalAlunos = new Set(base.map(r=>`${normalizarNome(r.nome)}|${r.turma}`)).size;
+    let mediaPts = base.length ? base.reduce((s,r)=>s+r.pontos,0)/base.length : 0;
+    let mediaAcertos = base.length ? base.reduce((s,r)=>s+r.acertos,0)/base.length : 0;
+    document.getElementById("painel-estatisticas").innerHTML = `<p>Total alunos: ${totalAlunos}</p><p>Partidas registradas: ${base.length}</p><p>Recordes no ranking: ${rank.length}</p><p>Media pontos: ${Math.round(mediaPts)}</p><p>Media acertos: ${mediaAcertos.toFixed(1)}/20</p>`;
+    document.getElementById("painel-estatisticas").classList.remove("hidden");
+}
+async function abrirGerenciarAlunos(){
+    if(!exigirProfessorAutenticado()) return;
+    document.getElementById("painel-alunos").classList.remove("hidden");
+    await carregarListaAlunos();
+}
+function fecharGerenciarAlunos(){ document.getElementById("painel-alunos").classList.add("hidden"); }
+async function carregarListaAlunos(){
+    let rank = await obterRanking();
+    alunosData = [...rank];
+    filtrarAlunos();
+}
+function filtrarAlunos(){
+    let filtroNome = document.getElementById("filtro-alunos").value.toLowerCase();
+    let filtroTurma = document.getElementById("filtro-turma-alunos").value;
+    alunosFiltrados = alunosData.filter(a=>{
+        let matchNome = !filtroNome || a.nome.toLowerCase().includes(filtroNome);
+        let matchTurma = !filtroTurma || a.turma === filtroTurma;
+        return matchNome && matchTurma;
+    });
+    alunosFiltrados.sort((a,b)=>a.turma.localeCompare(b.turma) || a.nome.localeCompare(b.nome));
+    renderizarListaAlunos();
+}
+function renderizarListaAlunos(){
+    let container = document.getElementById("lista-alunos-container");
+    if(!container) return;
+    if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
+    let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
+    alunosFiltrados.forEach(a=>{
+        html += `<tr>
+                    <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
+                    <td style="text-align:center">${a.turma}</td>
+                    <td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td>
+                    <td style="text-align:center">${a.pontos}</td>
+                    <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
+                    <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
+                </tr>`;
+    });
+    html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+    container.innerHTML = html;
+}
+async function excluirRegistro(chave){
+    if(!exigirProfessorAutenticado()) return;
+    if(!confirm("Excluir permanentemente?")) return;
+    let [modalidade, turma, nome] = chave.split("|");
+    let registro = alunosData.find(a=>a.modalidade===modalidade && a.turma===turma && normalizarNome(a.nome)===nome);
+    if(registro){
+        let firebaseChave = criarChaveResultado({modalidade,turma,nome});
+        await database.ref(`${CAMINHO_RANKING}/${firebaseChave}`).remove();
+        let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
+        localStorage.setItem(STORAGE_RANKING,JSON.stringify(local.filter(l=>!(l.modalidade===modalidade && l.turma===turma && normalizarNome(l.nome)===normalizarNome(nome)))));
+        let partidas = await obterPartidas();
+        let restantes = partidas.filter(p=>!(p.modalidade===modalidade && p.turma===turma && normalizarNome(p.nome)===normalizarNome(nome)));
+        for(let partida of partidas){ if(!restantes.includes(partida) && partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).remove(); }
+        localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(restantes));
+        await carregarListaAlunos();
+        renderizarRanking();
+        mostrarToast("✅ Registro excluído");
+    }
+}
+async function salvarEdicoesNomes(){
+    if(!exigirProfessorAutenticado()) return;
+    let inputs = document.querySelectorAll(".editar-nome");
+    for(let input of inputs){
+        let chaveAntiga = input.getAttribute("data-chave");
+        let [modalidade, turma, nomeAntigo] = chaveAntiga.split("|");
+        let nomeNovo = input.value.trim();
+        if(normalizarNome(nomeAntigo) !== normalizarNome(nomeNovo) && nomeNovo){
+            let registros = alunosData.filter(a=>a.modalidade===modalidade && a.turma===turma && normalizarNome(a.nome)===normalizarNome(nomeAntigo));
+            for(let reg of registros){
+                let firebaseChave = criarChaveResultado({modalidade,turma,nome:nomeAntigo});
                 await database.ref(`${CAMINHO_RANKING}/${firebaseChave}`).remove();
-                let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
-                localStorage.setItem(STORAGE_RANKING,JSON.stringify(local.filter(l=>!(l.modalidade===modalidade && l.turma===turma && normalizarNome(l.nome)===normalizarNome(nome)))));
-                let partidas = await obterPartidas();
-                let restantes = partidas.filter(p=>!(p.modalidade===modalidade && p.turma===turma && normalizarNome(p.nome)===normalizarNome(nome)));
-                for(let partida of partidas){ if(!restantes.includes(partida) && partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).remove(); }
-                localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(restantes));
-                await carregarListaAlunos();
-                renderizarRanking();
-                mostrarToast("✅ Registro excluído");
+                let novoReg = {...reg, nome: nomeNovo};
+                let novaChave = criarChaveResultado(novoReg);
+                await database.ref(`${CAMINHO_RANKING}/${novaChave}`).set(novoReg);
             }
-        }
-        async function salvarEdicoesNomes(){
-            if(!exigirProfessorAutenticado()) return;
-            let inputs = document.querySelectorAll(".editar-nome");
-            for(let input of inputs){
-                let chaveAntiga = input.getAttribute("data-chave");
-                let [modalidade, turma, nomeAntigo] = chaveAntiga.split("|");
-                let nomeNovo = input.value.trim();
-                if(normalizarNome(nomeAntigo) !== normalizarNome(nomeNovo) && nomeNovo){
-                    let registros = alunosData.filter(a=>a.modalidade===modalidade && a.turma===turma && normalizarNome(a.nome)===normalizarNome(nomeAntigo));
-                    for(let reg of registros){
-                        let firebaseChave = criarChaveResultado({modalidade,turma,nome:nomeAntigo});
-                        await database.ref(`${CAMINHO_RANKING}/${firebaseChave}`).remove();
-                        let novoReg = {...reg, nome: nomeNovo};
-                        let novaChave = criarChaveResultado(novoReg);
-                        await database.ref(`${CAMINHO_RANKING}/${novaChave}`).set(novoReg);
-                    }
-                    let localRanking = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]").map(r => (
-                        r.modalidade===modalidade && r.turma===turma && normalizarNome(r.nome)===normalizarNome(nomeAntigo)
-                            ? {...r, nome:nomeNovo}
-                            : r
-                    ));
-                    localStorage.setItem(STORAGE_RANKING, JSON.stringify(localRanking));
-                    let partidas = await obterPartidas();
-                    for(let partida of partidas.filter(p=>p.modalidade===modalidade && p.turma===turma && normalizarNome(p.nome)===normalizarNome(nomeAntigo))){
-                        partida.nome = nomeNovo;
-                        if(partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).set(partida);
-                    }
-                    localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidas));
-                }
+            let localRanking = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]").map(r => (
+                r.modalidade===modalidade && r.turma===turma && normalizarNome(r.nome)===normalizarNome(nomeAntigo)
+                    ? {...r, nome:nomeNovo}
+                    : r
+            ));
+            localStorage.setItem(STORAGE_RANKING, JSON.stringify(localRanking));
+            let partidas = await obterPartidas();
+            for(let partida of partidas.filter(p=>p.modalidade===modalidade && p.turma===turma && normalizarNome(p.nome)===normalizarNome(nomeAntigo))){
+                partida.nome = nomeNovo;
+                if(partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).set(partida);
             }
-            await carregarListaAlunos();
-            renderizarRanking();
-            mostrarToast("✅ Nomes atualizados");
+            localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidas));
         }
+    }
+    await carregarListaAlunos();
+    renderizarRanking();
+    mostrarToast("✅ Nomes atualizados");
+}
 
-        // Event listeners
-        document.getElementById("btn-som")?.addEventListener("click", toggleSom);
-        document.getElementById("btn-comecar-partida")?.addEventListener("click", () => {
-            if (window._pendingGame && !window._pendingGame.treino) iniciarPartidaClassificatoria();
-        });
-        window.addEventListener("DOMContentLoaded", () => {
-            mostrarTela("tela-inicial");
-            renderizarRanking();
-        });
-    </script>
+// ==================== EVENT LISTENERS ====================
+document.getElementById("btn-som")?.addEventListener("click", toggleSom);
+document.getElementById("btn-comecar-partida")?.addEventListener("click", () => {
+    if (window._pendingGame && !window._pendingGame.treino) iniciarPartidaClassificatoria();
+});
+window.addEventListener("DOMContentLoaded", () => {
+    mostrarTela("tela-inicial");
+    renderizarRanking();
+});
+</script>
 </body>
 </html>
