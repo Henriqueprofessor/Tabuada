@@ -679,14 +679,15 @@
         }
         function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-        // ==================== RANKING (substituição, sem merge) ====================
+        // ==================== RANKING (substituição total, sem merge) ====================
         async function obterRanking() {
             try {
                 let snap = await database.ref(CAMINHO_RANKING).once("value");
                 let dados = snap.val() || {};
                 let online = Object.values(dados);
+                // Substitui completamente o localStorage pelos dados do Firebase
                 localStorage.setItem(STORAGE_RANKING, JSON.stringify(online));
-                // Registra timestamp da última atualização bem-sucedida
+                // Atualiza timestamp da última sincronização
                 localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
                 atualizarDisplayUltimaSincronizacao();
                 return online;
@@ -1275,10 +1276,10 @@
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
                                 <td style="text-align:center">${jogos}</td>
                                 <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                              `;
+                              </tr>`;
                 }
                 if (html === "") {
-                    html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
+                    html = `<td><td colspan="8" class="sem-registros">Nenhum resultado registrado.<td></table>`;
                 }
                 tabelaBody.innerHTML = html;
                 return;
@@ -1350,7 +1351,6 @@
                               </tr>`;
                 }
                 else {
-                    // fallback
                     html += `<tr>
                                 <td style="text-align:center">${pos}º</td>
                                 <td style="text-align:left">${escaparHtml(r.nome)}</td>
@@ -1508,7 +1508,7 @@
                             <td style="text-align:center">${a.pontos}</td>
                             <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
                             <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                          </tr>`;
+                           </tr>`;
             });
             html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
