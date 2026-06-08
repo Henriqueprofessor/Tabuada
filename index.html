@@ -189,6 +189,13 @@
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
         .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
+        .info-sincronizacao {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
         @media (max-width: 700px) {
             .status-jogo { grid-template-columns: repeat(2, 1fr); }
             .comparacao { flex-direction: column; }
@@ -313,6 +320,7 @@
         <select id="filtro-modalidade" onchange="renderizarRanking()"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option></select>
         <select id="filtro-turma" onchange="renderizarRanking()"><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select>
         <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
+        <div id="ultima-sincronizacao" class="info-sincronizacao">Última atualização: --</div>
         <h3 id="titulo-ranking">Ranking</h3>
         <div class="tabela-container"><table style="width:100%"><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -373,6 +381,7 @@
         const PROFESSOR_SESSION_MS = 30 * 60 * 1000;
         const STORAGE_RANKING = "rankingCEIB";
         const STORAGE_PARTIDAS = "partidasCEIB";
+        const STORAGE_LAST_SYNC = "lastSyncTime";
         const TOTAL_PERGUNTAS = 20;
         const MODALIDADES = {
             "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
@@ -415,6 +424,16 @@
             if(turma !== "todas" && r.turma !== turma) return false;
             if(modalidade !== "todas" && r.modalidade !== modalidade) return false;
             return true;
+        }
+        function formatarDataHora(timestamp) {
+            if (!timestamp) return "--";
+            const d = new Date(timestamp);
+            return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        }
+        function atualizarDisplayUltimaSincronizacao() {
+            const lastSync = localStorage.getItem(STORAGE_LAST_SYNC);
+            const el = document.getElementById("ultima-sincronizacao");
+            if (el) el.innerText = lastSync ? `Última atualização: ${formatarDataHora(parseInt(lastSync))}` : "Última atualização: --";
         }
         async function gerarHashSenha(valor) {
             if (!window.crypto?.subtle) return gerarHashSenhaFallback(valor);
@@ -641,6 +660,7 @@
             telas.forEach(t=>{ let el=document.getElementById(t); if(el) el.classList.add("hidden"); });
             let alvo = document.getElementById(id);
             if(alvo) alvo.classList.remove("hidden");
+            if (id === "tela-ranking") atualizarDisplayUltimaSincronizacao();
         }
         function tocarBeep() {
             if (!somAtivo) return;
@@ -666,6 +686,9 @@
                 let dados = snap.val() || {};
                 let online = Object.values(dados);
                 localStorage.setItem(STORAGE_RANKING, JSON.stringify(online));
+                // Registra timestamp da última atualização bem-sucedida
+                localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
+                atualizarDisplayUltimaSincronizacao();
                 return online;
             } catch (e) {
                 console.warn("Falha ao acessar Firebase (ranking), usando dados locais:", e);
@@ -703,6 +726,10 @@
                 let partidasOnline = Object.values(snapPartidas.val() || {});
                 partidasOnline.sort(ordenarPorDataDesc);
                 localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasOnline));
+                
+                // Atualiza timestamp da última sincronização manual
+                localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
+                atualizarDisplayUltimaSincronizacao();
                 
                 mostrarToast("✅ Dados sincronizados com sucesso!");
                 await renderizarRanking();
@@ -1229,9 +1256,8 @@
                 
                 ranking = await obterRankingPorPontos(modalidade, turma);
                 titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-                // CORREÇÃO: atualiza o título ANTES de retornar
                 tituloEl.innerText = titulo;
-                tabelaHead.innerHTML = `<table><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
+                tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
                 
                 let html = "";
                 for (let i = 0; i < ranking.length; i++) {
@@ -1249,7 +1275,7 @@
                                 <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
                                 <td style="text-align:center">${jogos}</td>
                                 <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                              </tr>`;
+                              `;
                 }
                 if (html === "") {
                     html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
@@ -1482,7 +1508,7 @@
                             <td style="text-align:center">${a.pontos}</td>
                             <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
                             <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                           </tr>`;
+                          </tr>`;
             });
             html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
             container.innerHTML = html;
