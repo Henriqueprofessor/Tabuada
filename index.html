@@ -330,12 +330,10 @@
         <div class="painel-botoes">
             <button onclick="exportarCSV()">📎 Exportar CSV</button>
             <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
-            <button onclick="mostrarEstatisticas()">📈 Estatísticas</button>
             <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
         </div>
         <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option><option value="todas">📚 TODAS</option></select><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
         <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
-        <div id="painel-estatisticas" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"></div>
     </div>
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
 </div>
@@ -1175,7 +1173,7 @@ async function renderizarRanking() {
         ranking = await obterRankingPorPontos(modalidade, turma);
         titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
         tituloEl.innerText = titulo;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th></tr>`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
         let html = "";
         for (let i = 0; i < ranking.length; i++) {
             const r = ranking[i];
@@ -1201,31 +1199,31 @@ async function renderizarRanking() {
     else if(tipoRankingAtual === "global"){
         ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
         titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
     } 
     else if(tipoRankingAtual === "precisao-global"){
         ranking = await obterRankingPorPrecisao(modalidade, null);
         titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
     } 
     else if(tipoRankingAtual === "precisao-turma"){
         ranking = await obterRankingPorPrecisao(modalidade, turma);
         titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th></tr>`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
     } 
     else if(tipoRankingAtual === "velocidade-global"){
         ranking = await obterRankingPorVelocidade(modalidade, null);
         titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
     } 
     else if(tipoRankingAtual === "velocidade-turma"){
         ranking = await obterRankingPorVelocidade(modalidade, turma);
         titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
     } else {
         ranking = await obterRankingPorPontos(modalidade, turma);
         titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th></tr>`;
+        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
     }
 
     tituloEl.innerText = titulo;
@@ -1248,7 +1246,7 @@ async function renderizarRanking() {
             html += `<td style="text-align:center">${r.acertos}/20</td>`;
         }
         html += `<td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                </tr>`;
+                 </tr>`;
     }
     if (html === "") html = `<tr><td colspan="6" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
     tabelaBody.innerHTML = html;
@@ -1348,17 +1346,6 @@ async function exportarCSV(){
     let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="copa_tabuada.csv"; a.click();
     mostrarToast("📎 Download iniciado");
 }
-async function mostrarEstatisticas(){
-    if(!exigirProfessorAutenticado()) return;
-    let rank = await obterRanking();
-    let partidas = await obterPartidas();
-    let base = partidas.length ? partidas : rank;
-    let totalAlunos = new Set(base.map(r=>`${normalizarNome(r.nome)}|${r.turma}`)).size;
-    let mediaPts = base.length ? base.reduce((s,r)=>s+r.pontos,0)/base.length : 0;
-    let mediaAcertos = base.length ? base.reduce((s,r)=>s+r.acertos,0)/base.length : 0;
-    document.getElementById("painel-estatisticas").innerHTML = `<p>Total alunos: ${totalAlunos}</p><p>Partidas registradas: ${base.length}</p><p>Recordes no ranking: ${rank.length}</p><p>Media pontos: ${Math.round(mediaPts)}</p><p>Media acertos: ${mediaAcertos.toFixed(1)}/20</p>`;
-    document.getElementById("painel-estatisticas").classList.remove("hidden");
-}
 async function abrirGerenciarAlunos(){
     if(!exigirProfessorAutenticado()) return;
     document.getElementById("painel-alunos").classList.remove("hidden");
@@ -1394,7 +1381,7 @@ function renderizarListaAlunos(){
                     <td style="text-align:center">${a.pontos}</td>
                     <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
                     <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
-                </tr>`;
+                 </tr>`;
     });
     html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
     container.innerHTML = html;
