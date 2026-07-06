@@ -6,7 +6,6 @@
     <title>Copa Tabuada CEIB 2026 - Sistema Completo</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎮%3C/text%3E%3C/svg%3E">
     <style>
-        /* (mantido o mesmo CSS do original) */
         * { box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
@@ -343,6 +342,23 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
+// ===== VERSIONAMENTO =====
+const APP_VERSION = "2.0"; // Altere este número a cada nova versão
+
+function verificarVersao() {
+    const versaoLocal = localStorage.getItem('appVersao');
+    if (versaoLocal !== APP_VERSION) {
+        localStorage.setItem('appVersao', APP_VERSION);
+        if (window.location.search.includes('v=')) {
+            location.reload(true);
+        } else {
+            const separador = window.location.search ? '&' : '?';
+            window.location.href = window.location.href + separador + 'v=' + APP_VERSION;
+        }
+    }
+}
+verificarVersao();
+
 // ==================== FIREBASE CONFIG ====================
 const firebaseConfig = {
     apiKey: "AIzaSyCSs7aCPTYSebSG6UHSSCMA76p-ZGit9Xc",
@@ -661,11 +677,10 @@ function tocarBeep() {
 }
 function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-// ==================== VÍNCULO PERMANENTE POR DISPOSITIVO (NOVO) ====================
+// ==================== VÍNCULO PERMANENTE POR DISPOSITIVO ====================
 function obterIdDispositivo() {
     let id = localStorage.getItem('dispositivoId');
     if (!id) {
-        // Gera um UUID v4 simplificado (fallback para navegadores sem crypto.randomUUID)
         id = crypto.randomUUID ? crypto.randomUUID() : 
              'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0;
@@ -677,7 +692,6 @@ function obterIdDispositivo() {
     return id;
 }
 
-// Chave de vínculo usa apenas NOME + TURMA (sem modalidade)
 function chaveVinculo(nome, turma) {
     return `${normalizarNome(nome)}|${turma}`.replace(/[.#$\/\[\]]/g, '_');
 }
@@ -696,7 +710,6 @@ async function criarVinculo(nome, turma, dispositivoId) {
     });
 }
 
-// Retorna { permitido: boolean, mensagem?: string, primeiroUso?: boolean }
 async function verificarVinculo(nome, turma) {
     const dispositivoId = obterIdDispositivo();
     const vinculo = await obterVinculo(nome, turma);
@@ -852,7 +865,6 @@ async function registrarAluno(treino) {
             alert(resultado.mensagem);
             return;
         }
-        // Se for primeiro uso, exibe uma mensagem amigável (opcional)
         if (resultado.primeiroUso) {
             alert(`✅ Dispositivo vinculado com sucesso ao nome "${nome}" (Turma ${turma})! A partir de agora, este nome só poderá ser usado neste dispositivo.`);
         }
@@ -1440,9 +1452,6 @@ function renderizarListaAlunos(){
     let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Vínculo</th><th>Ações</th></tr></thead><tbody>';
     for(let a of alunosFiltrados){
         const chaveVinculoStr = chaveVinculo(a.nome, a.turma);
-        // Verifica se existe vínculo (assíncrono, mas faremos uma chamada rápida)
-        // Para simplificar, vamos exibir um ícone que indica se há vínculo, mas precisaremos buscar no Firebase.
-        // Como é assíncrono, faremos uma função separada para atualizar.
         html += `<tr id="row-${chaveVinculoStr}">
                     <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
                     <td style="text-align:center">${a.turma}</td>
@@ -1459,20 +1468,22 @@ function renderizarListaAlunos(){
     html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
     container.innerHTML = html;
 
-    // Agora, atualiza os ícones de vínculo assincronamente
-    for(let a of alunosFiltrados){
-        const chave = chaveVinculo(a.nome, a.turma);
-        const cell = document.getElementById(`vinculo-${chave}`);
-        if(cell){
-            const vinculo = await obterVinculo(a.nome, a.turma);
-            if(vinculo){
-                cell.innerHTML = `🔒 ${vinculo.dispositivoId.slice(0,8)}...`;
-                cell.title = `Vinculado ao dispositivo: ${vinculo.dispositivoId}`;
-            } else {
-                cell.innerHTML = `🔓 Não vinculado`;
+    // Atualiza os ícones de vínculo
+    setTimeout(async () => {
+        for(let a of alunosFiltrados){
+            const chave = chaveVinculo(a.nome, a.turma);
+            const cell = document.getElementById(`vinculo-${chave}`);
+            if(cell){
+                const vinculo = await obterVinculo(a.nome, a.turma);
+                if(vinculo){
+                    cell.innerHTML = `🔒 ${vinculo.dispositivoId.slice(0,8)}...`;
+                    cell.title = `Vinculado ao dispositivo: ${vinculo.dispositivoId}`;
+                } else {
+                    cell.innerHTML = `🔓 Não vinculado`;
+                }
             }
         }
-    }
+    }, 100);
 }
 async function excluirRegistro(chave){
     if(!exigirProfessorAutenticado()) return;
@@ -1528,14 +1539,13 @@ async function salvarEdicoesNomes(){
     mostrarToast("✅ Nomes atualizados");
 }
 
-// ==================== FUNÇÃO DESVINCULAR (NOVO) ====================
+// ==================== FUNÇÃO DESVINCULAR ====================
 async function desvincularAluno(nome, turma) {
     if (!exigirProfessorAutenticado()) return;
     if (!confirm(`Tem certeza que deseja desvincular ${nome} (Turma ${turma})? O aluno poderá jogar em qualquer dispositivo a partir de agora.`)) return;
     const chave = chaveVinculo(nome, turma);
     await database.ref(`vinculos/${chave}`).remove();
     mostrarToast(`✅ Vínculo de ${nome} removido com sucesso.`);
-    // Atualiza a lista de alunos se estiver visível
     await carregarListaAlunos();
 }
 
