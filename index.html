@@ -6,6 +6,7 @@
     <title>Copa Tabuada CEIB 2026 - Sistema Completo</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎮%3C/text%3E%3C/svg%3E">
     <style>
+        /* (mantido o mesmo CSS do original) */
         * { box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
@@ -171,6 +172,7 @@
         .alunos-table th, .alunos-table td { padding: 8px; border-bottom: 1px solid #dee2e6; text-align: left; }
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
         .btn-excluir { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
+        .btn-desvincular { background: #6f42c1; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         .info-sincronizacao { font-size: 12px; color: #6c757d; margin-top: 5px; margin-bottom: 10px; text-align: center; }
         @media (max-width: 700px) {
@@ -659,7 +661,61 @@ function tocarBeep() {
 }
 function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-// ==================== RANKING E PARTIDAS (SUBSTITUIÇÃO TOTAL QUANDO ONLINE) ====================
+// ==================== VÍNCULO PERMANENTE POR DISPOSITIVO (NOVO) ====================
+function obterIdDispositivo() {
+    let id = localStorage.getItem('dispositivoId');
+    if (!id) {
+        // Gera um UUID v4 simplificado (fallback para navegadores sem crypto.randomUUID)
+        id = crypto.randomUUID ? crypto.randomUUID() : 
+             'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+             });
+        localStorage.setItem('dispositivoId', id);
+    }
+    return id;
+}
+
+// Chave de vínculo usa apenas NOME + TURMA (sem modalidade)
+function chaveVinculo(nome, turma) {
+    return `${normalizarNome(nome)}|${turma}`.replace(/[.#$\/\[\]]/g, '_');
+}
+
+async function obterVinculo(nome, turma) {
+    const chave = chaveVinculo(nome, turma);
+    const snap = await database.ref(`vinculos/${chave}`).once('value');
+    return snap.val();
+}
+
+async function criarVinculo(nome, turma, dispositivoId) {
+    const chave = chaveVinculo(nome, turma);
+    await database.ref(`vinculos/${chave}`).set({
+        dispositivoId: dispositivoId,
+        criadoEm: Date.now()
+    });
+}
+
+// Retorna { permitido: boolean, mensagem?: string, primeiroUso?: boolean }
+async function verificarVinculo(nome, turma) {
+    const dispositivoId = obterIdDispositivo();
+    const vinculo = await obterVinculo(nome, turma);
+    if (!vinculo) {
+        await criarVinculo(nome, turma, dispositivoId);
+        return { permitido: true, primeiroUso: true };
+    } else {
+        if (vinculo.dispositivoId === dispositivoId) {
+            return { permitido: true, primeiroUso: false };
+        } else {
+            return { 
+                permitido: false, 
+                mensagem: `⚠️ O nome "${nome}" já está vinculado a outro dispositivo. Para usar neste dispositivo, peça ao professor para desvincular.`
+            };
+        }
+    }
+}
+
+// ==================== RANKING E PARTIDAS ====================
 async function obterRanking() {
     try {
         let snap = await database.ref(CAMINHO_RANKING).once("value");
@@ -788,6 +844,20 @@ async function registrarAluno(treino) {
     let turma = document.getElementById("turma-aluno").value;
     if(!nome||!turma){ alert("Preencha nome e turma"); return; }
     alunoAtual=nome; turmaAtual=turma; modalidadeAtual=document.getElementById("modalidade-tabuada").value; modoTreino=treino;
+
+    // --- VERIFICAÇÃO DE VÍNCULO PERMANENTE (somente se NÃO for treino) ---
+    if (!modoTreino) {
+        const resultado = await verificarVinculo(nome, turma);
+        if (!resultado.permitido) {
+            alert(resultado.mensagem);
+            return;
+        }
+        // Se for primeiro uso, exibe uma mensagem amigável (opcional)
+        if (resultado.primeiroUso) {
+            alert(`✅ Dispositivo vinculado com sucesso ao nome "${nome}" (Turma ${turma})! A partir de agora, este nome só poderá ser usado neste dispositivo.`);
+        }
+    }
+
     if (!modoTreino) {
         const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
         await carregarFocoTreino(nome, turma, modalidadeAtual);
@@ -942,11 +1012,7 @@ function iniciarCronometro() {
         let pct = Math.max(tempoRest / 10000 * 100, 0);
         if (progresso) progresso.style.width = pct + "%";
         if (pct < 40 && progresso) progresso.style.background = "#dc3545";
-        else if (progresso && tempoRest > 2000 && !modoTreino && melhorMediaAluno) {
-            // opcional
-        } else if (progresso && tempoRest > 2000) {
-            progresso.style.background = "#198754";
-        }
+        else if (progresso && tempoRest > 2000) progresso.style.background = "#198754";
     }, 100);
     timerTimeout = setTimeout(() => { if (perguntaAberta) processarResposta(0, false); }, 10000);
 }
@@ -967,7 +1033,6 @@ function exibirComboVisual(sequencia) {
     }, 500);
     mostrarToast(mensagem);
 }
-function tocarSomCombo(tipo) { /* opcional */ }
 function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
 function verificarResposta(btn) {
     if(!perguntaAberta||finalizando) return;
@@ -1372,19 +1437,42 @@ function renderizarListaAlunos(){
     let container = document.getElementById("lista-alunos-container");
     if(!container) return;
     if(alunosFiltrados.length===0){ container.innerHTML="<div style='padding:20px'>Nenhum aluno</div>"; return; }
-    let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Ações</th></tr></thead><tbody>';
-    alunosFiltrados.forEach(a=>{
-        html += `<tr>
+    let html = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Vínculo</th><th>Ações</th></tr></thead><tbody>';
+    for(let a of alunosFiltrados){
+        const chaveVinculoStr = chaveVinculo(a.nome, a.turma);
+        // Verifica se existe vínculo (assíncrono, mas faremos uma chamada rápida)
+        // Para simplificar, vamos exibir um ícone que indica se há vínculo, mas precisaremos buscar no Firebase.
+        // Como é assíncrono, faremos uma função separada para atualizar.
+        html += `<tr id="row-${chaveVinculoStr}">
                     <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
                     <td style="text-align:center">${a.turma}</td>
                     <td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td>
                     <td style="text-align:center">${a.pontos}</td>
                     <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
-                    <td style="text-align:center"><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td>
+                    <td style="text-align:center" id="vinculo-${chaveVinculoStr}">🔍</td>
+                    <td style="text-align:center">
+                        <button onclick="desvincularAluno('${escaparHtml(a.nome)}','${a.turma}')" class="btn-desvincular" title="Desvincular dispositivo">🔓</button>
+                        <button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button>
+                    </td>
                  </tr>`;
-    });
+    }
     html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
     container.innerHTML = html;
+
+    // Agora, atualiza os ícones de vínculo assincronamente
+    for(let a of alunosFiltrados){
+        const chave = chaveVinculo(a.nome, a.turma);
+        const cell = document.getElementById(`vinculo-${chave}`);
+        if(cell){
+            const vinculo = await obterVinculo(a.nome, a.turma);
+            if(vinculo){
+                cell.innerHTML = `🔒 ${vinculo.dispositivoId.slice(0,8)}...`;
+                cell.title = `Vinculado ao dispositivo: ${vinculo.dispositivoId}`;
+            } else {
+                cell.innerHTML = `🔓 Não vinculado`;
+            }
+        }
+    }
 }
 async function excluirRegistro(chave){
     if(!exigirProfessorAutenticado()) return;
@@ -1438,6 +1526,17 @@ async function salvarEdicoesNomes(){
     await carregarListaAlunos();
     renderizarRanking();
     mostrarToast("✅ Nomes atualizados");
+}
+
+// ==================== FUNÇÃO DESVINCULAR (NOVO) ====================
+async function desvincularAluno(nome, turma) {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm(`Tem certeza que deseja desvincular ${nome} (Turma ${turma})? O aluno poderá jogar em qualquer dispositivo a partir de agora.`)) return;
+    const chave = chaveVinculo(nome, turma);
+    await database.ref(`vinculos/${chave}`).remove();
+    mostrarToast(`✅ Vínculo de ${nome} removido com sucesso.`);
+    // Atualiza a lista de alunos se estiver visível
+    await carregarListaAlunos();
 }
 
 // ==================== EVENT LISTENERS ====================
