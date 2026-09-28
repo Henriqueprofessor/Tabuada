@@ -185,7 +185,7 @@
 <button id="btn-som" class="botao-som">🔊 SOM LIGADO</button>
 
 <div id="tela-inicial" class="card">
-    <h1>Copa Tabuada CEIB 2026</h1>
+    <h1 id="titulo-secreto" style="cursor: default; user-select: none; -webkit-user-select: none;">Copa Tabuada CEIB 2026</h1>
     <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button onclick="mostrarTela('tela-single')" class="botao-verde">🎮 Single Player</button>
@@ -194,7 +194,6 @@
     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
         <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
         <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
-        <button onclick="mostrarTela('tela-painel')" class="botao-painel">🔧 Painel do Professor</button>
     </div>
 </div>
 
@@ -1554,9 +1553,40 @@ document.getElementById("btn-som")?.addEventListener("click", toggleSom);
 document.getElementById("btn-comecar-partida")?.addEventListener("click", () => {
     if (window._pendingGame && !window._pendingGame.treino) iniciarPartidaClassificatoria();
 });
+
+// ==================== TOQUE SECRETO DO PROFESSOR ====================
+let cliquesTitulo = 0;
+let tempoResetClique = null;
+
+function configurarToqueSecreto() {
+    const titulo = document.getElementById("titulo-secreto");
+    if (!titulo) return;
+
+    titulo.addEventListener("click", () => {
+        cliquesTitulo++;
+        
+        // Limpa o timer anterior para evitar reset prematuro
+        if (tempoResetClique) clearTimeout(tempoResetClique);
+        
+        // Se atingiu 5 cliques, abre o painel
+        if (cliquesTitulo >= 5) {
+            cliquesTitulo = 0; // Reseta o contador
+            mostrarTela('tela-painel'); // Abre o painel do professor
+            mostrarToast("🔓 Acesso administrativo liberado!");
+        } else {
+            // Se não atingiu 5, agenda o reset do contador para 1.5 segundos depois
+            tempoResetClique = setTimeout(() => {
+                cliquesTitulo = 0;
+            }, 1500);
+        }
+    });
+}
+
+// ==================== INICIALIZAÇÃO ====================
 window.addEventListener("DOMContentLoaded", () => {
     mostrarTela("tela-inicial");
     renderizarRanking();
+    configurarToqueSecreto(); // Ativa o toque secreto no título
 });
 </script>
 </body>
