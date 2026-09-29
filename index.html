@@ -180,7 +180,6 @@
         .card-classificacao .contexto-modalidade { font-size: 14px; color: inherit; opacity: 0.78; margin: 4px 0; }
         .card-classificacao .pontuacao-destaque { font-size: 22px; font-weight: bold; margin: 8px 0; color: inherit; }
 
-        /* ===== MENSAGEM DE CORTE (NOVA) ===== */
         .mensagem-corte {
             font-size: 14px;
             line-height: 1.55;
@@ -463,7 +462,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "5.6";
+const APP_VERSION = "5.7";
 function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
@@ -599,7 +598,6 @@ function compararParaOrdenacao(a, b) {
         || new Date(a.data || 0) - new Date(b.data || 0);
 }
 
-// ==================== EXPLICAR DESEMPATE (VERSÃO 5.6) ====================
 function explicarDesempate(aluno, quartoLugar) {
     if (!quartoLugar) {
         return {
@@ -1445,20 +1443,65 @@ async function iniciarTreinoDaTelaResultado() {
     iniciarPartidaTreino();
 }
 
+// ==================== COMPARTILHAR RESULTADO (v5.7) ====================
 async function compartilharResultado() {
     if (!ultimoMelhorOficial) {
         notificar("Nenhum resultado para compartilhar.", "aviso");
         return;
     }
-    const texto = `🏆 Copa da Tabuada CEIB 2026\n👤 ${alunoAtual} · Turma ${turmaAtual}\n📊 ${ultimoMelhorOficial.pontos.toLocaleString('pt-BR')} pontos\n✅ ${ultimoMelhorOficial.acertos}/20 acertos\n⏱️ Tempo médio: ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n🎯 Modalidade: ${MODALIDADES[ultimoMelhorOficial.modalidade]?.nome || ultimoMelhorOficial.modalidade}`;
+
+    // Calcular posição atual e total de participantes no ranking
+    let posicao = null;
+    let totalParticipantes = 0;
+    let badge = "";
+
+    try {
+        const rankingTurma = await obterRankingPorPontos(ultimoMelhorOficial.modalidade, ultimoMelhorOficial.turma);
+        totalParticipantes = rankingTurma.length;
+        const idx = rankingTurma.findIndex(r =>
+            normalizarNome(r.nome) === normalizarNome(ultimoMelhorOficial.nome) &&
+            r.turma === ultimoMelhorOficial.turma
+        );
+        if (idx !== -1) {
+            posicao = idx + 1;
+            if (posicao <= VAGAS_CLASSIFICACAO) badge = "🎟️ Zona de classificação";
+            else if (posicao <= 6) badge = "🔄 Zona de reserva";
+        }
+    } catch(e) {
+        console.warn("Não foi possível calcular posição para compartilhamento", e);
+    }
+
+    // Montar texto
+    let texto = `🏆 Copa da Tabuada CEIB 2026\n`;
+    texto += `👤 ${alunoAtual} · Turma ${turmaAtual}\n`;
+
+    if (posicao !== null && totalParticipantes > 0) {
+        const plural = totalParticipantes > 1 ? "alunos" : "aluno";
+        texto += `\n🏅 ${posicao}º lugar entre ${totalParticipantes} ${plural}\n`;
+        if (badge) texto += `${badge}\n`;
+    }
+
+    texto += `\n📊 ${ultimoMelhorOficial.pontos.toLocaleString('pt-BR')} pontos\n`;
+    texto += `✅ ${ultimoMelhorOficial.acertos}/20 acertos\n`;
+    texto += `⏱️ Tempo médio: ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n`;
+    texto += `🎯 ${MODALIDADES[ultimoMelhorOficial.modalidade]?.nome || ultimoMelhorOficial.modalidade}\n`;
+    texto += `\n⚠️ Classificação provisória até o encerramento da etapa`;
+
     if (navigator.share) {
-        try { await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: texto, url: window.location.href }); }
-        catch(e) { /* usuário cancelou */ }
+        try {
+            await navigator.share({
+                title: 'Copa da Tabuada CEIB 2026',
+                text: texto,
+                url: window.location.href
+            });
+        } catch(e) { /* usuário cancelou */ }
     } else {
         try {
             await navigator.clipboard.writeText(texto + '\n' + window.location.href);
             notificar("Resultado copiado para a área de transferência!", "sucesso");
-        } catch(e) { notificar("Não foi possível compartilhar. Copie manualmente.", "aviso"); }
+        } catch(e) {
+            notificar("Não foi possível compartilhar. Copie manualmente.", "aviso");
+        }
     }
 }
 
