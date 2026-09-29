@@ -3,45 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Copa Tabuada CEIB 2026 - Sistema Completo</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎮%3C/text%3E%3C/svg%3E">
+    <title>Copa da Tabuada CEIB 2026 · Etapa Classificatória</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏆%3C/text%3E%3C/svg%3E">
     <style>
         * { box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            background: #f0f2f5;
-            color: #222;
-            margin: 0;
-            padding: 16px;
-            text-align: center;
-        }
-        .card {
-            background: #fff;
-            max-width: 1000px;
-            margin: 16px auto;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; color: #222; margin: 0; padding: 16px; text-align: center; }
+        .card { background: #fff; max-width: 1000px; margin: 16px auto; padding: 24px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         h1, h2, h3, p { margin-top: 0; }
         .subtitulo { color: #555; line-height: 1.4; }
         label { display: block; text-align: left; font-weight: bold; margin-top: 12px; }
-        input, button, select {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        button {
-            background: #0066cc;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+        button { background: #0066cc; color: #fff; border: none; cursor: pointer; font-weight: bold; }
         button:hover:not(:disabled) { background: #004f9f; }
         button:disabled { cursor: not-allowed; opacity: 0.65; }
         .botao-verde { background: #198754; }
@@ -49,88 +22,16 @@
         .botao-secundario { background: #495057; }
         .botao-treino { background: #fd7e14; }
         .botao-perfil { background: #6f42c1; }
-        .botao-painel { background: #dc3545; }
         .botao-forcar { background: #dc3545; }
-        .botao-som {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: auto;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50px;
-            padding: 8px 16px;
-            z-index: 1000;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .status-jogo {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 8px;
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 12px;
-            text-align: left;
-        }
-        .status-jogo span { background: #f8f9fa; border-radius: 6px; padding: 8px; }
-        .comparacao {
-            background: #e9ecef;
-            border-radius: 10px;
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            font-size: 13px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 8px;
-        }
-        .comparacao-item {
-            background: white;
-            border-radius: 8px;
-            padding: 6px 12px;
-            flex: 1;
-            text-align: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .comparacao-valor { font-size: 18px; font-weight: bold; margin: 4px 0; }
-        .comparacao-rotulo { font-size: 11px; color: #6c757d; }
-        .feedback-comparacao {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 8px;
-            text-align: center;
-            font-size: 13px;
-            margin-top: 8px;
-        }
-        .positivo { color: #198754; }
-        .negativo { color: #dc3545; }
-        .neutro { color: #ffc107; }
+        .botao-som { position: fixed; top: 20px; right: 20px; width: auto; background: rgba(0,0,0,0.6); border-radius: 50px; padding: 8px 16px; z-index: 1000; font-size: 20px; cursor: pointer; }
         #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
         #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; }
         .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .btn-opcao { background: #6c757d; padding: 14px; font-size: 20px; border-radius: 8px; }
-        .resumo-resultado {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 8px;
-            margin: 16px 0;
-            text-align: left;
-        }
-        .resumo-resultado div {
-            background: #f8f9fa;
-            border-radius: 6px;
-            padding: 10px;
-            word-break: break-word;
-        }
-        .feedback-ranking {
-            background: #e7f5ff;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
-            text-align: center;
-            border-left: 4px solid #0066cc;
-        }
+        .resumo-resultado { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin: 16px 0; text-align: left; }
+        .resumo-resultado div { background: #f8f9fa; border-radius: 6px; padding: 10px; word-break: break-word; }
+        .feedback-ranking { background: #e7f5ff; border-radius: 12px; padding: 16px; margin: 16px 0; text-align: center; border-left: 4px solid #0066cc; }
         .mapa-tabuadas { margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 12px; text-align: left; }
         .grade-tabuadas { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
         .card-tabuada { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -168,184 +69,62 @@
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         .info-sincronizacao { font-size: 12px; color: #6c757d; margin-top: 5px; margin-bottom: 10px; text-align: center; }
 
-        /* ===== BLOCO ETAPA CLASSIFICATÓRIA ===== */
-        .bloco-etapa {
-            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-            border: 2px solid #ffc107;
-            border-left: 6px solid #ff9800;
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        .bloco-etapa h3 {
-            margin: 0 0 8px 0;
-            color: #e65100;
-            font-size: 16px;
-        }
-        .bloco-etapa p { margin: 4px 0; font-size: 14px; color: #5d4037; line-height: 1.5; }
-        .bloco-etapa strong { color: #bf360c; }
-        .bloco-etapa .aviso-provisorio { font-size: 12px; color: #6d4c41; font-style: italic; margin-top: 8px; }
+        .hero-classificatoria { position: relative; overflow: hidden; color: #fff; text-align: left; padding: 24px; margin: 20px 0 18px; border-radius: 18px; background: linear-gradient(135deg, #102a43 0%, #174a73 58%, #0d7a61 100%); box-shadow: 0 10px 24px rgba(16,42,67,.20); }
+        .hero-classificatoria::after { content: "🏆"; position: absolute; right: 22px; top: 12px; font-size: 78px; opacity: .14; transform: rotate(12deg); }
+        .hero-kicker { font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #ffd166; margin-bottom: 8px; }
+        .hero-classificatoria h2 { margin: 0 0 8px; font-size: clamp(22px, 4vw, 32px); line-height: 1.1; }
+        .hero-classificatoria p { max-width: 680px; margin: 0; line-height: 1.5; color: #e8f1f8; }
+        .vagas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; max-width: 600px; }
+        .vaga-card { padding: 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 10px; background: rgba(255,255,255,.10); text-align: center; }
+        .vaga-numero { display: block; font-size: 24px; font-weight: 900; color: #ffd166; }
+        .vaga-label { display: block; font-size: 11px; color: #e8f1f8; }
+        .cta-classificatoria { background: linear-gradient(135deg,#0b8f64,#08744f); font-size: 17px; padding: 15px; box-shadow: 0 5px 0 #07583d; }
+        .cta-classificatoria:hover:not(:disabled) { background: linear-gradient(135deg,#0a7d59,#065f42); }
+        .acoes-secundarias { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .acoes-secundarias button { margin: 0; font-size: 14px; }
+        .nota-provisoria { margin: 14px 0 0; padding: 10px 12px; border-radius: 9px; color: #6b4e00; background: #fff8df; border: 1px solid #f2d675; font-size: 12px; text-align: left; }
 
-        /* ===== TELA DE JOGO SIMPLIFICADA ===== */
-        .jogo-cabecalho {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 0 4px;
-            gap: 12px;
-        }
-        .jogo-titulo-turma {
-            font-size: 13px;
-            font-weight: bold;
-            color: #495057;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .jogo-pontos-destaque {
-            font-size: 22px;
-            font-weight: bold;
-            color: #0066cc;
-            white-space: nowrap;
-        }
-        .pergunta-info-destaque {
-            font-size: 15px;
-            font-weight: bold;
-            color: #495057;
-            margin-bottom: 8px;
-            text-align: left;
-        }
-        .barra-progresso-perguntas {
-            width: 100%;
-            height: 8px;
-            display: flex;
-            gap: 3px;
-            margin-bottom: 18px;
-        }
-        .barra-progresso-perguntas .bloco-pergunta {
-            flex: 1;
-            background: #e9ecef;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
+        .jogo-cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px; gap: 12px; }
+        .jogo-titulo-turma { font-size: 13px; font-weight: bold; color: #495057; letter-spacing: 0.5px; text-transform: uppercase; }
+        .jogo-pontos-destaque { font-size: 22px; font-weight: bold; color: #0066cc; white-space: nowrap; }
+        .pergunta-info-destaque { font-size: 15px; font-weight: bold; color: #495057; margin-bottom: 8px; text-align: left; }
+        .barra-progresso-perguntas { width: 100%; height: 8px; display: flex; gap: 3px; margin-bottom: 18px; }
+        .barra-progresso-perguntas .bloco-pergunta { flex: 1; background: #e9ecef; border-radius: 4px; transition: background 0.3s; }
         .barra-progresso-perguntas .bloco-pergunta.respondida { background: #198754; }
         .barra-progresso-perguntas .bloco-pergunta.errada { background: #dc3545; }
         .barra-progresso-perguntas .bloco-pergunta.atual { background: #ffc107; animation: pulse-bloco 1s infinite; }
-        @keyframes pulse-bloco {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .rodape-jogo {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding-top: 14px;
-            border-top: 1px solid #e9ecef;
-            font-size: 14px;
-            color: #495057;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .rodape-jogo .rodape-info {
-            display: flex;
-            gap: 16px;
-            font-weight: 600;
-        }
-        .btn-encerrar-discreto {
-            background: transparent;
-            color: #adb5bd;
-            border: 1px solid #dee2e6;
-            padding: 6px 12px;
-            font-size: 12px;
-            width: auto;
-            margin: 0;
-            cursor: pointer;
-            border-radius: 6px;
-            font-weight: normal;
-            transition: all 0.2s;
-        }
-        .btn-encerrar-discreto:hover {
-            background: #fff5f5;
-            color: #dc3545;
-            border-color: #dc3545;
-        }
+        @keyframes pulse-bloco { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .rodape-jogo { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid #e9ecef; font-size: 14px; color: #495057; gap: 12px; flex-wrap: wrap; }
+        .rodape-jogo .rodape-info { display: flex; gap: 16px; font-weight: 600; }
+        .btn-encerrar-discreto { background: transparent; color: #adb5bd; border: 1px solid #dee2e6; padding: 6px 12px; font-size: 12px; width: auto; margin: 0; cursor: pointer; border-radius: 6px; font-weight: normal; transition: all 0.2s; }
+        .btn-encerrar-discreto:hover { background: #fff5f5; color: #dc3545; border-color: #dc3545; }
         .rodape-jogo .rodape-info .seq-destaque { color: #fd7e14; font-weight: bold; }
 
-        /* ===== CARTÃO DE CLASSIFICAÇÃO PÓS-PARTIDA ===== */
-        .card-classificacao {
-            border-radius: 16px;
-            padding: 24px;
-            margin: 20px 0;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        .card-classificacao.zona-classificacao {
-            background: linear-gradient(135deg, #d4edda 0%, #b8e0c4 100%);
-            border: 2px solid #198754;
-        }
-        .card-classificacao.zona-reserva {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%);
-            border: 2px solid #fd7e14;
-        }
-        .card-classificacao.fora-zona {
-            background: linear-gradient(135deg, #e7f5ff 0%, #cfe2ff 100%);
-            border: 2px solid #0d6efd;
-        }
+        .card-classificacao { border-radius: 16px; padding: 24px; margin: 20px 0; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .card-classificacao.zona-classificacao { background: linear-gradient(135deg, #d4edda 0%, #b8e0c4 100%); border: 2px solid #198754; }
+        .card-classificacao.zona-reserva { background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%); border: 2px solid #fd7e14; }
+        .card-classificacao.fora-zona { background: linear-gradient(135deg, #e7f5ff 0%, #cfe2ff 100%); border: 2px solid #0d6efd; }
         .card-classificacao h3 { margin: 0 0 12px 0; font-size: 20px; line-height: 1.3; }
-        .card-classificacao .posicao-destaque {
-            font-size: 52px;
-            font-weight: bold;
-            margin: 12px 0 8px 0;
-            line-height: 1;
-        }
+        .card-classificacao .posicao-destaque { font-size: 52px; font-weight: bold; margin: 12px 0 8px 0; line-height: 1; }
         .card-classificacao .posicao-destaque .sufixo { font-size: 20px; font-weight: normal; opacity: 0.7; }
         .card-classificacao .contexto-modalidade { font-size: 14px; color: #495057; margin: 4px 0; }
         .card-classificacao .pontuacao-destaque { font-size: 22px; font-weight: bold; margin: 8px 0; }
-        .mini-ranking {
-            background: rgba(255,255,255,0.85);
-            border-radius: 12px;
-            padding: 10px;
-            margin: 16px auto;
-            text-align: left;
-            max-width: 420px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-        .mini-ranking-item {
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin: 4px 0;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            align-items: center;
-        }
-        .mini-ranking-item.voce {
-            background: #fff;
-            border: 2px solid #0066cc;
-            font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0,102,204,0.25);
-        }
+        .mini-ranking { background: rgba(255,255,255,0.85); border-radius: 12px; padding: 10px; margin: 16px auto; text-align: left; max-width: 420px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .mini-ranking-item { padding: 8px 12px; border-radius: 6px; margin: 4px 0; display: flex; justify-content: space-between; font-size: 14px; align-items: center; }
+        .mini-ranking-item.voce { background: #fff; border: 2px solid #0066cc; font-weight: bold; box-shadow: 0 2px 8px rgba(0,102,204,0.25); }
         .mini-ranking-item.classificado { background: rgba(25,135,84,0.08); border-left: 4px solid #198754; }
         .mini-ranking-item.reserva { background: rgba(253,126,20,0.08); border-left: 4px solid #fd7e14; }
         .mini-ranking-item.fora { border-left: 4px solid #adb5bd; }
-        .divisor-ranking {
-            text-align: center;
-            font-size: 11px;
-            color: #6c757d;
-            margin: 6px 0;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
+        .divisor-ranking { text-align: center; font-size: 11px; color: #6c757d; margin: 6px 0; font-weight: bold; letter-spacing: 1px; }
         .card-classificacao .mensagem-rodape { font-size: 13px; margin-top: 12px; line-height: 1.5; }
         .card-classificacao.zona-classificacao .mensagem-rodape { color: #0f5132; }
         .card-classificacao.zona-reserva .mensagem-rodape { color: #856404; }
         .card-classificacao.fora-zona .mensagem-rodape { color: #084298; }
 
         @media (max-width: 700px) {
-            .status-jogo { grid-template-columns: repeat(2, 1fr); }
-            .comparacao { flex-direction: column; }
+            .acoes-secundarias { grid-template-columns: 1fr; }
+            .hero-classificatoria { padding: 20px 16px; }
+            .hero-classificatoria::after { right: 8px; font-size: 58px; }
             .jogo-cabecalho { flex-direction: column; align-items: flex-start; gap: 4px; }
             .jogo-pontos-destaque { font-size: 20px; }
             .card-classificacao .posicao-destaque { font-size: 42px; }
@@ -357,27 +136,32 @@
 <button id="btn-som" class="botao-som">🔊 SOM LIGADO</button>
 
 <div id="tela-inicial" class="card">
-    <h1 id="titulo-secreto" style="cursor: default; user-select: none; -webkit-user-select: none;">Copa Tabuada CEIB 2026</h1>
-    <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique - Matemática</p>
+    <h1 id="titulo-secreto" style="margin-bottom:6px; cursor: default; user-select: none; -webkit-user-select: none;">Copa da Tabuada CEIB 2026</h1>
+    <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique · Matemática</p>
 
-    <div class="bloco-etapa">
-        <h3>🏆 ETAPA CLASSIFICATÓRIA</h3>
-        <p>Os <strong>4 melhores alunos de cada turma</strong>, em <strong>cada modalidade</strong>, serão convidados para a <strong>Copa da Tabuada CEIB 2026</strong>.</p>
-        <p class="aviso-provisorio">📌 Sua classificação é <strong>provisória</strong> até o encerramento da etapa. Novos resultados podem alterar posições.</p>
-    </div>
+    <section class="hero-classificatoria" aria-labelledby="titulo-classificatoria">
+        <div class="hero-kicker">ETAPA 1 · CLASSIFICAÇÃO</div>
+        <h2 id="titulo-classificatoria">Seu desafio começa agora.</h2>
+        <p>Participe da etapa classificatória, supere seu próprio recorde e conquiste uma vaga para representar sua turma na Copa da Tabuada CEIB 2026.</p>
+        <div class="vagas-grid" aria-label="Vagas por turma e modalidade">
+            <div class="vaga-card"><span class="vaga-numero">4</span><span class="vaga-label">melhores por turma</span></div>
+            <div class="vaga-card"><span class="vaga-numero">20</span><span class="vaga-label">questões por partida</span></div>
+            <div class="vaga-card"><span class="vaga-numero">10s</span><span class="vaga-label">por questão</span></div>
+        </div>
+    </section>
 
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button onclick="mostrarTela('tela-single')" class="botao-verde">🎮 Single Player</button>
-        <button onclick="window.open('https://henriqueprofessor.github.io/TABUADA-FINAL/final.html', '_blank')" class="botao-verde" style="background:#e67e22;">🚀 Acessar Fase Final</button>
-    </div>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-        <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Rankings</button>
+    <button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
+    <p class="nota-provisoria">📌 Os 4 melhores alunos de cada turma, em cada modalidade, serão convidados para a Copa. A classificação é provisória até o encerramento da etapa.</p>
+
+    <div class="acoes-secundarias">
+        <button onclick="window.open('https://henriqueprofessor.github.io/TABUADA-FINAL/final.html', '_blank')" style="background:#e67e22;">🚀 Fase Final</button>
+        <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Classificação</button>
         <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
     </div>
 </div>
 
 <div id="tela-single" class="card hidden">
-    <h2>Single Player</h2>
+    <h2>🏆 Etapa Classificatória</h2>
     <label for="nome-aluno">Nome completo</label>
     <input type="text" id="nome-aluno" placeholder="Ex: Maria Eduarda">
     <label for="turma-aluno">Turma</label>
@@ -518,24 +302,17 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-// ===== VERSIONAMENTO =====
-const APP_VERSION = "3.0";
-
+const APP_VERSION = "5.0";
 function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
         localStorage.setItem('appVersao', APP_VERSION);
-        if (window.location.search.includes('v=')) {
-            location.reload(true);
-        } else {
-            const separador = window.location.search ? '&' : '?';
-            window.location.href = window.location.href + separador + 'v=' + APP_VERSION;
-        }
+        if (window.location.search.includes('v=')) { location.reload(true); }
+        else { const sep = window.location.search ? '&' : '?'; window.location.href = window.location.href + sep + 'v=' + APP_VERSION; }
     }
 }
 verificarVersao();
 
-// ==================== FIREBASE CONFIG ====================
 const firebaseConfig = {
     apiKey: "AIzaSyCSs7aCPTYSebSG6UHSSCMA76p-ZGit9Xc",
     authDomain: "copa-tabuada-ceib.firebaseapp.com",
@@ -579,7 +356,6 @@ const CONQUISTAS = [
     { icone: "🏅", nome: "Colecionador", descricao: "5 conquistas", criterio: (r, h, c) => c.length >= 5 }
 ];
 
-// ==================== VARIÁVEIS GLOBAIS ====================
 let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
 let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
 let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
@@ -588,7 +364,6 @@ let alunosData=[], alunosFiltrados=[];
 let melhorMediaAluno = null, mediaTurma = null;
 let somAtivo = true, jaToCouSomSuperacao = false;
 
-// ==================== FUNÇÕES AUXILIARES ====================
 function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
 function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
@@ -632,10 +407,7 @@ function professorAutenticado() {
     return ts && Date.now() - ts < PROFESSOR_SESSION_MS;
 }
 function exigirProfessorAutenticado() {
-    if(professorAutenticado()) {
-        sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
-        return true;
-    }
+    if(professorAutenticado()) { sessionStorage.setItem("professorCEIBAuth", String(Date.now())); return true; }
     alert("A sessão do professor expirou. Digite a senha novamente.");
     document.getElementById("painel-conteudo").classList.add("hidden");
     document.getElementById("senha-professor").focus();
@@ -667,8 +439,7 @@ function calcularDificuldades(partidas, modalidade) {
         let tempoMedio = d.total && d.tempoTotal ? d.tempoTotal / d.total : 0;
         let poucoTreino = d.total < 4 ? 1.4 : 0;
         let lento = tempoMedio > 4 ? 0.8 : tempoMedio > 3 ? 0.45 : 0;
-        d.precisao = precisao;
-        d.tempoMedio = tempoMedio;
+        d.precisao = precisao; d.tempoMedio = tempoMedio;
         d.peso = 1 + taxaErro * 5 + poucoTreino + lento;
         if(!d.total) d.motivo = "ainda apareceu pouco";
         else if(precisao < 0.6) d.motivo = "muitos erros recentes";
@@ -683,9 +454,7 @@ async function carregarFocoTreino(nome, turma, modalidade) {
     dificuldadesHistoricas = calcularDificuldades(historico, modalidade);
     focoTreinoTabuadas = Object.entries(dificuldadesHistoricas)
         .filter(([tab,d]) => d.total < 4 || d.precisao < 0.85 || d.tempoMedio > 3)
-        .sort((a,b)=>b[1].peso-a[1].peso)
-        .slice(0,3)
-        .map(([tab])=>Number(tab));
+        .sort((a,b)=>b[1].peso-a[1].peso).slice(0,3).map(([tab])=>Number(tab));
     return focoTreinoTabuadas;
 }
 function descreverFocoTreino() {
@@ -714,10 +483,7 @@ function gerarPlanoTreinoResultado() {
 function escolherPorPeso(itens, pesoFn) {
     let total = itens.reduce((s,item)=>s+Math.max(0.1,pesoFn(item)),0);
     let alvo = Math.random() * total;
-    for(let item of itens){
-        alvo -= Math.max(0.1,pesoFn(item));
-        if(alvo <= 0) return item;
-    }
+    for(let item of itens){ alvo -= Math.max(0.1,pesoFn(item)); if(alvo <= 0) return item; }
     return itens[itens.length-1];
 }
 function escolherFatorAdaptativo() {
@@ -751,10 +517,7 @@ function gerarPerguntaAdaptativa(modalidade) {
 }
 function embaralharLista(lista) {
     let copia = [...lista];
-    for(let i=copia.length-1;i>0;i--){
-        let j = Math.floor(Math.random()*(i+1));
-        [copia[i], copia[j]] = [copia[j], copia[i]];
-    }
+    for(let i=copia.length-1;i>0;i--){ let j = Math.floor(Math.random()*(i+1)); [copia[i], copia[j]] = [copia[j], copia[i]]; }
     return copia;
 }
 function adicionarDistrator(lista, valor, tipo, prioridade) {
@@ -766,12 +529,8 @@ function adicionarDistrator(lista, valor, tipo, prioridade) {
 function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes, modalidadeBase=modalidadeAtual) {
     let candidatos = [];
     let fatores = MODALIDADES[modalidadeBase]?.fatores || [0,1,2,3,4,5,6,7,8,9,10];
-    [fB-1,fB+1,fB-2,fB+2].forEach((n,idx)=>{
-        if(n>=0 && n<=10) adicionarDistrator(candidatos, fA*n, "fator-vizinho", idx<2 ? 1 : 2);
-    });
-    [fA-1,fA+1,fA-2,fA+2].forEach((n,idx)=>{
-        if(n>=0 && n<=10) adicionarDistrator(candidatos, n*fB, "tabuada-vizinha", idx<2 ? 1 : 2);
-    });
+    [fB-1,fB+1,fB-2,fB+2].forEach((n,idx)=>{ if(n>=0 && n<=10) adicionarDistrator(candidatos, fA*n, "fator-vizinho", idx<2 ? 1 : 2); });
+    [fA-1,fA+1,fA-2,fA+2].forEach((n,idx)=>{ if(n>=0 && n<=10) adicionarDistrator(candidatos, n*fB, "tabuada-vizinha", idx<2 ? 1 : 2); });
     adicionarDistrator(candidatos, resposta + fA, "proximo-passo", 1);
     adicionarDistrator(candidatos, resposta - fA, "passo-anterior", 1);
     adicionarDistrator(candidatos, resposta + fB, "incremento-fator", 2);
@@ -784,28 +543,14 @@ function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes, modalidadeB
         let invertido = Number(String(resposta).split("").reverse().join(""));
         adicionarDistrator(candidatos, invertido, "invertido", 2);
     }
-    fatores.forEach(tab=>{
-        for(let n=0;n<=10;n++){
-            let prod = tab*n;
-            if(Math.abs(prod-resposta) <= 18) adicionarDistrator(candidatos, prod, "produto-real", 2);
-        }
-    });
-    if(resposta === 0) {
-        [fA+fB, Math.max(fA,fB), 1, 2, 5, 10].forEach(v=>adicionarDistrator(candidatos, v, "zero-especial", 1));
-    }
-    if(resposta === 1) {
-        [0,2,10,11].forEach(v=>adicionarDistrator(candidatos, v, "um-especial", 1));
-    }
-    candidatos = candidatos
-        .filter(c=>c.valor !== resposta)
-        .sort((a,b)=>a.prioridade-b.prioridade || Math.abs(a.valor-resposta)-Math.abs(b.valor-resposta));
+    fatores.forEach(tab=>{ for(let n=0;n<=10;n++){ let prod = tab*n; if(Math.abs(prod-resposta) <= 18) adicionarDistrator(candidatos, prod, "produto-real", 2); } });
+    if(resposta === 0) { [fA+fB, Math.max(fA,fB), 1, 2, 5, 10].forEach(v=>adicionarDistrator(candidatos, v, "zero-especial", 1)); }
+    if(resposta === 1) { [0,2,10,11].forEach(v=>adicionarDistrator(candidatos, v, "um-especial", 1)); }
+    candidatos = candidatos.filter(c=>c.valor !== resposta).sort((a,b)=>a.prioridade-b.prioridade || Math.abs(a.valor-resposta)-Math.abs(b.valor-resposta));
     let ops = [resposta];
     for(let prioridade of [1,2,3]){
         let grupo = embaralharLista(candidatos.filter(c=>c.prioridade===prioridade));
-        for(let cand of grupo){
-            if(ops.length >= totalOpcoes) break;
-            if(!ops.includes(cand.valor)) ops.push(cand.valor);
-        }
+        for(let cand of grupo){ if(ops.length >= totalOpcoes) break; if(!ops.includes(cand.valor)) ops.push(cand.valor); }
         if(ops.length >= totalOpcoes) break;
     }
     while(ops.length < totalOpcoes){
@@ -843,10 +588,8 @@ function tocarBeep() {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.frequency.value = 880;
-        gainNode.gain.value = 0.3;
+        oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = 880; gainNode.gain.value = 0.3;
         oscillator.start();
         gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
         oscillator.stop(audioCtx.currentTime + 0.5);
@@ -854,7 +597,6 @@ function tocarBeep() {
 }
 function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
 
-// ==================== VÍNCULO PERMANENTE POR DISPOSITIVO ====================
 function obterIdDispositivo() {
     let id = localStorage.getItem('dispositivoId');
     if (!id) {
@@ -868,9 +610,7 @@ function obterIdDispositivo() {
     }
     return id;
 }
-function chaveVinculo(nome, turma) {
-    return `${normalizarNome(nome)}|${turma}`.replace(/[.#$\/\[\]]/g, '_');
-}
+function chaveVinculo(nome, turma) { return `${normalizarNome(nome)}|${turma}`.replace(/[.#$\/\[\]]/g, '_'); }
 async function obterVinculo(nome, turma) {
     const chave = chaveVinculo(nome, turma);
     const snap = await database.ref(`vinculos/${chave}`).once('value');
@@ -878,10 +618,7 @@ async function obterVinculo(nome, turma) {
 }
 async function criarVinculo(nome, turma, dispositivoId) {
     const chave = chaveVinculo(nome, turma);
-    await database.ref(`vinculos/${chave}`).set({
-        dispositivoId: dispositivoId,
-        criadoEm: Date.now()
-    });
+    await database.ref(`vinculos/${chave}`).set({ dispositivoId, criadoEm: Date.now() });
 }
 async function verificarVinculo(nome, turma) {
     const dispositivoId = obterIdDispositivo();
@@ -890,18 +627,11 @@ async function verificarVinculo(nome, turma) {
         await criarVinculo(nome, turma, dispositivoId);
         return { permitido: true, primeiroUso: true };
     } else {
-        if (vinculo.dispositivoId === dispositivoId) {
-            return { permitido: true, primeiroUso: false };
-        } else {
-            return { 
-                permitido: false, 
-                mensagem: `⚠️ O nome "${nome}" já está vinculado a outro dispositivo. Para usar neste dispositivo, peça ao professor para desvincular.`
-            };
-        }
+        if (vinculo.dispositivoId === dispositivoId) return { permitido: true, primeiroUso: false };
+        return { permitido: false, mensagem: `⚠️ O nome "${nome}" já está vinculado a outro dispositivo. Para usar neste dispositivo, peça ao professor para desvincular.` };
     }
 }
 
-// ==================== RANKING E PARTIDAS ====================
 async function obterRanking() {
     try {
         let snap = await database.ref(CAMINHO_RANKING).once("value");
@@ -932,10 +662,7 @@ async function obterPartidas() {
     }
 }
 async function forcarSincronizacao() {
-    if (!navigator.onLine) {
-        alert("Sem conexão com a internet. Conecte-se e tente novamente.");
-        return;
-    }
+    if (!navigator.onLine) { alert("Sem conexão com a internet. Conecte-se e tente novamente."); return; }
     try {
         let snapRanking = await database.ref(CAMINHO_RANKING).once("value");
         let rankingOnline = Object.values(snapRanking.val() || {});
@@ -948,9 +675,7 @@ async function forcarSincronizacao() {
         atualizarDisplayUltimaSincronizacao();
         mostrarToast("✅ Dados sincronizados com sucesso!");
         await renderizarRanking();
-    } catch (e) {
-        alert("Erro na sincronização: " + e.message);
-    }
+    } catch (e) { alert("Erro na sincronização: " + e.message); }
 }
 async function salvarPartida(res) {
     let partida = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro:"partida" };
@@ -958,9 +683,8 @@ async function salvarPartida(res) {
     if(!local.some(p=>p.idPartida===partida.idPartida || p.data===partida.data)) local.unshift(partida);
     local = local.slice(0,2000);
     localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(local));
-    try {
-        await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).set(partida);
-    } catch(e) { console.warn("Partida salva apenas localmente", e); }
+    try { await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).set(partida); }
+    catch(e) { console.warn("Partida salva apenas localmente", e); }
     return partida;
 }
 async function obterHistoricoAluno(nome, turma, modalidade=null) {
@@ -975,7 +699,7 @@ async function obterRankingPorPontos(modalidade, turma=null){
     let filt = rank.filter(r=>r.modalidade===modalidade);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.pontos>mapa.get(chave).pontos) mapa.set(chave,r); });
+    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave)||r.pontos>mapa.get(chave).pontos) mapa.set(chave,r); });
     return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
 }
 async function obterRankingPorPrecisao(modalidade, turma=null){
@@ -983,7 +707,7 @@ async function obterRankingPorPrecisao(modalidade, turma=null){
     let filt = rank.filter(r=>r.modalidade===modalidade);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.acertos>mapa.get(chave).acertos) mapa.set(chave,r); });
+    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave)||r.acertos>mapa.get(chave).acertos) mapa.set(chave,r); });
     return Array.from(mapa.values()).sort((a,b)=>b.acertos-a.acertos || a.tempoMedio-b.tempoMedio);
 }
 async function obterRankingPorVelocidade(modalidade, turma=null){
@@ -991,7 +715,7 @@ async function obterRankingPorVelocidade(modalidade, turma=null){
     let filt = rank.filter(r=>r.modalidade===modalidade && r.acertos===20);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{ let chave=`${r.nome}|${r.turma}`; if(!mapa.has(chave)||r.tempoMedio<mapa.get(chave).tempoMedio) mapa.set(chave,r); });
+    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave)||r.tempoMedio<mapa.get(chave).tempoMedio) mapa.set(chave,r); });
     return Array.from(mapa.values()).sort((a,b)=>a.tempoMedio-b.tempoMedio || b.acertos-a.acertos);
 }
 async function salvarResultado(res){
@@ -1024,18 +748,13 @@ async function carregarMediasReferencia(nome, turma, modalidade) {
     return { melhorMediaAluno, mediaTurma };
 }
 
-// ==================== CARTÃO DE CLASSIFICAÇÃO PÓS-PARTIDA ====================
 async function renderizarCardClassificacao(r) {
     const rankingTurma = await obterRankingPorPontos(r.modalidade, r.turma);
     let posicao = -1;
     for (let i = 0; i < rankingTurma.length; i++) {
-        if (normalizarNome(rankingTurma[i].nome) === normalizarNome(r.nome) && rankingTurma[i].turma === r.turma) {
-            posicao = i + 1;
-            break;
-        }
+        if (normalizarNome(rankingTurma[i].nome) === normalizarNome(r.nome) && rankingTurma[i].turma === r.turma) { posicao = i + 1; break; }
     }
     if (posicao === -1) return "";
-
     const modalidadeNome = MODALIDADES[r.modalidade]?.nome || r.modalidade;
     const quartoLugar = rankingTurma[VAGAS_CLASSIFICACAO - 1] || null;
     const pontos4 = quartoLugar ? quartoLugar.pontos : null;
@@ -1044,77 +763,50 @@ async function renderizarCardClassificacao(r) {
     const top6 = rankingTurma.slice(0, 6);
     let miniRankingHtml = '<div class="mini-ranking">';
     for (let i = 0; i < top6.length; i++) {
-        const item = top6[i];
-        const pos = i + 1;
+        const item = top6[i]; const pos = i + 1;
         const ehVoce = normalizarNome(item.nome) === normalizarNome(r.nome);
         const classeExtra = ehVoce ? 'voce' : (pos <= VAGAS_CLASSIFICACAO ? 'classificado' : (pos <= 6 ? 'reserva' : 'fora'));
         const medalha = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos === 4 ? '🎫' : '';
-        miniRankingHtml += `
-            <div class="mini-ranking-item ${classeExtra}">
-                <span>${pos}º ${medalha} ${escaparHtml(item.nome)}${ehVoce ? ' ← Você' : ''}</span>
-                <span><strong>${item.pontos.toLocaleString('pt-BR')}</strong> pts</span>
-            </div>
-        `;
+        miniRankingHtml += `<div class="mini-ranking-item ${classeExtra}"><span>${pos}º ${medalha} ${escaparHtml(item.nome)}${ehVoce ? ' ← Você' : ''}</span><span><strong>${item.pontos.toLocaleString('pt-BR')}</strong> pts</span></div>`;
         if (i === VAGAS_CLASSIFICACAO - 1 && top6.length > VAGAS_CLASSIFICACAO) {
             miniRankingHtml += `<div class="divisor-ranking">— linha de corte (${VAGAS_CLASSIFICACAO} vagas) —</div>`;
         }
     }
     miniRankingHtml += '</div>';
 
-    let html = '';
     if (posicao <= VAGAS_CLASSIFICACAO) {
-        html = `
-            <div class="card-classificacao zona-classificacao">
-                <h3>🎉 VOCÊ ESTÁ NA ZONA DE CLASSIFICAÇÃO!</h3>
-                <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
-                <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
-                <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
-                ${miniRankingHtml}
-                <div class="mensagem-rodape">
-                    ✅ Os <strong>${VAGAS_CLASSIFICACAO} primeiros</strong> de cada turma/modalidade serão convidados para a Copa.
-                    <br>⚠️ <strong>Classificação provisória</strong> — sua posição pode mudar até o encerramento da etapa.
-                </div>
-            </div>
-        `;
+        return `<div class="card-classificacao zona-classificacao">
+            <h3>🎉 VOCÊ ESTÁ NA ZONA DE CLASSIFICAÇÃO!</h3>
+            <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
+            <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
+            <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
+            ${miniRankingHtml}
+            <div class="mensagem-rodape">✅ Os <strong>${VAGAS_CLASSIFICACAO} primeiros</strong> de cada turma/modalidade serão convidados para a Copa.<br>⚠️ <strong>Classificação provisória</strong> — sua posição pode mudar até o encerramento da etapa.</div>
+        </div>`;
     } else if (posicao <= 6) {
-        html = `
-            <div class="card-classificacao zona-reserva">
-                <h3>💪 VOCÊ ESTÁ PERTO DA CLASSIFICAÇÃO!</h3>
-                <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
-                <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
-                <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
-                <p style="font-size:15px;margin:8px 0;">
-                    Faltam <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> para alcançar o ${VAGAS_CLASSIFICACAO}º lugar.
-                </p>
-                <p style="font-size:14px;margin:4px 0;">Você está na <strong>zona de reserva</strong>. Continue treinando!</p>
-                ${miniRankingHtml}
-                <div class="mensagem-rodape">
-                    ⚠️ <strong>Classificação provisória</strong> — atualizada com seu melhor resultado.
-                </div>
-            </div>
-        `;
+        return `<div class="card-classificacao zona-reserva">
+            <h3>💪 VOCÊ ESTÁ PERTO DA CLASSIFICAÇÃO!</h3>
+            <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
+            <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
+            <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
+            <p style="font-size:15px;margin:8px 0;">Faltam <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> para alcançar o ${VAGAS_CLASSIFICACAO}º lugar.</p>
+            <p style="font-size:14px;margin:4px 0;">Você está na <strong>zona de reserva</strong>. Continue treinando!</p>
+            ${miniRankingHtml}
+            <div class="mensagem-rodape">⚠️ <strong>Classificação provisória</strong> — atualizada com seu melhor resultado.</div>
+        </div>`;
     } else {
-        html = `
-            <div class="card-classificacao fora-zona">
-                <h3>🎯 CONTINUE TREINANDO!</h3>
-                <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
-                <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
-                <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
-                <p style="font-size:15px;margin:8px 0;">
-                    Você está a <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> do ${VAGAS_CLASSIFICACAO}º lugar.
-                </p>
-                ${miniRankingHtml}
-                <div class="mensagem-rodape">
-                    💡 Use o <strong>Modo Treino</strong> para reforçar as tabuadas onde você errou mais.
-                    <br>⚠️ <strong>Classificação provisória</strong> — você ainda pode subir!
-                </div>
-            </div>
-        `;
+        return `<div class="card-classificacao fora-zona">
+            <h3>🎯 CONTINUE TREINANDO!</h3>
+            <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
+            <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
+            <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
+            <p style="font-size:15px;margin:8px 0;">Você está a <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> do ${VAGAS_CLASSIFICACAO}º lugar.</p>
+            ${miniRankingHtml}
+            <div class="mensagem-rodape">💡 Use o <strong>Modo Treino</strong> para reforçar as tabuadas onde você errou mais.<br>⚠️ <strong>Classificação provisória</strong> — você ainda pode subir!</div>
+        </div>`;
     }
-    return html;
 }
 
-// ==================== SINGLE PLAYER ====================
 async function registrarAluno(treino) {
     let nome = document.getElementById("nome-aluno").value.trim();
     let turma = document.getElementById("turma-aluno").value;
@@ -1123,13 +815,8 @@ async function registrarAluno(treino) {
 
     if (!modoTreino) {
         const resultado = await verificarVinculo(nome, turma);
-        if (!resultado.permitido) {
-            alert(resultado.mensagem);
-            return;
-        }
-        if (resultado.primeiroUso) {
-            alert(`✅ Dispositivo vinculado com sucesso ao nome "${nome}" (Turma ${turma})! A partir de agora, este nome só poderá ser usado neste dispositivo.`);
-        }
+        if (!resultado.permitido) { alert(resultado.mensagem); return; }
+        if (resultado.primeiroUso) alert(`✅ Dispositivo vinculado com sucesso ao nome "${nome}" (Turma ${turma})! A partir de agora, este nome só poderá ser usado neste dispositivo.`);
     }
 
     if (!modoTreino) {
@@ -1143,9 +830,7 @@ async function registrarAluno(treino) {
             if (mediaTurma && melhorMediaAluno < mediaTurma) msgMotivacional = "🚀 Você já é mais rápido que a média da turma! Continue assim!";
             else if (mediaTurma && melhorMediaAluno > mediaTurma) msgMotivacional = "💪 Você está abaixo da média da turma, mas com treino vai superar!";
             else msgMotivacional = "🏆 Esta é sua chance de bater seu próprio recorde!";
-        } else {
-            msgMotivacional = "🎯 Esta é sua primeira partida! Vamos criar sua melhor média!";
-        }
+        } else msgMotivacional = "🎯 Esta é sua primeira partida! Vamos criar sua melhor média!";
         div.innerHTML = `
             <p><strong>👤 Aluno:</strong> ${escaparHtml(nome)}</p>
             <p><strong>🏫 Turma:</strong> ${turma}</p>
@@ -1220,13 +905,9 @@ function proximaPergunta() {
 function iniciarCronometro() {
     tempoInicio = performance.now();
     let progresso = document.getElementById("progresso");
-    if (progresso) {
-        progresso.style.width = "100%";
-        progresso.style.background = "#198754";
-    }
+    if (progresso) { progresso.style.width = "100%"; progresso.style.background = "#198754"; }
     let tempoRest = 10000;
-    clearInterval(timerInterval);
-    clearTimeout(timerTimeout);
+    clearInterval(timerInterval); clearTimeout(timerTimeout);
     timerInterval = setInterval(() => {
         if (finalizando) return;
         tempoRest -= 100;
@@ -1246,15 +927,9 @@ function exibirComboVisual(sequencia) {
     else if (sequencia === 15) mensagem = "💥 Combo 15!";
     else if (sequencia === 20) mensagem = "🏆 Combo PERFEITO!";
     else return;
-    elem.style.backgroundColor = "#ffc107";
-    elem.style.color = "#000";
-    elem.style.borderRadius = "6px";
-    elem.style.padding = "4px 8px";
-    setTimeout(() => {
-        elem.style.backgroundColor = "";
-        elem.style.color = "";
-        elem.style.padding = "";
-    }, 500);
+    elem.style.backgroundColor = "#ffc107"; elem.style.color = "#000";
+    elem.style.borderRadius = "6px"; elem.style.padding = "4px 8px";
+    setTimeout(() => { elem.style.backgroundColor = ""; elem.style.color = ""; elem.style.padding = ""; }, 500);
     mostrarToast(mensagem);
 }
 function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
@@ -1282,15 +957,11 @@ function processarResposta(pontos,acertou,tempo) {
         let dicaDiv = document.getElementById("dica-resposta");
         if(dicaDiv){
             dicaDiv.classList.remove("hidden");
-            if(acertou){
-                dicaDiv.innerHTML = "✅ Correto! Muito bem!";
-                dicaDiv.style.background = "#d1e7dd";
-                dicaDiv.style.color = "#0f5132";
-            } else {
+            if(acertou){ dicaDiv.innerHTML = "✅ Correto! Muito bem!"; dicaDiv.style.background = "#d1e7dd"; dicaDiv.style.color = "#0f5132"; }
+            else {
                 let ultima = perguntasGeradas[perguntasGeradas.length-1] || {};
                 dicaDiv.innerHTML = `❌ Errado! A resposta correta é ${respostaCorreta}. ${dicaMultiplicacao(ultima.fA, ultima.fB, respostaCorreta)}`;
-                dicaDiv.style.background = "#f8d7da";
-                dicaDiv.style.color = "#842029";
+                dicaDiv.style.background = "#f8d7da"; dicaDiv.style.color = "#842029";
             }
             setTimeout(() => dicaDiv.classList.add("hidden"), 2000);
         }
@@ -1308,31 +979,22 @@ function processarResposta(pontos,acertou,tempo) {
     if(acertou){
         acertos++; sequenciaAtual++; maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
         if(tempo) temposCorretas.push(tempo);
-        if ([5, 10, 15, 20].includes(sequenciaAtual)) {
-            exibirComboVisual(sequenciaAtual);
-        }
+        if ([5, 10, 15, 20].includes(sequenciaAtual)) exibirComboVisual(sequenciaAtual);
     } else { erros++; sequenciaAtual = 0; }
     atualizarStatus();
     setTimeout(()=>{ if(!finalizando) proximaPergunta(); },250);
 }
 function atualizarStatus() {
     const cabecalho = document.getElementById("cabecalho-turma");
-    if (cabecalho) {
-        cabecalho.innerText = modoTreino 
-            ? `🎯 TREINO — TURMA ${turmaAtual}` 
-            : `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
-    }
+    if (cabecalho) cabecalho.innerText = modoTreino ? `🎯 TREINO — TURMA ${turmaAtual}` : `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
     const pontosEl = document.getElementById("cabecalho-pontos");
     if (pontosEl) pontosEl.innerText = `${pontosAcumulados.toLocaleString('pt-BR')} pts`;
-    
     const infoPerg = document.getElementById("info-pergunta-destaque");
     if (infoPerg) infoPerg.innerText = `Pergunta ${Math.min(perguntaAtual, TOTAL_PERGUNTAS)} de ${TOTAL_PERGUNTAS}`;
-    
     const acertosEl = document.getElementById("rodape-acertos");
     if (acertosEl) acertosEl.innerText = `✅ Acertos: ${acertos}`;
     const seqEl = document.getElementById("rodape-sequencia");
     if (seqEl) seqEl.innerHTML = `🔥 Sequência: <span class="seq-destaque">${sequenciaAtual}</span>`;
-    
     atualizarBarraProgressoPerguntas();
 }
 function atualizarBarraProgressoPerguntas() {
@@ -1352,9 +1014,7 @@ function atualizarBarraProgressoPerguntas() {
         if (i < temposRespostas.length) {
             if (temposRespostas[i].acertou) bloco.classList.add("respondida");
             else bloco.classList.add("errada");
-        } else if (i === temposRespostas.length && perguntaAberta) {
-            bloco.classList.add("atual");
-        }
+        } else if (i === temposRespostas.length && perguntaAberta) bloco.classList.add("atual");
     }
 }
 function alternarBotoes(des) { document.querySelectorAll(".btn-opcao").forEach(b=>b.disabled=des); }
@@ -1400,7 +1060,6 @@ async function finalizarCircuito() {
 async function preencherResultado(r) {
     const cardHtml = await renderizarCardClassificacao(r);
     document.getElementById("card-classificacao-container").innerHTML = cardHtml;
-    
     let rankingTurma = await obterRankingPorPontos(r.modalidade, r.turma);
     let posTurma = rankingTurma.findIndex(i=>normalizarNome(i.nome)===normalizarNome(r.nome))+1;
     let status = posTurma<=VAGAS_CLASSIFICACAO?"Classificado":(posTurma<=6?"Reserva":"Participante");
@@ -1477,109 +1136,55 @@ function gerarDicaMelhoria() {
     return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
 }
 
-// ==================== RENDERIZAÇÃO RANKING ====================
 async function renderizarRanking() {
     const tabelaHead = document.getElementById("tabela-head-ranking");
     const tabelaBody = document.getElementById("tabela-ranking-body");
     const tituloEl = document.getElementById("titulo-ranking");
     if(!tabelaBody || !tituloEl) return;
-
     let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
     let turma = document.getElementById("filtro-turma")?.value || "901";
     let ranking = [];
     let titulo = "";
-
     if(tipoRankingAtual === "turma"){
         const todasPartidas = await obterPartidas();
         const mapaJogos = new Map();
-        todasPartidas.forEach(p => {
-            if(p.modalidade === modalidade && p.turma === turma) {
-                const chave = `${normalizarNome(p.nome)}|${p.turma}`;
-                mapaJogos.set(chave, (mapaJogos.get(chave) || 0) + 1);
-            }
-        });
+        todasPartidas.forEach(p => { if(p.modalidade === modalidade && p.turma === turma) { const chave = `${normalizarNome(p.nome)}|${p.turma}`; mapaJogos.set(chave, (mapaJogos.get(chave) || 0) + 1); } });
         ranking = await obterRankingPorPontos(modalidade, turma);
         titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
         tituloEl.innerText = titulo;
         tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
         let html = "";
         for (let i = 0; i < ranking.length; i++) {
-            const r = ranking[i];
-            const pos = i + 1;
+            const r = ranking[i]; const pos = i + 1;
             let statusClass = pos <= VAGAS_CLASSIFICACAO ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
             let statusText = pos <= VAGAS_CLASSIFICACAO ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
             const jogos = mapaJogos.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
-            html += `<tr>
-                        <td style="text-align:center">${pos}º</td>
-                        <td style="text-align:left">${escaparHtml(r.nome)}</td>
-                        <td style="text-align:center">${r.turma}</td>
-                        <td style="text-align:center">${r.pontos}</td>
-                        <td style="text-align:center">${r.acertos}/20</td>
-                        <td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                        <td style="text-align:center">${jogos}</td>
-                        <td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td>
-                      </tr>`;
+            html += `<tr><td style="text-align:center">${pos}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center">${jogos}</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
         }
         if (html === "") html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
         tabelaBody.innerHTML = html;
         return;
     } 
-    else if(tipoRankingAtual === "global"){
-        ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100);
-        titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
-    } 
-    else if(tipoRankingAtual === "precisao-global"){
-        ranking = await obterRankingPorPrecisao(modalidade, null);
-        titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
-    } 
-    else if(tipoRankingAtual === "precisao-turma"){
-        ranking = await obterRankingPorPrecisao(modalidade, turma);
-        titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
-    } 
-    else if(tipoRankingAtual === "velocidade-global"){
-        ranking = await obterRankingPorVelocidade(modalidade, null);
-        titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
-    } 
-    else if(tipoRankingAtual === "velocidade-turma"){
-        ranking = await obterRankingPorVelocidade(modalidade, turma);
-        titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
-    } else {
-        ranking = await obterRankingPorPontos(modalidade, turma);
-        titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`;
-        tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
-    }
-
+    else if(tipoRankingAtual === "global"){ ranking = (await obterRankingPorPontos(modalidade, null)).slice(0,100); titulo = `🌍 Top 100 Global - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`; } 
+    else if(tipoRankingAtual === "precisao-global"){ ranking = await obterRankingPorPrecisao(modalidade, null); titulo = `🎯 Precisão Global - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`; } 
+    else if(tipoRankingAtual === "precisao-turma"){ ranking = await obterRankingPorPrecisao(modalidade, turma); titulo = `🎯 Precisão - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`; } 
+    else if(tipoRankingAtual === "velocidade-global"){ ranking = await obterRankingPorVelocidade(modalidade, null); titulo = `⚡ Velocidade Global (100% acertos) - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`; } 
+    else if(tipoRankingAtual === "velocidade-turma"){ ranking = await obterRankingPorVelocidade(modalidade, turma); titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`; } 
+    else { ranking = await obterRankingPorPontos(modalidade, turma); titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`; }
     tituloEl.innerText = titulo;
     let html = "";
     for (let i = 0; i < ranking.length; i++) {
-        const r = ranking[i];
-        const pos = i + 1;
-        html += `<tr>
-                    <td style="text-align:center">${pos}º</td>
-                    <td style="text-align:left">${escaparHtml(r.nome)}</td>`;
+        const r = ranking[i]; const pos = i + 1;
+        html += `<tr><td style="text-align:center">${pos}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td>`;
         if (tipoRankingAtual !== "velocidade-turma" && tipoRankingAtual !== "precisao-turma") html += `<td style="text-align:center">${r.turma}</td>`;
-        if (tipoRankingAtual === "precisao-global" || tipoRankingAtual === "precisao-turma") {
-            html += `<td style="text-align:center">${r.acertos}/20</td>`;
-            html += `<td style="text-align:center">${r.pontos}</td>`;
-        } else if (tipoRankingAtual === "velocidade-global" || tipoRankingAtual === "velocidade-turma") {
-            html += `<td style="text-align:center">${r.pontos}</td>`;
-            html += `<td style="text-align:center">${r.acertos}/20</td>`;
-        } else {
-            html += `<td style="text-align:center">${r.pontos}</td>`;
-            html += `<td style="text-align:center">${r.acertos}/20</td>`;
-        }
-        html += `<td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td>
-                 </tr>`;
+        if (tipoRankingAtual === "precisao-global" || tipoRankingAtual === "precisao-turma") html += `<td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td>`;
+        else if (tipoRankingAtual === "velocidade-global" || tipoRankingAtual === "velocidade-turma") html += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
+        else html += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
+        html += `<td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
     }
     if (html === "") html = `<tr><td colspan="6" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
     tabelaBody.innerHTML = html;
 }
-
 function mudarTipoRanking(tipo) {
     tipoRankingAtual = tipo;
     const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
@@ -1591,7 +1196,6 @@ function mudarTipoRanking(tipo) {
     renderizarRanking();
 }
 
-// ==================== PERFIL ====================
 async function carregarPerfil() {
     let nome = document.getElementById("perfil-nome").value.trim();
     let turma = document.getElementById("perfil-turma").value;
@@ -1619,24 +1223,17 @@ async function carregarPerfil() {
     document.getElementById("perfil-conteudo").classList.remove("hidden");
 }
 
-// ==================== PAINEL DO PROFESSOR ====================
 async function autenticarProfessor(){
     let inputSenha = document.getElementById("senha-professor");
     let s = inputSenha.value;
     try {
         let hashSenha = await gerarHashSenha(s);
-        if(hashSenha !== SENHA_PROFESSOR_HASH && hashSenha !== SENHA_PROFESSOR_HASH_FALLBACK) {
-            alert("Senha incorreta");
-            return;
-        }
+        if(hashSenha !== SENHA_PROFESSOR_HASH && hashSenha !== SENHA_PROFESSOR_HASH_FALLBACK) { alert("Senha incorreta"); return; }
         sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
         inputSenha.value = "";
         document.getElementById("painel-conteudo").classList.remove("hidden");
         mostrarToast("🔓 Acesso concedido!");
-    } catch(e) {
-        alert("Não foi possível validar a senha neste navegador.");
-        console.warn(e);
-    }
+    } catch(e) { alert("Não foi possível validar a senha neste navegador."); console.warn(e); }
 }
 function abrirResetTurma(){ if(!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
 async function confirmarReset(){
@@ -1646,17 +1243,10 @@ async function confirmarReset(){
     if(!confirm(`⚠️ Resetar ${turma==="todas"?"TODAS":turma} - ${modalidade==="todas"?"TODAS":MODALIDADES[modalidade]?.nome}?`)) return;
     let rank = await obterRanking();
     let novos = rank.filter(r=>!resultadoCombinaFiltro(r, turma, modalidade));
-    for(let item of rank){
-        if(!novos.includes(item)){
-            let chave = criarChaveResultado(item);
-            await database.ref(`${CAMINHO_RANKING}/${chave}`).remove();
-        }
-    }
+    for(let item of rank){ if(!novos.includes(item)){ let chave = criarChaveResultado(item); await database.ref(`${CAMINHO_RANKING}/${chave}`).remove(); } }
     let partidas = await obterPartidas();
     let partidasNovas = partidas.filter(p=>!resultadoCombinaFiltro(p, turma, modalidade));
-    for(let partida of partidas){
-        if(!partidasNovas.includes(partida) && partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).remove();
-    }
+    for(let partida of partidas){ if(!partidasNovas.includes(partida) && partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).remove(); }
     localStorage.setItem(STORAGE_RANKING,JSON.stringify(novos));
     localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(partidasNovas));
     mostrarToast("✅ Reset concluído!");
@@ -1680,11 +1270,7 @@ async function abrirGerenciarAlunos(){
     await carregarListaAlunos();
 }
 function fecharGerenciarAlunos(){ document.getElementById("painel-alunos").classList.add("hidden"); }
-async function carregarListaAlunos(){
-    let rank = await obterRanking();
-    alunosData = [...rank];
-    filtrarAlunos();
-}
+async function carregarListaAlunos(){ let rank = await obterRanking(); alunosData = [...rank]; filtrarAlunos(); }
 function filtrarAlunos(){
     let filtroNome = document.getElementById("filtro-alunos").value.toLowerCase();
     let filtroTurma = document.getElementById("filtro-turma-alunos").value;
@@ -1718,19 +1304,14 @@ function renderizarListaAlunos(){
     }
     html += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
     container.innerHTML = html;
-
     setTimeout(async () => {
         for(let a of alunosFiltrados){
             const chave = chaveVinculo(a.nome, a.turma);
             const cell = document.getElementById(`vinculo-${chave}`);
             if(cell){
                 const vinculo = await obterVinculo(a.nome, a.turma);
-                if(vinculo){
-                    cell.innerHTML = `🔒 ${vinculo.dispositivoId.slice(0,8)}...`;
-                    cell.title = `Vinculado ao dispositivo: ${vinculo.dispositivoId}`;
-                } else {
-                    cell.innerHTML = `🔓 Não vinculado`;
-                }
+                if(vinculo){ cell.innerHTML = `🔒 ${vinculo.dispositivoId.slice(0,8)}...`; cell.title = `Vinculado ao dispositivo: ${vinculo.dispositivoId}`; }
+                else { cell.innerHTML = `🔓 Não vinculado`; }
             }
         }
     }, 100);
@@ -1789,7 +1370,6 @@ async function salvarEdicoesNomes(){
     mostrarToast("✅ Nomes atualizados");
 }
 
-// ==================== FUNÇÃO DESVINCULAR ====================
 async function desvincularAluno(nome, turma) {
     if (!exigirProfessorAutenticado()) return;
     if (!confirm(`Tem certeza que deseja desvincular ${nome} (Turma ${turma})? O aluno poderá jogar em qualquer dispositivo a partir de agora.`)) return;
@@ -1799,13 +1379,11 @@ async function desvincularAluno(nome, turma) {
     await carregarListaAlunos();
 }
 
-// ==================== EVENT LISTENERS ====================
 document.getElementById("btn-som")?.addEventListener("click", toggleSom);
 document.getElementById("btn-comecar-partida")?.addEventListener("click", () => {
     if (window._pendingGame && !window._pendingGame.treino) iniciarPartidaClassificatoria();
 });
 
-// ==================== TOQUE SECRETO DO PROFESSOR ====================
 let cliquesTitulo = 0;
 let tempoResetClique = null;
 
@@ -1825,7 +1403,6 @@ function configurarToqueSecreto() {
     });
 }
 
-// ==================== INICIALIZAÇÃO ====================
 window.addEventListener("DOMContentLoaded", () => {
     mostrarTela("tela-inicial");
     renderizarRanking();
