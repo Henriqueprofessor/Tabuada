@@ -5,21 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Copa da Tabuada CEIB 2026 · Etapa Classificatória</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏆%3C/text%3E%3C/svg%3E">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f0f2f5; color: #222; margin: 0; padding: 16px; text-align: center; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #222; margin: 0; padding: 16px; text-align: center; }
         .card { background: #fff; max-width: 1000px; margin: 16px auto; padding: 24px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         h1, h2, h3, p { margin-top: 0; }
         .subtitulo { color: #555; line-height: 1.4; }
         label { display: block; text-align: left; font-weight: bold; margin-top: 12px; }
-        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
-        button { background: #0066cc; color: #fff; border: none; cursor: pointer; font-weight: bold; }
+        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; font-family: inherit; }
+        button { background: #0066cc; color: #fff; border: none; cursor: pointer; font-weight: bold; transition: background 0.2s, transform 0.1s; }
         button:hover:not(:disabled) { background: #004f9f; }
+        button:active:not(:disabled) { transform: scale(0.98); }
         button:disabled { cursor: not-allowed; opacity: 0.65; }
         .botao-verde { background: #198754; }
         .botao-verde:hover { background: #157347; }
         .botao-secundario { background: #495057; }
+        .botao-secundario:hover { background: #343a40; }
         .botao-treino { background: #fd7e14; }
         .botao-treino:hover:not(:disabled) { background: #e8690b; }
         .botao-perfil { background: #6f42c1; }
@@ -27,7 +30,13 @@
         .botao-som { position: fixed; top: 20px; right: 20px; width: auto; background: rgba(0,0,0,0.6); border-radius: 50px; padding: 8px 16px; z-index: 1000; font-size: 20px; cursor: pointer; }
         #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
         #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
-        #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; }
+        #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; transition: background 0.2s; }
+        #pergunta.erro-visual { animation: shake-pergunta 0.3s ease; }
+        @keyframes shake-pergunta {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
         .lista-opcoes { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .btn-opcao { background: #6c757d; padding: 14px; font-size: 20px; border-radius: 8px; }
         .resumo-resultado { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin: 16px 0; text-align: left; }
@@ -44,7 +53,7 @@
         .media-geral { font-size: 16px; margin-bottom: 8px; }
         .dica-melhoria { background: #e7f5ff; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #0a58ca; }
         .abas-filtro { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
-        .aba { flex: 1; padding: 8px 6px; font-size: 11px; background: #e9ecef; border: none; border-radius: 6px; cursor: pointer; }
+        .aba { flex: 1; padding: 8px 6px; font-size: 11px; background: #e9ecef; border: none; border-radius: 6px; cursor: pointer; color: #333; }
         .aba.ativa { background: #0066cc; color: #fff; }
         .observacao-ranking { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 15px; margin: 15px 0; font-size: 13px; text-align: left; border-radius: 6px; color: #856404; }
         .observacao-desempate { background: #e7f5ff; border-left: 4px solid #0066cc; padding: 8px 12px; margin: 10px 0; font-size: 12px; text-align: left; border-radius: 6px; color: #0a58ca; }
@@ -57,6 +66,32 @@
         .tag-reserva { background: #fd7e14; }
         .tag-participante { background: #6c757d; }
         .sem-registros { color: #666; text-align: center; }
+        .ranking-vazio { padding: 40px 20px; text-align: center; color: #6c757d; font-size: 14px; line-height: 1.6; }
+        .ranking-vazio .emoji-vazio { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.6; }
+
+        /* ===== PÓDIO NO RANKING ===== */
+        tr.podio-1 td { background: linear-gradient(90deg, #fff8e1 0%, transparent 100%); font-weight: 600; }
+        tr.podio-2 td { background: linear-gradient(90deg, #f5f5f5 0%, transparent 100%); font-weight: 600; }
+        tr.podio-3 td { background: linear-gradient(90deg, #fbe9e7 0%, transparent 100%); font-weight: 600; }
+        tr.podio-4 td { background: linear-gradient(90deg, #e8f5e9 0%, transparent 100%); }
+        tr.podio-1 td:first-child { border-left: 4px solid #ffc107; }
+        tr.podio-2 td:first-child { border-left: 4px solid #adb5bd; }
+        tr.podio-3 td:first-child { border-left: 4px solid #cd7f32; }
+        tr.podio-4 td:first-child { border-left: 4px solid #198754; }
+
+        /* ===== SKELETON LOADING ===== */
+        .skeleton-line {
+            height: 20px; border-radius: 6px; margin: 6px 0;
+            background: linear-gradient(90deg, #e9ecef 25%, #f8f9fa 50%, #e9ecef 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        .skeleton-line.curto { width: 60%; }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         .conquistas-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
         .conquista-card { background: #e9ecef; padding: 10px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: help; }
         .conquista-card.desbloqueada { background: #ffc107; color: #000; }
@@ -71,7 +106,6 @@
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         .info-sincronizacao { font-size: 12px; color: #6c757d; margin-top: 5px; margin-bottom: 10px; text-align: center; }
 
-        /* ===== TOASTS INTERNOS ===== */
         .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 90vw; }
         .toast { background: #fff; border-radius: 10px; padding: 14px 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; border-left: 5px solid #6c757d; min-width: 260px; max-width: 480px; text-align: left; animation: toastIn 0.3s ease; pointer-events: auto; color: #222; }
         .toast.saindo { animation: toastOut 0.3s ease forwards; }
@@ -83,7 +117,6 @@
         @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes toastOut { to { opacity: 0; transform: translateY(-12px); } }
 
-        /* ===== TELA DE PREPARAÇÃO ===== */
         .preparacao-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
         .prep-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 14px; text-align: left; }
         .prep-rotulo { display: block; font-size: 10px; font-weight: 800; color: #6c757d; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
@@ -97,13 +130,13 @@
         .prep-motivacao { background: #e7f5ff; border: 1px solid #b8daff; border-left: 4px solid #0066cc; border-radius: 10px; padding: 14px 18px; text-align: left; font-size: 14px; line-height: 1.5; color: #084298; margin-bottom: 14px; }
         .prep-foco { background: #fff8e1; border: 1px solid #ffe082; border-left: 4px solid #ffc107; border-radius: 10px; padding: 12px 16px; text-align: left; font-size: 13px; line-height: 1.6; color: #6d4c41; }
 
-        /* ===== CARDS DE COMPARAÇÃO (TENTATIVA VS RECORDE) ===== */
         .cards-comparacao { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
         .card-compcard { background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 12px; padding: 16px 14px; text-align: center; }
         .card-compcard.card-recorde { background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%); border-color: #ffc107; }
         .card-comp-rotulo { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #6c757d; margin-bottom: 6px; }
         .card-recorde .card-comp-rotulo { color: #856404; }
-        .card-comp-valor { font-size: 32px; font-weight: bold; line-height: 1; color: #0066cc; }
+        .card-comp-valor { font-size: 32px; font-weight: bold; line-height: 1; color: #0066cc; transition: transform 0.15s ease; }
+        .card-comp-valor.contando { transform: scale(1.08); }
         .card-recorde .card-comp-valor { color: #856404; }
         .card-comp-unidade { font-size: 11px; color: #6c757d; margin-top: 4px; font-weight: 600; }
 
@@ -124,7 +157,8 @@
 
         .jogo-cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px; gap: 12px; }
         .jogo-titulo-turma { font-size: 13px; font-weight: bold; color: #495057; letter-spacing: 0.5px; text-transform: uppercase; }
-        .jogo-pontos-destaque { font-size: 22px; font-weight: bold; color: #0066cc; white-space: nowrap; }
+        .jogo-pontos-destaque { font-size: 22px; font-weight: bold; color: #0066cc; white-space: nowrap; transition: transform 0.15s ease; }
+        .jogo-pontos-destaque.contando { transform: scale(1.12); color: #198754; }
         .pergunta-info-destaque { font-size: 15px; font-weight: bold; color: #495057; margin-bottom: 8px; text-align: left; }
         .barra-progresso-perguntas { width: 100%; height: 8px; display: flex; gap: 3px; margin-bottom: 18px; }
         .barra-progresso-perguntas .bloco-pergunta { flex: 1; background: #e9ecef; border-radius: 4px; transition: background 0.3s; }
@@ -159,6 +193,66 @@
         .card-classificacao.zona-reserva .mensagem-rodape { color: #856404; }
         .card-classificacao.fora-zona .mensagem-rodape { color: #084298; }
 
+        .acoes-resultado { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
+        .acoes-resultado.duas-colunas { grid-template-columns: 1fr 1fr; }
+        .btn-share { background: #495057; }
+        .btn-share:hover { background: #343a40; }
+
+        /* ===== MODO NOTURNO AUTOMÁTICO ===== */
+        @media (prefers-color-scheme: dark) {
+            body { background: #121212; color: #e8e8e8; }
+            .card { background: #1e1e1e; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+            .subtitulo { color: #b0b0b0; }
+            h1, h2, h3 { color: #f0f0f0; }
+            label { color: #e8e8e8; }
+            input, select { background: #2a2a2a; color: #e8e8e8; border-color: #444; }
+            input::placeholder { color: #888; }
+            button { background: #3a3a3a; color: #e8e8e8; }
+            button:hover:not(:disabled) { background: #4a4a4a; }
+            .botao-verde { background: #198754; }
+            .botao-verde:hover { background: #157347; }
+            .botao-secundario { background: #3a3a3a; }
+            .botao-treino { background: #fd7e14; }
+            .botao-perfil { background: #6f42c1; }
+            .botao-forcar { background: #dc3545; }
+            .resumo-resultado div { background: #2a2a2a; color: #e8e8e8; }
+            .mapa-tabuadas { background: #2a2a2a; }
+            .card-tabuada { background: #1a1a1a; color: #e8e8e8; }
+            .barra-container { background: #3a3a3a; }
+            .prep-card { background: #2a2a2a; border-color: #3a3a3a; }
+            .prep-valor { color: #e8e8e8; }
+            .prep-bloco { background: #2a2a2a; border-color: #3a3a3a; }
+            .prep-bloco h4 { color: #f0f0f0; }
+            .prep-bloco ul { color: #c0c0c0; }
+            .prep-motivacao { background: #1a2a3a; border-color: #2a4a6a; color: #a8c8e8; }
+            .prep-foco { background: #3a2e1a; border-color: #5a4a2a; color: #e8d0a0; }
+            .card-compcard { background: #2a2a2a; border-color: #3a3a3a; }
+            .card-comp-valor { color: #4a9eff; }
+            .card-recorde .card-comp-valor { color: #ffd166; }
+            .feedback-ranking { background: #1a2a3a; color: #a8c8e8; }
+            .observacao-ranking { background: #3a2e1a; color: #e8d0a0; border-color: #5a4a2a; }
+            .observacao-desempate { background: #1a2a3a; color: #a8c8e8; border-color: #2a4a6a; }
+            table { color: #e8e8e8; }
+            th { background: #2a2a2a; color: #f0f0f0; }
+            td { border-color: #3a3a3a; }
+            .aba { background: #2a2a2a; color: #e8e8e8; }
+            .aba.ativa { background: #0066cc; }
+            .tag-participante { background: #4a4a4a; }
+            .toast { background: #2a2a2a; color: #e8e8e8; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+            .nota-provisoria { background: #3a2e1a; color: #e8d0a0; border-color: #5a4a2a; }
+            .dica-melhoria { background: #1a2a3a; color: #a8c8e8; }
+            .conquista-card { background: #2a2a2a; color: #e8e8e8; }
+            .conquista-card.desbloqueada { background: #ffc107; color: #000; }
+            .skeleton-line { background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%); background-size: 200% 100%; }
+            .info-sincronizacao { color: #888; }
+            .detalhes { color: #888; }
+            .ranking-vazio { color: #888; }
+            tr.podio-1 td { background: linear-gradient(90deg, rgba(255,193,7,0.15) 0%, transparent 100%); }
+            tr.podio-2 td { background: linear-gradient(90deg, rgba(173,181,189,0.15) 0%, transparent 100%); }
+            tr.podio-3 td { background: linear-gradient(90deg, rgba(205,127,50,0.15) 0%, transparent 100%); }
+            tr.podio-4 td { background: linear-gradient(90deg, rgba(25,135,84,0.15) 0%, transparent 100%); }
+        }
+
         @media (max-width: 700px) {
             .acoes-secundarias { grid-template-columns: 1fr; }
             .hero-classificatoria { padding: 20px 16px; }
@@ -169,6 +263,7 @@
             .preparacao-grid { grid-template-columns: 1fr; }
             .prep-referencias-linha { grid-template-columns: 1fr; }
             .cards-comparacao { grid-template-columns: 1fr; }
+            .acoes-resultado.duas-colunas { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -219,7 +314,7 @@
         <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
     </select>
     <div style="display: flex; gap: 10px;">
-        <button onclick="registrarAluno(false)">🏆 Classificatória</button>
+        <button onclick="registrarAluno(false)" class="botao-verde">🏆 Classificatória</button>
         <button class="botao-treino" onclick="registrarAluno(true)">🎯 Modo Treino</button>
     </div>
     <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar</button>
@@ -276,7 +371,10 @@
     <div id="feedback-ranking-container" class="feedback-ranking"></div>
     <div id="novas-conquistas" style="background:#e7f5ff;border-radius:12px;padding:12px;margin:16px 0;"></div>
     <div id="mapa-tabuadas-container"></div>
-    <button id="btn-treinar-novamente" class="botao-treino hidden" onclick="iniciarTreinoDaTelaResultado()" style="font-size:16px;padding:14px;">🎯 Treinar para melhorar minha posição</button>
+    <div id="acoes-resultado-container" class="acoes-resultado duas-colunas">
+        <button id="btn-treinar-novamente" class="botao-treino hidden" onclick="iniciarTreinoDaTelaResultado()">🎯 Treinar novamente</button>
+        <button id="btn-compartilhar" class="btn-share hidden" onclick="compartilharResultado()">📤 Compartilhar</button>
+    </div>
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
 </div>
 
@@ -317,7 +415,7 @@
         <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
         <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
     </select>
-    <button onclick="carregarPerfil()">🔍 Buscar</button>
+    <button onclick="carregarPerfil()" class="botao-verde">🔍 Buscar</button>
     <div id="perfil-conteudo" class="hidden">
         <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
         <h3>🏅 Conquistas</h3><div id="perfil-conquistas" class="conquistas-grid"></div>
@@ -328,11 +426,11 @@
 
 <div id="tela-painel" class="card hidden">
     <h2>🔧 Painel do Professor</h2>
-    <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()">🔓 Acessar</button></div>
+    <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()" class="botao-verde">🔓 Acessar</button></div>
     <div id="painel-conteudo" class="hidden">
         <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos.</div>
         <div class="painel-botoes">
-            <button onclick="exportarCSV()">📎 Exportar CSV</button>
+            <button onclick="exportarCSV()" class="botao-secundario">📎 Exportar CSV</button>
             <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
             <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
         </div>
@@ -345,7 +443,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "5.3";
+const APP_VERSION = "5.4";
 function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
@@ -406,8 +504,9 @@ let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dific
 let alunosData=[], alunosFiltrados=[];
 let melhorMediaAluno = null, mediaTurma = null;
 let somAtivo = true, jaToCouSomSuperacao = false;
+let ultimoMelhorOficial = null, ultimaTentativa = null;
 
-// ==================== NOTIFICAÇÕES INTERNAS (PRIORIDADE 5) ====================
+// ==================== NOTIFICAÇÕES ====================
 function notificar(mensagem, tipo = "info", duracao = 3500) {
     let container = document.getElementById("toast-container");
     if (!container) {
@@ -425,6 +524,23 @@ function notificar(mensagem, tipo = "info", duracao = 3500) {
         toast.classList.add("saindo");
         setTimeout(() => toast.remove(), 300);
     }, duracao);
+}
+
+// ==================== ANIMAÇÃO DE PONTOS ====================
+function animarNumero(elemento, de, para, duracao = 400) {
+    if (!elemento) return;
+    const inicio = performance.now();
+    const diferenca = para - de;
+    elemento.classList.add("contando");
+    function passo(agora) {
+        const progresso = Math.min((agora - inicio) / duracao, 1);
+        const suavizado = 1 - Math.pow(1 - progresso, 3);
+        const atual = Math.round(de + diferenca * suavizado);
+        elemento.innerText = `${atual.toLocaleString('pt-BR')} pts`;
+        if (progresso < 1) requestAnimationFrame(passo);
+        else { elemento.classList.remove("contando"); elemento.innerText = `${para.toLocaleString('pt-BR')} pts`; }
+    }
+    requestAnimationFrame(passo);
 }
 
 function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
@@ -449,7 +565,6 @@ function atualizarDisplayUltimaSincronizacao() {
     if (el) el.innerText = lastSync ? `Última atualização: ${formatarDataHora(parseInt(lastSync))}` : "Última atualização: --";
 }
 
-// ==================== CRITÉRIOS DE DESEMPATE ====================
 function ehMelhorResultado(a, b) {
     if (!b) return true;
     if (a.pontos !== b.pontos) return a.pontos > b.pontos;
@@ -466,6 +581,19 @@ function compararParaOrdenacao(a, b) {
         || new Date(a.data || 0) - new Date(b.data || 0);
 }
 
+// ==================== CONFETES ====================
+function dispararConfetes() {
+    if (typeof confetti !== 'function') return;
+    const duracao = 2500;
+    const fim = Date.now() + duracao;
+    (function frame() {
+        confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#198754', '#ffc107', '#0066cc'] });
+        confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#198754', '#ffc107', '#0066cc'] });
+        if (Date.now() < fim) requestAnimationFrame(frame);
+    })();
+    confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 }, colors: ['#198754', '#ffc107', '#0066cc', '#fd7e14'] });
+}
+
 async function gerarHashSenha(valor) {
     if (!window.crypto?.subtle) return gerarHashSenhaFallback(valor);
     const bytes = new TextEncoder().encode(valor);
@@ -474,11 +602,7 @@ async function gerarHashSenha(valor) {
 }
 function gerarHashSenhaFallback(valor, seed = 0) {
     let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-    for (let i = 0, ch; i < valor.length; i++) {
-        ch = valor.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-    }
+    for (let i = 0, ch; i < valor.length; i++) { ch = valor.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
     h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
     h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
@@ -587,12 +711,8 @@ function escolherFatorAdaptativo() {
 }
 function gerarPerguntaAdaptativa(modalidade) {
     let fA, fB, chave, tentativas=0;
-    do {
-        fA = escolherFatorAdaptativo();
-        fB = Math.floor(Math.random()*11);
-        chave = `${fA}x${fB}`;
-        tentativas++;
-    } while(perguntasGeradas.slice(-5).some(p=>p.chave===chave) && tentativas < 20);
+    do { fA = escolherFatorAdaptativo(); fB = Math.floor(Math.random()*11); chave = `${fA}x${fB}`; tentativas++; }
+    while(perguntasGeradas.slice(-5).some(p=>p.chave===chave) && tentativas < 20);
     perguntasGeradas.push({fA,fB,chave});
     return {fA,fB,resposta:fA*fB};
 }
@@ -620,10 +740,7 @@ function gerarDistratoresInteligentes(fA, fB, resposta, totalOpcoes, modalidadeB
     adicionarDistrator(candidatos, resposta + (fA + fB), "soma-extra", 3);
     adicionarDistrator(candidatos, Math.floor(resposta / 2), "metade", 3);
     adicionarDistrator(candidatos, resposta * 2, "dobro", 3);
-    if(resposta >= 10 && resposta < 100) {
-        let invertido = Number(String(resposta).split("").reverse().join(""));
-        adicionarDistrator(candidatos, invertido, "invertido", 2);
-    }
+    if(resposta >= 10 && resposta < 100) { let invertido = Number(String(resposta).split("").reverse().join("")); adicionarDistrator(candidatos, invertido, "invertido", 2); }
     fatores.forEach(tab=>{ for(let n=0;n<=10;n++){ let prod = tab*n; if(Math.abs(prod-resposta) <= 18) adicionarDistrator(candidatos, prod, "produto-real", 2); } });
     if(resposta === 0) { [fA+fB, Math.max(fA,fB), 1, 2, 5, 10].forEach(v=>adicionarDistrator(candidatos, v, "zero-especial", 1)); }
     if(resposta === 1) { [0,2,10,11].forEach(v=>adicionarDistrator(candidatos, v, "um-especial", 1)); }
@@ -665,6 +782,8 @@ function mostrarTela(id) {
     if (id !== "tela-resultado") {
         const btnTreinar = document.getElementById("btn-treinar-novamente");
         if (btnTreinar) btnTreinar.classList.add("hidden");
+        const btnShare = document.getElementById("btn-compartilhar");
+        if (btnShare) btnShare.classList.add("hidden");
     }
 }
 function tocarBeep() {
@@ -747,7 +866,7 @@ async function obterPartidas() {
     }
 }
 async function forcarSincronizacao() {
-    if (!navigator.onLine) { notificar("Sem conexão com a internet. Conecte-se e tente novamente.", "aviso"); return; }
+    if (!navigator.onLine) { notificar("Sem conexão com a internet.", "aviso"); return; }
     try {
         let snapRanking = await database.ref(CAMINHO_RANKING).once("value");
         let rankingOnline = Object.values(snapRanking.val() || {});
@@ -784,10 +903,7 @@ async function obterRankingPorPontos(modalidade, turma=null){
     let filt = rank.filter(r=>r.modalidade===modalidade);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{
-        let chave=`${normalizarNome(r.nome)}|${r.turma}`;
-        if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r);
-    });
+    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r); });
     return Array.from(mapa.values()).sort(compararParaOrdenacao);
 }
 async function obterRankingPorPrecisao(modalidade, turma=null){
@@ -795,61 +911,38 @@ async function obterRankingPorPrecisao(modalidade, turma=null){
     let filt = rank.filter(r=>r.modalidade===modalidade);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{
-        let chave=`${normalizarNome(r.nome)}|${r.turma}`;
-        if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r);
-    });
-    return Array.from(mapa.values()).sort((a,b)=>
-        (b.acertos || 0) - (a.acertos || 0)
-        || (a.tempoMedio || 999) - (b.tempoMedio || 999)
-        || (b.pontos || 0) - (a.pontos || 0)
-        || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
-    );
+    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r); });
+    return Array.from(mapa.values()).sort((a,b)=>(b.acertos||0)-(a.acertos||0)||(a.tempoMedio||999)-(b.tempoMedio||999)||(b.pontos||0)-(a.pontos||0)||(b.maiorSequencia||0)-(a.maiorSequencia||0));
 }
 async function obterRankingPorVelocidade(modalidade, turma=null){
     let rank = await obterRanking();
     let filt = rank.filter(r=>r.modalidade===modalidade && r.acertos===20);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{
-        let chave=`${normalizarNome(r.nome)}|${r.turma}`;
-        if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r);
-    });
-    return Array.from(mapa.values()).sort((a,b)=>
-        (a.tempoMedio || 999) - (b.tempoMedio || 999)
-        || (b.acertos || 0) - (a.acertos || 0)
-        || (b.pontos || 0) - (a.pontos || 0)
-        || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
-    );
+    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r); });
+    return Array.from(mapa.values()).sort((a,b)=>(a.tempoMedio||999)-(b.tempoMedio||999)||(b.acertos||0)-(a.acertos||0)||(b.pontos||0)-(a.pontos||0)||(b.maiorSequencia||0)-(a.maiorSequencia||0));
 }
 async function salvarResultado(res){
     let chave = criarChaveResultado(res);
     let melhorOficial = res;
-
     try {
         let anterior = await database.ref(`${CAMINHO_RANKING}/${chave}`).once("value");
         let anteriorVal = anterior.val();
         if(!anteriorVal || ehMelhorResultado(res, anteriorVal)){
             await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro:"recorde" });
             melhorOficial = res;
-        } else {
-            melhorOficial = anteriorVal;
-        }
+        } else { melhorOficial = anteriorVal; }
     } catch(e) {
         console.warn("Recorde salvo apenas localmente", e);
         let localCheck = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
         let idxCheck = localCheck.findIndex(r => r.modalidade===res.modalidade && r.turma===res.turma && normalizarNome(r.nome)===normalizarNome(res.nome));
-        if(idxCheck !== -1 && ehMelhorResultado(localCheck[idxCheck], res)) {
-            melhorOficial = localCheck[idxCheck];
-        }
+        if(idxCheck !== -1 && ehMelhorResultado(localCheck[idxCheck], res)) melhorOficial = localCheck[idxCheck];
     }
-
     let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
     let idx = local.findIndex(r => r.modalidade===res.modalidade && r.turma===res.turma && normalizarNome(r.nome)===normalizarNome(res.nome));
     if(idx === -1) local.push(melhorOficial);
     else if(ehMelhorResultado(melhorOficial, local[idx])) local[idx] = melhorOficial;
     localStorage.setItem(STORAGE_RANKING, JSON.stringify(local));
-
     return melhorOficial;
 }
 async function carregarMediasReferencia(nome, turma, modalidade) {
@@ -877,7 +970,6 @@ async function renderizarCardClassificacao(r) {
     const quartoLugar = rankingTurma[VAGAS_CLASSIFICACAO - 1] || null;
     const pontos4 = quartoLugar ? quartoLugar.pontos : null;
     const diferenca = pontos4 !== null ? Math.max(0, pontos4 - r.pontos + 1) : 0;
-
     const top6 = rankingTurma.slice(0, 6);
     let miniRankingHtml = '<div class="mini-ranking">';
     for (let i = 0; i < top6.length; i++) {
@@ -893,6 +985,12 @@ async function renderizarCardClassificacao(r) {
     miniRankingHtml += '</div>';
 
     if (posicao <= VAGAS_CLASSIFICACAO) {
+        // Dispara confetes apenas uma vez por aluno/turma
+        const confettiKey = `ceib_confetti_${normalizarNome(r.nome)}_${r.turma}`;
+        if (!localStorage.getItem(confettiKey)) {
+            setTimeout(() => dispararConfetes(), 300);
+            localStorage.setItem(confettiKey, "1");
+        }
         return `<div class="card-classificacao zona-classificacao">
             <h3>🎉 VOCÊ ESTÁ NA ZONA DE CLASSIFICAÇÃO!</h3>
             <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
@@ -925,7 +1023,6 @@ async function renderizarCardClassificacao(r) {
     }
 }
 
-// ==================== TELA DE PREPARAÇÃO REDESENHADA (PRIORIDADE 4) ====================
 async function registrarAluno(treino) {
     let nome = document.getElementById("nome-aluno").value.trim();
     let turma = document.getElementById("turma-aluno").value;
@@ -935,7 +1032,7 @@ async function registrarAluno(treino) {
     if (!modoTreino) {
         const resultado = await verificarVinculo(nome, turma);
         if (!resultado.permitido) { notificar(resultado.mensagem, "aviso", 5000); return; }
-        if (resultado.primeiroUso) notificar(`Dispositivo vinculado ao nome "${nome}" (Turma ${turma}). Este nome só funcionará neste dispositivo.`, "sucesso", 5000);
+        if (resultado.primeiroUso) notificar(`Dispositivo vinculado ao nome "${nome}".`, "sucesso", 5000);
     }
 
     if (!modoTreino) {
@@ -953,24 +1050,11 @@ async function registrarAluno(treino) {
 
         div.innerHTML = `
             <div class="preparacao-grid">
-                <div class="prep-card">
-                    <span class="prep-rotulo">👤 Aluno</span>
-                    <span class="prep-valor">${escaparHtml(nome)}</span>
-                </div>
-                <div class="prep-card">
-                    <span class="prep-rotulo">🏫 Turma</span>
-                    <span class="prep-valor">${turma}</span>
-                </div>
-                <div class="prep-card">
-                    <span class="prep-rotulo">📚 Modalidade</span>
-                    <span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span>
-                </div>
-                <div class="prep-card">
-                    <span class="prep-rotulo">⏱️ Formato</span>
-                    <span class="prep-valor">20 questões · 10s cada</span>
-                </div>
+                <div class="prep-card"><span class="prep-rotulo">👤 Aluno</span><span class="prep-valor">${escaparHtml(nome)}</span></div>
+                <div class="prep-card"><span class="prep-rotulo">🏫 Turma</span><span class="prep-valor">${turma}</span></div>
+                <div class="prep-card"><span class="prep-rotulo">📚 Modalidade</span><span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span></div>
+                <div class="prep-card"><span class="prep-rotulo">⏱️ Formato</span><span class="prep-valor">20 questões · 10s cada</span></div>
             </div>
-
             <div class="prep-bloco">
                 <h4>📋 Como funciona?</h4>
                 <ul>
@@ -980,23 +1064,14 @@ async function registrarAluno(treino) {
                     <li>Apenas o seu <strong>melhor resultado oficial</strong> entra na classificação.</li>
                 </ul>
             </div>
-
             <div class="prep-bloco">
                 <h4>📊 Suas referências</h4>
                 <div class="prep-referencias-linha">
-                    <div>
-                        <span class="prep-rotulo">Sua melhor média</span>
-                        <span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span>
-                    </div>
-                    <div>
-                        <span class="prep-rotulo">Média da turma</span>
-                        <span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span>
-                    </div>
+                    <div><span class="prep-rotulo">Sua melhor média</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div>
+                    <div><span class="prep-rotulo">Média da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div>
                 </div>
             </div>
-
             ${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado para treino</strong><br>${descreverFocoTreino()}</div>` : ""}
-
             <div class="prep-motivacao" style="margin-top:14px;">${msgMotivacional}</div>
         `;
         mostrarTela("tela-preparacao");
@@ -1033,6 +1108,8 @@ function reiniciarVariaveisJogo() {
     if(timerTimeout) clearTimeout(timerTimeout);
     const barra = document.getElementById("barra-progresso-perguntas");
     if (barra) barra.innerHTML = "";
+    const pontosEl = document.getElementById("cabecalho-pontos");
+    if (pontosEl) pontosEl.innerText = "0 pts";
 }
 function gerarOpcoes() {
     let ultima = perguntasGeradas[perguntasGeradas.length-1];
@@ -1119,6 +1196,7 @@ function processarResposta(pontos,acertou,tempo) {
             setTimeout(() => dicaDiv.classList.add("hidden"), 2000);
         }
     }
+    let pontosAntes = pontosAcumulados;
     pontosAcumulados+=pontos;
     if(perguntaAtual<=TOTAL_PERGUNTAS){
         let tab=tabuadaAtualPergunta;
@@ -1134,14 +1212,20 @@ function processarResposta(pontos,acertou,tempo) {
         if(tempo) temposCorretas.push(tempo);
         if ([5, 10, 15, 20].includes(sequenciaAtual)) exibirComboVisual(sequenciaAtual);
     } else { erros++; sequenciaAtual = 0; }
-    atualizarStatus();
+    atualizarStatus(pontosAntes);
     setTimeout(()=>{ if(!finalizando) proximaPergunta(); },250);
 }
-function atualizarStatus() {
+function atualizarStatus(pontosAntes) {
     const cabecalho = document.getElementById("cabecalho-turma");
     if (cabecalho) cabecalho.innerText = modoTreino ? `🎯 TREINO — TURMA ${turmaAtual}` : `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
     const pontosEl = document.getElementById("cabecalho-pontos");
-    if (pontosEl) pontosEl.innerText = `${pontosAcumulados.toLocaleString('pt-BR')} pts`;
+    if (pontosEl) {
+        if (typeof pontosAntes === "number" && pontosAntes !== pontosAcumulados) {
+            animarNumero(pontosEl, pontosAntes, pontosAcumulados, 400);
+        } else if (!pontosEl.classList.contains("contando")) {
+            pontosEl.innerText = `${pontosAcumulados.toLocaleString('pt-BR')} pts`;
+        }
+    }
     const infoPerg = document.getElementById("info-pergunta-destaque");
     if (infoPerg) infoPerg.innerText = `Pergunta ${Math.min(perguntaAtual, TOTAL_PERGUNTAS)} de ${TOTAL_PERGUNTAS}`;
     const acertosEl = document.getElementById("rodape-acertos");
@@ -1196,8 +1280,8 @@ async function finalizarCircuito() {
         document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
         document.getElementById("novas-conquistas").innerHTML="";
         document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
-        const btnTreinar = document.getElementById("btn-treinar-novamente");
-        if (btnTreinar) btnTreinar.classList.add("hidden");
+        document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
+        document.getElementById("btn-compartilhar")?.classList.add("hidden");
         mostrarTela("tela-resultado");
         return;
     }
@@ -1220,14 +1304,11 @@ async function finalizarCircuito() {
             await salvarPartida(resultado);
             let melhorOficial = await salvarResultado(resultado);
             await preencherResultado(melhorOficial, resultado, posicaoAntes);
-        } catch(e2) {
-            await preencherResultado(resultado, resultado, posicaoAntes);
-        }
+        } catch(e2) { await preencherResultado(resultado, resultado, posicaoAntes); }
         mostrarTela("tela-resultado");
     }
 }
 
-// ==================== CARDS DE COMPARAÇÃO (PRIORIDADE 2) ====================
 function gerarCardsComparacao(melhorOficial, tentativaAtual) {
     const ehNovoRecorde = ehMelhorResultado(tentativaAtual, melhorOficial) && tentativaAtual.data === melhorOficial.data;
     return `
@@ -1247,20 +1328,18 @@ function gerarCardsComparacao(melhorOficial, tentativaAtual) {
 }
 
 async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
-    // Cartão de classificação — usa o melhor oficial
+    ultimoMelhorOficial = melhorOficial;
+    ultimaTentativa = tentativaAtual;
+
     const cardHtml = await renderizarCardClassificacao(melhorOficial);
     document.getElementById("card-classificacao-container").innerHTML = cardHtml;
-
-    // Cards de comparação — tentativa atual vs. recorde
     document.getElementById("cards-comparacao-resultado").innerHTML = gerarCardsComparacao(melhorOficial, tentativaAtual);
 
-    // Posição baseada no melhor oficial
     let rankingTurma = await obterRankingPorPontos(melhorOficial.modalidade, melhorOficial.turma);
     let idxAluno = rankingTurma.findIndex(i => normalizarNome(i.nome)===normalizarNome(melhorOficial.nome) && i.turma===melhorOficial.turma);
     let posTurma = idxAluno === -1 ? rankingTurma.length + 1 : idxAluno + 1;
     let status = posTurma<=VAGAS_CLASSIFICACAO?"Classificado":(posTurma<=6?"Reserva":"Participante");
 
-    // Feedback principal
     let feedbackHtml = `${escaparHtml(tentativaAtual.nome)}, você concluiu!`;
     if (ehMelhorResultado(tentativaAtual, melhorOficial) && tentativaAtual.pontos === melhorOficial.pontos && tentativaAtual.data === melhorOficial.data) {
         feedbackHtml += `<br><small style="color:#198754;font-weight:bold;">✨ Novo recorde pessoal!</small>`;
@@ -1269,7 +1348,6 @@ async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
     }
     document.getElementById("feedback-pontos").innerHTML = feedbackHtml;
 
-    // Resumo mostra a tentativa atual
     document.getElementById("resumo-turma").innerText=tentativaAtual.turma;
     document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[tentativaAtual.modalidade]?.nome||tentativaAtual.modalidade;
     document.getElementById("resumo-acertos").innerText=`${tentativaAtual.acertos}/20`;
@@ -1289,20 +1367,14 @@ async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
     let conquistas = calcularConquistas(tentativaAtual, historico).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
     document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
 
-    // Botão "Treinar novamente" — só aparece se fora da zona de classificação
     const btnTreinar = document.getElementById("btn-treinar-novamente");
-    if (btnTreinar) {
-        if (posTurma > VAGAS_CLASSIFICACAO) {
-            btnTreinar.classList.remove("hidden");
-        } else {
-            btnTreinar.classList.add("hidden");
-        }
-    }
+    if (btnTreinar) { if (posTurma > VAGAS_CLASSIFICACAO) btnTreinar.classList.remove("hidden"); else btnTreinar.classList.add("hidden"); }
+    const btnShare = document.getElementById("btn-compartilhar");
+    if (btnShare) btnShare.classList.remove("hidden");
 
     await gerarFeedbackRanking(melhorOficial, posTurma, posicaoAntes);
 }
 
-// ==================== BOTÃO TREINAR NOVAMENTE (PRIORIDADE 1) ====================
 async function iniciarTreinoDaTelaResultado() {
     if (!alunoAtual || !turmaAtual || !modalidadeAtual) {
         notificar("Dados da partida não disponíveis. Volte ao início.", "aviso");
@@ -1311,6 +1383,27 @@ async function iniciarTreinoDaTelaResultado() {
     modoTreino = true;
     await carregarFocoTreino(alunoAtual, turmaAtual, modalidadeAtual);
     iniciarPartidaTreino();
+}
+
+// ==================== COMPARTILHAR RESULTADO ====================
+async function compartilharResultado() {
+    if (!ultimoMelhorOficial) {
+        notificar("Nenhum resultado para compartilhar.", "aviso");
+        return;
+    }
+    const texto = `🏆 Copa da Tabuada CEIB 2026\n👤 ${alunoAtual} · Turma ${turmaAtual}\n📊 ${ultimoMelhorOficial.pontos.toLocaleString('pt-BR')} pontos\n✅ ${ultimoMelhorOficial.acertos}/20 acertos\n⏱️ Tempo médio: ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n🎯 Modalidade: ${MODALIDADES[ultimoMelhorOficial.modalidade]?.nome || ultimoMelhorOficial.modalidade}`;
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: texto, url: window.location.href });
+        } catch(e) { /* usuário cancelou */ }
+    } else {
+        try {
+            await navigator.clipboard.writeText(texto + '\n' + window.location.href);
+            notificar("Resultado copiado para a área de transferência!", "sucesso");
+        } catch(e) {
+            notificar("Não foi possível compartilhar. Copie manualmente.", "aviso");
+        }
+    }
 }
 
 async function gerarFeedbackRanking(melhorOficial, posTurmaAtual, posicaoAntes) {
@@ -1356,11 +1449,25 @@ function gerarDicaMelhoria() {
     return `🎯 Foque nas tabuadas: ${piores.slice(0,3).map(p=>p[0]).join(", ")}. Treine mais!`;
 }
 
+// ==================== SKELETON LOADING NO RANKING ====================
+function mostrarSkeletonRanking(colunas) {
+    const tabelaBody = document.getElementById("tabela-ranking-body");
+    if (!tabelaBody) return;
+    let html = "";
+    for (let i = 0; i < 5; i++) {
+        html += `<tr><td colspan="${colunas}"><div class="skeleton-line"></div></td></tr>`;
+    }
+    tabelaBody.innerHTML = html;
+}
+
 async function renderizarRanking() {
     const tabelaHead = document.getElementById("tabela-head-ranking");
     const tabelaBody = document.getElementById("tabela-ranking-body");
     const tituloEl = document.getElementById("titulo-ranking");
     if(!tabelaBody || !tituloEl) return;
+
+    mostrarSkeletonRanking(8);
+
     let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
     let turma = document.getElementById("filtro-turma")?.value || "901";
     let ranking = [];
@@ -1373,15 +1480,20 @@ async function renderizarRanking() {
         titulo = `🏆 Por Turma - Turma ${turma} - ${MODALIDADES[modalidade]?.nome}`;
         tituloEl.innerText = titulo;
         tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
+        if (ranking.length === 0) {
+            tabelaBody.innerHTML = `<tr><td colspan="8"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro a entrar na classificação!</div></td></tr>`;
+            return;
+        }
         let html = "";
         for (let i = 0; i < ranking.length; i++) {
             const r = ranking[i]; const pos = i + 1;
             let statusClass = pos <= VAGAS_CLASSIFICACAO ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
             let statusText = pos <= VAGAS_CLASSIFICACAO ? "Zona de classificação" : (pos <= 6 ? "Zona de reserva" : "Participante");
             const jogos = mapaJogos.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
-            html += `<tr><td style="text-align:center">${pos}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${jogos}</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
+            const podioClass = pos <= 4 ? `podio-${pos}` : "";
+            const medalha = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : pos === 4 ? "🎫" : "";
+            html += `<tr class="${podioClass}"><td style="text-align:center">${pos}º ${medalha}</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${jogos}</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
         }
-        if (html === "") html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
         tabelaBody.innerHTML = html;
         return;
     } 
@@ -1392,6 +1504,10 @@ async function renderizarRanking() {
     else if(tipoRankingAtual === "velocidade-turma"){ ranking = await obterRankingPorVelocidade(modalidade, turma); titulo = `⚡ Velocidade - Turma ${turma} (100% acertos) - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`; } 
     else { ranking = await obterRankingPorPontos(modalidade, turma); titulo = `Ranking - ${MODALIDADES[modalidade]?.nome}`; tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`; }
     tituloEl.innerText = titulo;
+    if (ranking.length === 0) {
+        tabelaBody.innerHTML = `<tr><td colspan="6"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro a entrar na classificação!</div></td></tr>`;
+        return;
+    }
     let html = "";
     for (let i = 0; i < ranking.length; i++) {
         const r = ranking[i]; const pos = i + 1;
@@ -1402,7 +1518,6 @@ async function renderizarRanking() {
         else html += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
         html += `<td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td></tr>`;
     }
-    if (html === "") html = `<tr><td colspan="6" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
     tabelaBody.innerHTML = html;
 }
 function mudarTipoRanking(tipo) {
@@ -1572,11 +1687,7 @@ async function salvarEdicoesNomes(){
                 let novaChave = criarChaveResultado(novoReg);
                 await database.ref(`${CAMINHO_RANKING}/${novaChave}`).set(novoReg);
             }
-            let localRanking = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]").map(r => (
-                r.modalidade===modalidade && r.turma===turma && normalizarNome(r.nome)===normalizarNome(nomeAntigo)
-                    ? {...r, nome:nomeNovo}
-                    : r
-            ));
+            let localRanking = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]").map(r => (r.modalidade===modalidade && r.turma===turma && normalizarNome(r.nome)===normalizarNome(nomeAntigo) ? {...r, nome:nomeNovo} : r));
             localStorage.setItem(STORAGE_RANKING, JSON.stringify(localRanking));
             let partidas = await obterPartidas();
             for(let partida of partidas.filter(p=>p.modalidade===modalidade && p.turma===turma && normalizarNome(p.nome)===normalizarNome(nomeAntigo))){
@@ -1593,7 +1704,7 @@ async function salvarEdicoesNomes(){
 
 async function desvincularAluno(nome, turma) {
     if (!exigirProfessorAutenticado()) return;
-    if (!confirm(`Tem certeza que deseja desvincular ${nome} (Turma ${turma})? O aluno poderá jogar em qualquer dispositivo a partir de agora.`)) return;
+    if (!confirm(`Desvincular ${nome} (Turma ${turma})?`)) return;
     const chave = chaveVinculo(nome, turma);
     await database.ref(`vinculos/${chave}`).remove();
     notificar(`Vínculo de ${nome} removido.`, "sucesso");
