@@ -46,6 +46,7 @@
         .aba { flex: 1; padding: 8px 6px; font-size: 11px; background: #e9ecef; border: none; border-radius: 6px; cursor: pointer; }
         .aba.ativa { background: #0066cc; color: #fff; }
         .observacao-ranking { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 15px; margin: 15px 0; font-size: 13px; text-align: left; border-radius: 6px; color: #856404; }
+        .observacao-desempate { background: #e7f5ff; border-left: 4px solid #0066cc; padding: 8px 12px; margin: 10px 0; font-size: 12px; text-align: left; border-radius: 6px; color: #0a58ca; }
         .tabela-container { overflow-x: auto; margin-top: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { padding: 10px 8px; border-bottom: 1px solid #ddd; text-align: left; }
@@ -222,7 +223,7 @@
     <div class="resumo-resultado">
         <div><strong>Turma:</strong> <span id="resumo-turma"></span></div>
         <div><strong>Modalidade:</strong> <span id="resumo-modalidade"></span></div>
-        <div><strong>Pontuação:</strong> <span id="resumo-pontos"></span></div>
+        <div><strong>Pontuação desta tentativa:</strong> <span id="resumo-pontos"></span></div>
         <div><strong>Acertos:</strong> <span id="resumo-acertos"></span></div>
         <div><strong>Erros:</strong> <span id="resumo-erros"></span></div>
         <div><strong>Seu tempo médio:</strong> <span id="resumo-tempo"></span></div>
@@ -248,6 +249,7 @@
         <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
     </div>
     <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
+    <div class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.</div>
     <select id="filtro-modalidade" onchange="renderizarRanking()">
         <option value="2-5">Tabuadas 2-5</option>
         <option value="6-9">Tabuadas 6-9</option>
@@ -301,7 +303,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "5.1";
+const APP_VERSION = "5.2";
 function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
@@ -384,6 +386,24 @@ function atualizarDisplayUltimaSincronizacao() {
     const el = document.getElementById("ultima-sincronizacao");
     if (el) el.innerText = lastSync ? `Última atualização: ${formatarDataHora(parseInt(lastSync))}` : "Última atualização: --";
 }
+
+// ==================== CRITÉRIOS DE DESEMPATE (PRIORIDADE 2) ====================
+function ehMelhorResultado(a, b) {
+    if (!b) return true;
+    if (a.pontos !== b.pontos) return a.pontos > b.pontos;
+    if (a.acertos !== b.acertos) return a.acertos > b.acertos;
+    if ((a.tempoMedio || 999) !== (b.tempoMedio || 999)) return (a.tempoMedio || 999) < (b.tempoMedio || 999);
+    if ((a.maiorSequencia || 0) !== (b.maiorSequencia || 0)) return (a.maiorSequencia || 0) > (b.maiorSequencia || 0);
+    return false;
+}
+function compararParaOrdenacao(a, b) {
+    return (b.pontos || 0) - (a.pontos || 0)
+        || (b.acertos || 0) - (a.acertos || 0)
+        || (a.tempoMedio || 999) - (b.tempoMedio || 999)
+        || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
+        || new Date(a.data || 0) - new Date(b.data || 0);
+}
+
 async function gerarHashSenha(valor) {
     if (!window.crypto?.subtle) return gerarHashSenhaFallback(valor);
     const bytes = new TextEncoder().encode(valor);
@@ -693,45 +713,82 @@ async function obterHistoricoAluno(nome, turma, modalidade=null) {
     let ranking = await obterRanking();
     return ranking.filter(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma && (!modalidade || r.modalidade === modalidade)).sort(ordenarPorDataDesc);
 }
+
+// ==================== PRIORIDADE 2: TIEBREAKERS APLICADOS ====================
 async function obterRankingPorPontos(modalidade, turma=null){
     let rank = await obterRanking();
     let filt = rank.filter(r=>r.modalidade===modalidade);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave)||r.pontos>mapa.get(chave).pontos) mapa.set(chave,r); });
-    return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
+    filt.forEach(r=>{
+        let chave=`${normalizarNome(r.nome)}|${r.turma}`;
+        if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r);
+    });
+    return Array.from(mapa.values()).sort(compararParaOrdenacao);
 }
 async function obterRankingPorPrecisao(modalidade, turma=null){
     let rank = await obterRanking();
     let filt = rank.filter(r=>r.modalidade===modalidade);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave)||r.acertos>mapa.get(chave).acertos) mapa.set(chave,r); });
-    return Array.from(mapa.values()).sort((a,b)=>b.acertos-a.acertos || a.tempoMedio-b.tempoMedio);
+    filt.forEach(r=>{
+        let chave=`${normalizarNome(r.nome)}|${r.turma}`;
+        if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r);
+    });
+    return Array.from(mapa.values()).sort((a,b)=>
+        (b.acertos || 0) - (a.acertos || 0)
+        || (a.tempoMedio || 999) - (b.tempoMedio || 999)
+        || (b.pontos || 0) - (a.pontos || 0)
+        || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
+    );
 }
 async function obterRankingPorVelocidade(modalidade, turma=null){
     let rank = await obterRanking();
     let filt = rank.filter(r=>r.modalidade===modalidade && r.acertos===20);
     if(turma) filt = filt.filter(r=>r.turma===turma);
     let mapa = new Map();
-    filt.forEach(r=>{ let chave=`${normalizarNome(r.nome)}|${r.turma}`; if(!mapa.has(chave)||r.tempoMedio<mapa.get(chave).tempoMedio) mapa.set(chave,r); });
-    return Array.from(mapa.values()).sort((a,b)=>a.tempoMedio-b.tempoMedio || b.acertos-a.acertos);
+    filt.forEach(r=>{
+        let chave=`${normalizarNome(r.nome)}|${r.turma}`;
+        if(!mapa.has(chave) || ehMelhorResultado(r, mapa.get(chave))) mapa.set(chave,r);
+    });
+    return Array.from(mapa.values()).sort((a,b)=>
+        (a.tempoMedio || 999) - (b.tempoMedio || 999)
+        || (b.acertos || 0) - (a.acertos || 0)
+        || (b.pontos || 0) - (a.pontos || 0)
+        || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
+    );
 }
+
+// ==================== PRIORIDADE 1: salvarResultado retorna o melhor oficial ====================
 async function salvarResultado(res){
     let chave = criarChaveResultado(res);
+    let melhorOficial = res;
+
     try {
         let anterior = await database.ref(`${CAMINHO_RANKING}/${chave}`).once("value");
         let anteriorVal = anterior.val();
-        if(!anteriorVal || res.pontos > anteriorVal.pontos){
+        if(!anteriorVal || ehMelhorResultado(res, anteriorVal)){
             await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro:"recorde" });
+            melhorOficial = res;
+        } else {
+            melhorOficial = anteriorVal;
         }
-    } catch(e) { console.warn("Recorde salvo apenas localmente", e); }
+    } catch(e) {
+        console.warn("Recorde salvo apenas localmente", e);
+        let localCheck = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
+        let idxCheck = localCheck.findIndex(r => r.modalidade===res.modalidade && r.turma===res.turma && normalizarNome(r.nome)===normalizarNome(res.nome));
+        if(idxCheck !== -1 && ehMelhorResultado(localCheck[idxCheck], res)) {
+            melhorOficial = localCheck[idxCheck];
+        }
+    }
+
     let local = JSON.parse(localStorage.getItem(STORAGE_RANKING)||"[]");
-    let idx = local.findIndex(r=>`${r.modalidade}|${r.turma}|${normalizarNome(r.nome)}` === `${res.modalidade}|${res.turma}|${normalizarNome(res.nome)}`);
-    if(idx===-1) local.push(res);
-    else if(res.pontos > local[idx].pontos) local[idx]=res;
-    localStorage.setItem(STORAGE_RANKING,JSON.stringify(local));
-    return res;
+    let idx = local.findIndex(r => r.modalidade===res.modalidade && r.turma===res.turma && normalizarNome(r.nome)===normalizarNome(res.nome));
+    if(idx === -1) local.push(melhorOficial);
+    else if(ehMelhorResultado(melhorOficial, local[idx])) local[idx] = melhorOficial;
+    localStorage.setItem(STORAGE_RANKING, JSON.stringify(local));
+
+    return melhorOficial;
 }
 async function carregarMediasReferencia(nome, turma, modalidade) {
     const partidas = await obterPartidas();
@@ -842,7 +899,7 @@ async function registrarAluno(treino) {
             <div style="background:#e7f5ff; padding:12px; border-radius:8px; text-align:center;">
                 ${msgMotivacional}<br>
                 ⏱️ Você terá 10 segundos por pergunta. Acertar rápido dá mais pontos!<br>
-                🎯 Tente superar sua melhor média e ajudar sua turma!
+                🎯 Apenas o seu <strong>melhor resultado oficial</strong> entra na classificação.
             </div>
         `;
         mostrarTela("tela-preparacao");
@@ -1018,12 +1075,15 @@ function atualizarBarraProgressoPerguntas() {
 }
 function alternarBotoes(des) { document.querySelectorAll(".btn-opcao").forEach(b=>b.disabled=des); }
 function forcarFinalizacao() { if(jogoAtivo && confirm("Encerrar tentativa atual? Suas respostas até aqui serão salvas.")){ clearInterval(timerInterval); clearTimeout(timerTimeout); finalizarCircuito(); } }
+
+// ==================== PRIORIDADE 3: capturar posição ANTES de salvar ====================
 async function finalizarCircuito() {
     if(finalizando) return;
     finalizando=true; jogoAtivo=false;
     clearInterval(timerInterval); clearTimeout(timerTimeout);
     let tempoMedio = temposCorretas.length? temposCorretas.reduce((a,b)=>a+b,0)/temposCorretas.length : 10;
     let resultado = { nome:alunoAtual, turma:turmaAtual, modalidade:modalidadeAtual, pontos:pontosAcumulados, acertos:acertos, erros:erros, tempoMedio:tempoMedio, maiorSequencia:maiorSequencia, desempenhoTabuadas:desempenhoTabuadas, data:new Date().toISOString(), idPartida:criarChavePartida({nome:alunoAtual}), temposRapidos:temposRapidos, acertouPrimeira:acertouPrimeira };
+
     if(modoTreino){
         document.getElementById("resultado-titulo").innerHTML="🎯 Resultado do Treino";
         document.getElementById("feedback-pontos").innerHTML=`${alunoAtual}, treino concluído!`;
@@ -1044,68 +1104,96 @@ async function finalizarCircuito() {
         mostrarTela("tela-resultado");
         return;
     }
+
+    // Capturar posição ANTES de salvar (para o feedback de evolução)
+    let posicaoAntes = null;
+    try {
+        const rankingAntes = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
+        const idx = rankingAntes.findIndex(i => normalizarNome(i.nome)===normalizarNome(resultado.nome) && i.turma===resultado.turma);
+        posicaoAntes = idx === -1 ? null : idx + 1;
+    } catch(e) { console.warn("Não foi possível capturar posição anterior", e); }
+
     try{
         await salvarPartida(resultado);
-        let salvo = await salvarResultado(resultado);
-        await preencherResultado(salvo);
+        let melhorOficial = await salvarResultado(resultado);
+        await preencherResultado(melhorOficial, resultado, posicaoAntes);
         mostrarTela("tela-resultado");
     }catch(e){
         alert("Erro ao salvar. Resultado salvo localmente.");
-        await salvarPartida(resultado);
-        await preencherResultado(resultado);
+        try {
+            await salvarPartida(resultado);
+            let melhorOficial = await salvarResultado(resultado);
+            await preencherResultado(melhorOficial, resultado, posicaoAntes);
+        } catch(e2) {
+            await preencherResultado(resultado, resultado, posicaoAntes);
+        }
         mostrarTela("tela-resultado");
     }
 }
-async function preencherResultado(r) {
-    const cardHtml = await renderizarCardClassificacao(r);
+
+async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
+    // Cartão de classificação — usa o melhor oficial (posição real do aluno)
+    const cardHtml = await renderizarCardClassificacao(melhorOficial);
     document.getElementById("card-classificacao-container").innerHTML = cardHtml;
-    let rankingTurma = await obterRankingPorPontos(r.modalidade, r.turma);
-    let posTurma = rankingTurma.findIndex(i=>normalizarNome(i.nome)===normalizarNome(r.nome))+1;
+
+    // Posição baseada no melhor oficial
+    let rankingTurma = await obterRankingPorPontos(melhorOficial.modalidade, melhorOficial.turma);
+    let idxAluno = rankingTurma.findIndex(i => normalizarNome(i.nome)===normalizarNome(melhorOficial.nome) && i.turma===melhorOficial.turma);
+    let posTurma = idxAluno === -1 ? rankingTurma.length + 1 : idxAluno + 1;
     let status = posTurma<=VAGAS_CLASSIFICACAO?"Classificado":(posTurma<=6?"Reserva":"Participante");
-    document.getElementById("feedback-pontos").innerHTML=`${r.nome}, você concluiu!`;
-    document.getElementById("resumo-turma").innerText=r.turma;
-    document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[r.modalidade]?.nome||r.modalidade;
-    document.getElementById("resumo-pontos").innerText=`${r.pontos} pts`;
-    document.getElementById("resumo-acertos").innerText=`${r.acertos}/20`;
-    document.getElementById("resumo-erros").innerText=r.erros;
-    document.getElementById("resumo-tempo").innerText=`${r.tempoMedio.toFixed(2)}s`;
-    document.getElementById("resumo-sequencia").innerText=r.maiorSequencia;
+
+    // Feedback principal — mostra tentativa atual + recorde oficial quando forem diferentes
+    let feedbackHtml = `${escaparHtml(tentativaAtual.nome)}, você concluiu!`;
+    if (ehMelhorResultado(tentativaAtual, melhorOficial) && tentativaAtual.pontos === melhorOficial.pontos && tentativaAtual.data === melhorOficial.data) {
+        feedbackHtml += `<br><small style="color:#198754;font-weight:bold;">✨ Novo recorde pessoal!</small>`;
+    } else if (melhorOficial.pontos > tentativaAtual.pontos) {
+        feedbackHtml += `<br><small style="color:#6c757d;">🏆 Seu melhor resultado oficial: <strong>${melhorOficial.pontos.toLocaleString('pt-BR')} pts</strong> — esta tentativa <strong>não superou</strong> seu recorde.</small>`;
+    }
+    document.getElementById("feedback-pontos").innerHTML = feedbackHtml;
+
+    // Resumo mostra a tentativa atual
+    document.getElementById("resumo-turma").innerText=tentativaAtual.turma;
+    document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[tentativaAtual.modalidade]?.nome||tentativaAtual.modalidade;
+    document.getElementById("resumo-pontos").innerText=`${tentativaAtual.pontos} pts`;
+    document.getElementById("resumo-acertos").innerText=`${tentativaAtual.acertos}/20`;
+    document.getElementById("resumo-erros").innerText=tentativaAtual.erros;
+    document.getElementById("resumo-tempo").innerText=`${tentativaAtual.tempoMedio.toFixed(2)}s`;
+    document.getElementById("resumo-sequencia").innerText=tentativaAtual.maiorSequencia;
     document.getElementById("resumo-status").innerHTML=`<span class="tag ${status==='Classificado'?'tag-classificado':status==='Reserva'?'tag-reserva':'tag-participante'}">${status}</span>`;
-    const medias = await carregarMediasReferencia(r.nome, r.turma, r.modalidade);
+
+    // Médias de referência
+    const medias = await carregarMediasReferencia(tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade);
     document.getElementById("resumo-melhor-media").innerText = medias.melhorMediaAluno ? `${medias.melhorMediaAluno.toFixed(2)} s` : "---";
     document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
-    if(r.desempenhoTabuadas) desempenhoTabuadas=r.desempenhoTabuadas;
+
+    // Mapa de tabuadas mostra a tentativa atual (para o aluno aprender com os erros)
+    if(tentativaAtual.desempenhoTabuadas) desempenhoTabuadas = tentativaAtual.desempenhoTabuadas;
     document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
-    let historico = await obterHistoricoAluno(r.nome, r.turma, r.modalidade);
-    let conquistas = calcularConquistas(r, historico).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
+
+    // Conquistas consideram a tentativa atual
+    let historico = await obterHistoricoAluno(tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade);
+    let conquistas = calcularConquistas(tentativaAtual, historico).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
     document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
-    await gerarFeedbackRanking(r, posTurma);
+
+    // Feedback de evolução — usa posicaoAntes capturada
+    await gerarFeedbackRanking(melhorOficial, posTurma, posicaoAntes);
 }
-async function gerarFeedbackRanking(resultado, posTurmaAtual) {
-    let todasPartidas = await obterHistoricoAluno(resultado.nome, resultado.turma, resultado.modalidade);
-    let partidasAnteriores = todasPartidas.filter(p => p.data !== resultado.data).sort(ordenarPorDataDesc);
+
+// ==================== PRIORIDADE 3: gerarFeedbackRanking robusto ====================
+async function gerarFeedbackRanking(melhorOficial, posTurmaAtual, posicaoAntes) {
     let feedbackHtml = "";
-    if(partidasAnteriores.length === 0) {
-        feedbackHtml = `<div class="feedback-ranking"><strong>🎉 PARABÉNS PELA SUA PRIMEIRA PARTIDA! 🎉</strong><br><br>📊 Você entrou na classificação da Turma ${resultado.turma} na <strong>${posTurmaAtual}ª posição</strong>!<br><br>Continue assim! 💪</div>`;
+    if (posicaoAntes === null || posicaoAntes === undefined) {
+        feedbackHtml = `<div class="feedback-ranking"><strong>🎉 VOCÊ ENTROU NA CLASSIFICAÇÃO!</strong><br><br>📊 Sua posição atual na Turma ${melhorOficial.turma}: <strong>${posTurmaAtual}º lugar</strong>.<br><br>Continue assim! 💪</div>`;
+    } else if (posTurmaAtual < posicaoAntes) {
+        feedbackHtml = `<div class="feedback-ranking"><strong>✅ Você SUBIU para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posicaoAntes}º)! 🚀</strong></div>`;
+    } else if (posTurmaAtual > posicaoAntes) {
+        feedbackHtml = `<div class="feedback-ranking"><strong>📉 Você está em <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posicaoAntes}º).</strong></div>`;
     } else {
-        let partidaAnterior = partidasAnteriores[0];
-        let rankingTurmaAnterior = await obterRankingPorPontosAntigo(resultado.modalidade, resultado.turma, resultado.data);
-        let posTurmaAnterior = rankingTurmaAnterior.findIndex(p => normalizarNome(p.nome)===normalizarNome(resultado.nome)) + 1;
-        let feedback = "";
-        if(posTurmaAtual < posTurmaAnterior) feedback = `✅ Você SUBIU para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º)! 🚀`;
-        else if(posTurmaAtual > posTurmaAnterior) feedback = `📉 Você caiu para <strong>${posTurmaAtual}º lugar</strong> na turma (era ${posTurmaAnterior}º).`;
-        else feedback = `📊 Você manteve o <strong>${posTurmaAtual}º lugar</strong> na turma! 🎯`;
-        feedbackHtml = `<div class="feedback-ranking"><strong>${feedback}</strong></div>`;
+        feedbackHtml = `<div class="feedback-ranking"><strong>📊 Você manteve o <strong>${posTurmaAtual}º lugar</strong> na turma! 🎯</strong></div>`;
     }
     document.getElementById("feedback-ranking-container").innerHTML = feedbackHtml;
 }
-async function obterRankingPorPontosAntigo(modalidade, turma, dataAtual) {
-    let rank = await obterRanking();
-    let filt = rank.filter(r => r.modalidade === modalidade && r.turma === turma && r.data !== dataAtual);
-    let mapa = new Map();
-    filt.forEach(r => { let chave = `${r.nome}|${r.turma}`; if(!mapa.has(chave) || r.pontos > mapa.get(chave).pontos) mapa.set(chave, r); });
-    return Array.from(mapa.values()).sort((a,b)=>b.pontos-a.pontos);
-}
+
 function renderizarMapa() {
     let fatores = MODALIDADES[modalidadeAtual]?.fatores||[];
     let html = `<div class="mapa-tabuadas"><h3>🗺️ Meu Mapa de Tabuadas</h3><div class="grade-tabuadas">`;
@@ -1156,9 +1244,9 @@ async function renderizarRanking() {
         for (let i = 0; i < ranking.length; i++) {
             const r = ranking[i]; const pos = i + 1;
             let statusClass = pos <= VAGAS_CLASSIFICACAO ? "tag-classificado" : (pos <= 6 ? "tag-reserva" : "tag-participante");
-            let statusText = pos <= VAGAS_CLASSIFICACAO ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
+            let statusText = pos <= VAGAS_CLASSIFICACAO ? "Zona de classificação" : (pos <= 6 ? "Zona de reserva" : "Participante");
             const jogos = mapaJogos.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
-            html += `<tr><td style="text-align:center">${pos}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td><td style="text-align:center">${jogos}</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
+            html += `<tr><td style="text-align:center">${pos}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${jogos}</td><td style="text-align:center"><span class="tag ${statusClass}">${statusText}</span></td></tr>`;
         }
         if (html === "") html = `<tr><td colspan="8" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
         tabelaBody.innerHTML = html;
@@ -1179,7 +1267,7 @@ async function renderizarRanking() {
         if (tipoRankingAtual === "precisao-global" || tipoRankingAtual === "precisao-turma") html += `<td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td>`;
         else if (tipoRankingAtual === "velocidade-global" || tipoRankingAtual === "velocidade-turma") html += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
         else html += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
-        html += `<td style="text-align:center">${r.tempoMedio.toFixed(2)}s</td></tr>`;
+        html += `<td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td></tr>`;
     }
     if (html === "") html = `<tr><td colspan="6" class="sem-registros">Nenhum resultado registrado.</td></tr>`;
     tabelaBody.innerHTML = html;
@@ -1209,7 +1297,8 @@ async function carregarPerfil() {
     document.getElementById("perfil-total-partidas").innerHTML=`<span class="estatistica-destaque">${partidas.length}</span>`;
     document.getElementById("perfil-melhor-sequencia").innerHTML=`<span class="estatistica-destaque">${melhor.maiorSequencia}</span>`;
     let rankingTurma = await obterRankingPorPontos(melhor.modalidade, turma);
-    let pos = rankingTurma.findIndex(r=>normalizarNome(r.nome)===normalizarNome(melhor.nome))+1;
+    let idxPerfil = rankingTurma.findIndex(r=>normalizarNome(r.nome)===normalizarNome(melhor.nome));
+    let pos = idxPerfil === -1 ? rankingTurma.length + 1 : idxPerfil + 1;
     let status = pos<=VAGAS_CLASSIFICACAO?"Classificado":(pos<=6?"Reserva":"Participante");
     document.getElementById("perfil-melhor-status").innerHTML=`<span class="tag tag-${status==='Classificado'?'classificado':status==='Reserva'?'reserva':'participante'}">${status}</span>`;
     let conquistas = calcularConquistas(melhor, partidas).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
