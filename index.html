@@ -170,7 +170,6 @@
         .btn-encerrar-discreto:hover { background: #fff5f5; color: #dc3545; border-color: #dc3545; }
         .rodape-jogo .rodape-info .seq-destaque { color: #fd7e14; font-weight: bold; }
 
-        /* ===== CARTÕES DE CLASSIFICAÇÃO — CORES CORRIGIDAS PARA MODO CLARO/ESCURO ===== */
         .card-classificacao { border-radius: 16px; padding: 24px; margin: 20px 0; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); color: #1a1a1a; }
         .card-classificacao.zona-classificacao { background: linear-gradient(135deg, #d4edda 0%, #b8e0c4 100%); border: 2px solid #198754; color: #0f5132; }
         .card-classificacao.zona-reserva { background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%); border: 2px solid #fd7e14; color: #664d03; }
@@ -180,6 +179,21 @@
         .card-classificacao .posicao-destaque .sufixo { font-size: 20px; font-weight: normal; opacity: 0.7; }
         .card-classificacao .contexto-modalidade { font-size: 14px; color: inherit; opacity: 0.78; margin: 4px 0; }
         .card-classificacao .pontuacao-destaque { font-size: 22px; font-weight: bold; margin: 8px 0; color: inherit; }
+
+        /* ===== MENSAGEM DE CORTE (NOVA) ===== */
+        .mensagem-corte {
+            font-size: 14px;
+            line-height: 1.55;
+            margin: 10px 0;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.55);
+            border-radius: 10px;
+            color: inherit;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.7);
+        }
+        .mensagem-corte strong { color: inherit; }
+        .mensagem-corte .msg-corte-icone { font-size: 16px; margin-right: 4px; }
 
         .mini-ranking { background: rgba(255,255,255,0.85); border-radius: 12px; padding: 10px; margin: 16px auto; text-align: left; max-width: 420px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); color: #1a1a1a; }
         .mini-ranking-item { padding: 8px 12px; border-radius: 6px; margin: 4px 0; display: flex; justify-content: space-between; font-size: 14px; align-items: center; color: #1a1a1a; }
@@ -250,13 +264,13 @@
             tr.podio-2 td { background: linear-gradient(90deg, rgba(173,181,189,0.15) 0%, transparent 100%); }
             tr.podio-3 td { background: linear-gradient(90deg, rgba(205,127,50,0.15) 0%, transparent 100%); }
             tr.podio-4 td { background: linear-gradient(90deg, rgba(25,135,84,0.15) 0%, transparent 100%); }
-            /* Cartões de classificação mantêm cores escuras por causa do fundo claro */
             .card-classificacao { color: #1a1a1a; }
             .card-classificacao.zona-classificacao { color: #0f5132; }
             .card-classificacao.zona-reserva { color: #664d03; }
             .card-classificacao.fora-zona { color: #084298; }
             .mini-ranking { color: #1a1a1a; }
             .mini-ranking-item.voce { color: #0a2540; }
+            .mensagem-corte { background: rgba(255,255,255,0.55); color: inherit; }
         }
 
         @media (max-width: 700px) {
@@ -267,7 +281,6 @@
             .jogo-pontos-destaque { font-size: 20px; }
             .card-classificacao .posicao-destaque { font-size: 42px; }
             .preparacao-grid { grid-template-columns: 1fr; }
-            .prep-referencias-linhas { grid-template-columns: 1fr; }
             .prep-referencias-linha { grid-template-columns: 1fr; }
             .cards-comparacao { grid-template-columns: 1fr; }
             .acoes-resultado.duas-colunas { grid-template-columns: 1fr; }
@@ -450,7 +463,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "5.5";
+const APP_VERSION = "5.6";
 function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
@@ -584,6 +597,51 @@ function compararParaOrdenacao(a, b) {
         || (a.tempoMedio || 999) - (b.tempoMedio || 999)
         || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
         || new Date(a.data || 0) - new Date(b.data || 0);
+}
+
+// ==================== EXPLICAR DESEMPATE (VERSÃO 5.6) ====================
+function explicarDesempate(aluno, quartoLugar) {
+    if (!quartoLugar) {
+        return {
+            tipo: "sem-corte",
+            mensagem: "Ainda não há quatro participantes nesta modalidade. Sua posição pode mudar quando novos resultados forem registrados."
+        };
+    }
+
+    if (aluno.pontos < quartoLugar.pontos) {
+        const diferenca = quartoLugar.pontos - aluno.pontos;
+        return {
+            tipo: "pontos",
+            diferenca: diferenca,
+            mensagem: `O 4º lugar está <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> à sua frente. Continue treinando para alcançar.`
+        };
+    }
+
+    if (aluno.acertos < quartoLugar.acertos) {
+        return {
+            tipo: "acertos",
+            mensagem: `Você está empatado em pontos com o 4º lugar. A vaga está sendo definida pelos <strong>acertos</strong> — quanto mais acertos, melhor.`
+        };
+    }
+
+    if ((aluno.tempoMedio || 999) > (quartoLugar.tempoMedio || 999)) {
+        return {
+            tipo: "tempo",
+            mensagem: `Você está empatado em pontos e acertos. A vaga está sendo definida pelo <strong>tempo médio</strong> — responda mais rápido para avançar.`
+        };
+    }
+
+    if ((aluno.maiorSequencia || 0) < (quartoLugar.maiorSequencia || 0)) {
+        return {
+            tipo: "sequencia",
+            mensagem: `Você está empatado em pontos, acertos e tempo. A vaga está sendo definida pela <strong>maior sequência de acertos</strong>.`
+        };
+    }
+
+    return {
+        tipo: "empate",
+        mensagem: "Você está muito próximo do 4º lugar. Continue treinando — a próxima tentativa pode definir a vaga."
+    };
 }
 
 function dispararConfetes() {
@@ -972,8 +1030,8 @@ async function renderizarCardClassificacao(r) {
     if (posicao === -1) return "";
     const modalidadeNome = MODALIDADES[r.modalidade]?.nome || r.modalidade;
     const quartoLugar = rankingTurma[VAGAS_CLASSIFICACAO - 1] || null;
-    const pontos4 = quartoLugar ? quartoLugar.pontos : null;
-    const diferenca = pontos4 !== null ? Math.max(0, pontos4 - r.pontos + 1) : 0;
+    const explicacao = explicarDesempate(r, quartoLugar);
+
     const top6 = rankingTurma.slice(0, 6);
     let miniRankingHtml = '<div class="mini-ranking">';
     for (let i = 0; i < top6.length; i++) {
@@ -1008,8 +1066,7 @@ async function renderizarCardClassificacao(r) {
             <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
             <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
             <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
-            <p style="font-size:15px;margin:8px 0;">Faltam <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> para alcançar o ${VAGAS_CLASSIFICACAO}º lugar.</p>
-            <p style="font-size:14px;margin:4px 0;">Você está na <strong>zona de reserva</strong>. Continue treinando!</p>
+            <p class="mensagem-corte">${explicacao.mensagem}</p>
             ${miniRankingHtml}
             <div class="mensagem-rodape">⚠️ <strong>Classificação provisória</strong> — atualizada com seu melhor resultado.</div>
         </div>`;
@@ -1019,7 +1076,7 @@ async function renderizarCardClassificacao(r) {
             <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
             <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${modalidadeNome}</div>
             <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
-            <p style="font-size:15px;margin:8px 0;">Você está a <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> do ${VAGAS_CLASSIFICACAO}º lugar.</p>
+            <p class="mensagem-corte">${explicacao.mensagem}</p>
             ${miniRankingHtml}
             <div class="mensagem-rodape">💡 Use o <strong>Modo Treino</strong> para reforçar as tabuadas onde você errou mais.<br>⚠️ <strong>Classificação provisória</strong> — você ainda pode subir!</div>
         </div>`;
