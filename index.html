@@ -21,6 +21,7 @@
         .botao-verde:hover { background: #157347; }
         .botao-secundario { background: #495057; }
         .botao-treino { background: #fd7e14; }
+        .botao-treino:hover:not(:disabled) { background: #e8690b; }
         .botao-perfil { background: #6f42c1; }
         .botao-forcar { background: #dc3545; }
         .botao-som { position: fixed; top: 20px; right: 20px; width: auto; background: rgba(0,0,0,0.6); border-radius: 50px; padding: 8px 16px; z-index: 1000; font-size: 20px; cursor: pointer; }
@@ -69,6 +70,42 @@
         .btn-desvincular { background: #6f42c1; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; }
         #toast-pontuacao { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #198754; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000; }
         .info-sincronizacao { font-size: 12px; color: #6c757d; margin-top: 5px; margin-bottom: 10px; text-align: center; }
+
+        /* ===== TOASTS INTERNOS ===== */
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 90vw; }
+        .toast { background: #fff; border-radius: 10px; padding: 14px 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; border-left: 5px solid #6c757d; min-width: 260px; max-width: 480px; text-align: left; animation: toastIn 0.3s ease; pointer-events: auto; color: #222; }
+        .toast.saindo { animation: toastOut 0.3s ease forwards; }
+        .toast-info { border-left-color: #0066cc; }
+        .toast-sucesso { border-left-color: #198754; }
+        .toast-aviso { border-left-color: #fd7e14; }
+        .toast-erro { border-left-color: #dc3545; }
+        .toast .toast-icone { font-size: 20px; flex-shrink: 0; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-12px); } }
+
+        /* ===== TELA DE PREPARAÇÃO ===== */
+        .preparacao-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .prep-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 14px; text-align: left; }
+        .prep-rotulo { display: block; font-size: 10px; font-weight: 800; color: #6c757d; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .prep-valor { display: block; font-size: 15px; font-weight: 600; color: #222; word-break: break-word; }
+        .prep-valor-pequeno { display: block; font-size: 20px; font-weight: bold; color: #0066cc; }
+        .prep-bloco { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; text-align: left; }
+        .prep-bloco h4 { margin: 0 0 10px 0; font-size: 14px; color: #102a43; }
+        .prep-bloco ul { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #495057; }
+        .prep-bloco ul li { margin-bottom: 4px; }
+        .prep-referencias-linha { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .prep-motivacao { background: #e7f5ff; border: 1px solid #b8daff; border-left: 4px solid #0066cc; border-radius: 10px; padding: 14px 18px; text-align: left; font-size: 14px; line-height: 1.5; color: #084298; margin-bottom: 14px; }
+        .prep-foco { background: #fff8e1; border: 1px solid #ffe082; border-left: 4px solid #ffc107; border-radius: 10px; padding: 12px 16px; text-align: left; font-size: 13px; line-height: 1.6; color: #6d4c41; }
+
+        /* ===== CARDS DE COMPARAÇÃO (TENTATIVA VS RECORDE) ===== */
+        .cards-comparacao { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+        .card-compcard { background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 12px; padding: 16px 14px; text-align: center; }
+        .card-compcard.card-recorde { background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%); border-color: #ffc107; }
+        .card-comp-rotulo { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #6c757d; margin-bottom: 6px; }
+        .card-recorde .card-comp-rotulo { color: #856404; }
+        .card-comp-valor { font-size: 32px; font-weight: bold; line-height: 1; color: #0066cc; }
+        .card-recorde .card-comp-valor { color: #856404; }
+        .card-comp-unidade { font-size: 11px; color: #6c757d; margin-top: 4px; font-weight: 600; }
 
         .hero-classificatoria { position: relative; overflow: hidden; color: #fff; text-align: left; padding: 24px; margin: 20px 0 18px; border-radius: 18px; background: linear-gradient(135deg, #102a43 0%, #174a73 58%, #0d7a61 100%); box-shadow: 0 10px 24px rgba(16,42,67,.20); }
         .hero-classificatoria::after { content: "🏆"; position: absolute; right: 22px; top: 12px; font-size: 78px; opacity: .14; transform: rotate(12deg); }
@@ -129,10 +166,14 @@
             .jogo-cabecalho { flex-direction: column; align-items: flex-start; gap: 4px; }
             .jogo-pontos-destaque { font-size: 20px; }
             .card-classificacao .posicao-destaque { font-size: 42px; }
+            .preparacao-grid { grid-template-columns: 1fr; }
+            .prep-referencias-linha { grid-template-columns: 1fr; }
+            .cards-comparacao { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+<div id="toast-container" class="toast-container"></div>
 <div id="toast-pontuacao"></div>
 <button id="btn-som" class="botao-som">🔊 SOM LIGADO</button>
 
@@ -186,7 +227,7 @@
 
 <div id="tela-preparacao" class="card hidden">
     <h2>🏁 Preparação para a Classificatória</h2>
-    <div id="preparacao-conteudo" style="text-align: left; margin: 20px 0;"></div>
+    <div id="preparacao-conteudo" style="margin: 20px 0;"></div>
     <button id="btn-comecar-partida" class="botao-verde">🎮 Começar Partida</button>
     <button onclick="mostrarTela('tela-single')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar e alterar dados</button>
 </div>
@@ -219,12 +260,12 @@
 <div id="tela-resultado" class="card hidden">
     <h2 id="resultado-titulo">Resultado</h2>
     <p id="feedback-pontos"></p>
+    <div id="cards-comparacao-resultado"></div>
     <div id="card-classificacao-container"></div>
     <div class="resumo-resultado">
         <div><strong>Turma:</strong> <span id="resumo-turma"></span></div>
         <div><strong>Modalidade:</strong> <span id="resumo-modalidade"></span></div>
-        <div><strong>Pontuação desta tentativa:</strong> <span id="resumo-pontos"></span></div>
-        <div><strong>Acertos:</strong> <span id="resumo-acertos"></span></div>
+        <div><strong>Acertos desta tentativa:</strong> <span id="resumo-acertos"></span></div>
         <div><strong>Erros:</strong> <span id="resumo-erros"></span></div>
         <div><strong>Seu tempo médio:</strong> <span id="resumo-tempo"></span></div>
         <div><strong>Sua melhor média:</strong> <span id="resumo-melhor-media">-- s</span></div>
@@ -235,7 +276,8 @@
     <div id="feedback-ranking-container" class="feedback-ranking"></div>
     <div id="novas-conquistas" style="background:#e7f5ff;border-radius:12px;padding:12px;margin:16px 0;"></div>
     <div id="mapa-tabuadas-container"></div>
-    <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Início</button>
+    <button id="btn-treinar-novamente" class="botao-treino hidden" onclick="iniciarTreinoDaTelaResultado()" style="font-size:16px;padding:14px;">🎯 Treinar para melhorar minha posição</button>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
 </div>
 
 <div id="tela-ranking" class="card hidden">
@@ -303,7 +345,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "5.2";
+const APP_VERSION = "5.3";
 function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
@@ -365,6 +407,26 @@ let alunosData=[], alunosFiltrados=[];
 let melhorMediaAluno = null, mediaTurma = null;
 let somAtivo = true, jaToCouSomSuperacao = false;
 
+// ==================== NOTIFICAÇÕES INTERNAS (PRIORIDADE 5) ====================
+function notificar(mensagem, tipo = "info", duracao = 3500) {
+    let container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
+    const icones = { info: "ℹ️", sucesso: "✅", aviso: "⚠️", erro: "❌" };
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${tipo}`;
+    toast.innerHTML = `<span class="toast-icone">${icones[tipo] || "ℹ️"}</span><span>${escaparHtml(mensagem)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add("saindo");
+        setTimeout(() => toast.remove(), 300);
+    }, duracao);
+}
+
 function sortearItem(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
 function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
@@ -387,7 +449,7 @@ function atualizarDisplayUltimaSincronizacao() {
     if (el) el.innerText = lastSync ? `Última atualização: ${formatarDataHora(parseInt(lastSync))}` : "Última atualização: --";
 }
 
-// ==================== CRITÉRIOS DE DESEMPATE (PRIORIDADE 2) ====================
+// ==================== CRITÉRIOS DE DESEMPATE ====================
 function ehMelhorResultado(a, b) {
     if (!b) return true;
     if (a.pontos !== b.pontos) return a.pontos > b.pontos;
@@ -427,7 +489,7 @@ function professorAutenticado() {
 }
 function exigirProfessorAutenticado() {
     if(professorAutenticado()) { sessionStorage.setItem("professorCEIBAuth", String(Date.now())); return true; }
-    alert("A sessão do professor expirou. Digite a senha novamente.");
+    notificar("A sessão do professor expirou. Digite a senha novamente.", "aviso");
     document.getElementById("painel-conteudo").classList.add("hidden");
     document.getElementById("senha-professor").focus();
     return false;
@@ -600,6 +662,10 @@ function mostrarTela(id) {
     let alvo = document.getElementById(id);
     if(alvo) alvo.classList.remove("hidden");
     if (id === "tela-ranking") atualizarDisplayUltimaSincronizacao();
+    if (id !== "tela-resultado") {
+        const btnTreinar = document.getElementById("btn-treinar-novamente");
+        if (btnTreinar) btnTreinar.classList.add("hidden");
+    }
 }
 function tocarBeep() {
     if (!somAtivo) return;
@@ -647,7 +713,7 @@ async function verificarVinculo(nome, turma) {
         return { permitido: true, primeiroUso: true };
     } else {
         if (vinculo.dispositivoId === dispositivoId) return { permitido: true, primeiroUso: false };
-        return { permitido: false, mensagem: `⚠️ O nome "${nome}" já está vinculado a outro dispositivo. Para usar neste dispositivo, peça ao professor para desvincular.` };
+        return { permitido: false, mensagem: `O nome "${nome}" já está vinculado a outro dispositivo. Para usar neste dispositivo, peça ao professor para desvincular.` };
     }
 }
 
@@ -681,7 +747,7 @@ async function obterPartidas() {
     }
 }
 async function forcarSincronizacao() {
-    if (!navigator.onLine) { alert("Sem conexão com a internet. Conecte-se e tente novamente."); return; }
+    if (!navigator.onLine) { notificar("Sem conexão com a internet. Conecte-se e tente novamente.", "aviso"); return; }
     try {
         let snapRanking = await database.ref(CAMINHO_RANKING).once("value");
         let rankingOnline = Object.values(snapRanking.val() || {});
@@ -692,9 +758,9 @@ async function forcarSincronizacao() {
         localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasOnline));
         localStorage.setItem(STORAGE_LAST_SYNC, String(Date.now()));
         atualizarDisplayUltimaSincronizacao();
-        mostrarToast("✅ Dados sincronizados com sucesso!");
+        notificar("Dados sincronizados com sucesso!", "sucesso");
         await renderizarRanking();
-    } catch (e) { alert("Erro na sincronização: " + e.message); }
+    } catch (e) { notificar("Erro na sincronização: " + e.message, "erro", 5000); }
 }
 async function salvarPartida(res) {
     let partida = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro:"partida" };
@@ -713,8 +779,6 @@ async function obterHistoricoAluno(nome, turma, modalidade=null) {
     let ranking = await obterRanking();
     return ranking.filter(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma && (!modalidade || r.modalidade === modalidade)).sort(ordenarPorDataDesc);
 }
-
-// ==================== PRIORIDADE 2: TIEBREAKERS APLICADOS ====================
 async function obterRankingPorPontos(modalidade, turma=null){
     let rank = await obterRanking();
     let filt = rank.filter(r=>r.modalidade===modalidade);
@@ -758,8 +822,6 @@ async function obterRankingPorVelocidade(modalidade, turma=null){
         || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
     );
 }
-
-// ==================== PRIORIDADE 1: salvarResultado retorna o melhor oficial ====================
 async function salvarResultado(res){
     let chave = criarChaveResultado(res);
     let melhorOficial = res;
@@ -863,16 +925,17 @@ async function renderizarCardClassificacao(r) {
     }
 }
 
+// ==================== TELA DE PREPARAÇÃO REDESENHADA (PRIORIDADE 4) ====================
 async function registrarAluno(treino) {
     let nome = document.getElementById("nome-aluno").value.trim();
     let turma = document.getElementById("turma-aluno").value;
-    if(!nome||!turma){ alert("Preencha nome e turma"); return; }
+    if(!nome||!turma){ notificar("Preencha nome e turma", "aviso"); return; }
     alunoAtual=nome; turmaAtual=turma; modalidadeAtual=document.getElementById("modalidade-tabuada").value; modoTreino=treino;
 
     if (!modoTreino) {
         const resultado = await verificarVinculo(nome, turma);
-        if (!resultado.permitido) { alert(resultado.mensagem); return; }
-        if (resultado.primeiroUso) alert(`✅ Dispositivo vinculado com sucesso ao nome "${nome}" (Turma ${turma})! A partir de agora, este nome só poderá ser usado neste dispositivo.`);
+        if (!resultado.permitido) { notificar(resultado.mensagem, "aviso", 5000); return; }
+        if (resultado.primeiroUso) notificar(`Dispositivo vinculado ao nome "${nome}" (Turma ${turma}). Este nome só funcionará neste dispositivo.`, "sucesso", 5000);
     }
 
     if (!modoTreino) {
@@ -887,20 +950,54 @@ async function registrarAluno(treino) {
             else if (mediaTurma && melhorMediaAluno > mediaTurma) msgMotivacional = "💪 Você está abaixo da média da turma, mas com treino vai superar!";
             else msgMotivacional = "🏆 Esta é sua chance de bater seu próprio recorde!";
         } else msgMotivacional = "🎯 Esta é sua primeira partida! Vamos criar sua melhor média!";
+
         div.innerHTML = `
-            <p><strong>👤 Aluno:</strong> ${escaparHtml(nome)}</p>
-            <p><strong>🏫 Turma:</strong> ${turma}</p>
-            <p><strong>📚 Modalidade:</strong> ${MODALIDADES[modalidadeAtual].nome}</p>
-            <hr>
-            <p><strong>🏆 Sua melhor média:</strong> ${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+" s" : "---"}</p>
-            <p><strong>👥 Média da turma:</strong> ${mediaTurma ? mediaTurma.toFixed(2)+" s" : "---"}</p>
-            <p><strong>🎯 Foco recomendado para treino:</strong><br>${descreverFocoTreino()}</p>
-            <hr>
-            <div style="background:#e7f5ff; padding:12px; border-radius:8px; text-align:center;">
-                ${msgMotivacional}<br>
-                ⏱️ Você terá 10 segundos por pergunta. Acertar rápido dá mais pontos!<br>
-                🎯 Apenas o seu <strong>melhor resultado oficial</strong> entra na classificação.
+            <div class="preparacao-grid">
+                <div class="prep-card">
+                    <span class="prep-rotulo">👤 Aluno</span>
+                    <span class="prep-valor">${escaparHtml(nome)}</span>
+                </div>
+                <div class="prep-card">
+                    <span class="prep-rotulo">🏫 Turma</span>
+                    <span class="prep-valor">${turma}</span>
+                </div>
+                <div class="prep-card">
+                    <span class="prep-rotulo">📚 Modalidade</span>
+                    <span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span>
+                </div>
+                <div class="prep-card">
+                    <span class="prep-rotulo">⏱️ Formato</span>
+                    <span class="prep-valor">20 questões · 10s cada</span>
+                </div>
             </div>
+
+            <div class="prep-bloco">
+                <h4>📋 Como funciona?</h4>
+                <ul>
+                    <li>São <strong>20 perguntas</strong> de multiplicação.</li>
+                    <li>Você tem até <strong>10 segundos</strong> por questão.</li>
+                    <li>Respostas rápidas valem <strong>mais pontos</strong>.</li>
+                    <li>Apenas o seu <strong>melhor resultado oficial</strong> entra na classificação.</li>
+                </ul>
+            </div>
+
+            <div class="prep-bloco">
+                <h4>📊 Suas referências</h4>
+                <div class="prep-referencias-linha">
+                    <div>
+                        <span class="prep-rotulo">Sua melhor média</span>
+                        <span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span>
+                    </div>
+                    <div>
+                        <span class="prep-rotulo">Média da turma</span>
+                        <span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span>
+                    </div>
+                </div>
+            </div>
+
+            ${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado para treino</strong><br>${descreverFocoTreino()}</div>` : ""}
+
+            <div class="prep-motivacao" style="margin-top:14px;">${msgMotivacional}</div>
         `;
         mostrarTela("tela-preparacao");
         window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
@@ -1075,8 +1172,6 @@ function atualizarBarraProgressoPerguntas() {
 }
 function alternarBotoes(des) { document.querySelectorAll(".btn-opcao").forEach(b=>b.disabled=des); }
 function forcarFinalizacao() { if(jogoAtivo && confirm("Encerrar tentativa atual? Suas respostas até aqui serão salvas.")){ clearInterval(timerInterval); clearTimeout(timerTimeout); finalizarCircuito(); } }
-
-// ==================== PRIORIDADE 3: capturar posição ANTES de salvar ====================
 async function finalizarCircuito() {
     if(finalizando) return;
     finalizando=true; jogoAtivo=false;
@@ -1087,25 +1182,26 @@ async function finalizarCircuito() {
     if(modoTreino){
         document.getElementById("resultado-titulo").innerHTML="🎯 Resultado do Treino";
         document.getElementById("feedback-pontos").innerHTML=`${alunoAtual}, treino concluído!`;
+        document.getElementById("cards-comparacao-resultado").innerHTML = "";
         document.getElementById("card-classificacao-container").innerHTML = "";
-        document.getElementById("resumo-pontos").innerText=`${pontosAcumulados} pts (treino)`;
-        document.getElementById("resumo-status").innerHTML="Modo Treino";
-        document.getElementById("resumo-turma").innerText=turmaAtual;
-        document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[modalidadeAtual].nome;
         document.getElementById("resumo-acertos").innerText=`${acertos}/20`;
         document.getElementById("resumo-erros").innerText=erros;
         document.getElementById("resumo-tempo").innerText=`${tempoMedio.toFixed(2)}s`;
         document.getElementById("resumo-sequencia").innerText=maiorSequencia;
         document.getElementById("resumo-melhor-media").innerText="--";
         document.getElementById("resumo-media-turma").innerText="--";
+        document.getElementById("resumo-turma").innerText=turmaAtual;
+        document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[modalidadeAtual].nome;
+        document.getElementById("resumo-status").innerHTML="Modo Treino";
         document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
         document.getElementById("novas-conquistas").innerHTML="";
         document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
+        const btnTreinar = document.getElementById("btn-treinar-novamente");
+        if (btnTreinar) btnTreinar.classList.add("hidden");
         mostrarTela("tela-resultado");
         return;
     }
 
-    // Capturar posição ANTES de salvar (para o feedback de evolução)
     let posicaoAntes = null;
     try {
         const rankingAntes = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
@@ -1119,7 +1215,7 @@ async function finalizarCircuito() {
         await preencherResultado(melhorOficial, resultado, posicaoAntes);
         mostrarTela("tela-resultado");
     }catch(e){
-        alert("Erro ao salvar. Resultado salvo localmente.");
+        notificar("Erro ao salvar. Resultado salvo localmente.", "aviso", 5000);
         try {
             await salvarPartida(resultado);
             let melhorOficial = await salvarResultado(resultado);
@@ -1131,10 +1227,32 @@ async function finalizarCircuito() {
     }
 }
 
+// ==================== CARDS DE COMPARAÇÃO (PRIORIDADE 2) ====================
+function gerarCardsComparacao(melhorOficial, tentativaAtual) {
+    const ehNovoRecorde = ehMelhorResultado(tentativaAtual, melhorOficial) && tentativaAtual.data === melhorOficial.data;
+    return `
+        <div class="cards-comparacao">
+            <div class="card-compcard">
+                <div class="card-comp-rotulo">Esta tentativa</div>
+                <div class="card-comp-valor">${tentativaAtual.pontos.toLocaleString('pt-BR')}</div>
+                <div class="card-comp-unidade">pontos</div>
+            </div>
+            <div class="card-compcard card-recorde">
+                <div class="card-comp-rotulo">${ehNovoRecorde ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div>
+                <div class="card-comp-valor">${melhorOficial.pontos.toLocaleString('pt-BR')}</div>
+                <div class="card-comp-unidade">pontos</div>
+            </div>
+        </div>
+    `;
+}
+
 async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
-    // Cartão de classificação — usa o melhor oficial (posição real do aluno)
+    // Cartão de classificação — usa o melhor oficial
     const cardHtml = await renderizarCardClassificacao(melhorOficial);
     document.getElementById("card-classificacao-container").innerHTML = cardHtml;
+
+    // Cards de comparação — tentativa atual vs. recorde
+    document.getElementById("cards-comparacao-resultado").innerHTML = gerarCardsComparacao(melhorOficial, tentativaAtual);
 
     // Posição baseada no melhor oficial
     let rankingTurma = await obterRankingPorPontos(melhorOficial.modalidade, melhorOficial.turma);
@@ -1142,44 +1260,59 @@ async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
     let posTurma = idxAluno === -1 ? rankingTurma.length + 1 : idxAluno + 1;
     let status = posTurma<=VAGAS_CLASSIFICACAO?"Classificado":(posTurma<=6?"Reserva":"Participante");
 
-    // Feedback principal — mostra tentativa atual + recorde oficial quando forem diferentes
+    // Feedback principal
     let feedbackHtml = `${escaparHtml(tentativaAtual.nome)}, você concluiu!`;
     if (ehMelhorResultado(tentativaAtual, melhorOficial) && tentativaAtual.pontos === melhorOficial.pontos && tentativaAtual.data === melhorOficial.data) {
         feedbackHtml += `<br><small style="color:#198754;font-weight:bold;">✨ Novo recorde pessoal!</small>`;
     } else if (melhorOficial.pontos > tentativaAtual.pontos) {
-        feedbackHtml += `<br><small style="color:#6c757d;">🏆 Seu melhor resultado oficial: <strong>${melhorOficial.pontos.toLocaleString('pt-BR')} pts</strong> — esta tentativa <strong>não superou</strong> seu recorde.</small>`;
+        feedbackHtml += `<br><small style="color:#6c757d;">Esta tentativa não superou seu recorde — o melhor resultado continua valendo para a classificação.</small>`;
     }
     document.getElementById("feedback-pontos").innerHTML = feedbackHtml;
 
     // Resumo mostra a tentativa atual
     document.getElementById("resumo-turma").innerText=tentativaAtual.turma;
     document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[tentativaAtual.modalidade]?.nome||tentativaAtual.modalidade;
-    document.getElementById("resumo-pontos").innerText=`${tentativaAtual.pontos} pts`;
     document.getElementById("resumo-acertos").innerText=`${tentativaAtual.acertos}/20`;
     document.getElementById("resumo-erros").innerText=tentativaAtual.erros;
     document.getElementById("resumo-tempo").innerText=`${tentativaAtual.tempoMedio.toFixed(2)}s`;
     document.getElementById("resumo-sequencia").innerText=tentativaAtual.maiorSequencia;
     document.getElementById("resumo-status").innerHTML=`<span class="tag ${status==='Classificado'?'tag-classificado':status==='Reserva'?'tag-reserva':'tag-participante'}">${status}</span>`;
 
-    // Médias de referência
     const medias = await carregarMediasReferencia(tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade);
     document.getElementById("resumo-melhor-media").innerText = medias.melhorMediaAluno ? `${medias.melhorMediaAluno.toFixed(2)} s` : "---";
     document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
 
-    // Mapa de tabuadas mostra a tentativa atual (para o aluno aprender com os erros)
     if(tentativaAtual.desempenhoTabuadas) desempenhoTabuadas = tentativaAtual.desempenhoTabuadas;
     document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
 
-    // Conquistas consideram a tentativa atual
     let historico = await obterHistoricoAluno(tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade);
     let conquistas = calcularConquistas(tentativaAtual, historico).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
     document.getElementById("novas-conquistas").innerHTML = conquistas ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${conquistas}</div>` : "";
 
-    // Feedback de evolução — usa posicaoAntes capturada
+    // Botão "Treinar novamente" — só aparece se fora da zona de classificação
+    const btnTreinar = document.getElementById("btn-treinar-novamente");
+    if (btnTreinar) {
+        if (posTurma > VAGAS_CLASSIFICACAO) {
+            btnTreinar.classList.remove("hidden");
+        } else {
+            btnTreinar.classList.add("hidden");
+        }
+    }
+
     await gerarFeedbackRanking(melhorOficial, posTurma, posicaoAntes);
 }
 
-// ==================== PRIORIDADE 3: gerarFeedbackRanking robusto ====================
+// ==================== BOTÃO TREINAR NOVAMENTE (PRIORIDADE 1) ====================
+async function iniciarTreinoDaTelaResultado() {
+    if (!alunoAtual || !turmaAtual || !modalidadeAtual) {
+        notificar("Dados da partida não disponíveis. Volte ao início.", "aviso");
+        return;
+    }
+    modoTreino = true;
+    await carregarFocoTreino(alunoAtual, turmaAtual, modalidadeAtual);
+    iniciarPartidaTreino();
+}
+
 async function gerarFeedbackRanking(melhorOficial, posTurmaAtual, posicaoAntes) {
     let feedbackHtml = "";
     if (posicaoAntes === null || posicaoAntes === undefined) {
@@ -1286,9 +1419,9 @@ function mudarTipoRanking(tipo) {
 async function carregarPerfil() {
     let nome = document.getElementById("perfil-nome").value.trim();
     let turma = document.getElementById("perfil-turma").value;
-    if(!nome||!turma){ alert("Digite nome e turma"); return; }
+    if(!nome||!turma){ notificar("Digite nome e turma", "aviso"); return; }
     let partidas = await obterHistoricoAluno(nome, turma);
-    if(partidas.length===0){ alert("Nenhuma partida"); return; }
+    if(partidas.length===0){ notificar("Nenhuma partida encontrada para este aluno.", "aviso"); return; }
     let melhor = partidas.reduce((a,b)=>a.pontos>b.pontos?a:b);
     let mediaAcertos = partidas.reduce((s,p)=>s+p.acertos,0)/partidas.length;
     document.getElementById("perfil-melhor-pontos").innerHTML=`<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
@@ -1316,19 +1449,19 @@ async function autenticarProfessor(){
     let s = inputSenha.value;
     try {
         let hashSenha = await gerarHashSenha(s);
-        if(hashSenha !== SENHA_PROFESSOR_HASH && hashSenha !== SENHA_PROFESSOR_HASH_FALLBACK) { alert("Senha incorreta"); return; }
+        if(hashSenha !== SENHA_PROFESSOR_HASH && hashSenha !== SENHA_PROFESSOR_HASH_FALLBACK) { notificar("Senha incorreta", "erro"); return; }
         sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
         inputSenha.value = "";
         document.getElementById("painel-conteudo").classList.remove("hidden");
-        mostrarToast("🔓 Acesso concedido!");
-    } catch(e) { alert("Não foi possível validar a senha neste navegador."); console.warn(e); }
+        notificar("Acesso concedido!", "sucesso");
+    } catch(e) { notificar("Não foi possível validar a senha neste navegador.", "erro", 5000); console.warn(e); }
 }
 function abrirResetTurma(){ if(!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
 async function confirmarReset(){
     if(!exigirProfessorAutenticado()) return;
     let turma = document.getElementById("reset-turma").value;
     let modalidade = document.getElementById("reset-modalidade").value;
-    if(!confirm(`⚠️ Resetar ${turma==="todas"?"TODAS":turma} - ${modalidade==="todas"?"TODAS":MODALIDADES[modalidade]?.nome}?`)) return;
+    if(!confirm(`Resetar ${turma==="todas"?"TODAS":turma} - ${modalidade==="todas"?"TODAS":MODALIDADES[modalidade]?.nome}?`)) return;
     let rank = await obterRanking();
     let novos = rank.filter(r=>!resultadoCombinaFiltro(r, turma, modalidade));
     for(let item of rank){ if(!novos.includes(item)){ let chave = criarChaveResultado(item); await database.ref(`${CAMINHO_RANKING}/${chave}`).remove(); } }
@@ -1337,7 +1470,7 @@ async function confirmarReset(){
     for(let partida of partidas){ if(!partidasNovas.includes(partida) && partida.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${partida.idPartida}`).remove(); }
     localStorage.setItem(STORAGE_RANKING,JSON.stringify(novos));
     localStorage.setItem(STORAGE_PARTIDAS,JSON.stringify(partidasNovas));
-    mostrarToast("✅ Reset concluído!");
+    notificar("Reset concluído!", "sucesso");
     renderizarRanking();
     document.getElementById("painel-reset").classList.add("hidden");
 }
@@ -1350,7 +1483,7 @@ async function exportarCSV(){
     partidas.forEach(r=>{ csv+=`"partida","${r.nome}",${r.turma},"${MODALIDADES[r.modalidade]?.nome}",${r.pontos},${r.acertos},${r.erros||0},${r.tempoMedio.toFixed(2)},${r.maiorSequencia||0},"${r.data}","${r.idPartida||""}"\n`; });
     let blob = new Blob([csv],{type:"text/csv"});
     let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="copa_tabuada.csv"; a.click();
-    mostrarToast("📎 Download iniciado");
+    notificar("Download iniciado", "info");
 }
 async function abrirGerenciarAlunos(){
     if(!exigirProfessorAutenticado()) return;
@@ -1420,7 +1553,7 @@ async function excluirRegistro(chave){
         localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(restantes));
         await carregarListaAlunos();
         renderizarRanking();
-        mostrarToast("✅ Registro excluído");
+        notificar("Registro excluído", "sucesso");
     }
 }
 async function salvarEdicoesNomes(){
@@ -1455,7 +1588,7 @@ async function salvarEdicoesNomes(){
     }
     await carregarListaAlunos();
     renderizarRanking();
-    mostrarToast("✅ Nomes atualizados");
+    notificar("Nomes atualizados", "sucesso");
 }
 
 async function desvincularAluno(nome, turma) {
@@ -1463,7 +1596,7 @@ async function desvincularAluno(nome, turma) {
     if (!confirm(`Tem certeza que deseja desvincular ${nome} (Turma ${turma})? O aluno poderá jogar em qualquer dispositivo a partir de agora.`)) return;
     const chave = chaveVinculo(nome, turma);
     await database.ref(`vinculos/${chave}`).remove();
-    mostrarToast(`✅ Vínculo de ${nome} removido com sucesso.`);
+    notificar(`Vínculo de ${nome} removido.`, "sucesso");
     await carregarListaAlunos();
 }
 
@@ -1484,7 +1617,7 @@ function configurarToqueSecreto() {
         if (cliquesTitulo >= 5) {
             cliquesTitulo = 0;
             mostrarTela('tela-painel');
-            mostrarToast("🔓 Acesso administrativo liberado!");
+            notificar("Acesso administrativo liberado!", "info");
         } else {
             tempoResetClique = setTimeout(() => { cliquesTitulo = 0; }, 1500);
         }
