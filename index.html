@@ -27,7 +27,51 @@
         .botao-treino:hover:not(:disabled) { background: #e8690b; }
         .botao-perfil { background: #6f42c1; }
         .botao-forcar { background: #dc3545; }
-        .botao-som { position: fixed; top: 20px; right: 20px; width: auto; background: rgba(0,0,0,0.6); border-radius: 50px; padding: 8px 16px; z-index: 1000; font-size: 20px; cursor: pointer; }
+
+        /* ===== BOTÃO DE SOM RESPONSIVO ===== */
+        .botao-som {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50px;
+            padding: 8px 16px;
+            z-index: 1000;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #fff;
+        }
+        .botao-som:hover { background: rgba(0,0,0,0.8); }
+        .botao-som::before { content: none; }
+        @media (max-width: 700px) {
+            .botao-som {
+                top: 10px;
+                right: 10px;
+                padding: 6px 12px;
+                font-size: 15px;
+            }
+        }
+        @media (max-width: 500px) {
+            .botao-som {
+                font-size: 0;
+                padding: 0;
+                width: 42px;
+                height: 42px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+            }
+            .botao-som::before {
+                content: "🔊";
+                font-size: 20px;
+                line-height: 1;
+            }
+            .botao-som.mudo::before { content: "🔇"; }
+        }
+
         #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
         #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; transition: background 0.2s; }
@@ -52,9 +96,87 @@
         .mensagem { font-size: 11px; margin-top: 6px; font-weight: 500; }
         .media-geral { font-size: 16px; margin-bottom: 8px; }
         .dica-melhoria { background: #e7f5ff; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #0a58ca; }
-        .abas-filtro { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
-        .aba { flex: 1; padding: 8px 6px; font-size: 11px; background: #e9ecef; border: none; border-radius: 6px; cursor: pointer; color: #333; }
-        .aba.ativa { background: #0066cc; color: #fff; }
+
+        /* ===== NOVA ESTRUTURA DE ABAS ===== */
+        .ranking-principal { margin-top: 14px; }
+        .aba-principal {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #0066cc 0%, #004f9f 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 3px 8px rgba(0,102,204,0.25);
+            transition: all 0.2s;
+            margin: 0;
+        }
+        .aba-principal:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(0,102,204,0.35); background: linear-gradient(135deg, #0075e0 0%, #0058b0 100%); }
+        .aba-principal.ativa { background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%); box-shadow: 0 3px 8px rgba(25,135,84,0.35); }
+        .aba-principal.ativa:hover { box-shadow: 0 5px 14px rgba(25,135,84,0.45); background: linear-gradient(135deg, #0a7d59 0%, #065f42 100%); }
+
+        .toggle-rankings-especiais {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: transparent;
+            color: #495057;
+            border: 1px dashed #ced4da;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .toggle-rankings-especiais:hover { background: #f8f9fa; border-color: #adb5bd; }
+        .toggle-rankings-especiais .seta { display: inline-block; transition: transform 0.25s ease; font-size: 10px; }
+        .toggle-rankings-especiais.aberto .seta { transform: rotate(90deg); }
+
+        .rankings-especiais {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            animation: slideDown 0.25s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .rankings-especiais .aba {
+            padding: 10px 8px;
+            font-size: 12px;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #495057;
+            font-weight: 600;
+            transition: all 0.15s;
+            margin: 0;
+        }
+        .rankings-especiais .aba:hover { background: #e9ecef; transform: translateY(-1px); }
+        .rankings-especiais .aba.ativa {
+            background: #0066cc;
+            color: #fff;
+            border-color: #0066cc;
+            box-shadow: 0 2px 6px rgba(0,102,204,0.3);
+        }
+        .rankings-especiais .aba.ativa:hover { background: #0058b0; }
+
         .observacao-ranking { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 15px; margin: 15px 0; font-size: 13px; text-align: left; border-radius: 6px; color: #856404; }
         .observacao-desempate { background: #e7f5ff; border-left: 4px solid #0066cc; padding: 8px 12px; margin: 10px 0; font-size: 12px; text-align: left; border-radius: 6px; color: #0a58ca; }
         .tabela-container { overflow-x: auto; margin-top: 14px; }
@@ -84,7 +206,6 @@
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
         }
-        .skeleton-line.curto { width: 60%; }
         @keyframes skeleton-loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
@@ -134,7 +255,6 @@
         .card-comp-rotulo { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #6c757d; margin-bottom: 6px; }
         .card-recorde .card-comp-rotulo { color: #856404; }
         .card-comp-valor { font-size: 32px; font-weight: bold; line-height: 1; color: #0066cc; transition: transform 0.15s ease; }
-        .card-comp-valor.contando { transform: scale(1.08); }
         .card-recorde .card-comp-valor { color: #856404; }
         .card-comp-unidade { font-size: 11px; color: #6c757d; margin-top: 4px; font-weight: 600; }
 
@@ -192,7 +312,6 @@
             border: 1px solid rgba(255,255,255,0.7);
         }
         .mensagem-corte strong { color: inherit; }
-        .mensagem-corte .msg-corte-icone { font-size: 16px; margin-right: 4px; }
 
         .mini-ranking { background: rgba(255,255,255,0.85); border-radius: 12px; padding: 10px; margin: 16px auto; text-align: left; max-width: 420px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); color: #1a1a1a; }
         .mini-ranking-item { padding: 8px 12px; border-radius: 6px; margin: 4px 0; display: flex; justify-content: space-between; font-size: 14px; align-items: center; color: #1a1a1a; }
@@ -202,9 +321,6 @@
         .mini-ranking-item.fora { border-left: 4px solid #adb5bd; }
         .divisor-ranking { text-align: center; font-size: 11px; color: #6c757d; margin: 6px 0; font-weight: bold; letter-spacing: 1px; }
         .card-classificacao .mensagem-rodape { font-size: 13px; margin-top: 12px; line-height: 1.5; color: inherit; }
-        .card-classificacao.zona-classificacao .mensagem-rodape { color: #0f5132; }
-        .card-classificacao.zona-reserva .mensagem-rodape { color: #856404; }
-        .card-classificacao.fora-zona .mensagem-rodape { color: #084298; }
 
         .acoes-resultado { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
         .acoes-resultado.duas-colunas { grid-template-columns: 1fr 1fr; }
@@ -247,8 +363,6 @@
             table { color: #e8e8e8; }
             th { background: #2a2a2a; color: #f0f0f0; }
             td { border-color: #3a3a3a; }
-            .aba { background: #2a2a2a; color: #e8e8e8; }
-            .aba.ativa { background: #0066cc; }
             .tag-participante { background: #4a4a4a; }
             .toast { background: #2a2a2a; color: #e8e8e8; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
             .nota-provisoria { background: #3a2e1a; color: #e8d0a0; border-color: #5a4a2a; }
@@ -270,6 +384,17 @@
             .mini-ranking { color: #1a1a1a; }
             .mini-ranking-item.voce { color: #0a2540; }
             .mensagem-corte { background: rgba(255,255,255,0.55); color: inherit; }
+
+            /* Novas abas em modo escuro */
+            .toggle-rankings-especiais {
+                color: #b0b0b0;
+                border-color: #444;
+            }
+            .toggle-rankings-especiais:hover { background: #2a2a2a; border-color: #666; }
+            .rankings-especiais { background: #2a2a2a; }
+            .rankings-especiais .aba { background: #1e1e1e; border-color: #3a3a3a; color: #e8e8e8; }
+            .rankings-especiais .aba:hover { background: #3a3a3a; }
+            .rankings-especiais .aba.ativa { background: #0066cc; color: #fff; border-color: #0066cc; }
         }
 
         @media (max-width: 700px) {
@@ -283,6 +408,7 @@
             .prep-referencias-linha { grid-template-columns: 1fr; }
             .cards-comparacao { grid-template-columns: 1fr; }
             .acoes-resultado.duas-colunas { grid-template-columns: 1fr; }
+            .rankings-especiais { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -398,15 +524,27 @@
 </div>
 
 <div id="tela-ranking" class="card hidden">
-    <h2>Rankings</h2>
-    <div class="abas-filtro">
-        <button class="aba" id="aba-turma" onclick="mudarTipoRanking('turma')">🏆 Por Turma</button>
-        <button class="aba" id="aba-global" onclick="mudarTipoRanking('global')">🌍 Global</button>
-        <button class="aba" id="aba-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão Global</button>
-        <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
-        <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
-        <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
+    <h2>Classificação</h2>
+
+    <!-- Aba principal -->
+    <div class="ranking-principal">
+        <button class="aba-principal ativa" id="aba-turma" onclick="mudarTipoRanking('turma')">🏆 Minha Turma</button>
     </div>
+
+    <!-- Toggle de rankings especiais -->
+    <button class="toggle-rankings-especiais" id="toggle-rankings-especiais" onclick="toggleRankingsEspeciais()">
+        <span class="seta">▶</span> Rankings especiais
+    </button>
+
+    <!-- Seção colapsável de rankings especiais -->
+    <div class="rankings-especiais hidden" id="rankings-especiais">
+        <button class="aba" id="aba-global" onclick="mudarTipoRanking('global')">🌍 Global</button>
+        <button class="aba" id="aba-precisao-turma" onclick="mudarTipoRanking('precisao-turma')">🎯 Precisão Turma</button>
+        <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
+        <button class="aba" id="aba-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão Global</button>
+        <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
+    </div>
+
     <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
     <div class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.</div>
     <select id="filtro-modalidade" onchange="renderizarRanking()">
@@ -462,7 +600,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "5.7";
+const APP_VERSION = "5.8";
 function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
@@ -859,7 +997,12 @@ function tocarBeep() {
         oscillator.stop(audioCtx.currentTime + 0.5);
     } catch(e) {}
 }
-function toggleSom() { somAtivo = !somAtivo; document.getElementById("btn-som").innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO"; }
+function toggleSom() {
+    somAtivo = !somAtivo;
+    const btn = document.getElementById("btn-som");
+    btn.innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO";
+    btn.classList.toggle("mudo", !somAtivo);
+}
 
 function obterIdDispositivo() {
     let id = localStorage.getItem('dispositivoId');
@@ -1443,14 +1586,12 @@ async function iniciarTreinoDaTelaResultado() {
     iniciarPartidaTreino();
 }
 
-// ==================== COMPARTILHAR RESULTADO (v5.7) ====================
 async function compartilharResultado() {
     if (!ultimoMelhorOficial) {
         notificar("Nenhum resultado para compartilhar.", "aviso");
         return;
     }
 
-    // Calcular posição atual e total de participantes no ranking
     let posicao = null;
     let totalParticipantes = 0;
     let badge = "";
@@ -1471,7 +1612,6 @@ async function compartilharResultado() {
         console.warn("Não foi possível calcular posição para compartilhamento", e);
     }
 
-    // Montar texto
     let texto = `🏆 Copa da Tabuada CEIB 2026\n`;
     texto += `👤 ${alunoAtual} · Turma ${turmaAtual}\n`;
 
@@ -1618,10 +1758,43 @@ async function renderizarRanking() {
     }
     tabelaBody.innerHTML = html;
 }
+
+function toggleRankingsEspeciais() {
+    const container = document.getElementById("rankings-especiais");
+    const toggle = document.getElementById("toggle-rankings-especiais");
+    if (!container || !toggle) return;
+    const estaAberto = !container.classList.contains("hidden");
+    if (estaAberto) {
+        container.classList.add("hidden");
+        toggle.classList.remove("aberto");
+    } else {
+        container.classList.remove("hidden");
+        toggle.classList.add("aberto");
+    }
+}
+
 function mudarTipoRanking(tipo) {
     tipoRankingAtual = tipo;
-    const abas = ["aba-turma","aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
-    abas.forEach(abaId=>{ let el=document.getElementById(abaId); if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); });
+
+    // Aba principal "Minha Turma"
+    const abaPrincipal = document.getElementById("aba-turma");
+    if (abaPrincipal) abaPrincipal.classList.toggle("ativa", tipo === "turma");
+
+    // Abas especiais
+    const abasEspeciais = ["aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
+    abasEspeciais.forEach(abaId=>{ 
+        let el=document.getElementById(abaId); 
+        if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); 
+    });
+
+    // Se mudou para uma aba especial, abre automaticamente a seção
+    if (tipo !== "turma") {
+        const container = document.getElementById("rankings-especiais");
+        const toggle = document.getElementById("toggle-rankings-especiais");
+        if (container) container.classList.remove("hidden");
+        if (toggle) toggle.classList.add("aberto");
+    }
+
     const isGlobal = (tipo === "global" || tipo === "precisao-global" || tipo === "velocidade-global");
     document.getElementById("filtro-modalidade").classList.toggle("hidden", false);
     document.getElementById("filtro-turma").classList.toggle("hidden", isGlobal);
@@ -1835,7 +2008,7 @@ function configurarToqueSecreto() {
 
 window.addEventListener("DOMContentLoaded", () => {
     mostrarTela("tela-inicial");
-    renderizarRanking();
+    mudarTipoRanking("turma");
     configurarToqueSecreto();
 });
 </script>
