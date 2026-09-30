@@ -77,7 +77,6 @@
         .media-geral { font-size: 16px; margin-bottom: 8px; }
         .dica-melhoria { background: #e7f5ff; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #0a58ca; }
 
-        /* ===== ESTRUTURA DE ABAS ===== */
         .ranking-principal { margin-top: 14px; }
         .aba-principal {
             width: 100%;
@@ -157,7 +156,6 @@
         }
         .rankings-especiais .aba.ativa:hover { background: #0058b0; }
 
-        /* ===== NOVOS BLOCOS ===== */
         .nota-rankings {
             background: #e7f5ff;
             border-left: 4px solid #0066cc;
@@ -668,7 +666,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "5.9";
+const APP_VERSION = "6.0";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -733,6 +731,119 @@ let alunosData=[], alunosFiltrados=[];
 let melhorMediaAluno = null, mediaTurma = null;
 let somAtivo = true, jaToCouSomSuperacao = false;
 let ultimoMelhorOficial = null, ultimaTentativa = null;
+
+// ==================== SISTEMA DE ÁUDIO (v6.0) ====================
+let audioContext = null;
+let audioDesbloqueado = false;
+
+function inicializarAudio() {
+    if (audioContext) return audioContext;
+    try {
+        const Ctor = window.AudioContext || window.webkitAudioContext;
+        if (!Ctor) return null;
+        audioContext = new Ctor();
+    } catch(e) {
+        console.warn("AudioContext não disponível", e);
+        return null;
+    }
+    return audioContext;
+}
+
+function desbloquearAudio() {
+    const ctx = inicializarAudio();
+    if (!ctx) return;
+    if (ctx.state === "suspended") {
+        ctx.resume().then(() => { audioDesbloqueado = true; }).catch(() => {});
+    } else if (ctx.state === "running") {
+        audioDesbloqueado = true;
+    }
+}
+
+// Toca uma nota individual
+function tocarNota(frequencia, duracao, tipo = "sine", volume = 0.12, delay = 0) {
+    if (!somAtivo) return;
+    const ctx = inicializarAudio();
+    if (!ctx) return;
+    if (ctx.state === "suspended") {
+        ctx.resume().then(() => tocarNotaAgora(ctx, frequencia, duracao, tipo, volume, delay)).catch(() => {});
+    } else {
+        tocarNotaAgora(ctx, frequencia, duracao, tipo, volume, delay);
+    }
+}
+
+function tocarNotaAgora(ctx, frequencia, duracao, tipo, volume, delay) {
+    try {
+        const inicio = ctx.currentTime + delay;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = tipo;
+        osc.frequency.setValueAtTime(frequencia, inicio);
+
+        gain.gain.setValueAtTime(0.0001, inicio);
+        gain.gain.linearRampToValueAtTime(volume, inicio + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, inicio + duracao);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(inicio);
+        osc.stop(inicio + duracao + 0.05);
+    } catch(e) { /* silencioso */ }
+}
+
+// Sons específicos
+function somAcerto() {
+    // Beep agudo curto — positivo
+    tocarNota(880, 0.08, "sine", 0.10);
+    tocarNota(1174, 0.06, "sine", 0.06, 0.04);
+}
+
+function somErro() {
+    // Beep grave mais longo — negativo
+    tocarNota(220, 0.18, "sawtooth", 0.08);
+}
+
+function somCombo(nivel) {
+    // Arpejo ascendente — varia conforme o combo
+    const notas = {
+        5:  [523, 659, 784],           // C5 E5 G5
+        10: [523, 659, 784, 1047],     // + C6
+        15: [523, 659, 784, 1047, 1319], // + E6
+        20: [523, 659, 784, 1047, 1319, 1568] // + G6
+    };
+    const sequencia = notas[nivel] || [523, 659, 784];
+    sequencia.forEach((f, i) => {
+        setTimeout(() => tocarNota(f, 0.12, "sine", 0.13), i * 70);
+    });
+}
+
+function somConclusao() {
+    // Duas notas ascendentes — encerramento
+    tocarNota(659, 0.18, "sine", 0.12, 0);
+    tocarNota(880, 0.32, "sine", 0.12, 0.14);
+}
+
+function somNovoRecorde() {
+    // Três notas ascendentes — conquista
+    tocarNota(523, 0.14, "sine", 0.12, 0);
+    tocarNota(659, 0.14, "sine", 0.12, 0.13);
+    tocarNota(1047, 0.30, "sine", 0.13, 0.26);
+}
+
+function toggleSom() {
+    somAtivo = !somAtivo;
+    const btn = document.getElementById("btn-som");
+    btn.innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO";
+    btn.classList.toggle("mudo", !somAtivo);
+
+    // Ao ligar, desbloqueia o áudio e dá um feedback sonoro curto
+    if (somAtivo) {
+        desbloquearAudio();
+        setTimeout(() => somAcerto(), 100);
+    }
+}
+// ==================== FIM DO SISTEMA DE ÁUDIO ====================
 
 function notificar(mensagem, tipo = "info", duracao = 3500) {
     let container = document.getElementById("toast-container");
@@ -1035,25 +1146,6 @@ function mostrarTela(id) {
         if (btnShare) btnShare.classList.add("hidden");
     }
 }
-function tocarBeep() {
-    if (!somAtivo) return;
-    try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
-        oscillator.frequency.value = 880; gainNode.gain.value = 0.3;
-        oscillator.start();
-        gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
-        oscillator.stop(audioCtx.currentTime + 0.5);
-    } catch(e) {}
-}
-function toggleSom() {
-    somAtivo = !somAtivo;
-    const btn = document.getElementById("btn-som");
-    btn.innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO";
-    btn.classList.toggle("mudo", !somAtivo);
-}
 
 // ==================== TURMA DO ALUNO ====================
 function salvarTurmaENomeAluno(turma, nome) {
@@ -1071,7 +1163,6 @@ function aplicarTurmaSalvaNoFiltro() {
     const select = document.getElementById("filtro-turma");
     if (!select) return;
     if (turmaSalva && tipoRankingAtual === "turma") {
-        // Só aplica se a turma salva está na lista de opções
         const opcoes = Array.from(select.options).map(o => o.value);
         if (opcoes.includes(turmaSalva)) {
             select.value = turmaSalva;
@@ -1089,7 +1180,6 @@ function atualizarBotaoMinhaTurma() {
     }
 }
 function onMudancaTurmaFiltro() {
-    // Quando o aluno escolhe uma turma no filtro, salvamos essa escolha
     const select = document.getElementById("filtro-turma");
     if (select && select.value) {
         localStorage.setItem(STORAGE_TURMA_ALUNO, select.value);
@@ -1231,11 +1321,9 @@ async function obterRankingPorVelocidade(modalidade, turma=null){
     return Array.from(mapa.values()).sort((a,b)=>(a.tempoMedio||999)-(b.tempoMedio||999)||(b.acertos||0)-(a.acertos||0)||(b.pontos||0)-(a.pontos||0)||(b.maiorSequencia||0)-(a.maiorSequencia||0));
 }
 
-// ==================== MÉDIAS DOS TOP 4 POR TURMA ====================
 async function calcularMediasTop4Turmas(modalidade) {
     const rank = await obterRanking();
     const filt = rank.filter(r => r.modalidade === modalidade);
-    // Agrupa por turma
     const porTurma = new Map();
     filt.forEach(r => {
         if (!porTurma.has(r.turma)) porTurma.set(r.turma, new Map());
@@ -1245,7 +1333,6 @@ async function calcularMediasTop4Turmas(modalidade) {
             mapaAluno.set(chave, r);
         }
     });
-    // Para cada turma: pega top 4, calcula média
     const resultado = [];
     porTurma.forEach((mapaAluno, turma) => {
         const listaAlunos = Array.from(mapaAluno.values()).sort(compararParaOrdenacao);
@@ -1261,7 +1348,6 @@ async function calcularMediasTop4Turmas(modalidade) {
             melhorAluno: top4[0]
         });
     });
-    // Ordena por média decrescente
     resultado.sort((a, b) => b.media - a.media);
     return resultado;
 }
@@ -1371,7 +1457,6 @@ async function registrarAluno(treino) {
     if(!nome||!turma){ notificar("Preencha nome e turma", "aviso"); return; }
     alunoAtual=nome; turmaAtual=turma; modalidadeAtual=document.getElementById("modalidade-tabuada").value; modoTreino=treino;
 
-    // Salvar turma e nome para uso posterior no ranking
     salvarTurmaENomeAluno(turma, nome);
 
     if (!modoTreino) {
@@ -1437,7 +1522,6 @@ function iniciarPartidaClassificatoria() {
     if (!window._pendingGame) return;
     const { nome, turma, modalidade } = window._pendingGame;
     alunoAtual = nome; turmaAtual = turma; modalidadeAtual = modalidade; modoTreino = false;
-    // Reforçar salvamento
     salvarTurmaENomeAluno(turma, nome);
     reiniciarVariaveisJogo();
     document.getElementById("cabecalho-turma").innerText = `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
@@ -1508,6 +1592,8 @@ function exibirComboVisual(sequencia) {
     elem.style.borderRadius = "6px"; elem.style.padding = "4px 8px";
     setTimeout(() => { elem.style.backgroundColor = ""; elem.style.color = ""; elem.style.padding = ""; }, 500);
     mostrarToast(mensagem);
+    // Som do combo
+    somCombo(sequencia);
 }
 function mostrarToast(msg) { let t = document.getElementById("toast-pontuacao"); if(t){ t.innerText=msg; t.style.opacity="1"; setTimeout(()=>t.style.opacity="0",2000); } }
 function verificarResposta(btn) {
@@ -1525,6 +1611,14 @@ function processarResposta(pontos,acertou,tempo) {
     temposRespostas.push({acertou, tempo});
     if(perguntaAtual===1 && acertou) acertouPrimeira=true;
     if(acertou && tempo<0.8) temposRapidos++;
+
+    // Som imediato de acerto/erro
+    if (acertou) {
+        somAcerto();
+    } else {
+        somErro();
+    }
+
     if(!modoTreino && !acertou){
         let pDiv=document.getElementById("pergunta");
         if(pDiv) pDiv.classList.add("erro-visual");
@@ -1629,6 +1723,7 @@ async function finalizarCircuito() {
         document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
         document.getElementById("btn-compartilhar")?.classList.add("hidden");
+        somConclusao();
         mostrarTela("tela-resultado");
         return;
     }
@@ -1643,6 +1738,14 @@ async function finalizarCircuito() {
     try{
         await salvarPartida(resultado);
         let melhorOficial = await salvarResultado(resultado);
+        // Som de conclusão — verifica se é novo recorde
+        const ehNovoRecorde = melhorOficial.data === resultado.data;
+        if (ehNovoRecorde && posicaoAntes !== null) {
+            // Se já tinha posição antes e bateu o recorde, som mais elaborado
+            somNovoRecorde();
+        } else {
+            somConclusao();
+        }
         await preencherResultado(melhorOficial, resultado, posicaoAntes);
         mostrarTela("tela-resultado");
     }catch(e){
@@ -1652,6 +1755,7 @@ async function finalizarCircuito() {
             let melhorOficial = await salvarResultado(resultado);
             await preencherResultado(melhorOficial, resultado, posicaoAntes);
         } catch(e2) { await preencherResultado(resultado, resultado, posicaoAntes); }
+        somConclusao();
         mostrarTela("tela-resultado");
     }
 }
@@ -1838,7 +1942,6 @@ function mostrarSkeletonRanking(colunas) {
     tabelaBody.innerHTML = html;
 }
 
-// ==================== POSIÇÃO DO ALUNO NO GLOBAL (FORA DO TOP 100) ====================
 async function renderizarBannerPosicaoGlobal(rankingCompleto, modalidade) {
     const banner = document.getElementById("banner-posicao-global");
     if (!banner) return;
@@ -1846,7 +1949,6 @@ async function renderizarBannerPosicaoGlobal(rankingCompleto, modalidade) {
     const nomeSalvo = obterNomeSalvoAluno();
     const turmaSalva = obterTurmaSalvaAluno();
 
-    // Só faz sentido se temos nome e turma
     if (!nomeSalvo || !turmaSalva) {
         banner.classList.add("hidden");
         return;
@@ -1864,19 +1966,16 @@ async function renderizarBannerPosicaoGlobal(rankingCompleto, modalidade) {
     const posicao = idx + 1;
     const total = rankingCompleto.length;
 
-    // Se está dentro do top 100, não precisa do banner
     if (posicao <= 100) {
         banner.classList.add("hidden");
         return;
     }
 
-    // Fora do top 100: mostrar posição + próximo objetivo
     const centesimo = rankingCompleto[99];
     const diferenca = centesimo && centesimo.pontos > rankingCompleto[idx].pontos
         ? centesimo.pontos - rankingCompleto[idx].pontos
         : 0;
 
-    // Próximo alvo — a pessoa imediatamente acima
     const proximoAcima = rankingCompleto[idx - 1];
     const diferencaProximo = proximoAcima && proximoAcima.pontos > rankingCompleto[idx].pontos
         ? proximoAcima.pontos - rankingCompleto[idx].pontos
@@ -1896,7 +1995,6 @@ async function renderizarBannerPosicaoGlobal(rankingCompleto, modalidade) {
     banner.classList.remove("hidden");
 }
 
-// ==================== MÉDIAS DAS TURMAS (TOP 4) ====================
 async function renderizarMediasTurmas(modalidade) {
     const container = document.getElementById("medias-turmas-container");
     if (!container) return;
@@ -1925,7 +2023,6 @@ async function renderizarMediasTurmas(modalidade) {
 
         html += `</tbody></table>`;
 
-        // Se o aluno está fora do top 3 das turmas, mostrar mensagem motivacional
         if (turmaSalva) {
             const posicaoTurma = medias.findIndex(m => m.turma === turmaSalva);
             if (posicaoTurma === -1) {
@@ -1956,7 +2053,6 @@ async function renderizarRanking() {
 
     mostrarSkeletonRanking(8);
 
-    // Atualizar visibilidade do hint de turma
     atualizarHintTurmaAluno();
 
     let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
@@ -1967,7 +2063,6 @@ async function renderizarRanking() {
     const nomeAluno = obterNomeSalvoAluno();
 
     if(tipoRankingAtual === "turma"){
-        // Se turma salva existe, usar ela
         const turmaSalva = obterTurmaSalvaAluno();
         if (turmaSalva) {
             turma = turmaSalva;
@@ -2010,9 +2105,7 @@ async function renderizarRanking() {
         titulo = `🌍 Desafio entre turmas — ${MODALIDADES[modalidade]?.nome}`; 
         tituloEl.innerText = titulo;
         tabelaHead.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
-        // Banner de posição
         await renderizarBannerPosicaoGlobal(rankingCompleto, modalidade);
-        // Médias das turmas
         await renderizarMediasTurmas(modalidade);
     } 
     else if(tipoRankingAtual === "precisao-global"){ 
@@ -2110,7 +2203,6 @@ function mudarTipoRanking(tipo) {
         if (toggle) toggle.classList.add("aberto");
     }
 
-    // Aplicar turma salva se for ranking de turma
     if (tipo === "turma" || tipo === "precisao-turma" || tipo === "velocidade-turma") {
         aplicarTurmaSalvaNoFiltro();
     }
@@ -2309,6 +2401,13 @@ document.getElementById("btn-comecar-partida")?.addEventListener("click", () => 
     if (window._pendingGame && !window._pendingGame.treino) iniciarPartidaClassificatoria();
 });
 
+// ==================== DESBLOQUEIO DE ÁUDIO ====================
+// Registra listeners em qualquer clique/toque/tecla para desbloquear o AudioContext
+document.addEventListener("click", desbloquearAudio, { passive: true });
+document.addEventListener("touchstart", desbloquearAudio, { passive: true });
+document.addEventListener("keydown", desbloquearAudio, { passive: true });
+// ==================== FIM DO DESBLOQUEIO ====================
+
 let cliquesTitulo = 0;
 let tempoResetClique = null;
 
@@ -2333,6 +2432,8 @@ window.addEventListener("DOMContentLoaded", () => {
     atualizarBotaoMinhaTurma();
     mudarTipoRanking("turma");
     configurarToqueSecreto();
+    // Pré-inicializa o áudio (será desbloqueado no primeiro clique)
+    inicializarAudio();
 });
 </script>
 </body>
