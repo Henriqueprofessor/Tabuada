@@ -124,6 +124,16 @@
         .modal-dica strong { color: #bf360c; }
         .modal-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
         .modal-acoes button { margin: 0; }
+        .changelog-trigger { display: inline-flex; align-items: center; gap: 6px; margin: 18px auto 0; padding: 6px 12px; background: transparent; color: #94a3b8; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: auto; letter-spacing: 0.3px; box-shadow: none; }
+        .changelog-trigger:hover:not(:disabled) { background: #f8fafc; color: #475569; border-color: #cbd5e1; transform: none; }
+        .changelog-modal-card { max-width: 520px; }
+        .changelog-lista { max-height: 62vh; overflow-y: auto; text-align: left; padding-right: 4px; }
+        .changelog-item { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .changelog-item:last-child { border-bottom: none; }
+        .changelog-versao { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .changelog-versao.atual { background: #dcfce7; color: #166534; }
+        .changelog-titulo { font-size: 13px; font-weight: 700; color: #102a43; margin: 0 0 4px; }
+        .changelog-descricao { font-size: 12px; color: #64748b; margin: 0; line-height: 1.5; }
         .ranking-principal { margin-top: 14px; }
         .aba-principal { width: 100%; padding: 14px 20px; font-size: 15px; font-weight: bold; background: linear-gradient(135deg, #0066cc 0%, #004f9f 100%); color: #fff; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 3px 8px rgba(0,102,204,0.25); transition: all 0.2s; margin: 0; }
         .aba-principal:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(0,102,204,0.35); background: linear-gradient(135deg, #0075e0 0%, #0058b0 100%); }
@@ -384,6 +394,13 @@
             .banner-promocao { background: linear-gradient(135deg, #14532d 0%, #166534 100%); border-color: #22c55e; color: #bbf7d0; }
             .banner-promocao .ops-destaque { background: #1e293b; color: #86efac; border-color: #22c55e; }
             .btn-treinar-fracos { background: linear-gradient(135deg, #c2410c 0%, #991b1b 100%); }
+            .changelog-trigger { color: #64748b; border-color: #334155; }
+            .changelog-trigger:hover:not(:disabled) { background: #1e293b; color: #cbd5e1; border-color: #475569; }
+            .changelog-item { border-color: #334155; }
+            .changelog-versao { background: #312e81; color: #c7d2fe; }
+            .changelog-versao.atual { background: #14532d; color: #86efac; }
+            .changelog-titulo { color: #f0f0f0; }
+            .changelog-descricao { color: #94a3b8; }
         }
         @media (max-width: 700px) {
             .acoes-secundarias { grid-template-columns: 1fr; }
@@ -424,6 +441,9 @@
         <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Classificação</button>
         <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
     </div>
+    <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">
+        ⚙️ v<span id="changelog-versao-atual">6.9</span> · histórico
+    </button>
 </div>
 
 <div id="tela-single" class="card hidden">
@@ -603,10 +623,76 @@
     </div>
 </div>
 
+<div id="modal-changelog" class="modal-overlay hidden" onclick="fecharChangelog(event)">
+    <div class="modal-card changelog-modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>📋 Histórico de versões</h3>
+            <button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button>
+        </div>
+        <div class="changelog-lista">
+
+            <div class="changelog-item">
+                <span class="changelog-versao atual">v6.9 · atual</span>
+                <h4 class="changelog-titulo">Histórico de versões</h4>
+                <p class="changelog-descricao">Agora o jogo tem um espaço para registrar todas as novidades. Clique em <strong>⚙️ histórico</strong> na tela inicial sempre que quiser consultar.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.8</span>
+                <h4 class="changelog-titulo">Contagem de tempo mais justa</h4>
+                <p class="changelog-descricao">O tempo para liberar o jogo em um novo celular agora conta desde a última vez que você abriu o app.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.7</span>
+                <h4 class="changelog-titulo">Troca de celular mais fácil</h4>
+                <p class="changelog-descricao">Se você ficar 2 dias sem acessar o app, pode continuar no mesmo nome em outro celular automaticamente. Para liberar antes, peça ajuda ao professor.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.5</span>
+                <h4 class="changelog-titulo">Progresso salvo na nuvem</h4>
+                <p class="changelog-descricao">Seu mapa de tabuadas fica salvo com segurança. Mesmo trocando de rede ou fechando o app, seu progresso continua igual.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.4</span>
+                <h4 class="changelog-titulo">Treinar pontos fracos + Efeitos visuais</h4>
+                <p class="changelog-descricao">Novo botão para treinar só as tabuadas que você erra mais. As operações difíceis pulsam em vermelho, e ao dominá-las você ganha brilho e confetes 🎉</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.3</span>
+                <h4 class="changelog-titulo">Detalhes da operação</h4>
+                <p class="changelog-descricao">Clique em qualquer célula do mapa para ver acertos, erros, dicas de decomposição e treinar só aquela operação.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.2</span>
+                <h4 class="changelog-titulo">Ver todas ou uma partida</h4>
+                <p class="changelog-descricao">No mapa de tabuadas você pode alternar entre ver o acumulado de todas as partidas ou apenas a última.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.1</span>
+                <h4 class="changelog-titulo">Mapa de Tabuadas visual</h4>
+                <p class="changelog-descricao">Novo mapa com cores mostrando o que você domina 🟢, está desenvolvendo 🟡, precisa melhorar 🔴 ou ainda não praticou ⚪</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.0</span>
+                <h4 class="changelog-titulo">Sons do jogo</h4>
+                <p class="changelog-descricao">Efeitos sonoros ao acertar, errar e completar combos. Você pode ligar ou desligar no botão 🔊 no canto superior.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "6.8";
+const APP_VERSION = "6.9";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -1983,6 +2069,13 @@ function fecharModalOperacao(e) {
     if (e && e.target && e.target.closest(".modal-card")) return;
     document.getElementById("modal-operacao").classList.add("hidden");
 }
+function abrirChangelog() {
+    document.getElementById("modal-changelog").classList.remove("hidden");
+}
+function fecharChangelog(e) {
+    if (e && e.target && e.target.closest(".modal-card")) return;
+    document.getElementById("modal-changelog").classList.add("hidden");
+}
 function treinarOperacaoEspecifica(fA, fB) {
     fecharModalOperacao();
     if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
@@ -2390,6 +2483,8 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         const m = document.getElementById("modal-operacao");
         if (m && !m.classList.contains("hidden")) fecharModalOperacao();
+        const mc = document.getElementById("modal-changelog");
+        if (mc && !mc.classList.contains("hidden")) fecharChangelog();
     }
 });
 let cliquesTitulo = 0, tempoResetClique = null;
@@ -2412,6 +2507,8 @@ window.addEventListener("DOMContentLoaded", () => {
     configurarToqueSecreto();
     inicializarAudio();
     atualizarAcessoSeConhecido();
+    const elV = document.getElementById("changelog-versao-atual");
+    if (elV) elV.textContent = APP_VERSION;
 });
 </script>
 </body>
