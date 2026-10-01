@@ -70,9 +70,6 @@
         .btn-treinar-fracos:active:not(:disabled) { transform: translateY(0) scale(0.98); }
         .btn-treinar-fracos-var { background: linear-gradient(135deg, #6f42c1 0%, #4c2d8f 100%); box-shadow: 0 3px 8px rgba(111,66,193,0.25); }
         .btn-treinar-fracos-var:hover:not(:disabled) { background: linear-gradient(135deg, #5a34a4 0%, #3f2577 100%); box-shadow: 0 5px 14px rgba(111,66,193,0.4); }
-        .acoes-treino-fracos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
-        .acoes-treino-fracos .btn-treinar-fracos { margin-top: 0; font-size: 12px; padding: 11px 10px; }
-        @media (max-width: 500px) { .acoes-treino-fracos { grid-template-columns: 1fr; } }
         .mapa-legenda { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #495057; }
         .mapa-legenda .legenda-item { display: flex; align-items: center; gap: 5px; }
         .mapa-legenda .legenda-cor { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
@@ -470,7 +467,7 @@
         <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
     </div>
     <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">
-        ⚙️ v<span id="changelog-versao-atual">7.2</span> · histórico
+        ⚙️ v<span id="changelog-versao-atual">7.3</span> · histórico
     </button>
 </div>
 
@@ -494,7 +491,7 @@
     <select id="modalidade-tabuada">
         <option value="2-5">Tabuadas do 2 ao 5</option>
         <option value="6-9">Tabuadas do 6 ao 9</option>
-        <option value="0-10">Completa - Tabuadas do 0 ao 10</option>
+        <option value="0-10">Completa - Tabuadas do 1 ao 10</option>
     </select>
     <div style="display: flex; gap: 10px;">
         <button onclick="registrarAluno(false)" class="botao-verde">🏆 Classificatória</button>
@@ -588,7 +585,7 @@
     <select id="filtro-modalidade" onchange="renderizarRanking()">
         <option value="2-5">Tabuadas 2-5</option>
         <option value="6-9">Tabuadas 6-9</option>
-        <option value="0-10">Completa 0-10</option>
+        <option value="0-10">Completa 1-10</option>
     </select>
     <select id="filtro-turma" onchange="onMudancaTurmaFiltro()">
         <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
@@ -631,7 +628,7 @@
             <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
             <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
         </div>
-        <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 0-10</option><option value="todas">📚 TODAS</option></select><label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label><p style="font-size:11px;color:#856404;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.</p><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
+        <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 1-10</option><option value="todas">📚 TODAS</option></select><label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label><p style="font-size:11px;color:#856404;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.</p><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
         <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
     </div>
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -660,7 +657,13 @@
         <div class="changelog-lista">
 
             <div class="changelog-item">
-                <span class="changelog-versao atual">v7.2 · atual</span>
+                <span class="changelog-versao atual">v7.3 · atual</span>
+                <h4 class="changelog-titulo">Mapa completo + foco no essencial</h4>
+                <p class="changelog-descricao">O mapa agora mostra <strong>todas as tabuadas de 1 a 10</strong>, independente da modalidade. Dominar "2-5" corresponde a 40% do mapa — jogue todas para chegar a 100%. Também <strong>removemos todas as operações envolvendo 0</strong>: nada de 5×0 ou 0×6.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v7.2</span>
                 <h4 class="changelog-titulo">Treino mais enxuto</h4>
                 <p class="changelog-descricao">Ao clicar numa operação do mapa, você só poderá treinar ela <strong>junto com suas variações</strong>. Operações sem variações mostram apenas a dica, sem botão de treino — evita treinos repetitivos.</p>
             </div>
@@ -738,7 +741,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "7.2";
+const APP_VERSION = "7.3";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -784,10 +787,11 @@ const THROTTLE_ACESSO_MS = 30 * 60 * 1000;
 const PESO_ORIGINAL_VARIACAO = 2.0;
 const PESO_COMUTADA_VARIACAO = 1.5;
 const PESO_DISTANTE_VARIACAO = 1.0;
+const FATORES_MAPA = [1,2,3,4,5,6,7,8,9,10];
 const MODALIDADES = {
     "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
     "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
-    "0-10": { nome: "Completa - Tabuadas do 0 ao 10", fatores: [0,1,2,3,4,5,6,7,8,9,10] }
+    "0-10": { nome: "Completa - Tabuadas do 1 ao 10", fatores: [1,2,3,4,5,6,7,8,9,10] }
 };
 const CONQUISTAS = [
     { icone: "🏆", nome: "Mestre da Tabuada", descricao: "17.000+ pontos", criterio: (r) => r.pontos >= 17000 },
@@ -1043,6 +1047,42 @@ async function obterDesempenhoOperacoesAgregado(nome, turma, mod) {
         console.warn("Falha na migração retroativa:", e);
         return {};
     }
+}
+async function obterDesempenhoOperacoesGlobal(nome, turma) {
+    const todas = Object.keys(MODALIDADES);
+    const combinado = {};
+    for (const m of todas) {
+        let dados = await obterMapaFirebase(nome, turma, m);
+        if (!dados || !Object.keys(dados).length) dados = obterMapaLocal(nome, turma, m);
+        if (!dados || !Object.keys(dados).length) {
+            try {
+                const partidas = await obterHistoricoAluno(nome, turma, m);
+                const agregado = {};
+                partidas.forEach(p => {
+                    if (!p.desempenhoOperacoes) return;
+                    Object.entries(p.desempenhoOperacoes).forEach(([k, d]) => {
+                        if (!agregado[k]) agregado[k] = { acertos: 0, erros: 0, tentativas: 0 };
+                        agregado[k].acertos    += d.acertos    || 0;
+                        agregado[k].erros      += d.erros      || 0;
+                        agregado[k].tentativas += d.tentativas || 0;
+                    });
+                });
+                if (Object.keys(agregado).length) {
+                    await salvarMapaFirebase(nome, turma, m, agregado);
+                    dados = agregado;
+                }
+            } catch(e) { /* silencioso */ }
+        }
+        if (dados && Object.keys(dados).length) {
+            Object.entries(dados).forEach(([k, d]) => {
+                if (!combinado[k]) combinado[k] = { acertos: 0, erros: 0, tentativas: 0 };
+                combinado[k].acertos    += d.acertos    || 0;
+                combinado[k].erros      += d.erros      || 0;
+                combinado[k].tentativas += d.tentativas || 0;
+            });
+        }
+    }
+    return combinado;
 }
 async function verificarPromocoes(nome, turma, mod, fonteAtual) {
     const chave = chaveLocalCores(nome, turma, mod);
@@ -1429,11 +1469,11 @@ function gerarPlanoTreinoResultado() {
 // ==================== VARIAÇÕES DE PRODUTO ====================
 function obterVariacoesDeOperacao(fA, fB, mod = modalidadeAtual) {
     const produto = fA * fB;
-    if (produto === 0 || produto === 1) return [];
+    if (produto === 1) return [];
     const fatoresPermitidos = MODALIDADES[mod]?.fatores || [];
     const variacoes = [];
     for (const a of fatoresPermitidos) {
-        for (let b = 0; b <= 10; b++) {
+        for (let b = 1; b <= 10; b++) {
             if (a * b !== produto) continue;
             if (a === fA && b === fB) continue;
             const tipo = (a === fB && b === fA) ? "comutada" : "distante";
@@ -1510,7 +1550,7 @@ function gerarPerguntaAdaptativa(mod) {
         return { fA: op.fA, fB: op.fB, resposta: op.fA * op.fB };
     }
     let fA, fB, chave, t = 0;
-    do { fA = escolherFatorAdaptativo(); fB = Math.floor(Math.random() * 11); chave = `${fA}x${fB}`; t++; }
+    do { fA = escolherFatorAdaptativo(); fB = Math.floor(Math.random() * 10) + 1; chave = `${fA}x${fB}`; t++; }
     while (perguntasGeradas.slice(-5).some(p => p.chave === chave) && t < 20);
     perguntasGeradas.push({ fA, fB, chave });
     return { fA, fB, resposta: fA * fB };
@@ -1522,14 +1562,14 @@ function embaralharLista(l) {
 }
 function adicionarDistrator(l, v, tipo, p) {
     if (!Number.isFinite(v)) return; v = Math.round(v);
-    if (v < 0 || v > 120) return;
+    if (v < 1 || v > 100) return;
     if (!l.some(c => c.valor === v)) l.push({ valor: v, tipo, prioridade: p });
 }
 function gerarDistratoresInteligentes(fA, fB, resposta, total, baseMod = modalidadeAtual) {
     const cands = [];
-    const fatores = MODALIDADES[baseMod]?.fatores || [0,1,2,3,4,5,6,7,8,9,10];
-    [fB-1,fB+1,fB-2,fB+2].forEach((n, i) => { if (n >= 0 && n <= 10) adicionarDistrator(cands, fA * n, "fator-vizinho", i < 2 ? 1 : 2); });
-    [fA-1,fA+1,fA-2,fA+2].forEach((n, i) => { if (n >= 0 && n <= 10) adicionarDistrator(cands, n * fB, "tabuada-vizinha", i < 2 ? 1 : 2); });
+    const fatores = MODALIDADES[baseMod]?.fatores || [1,2,3,4,5,6,7,8,9,10];
+    [fB-1,fB+1,fB-2,fB+2].forEach((n, i) => { if (n >= 1 && n <= 10) adicionarDistrator(cands, fA * n, "fator-vizinho", i < 2 ? 1 : 2); });
+    [fA-1,fA+1,fA-2,fA+2].forEach((n, i) => { if (n >= 1 && n <= 10) adicionarDistrator(cands, n * fB, "tabuada-vizinha", i < 2 ? 1 : 2); });
     adicionarDistrator(cands, resposta + fA, "prox", 1);
     adicionarDistrator(cands, resposta - fA, "ant", 1);
     adicionarDistrator(cands, resposta + fB, "inc", 2);
@@ -1539,9 +1579,8 @@ function gerarDistratoresInteligentes(fA, fB, resposta, total, baseMod = modalid
     adicionarDistrator(cands, Math.floor(resposta / 2), "metade", 3);
     adicionarDistrator(cands, resposta * 2, "dobro", 3);
     if (resposta >= 10 && resposta < 100) { const inv = Number(String(resposta).split("").reverse().join("")); adicionarDistrator(cands, inv, "inv", 2); }
-    fatores.forEach(t => { for (let n = 0; n <= 10; n++) { const p = t * n; if (Math.abs(p - resposta) <= 18) adicionarDistrator(cands, p, "prod", 2); } });
-    if (resposta === 0) [fA + fB, Math.max(fA, fB), 1, 2, 5, 10].forEach(v => adicionarDistrator(cands, v, "zero", 1));
-    if (resposta === 1) [0, 2, 10, 11].forEach(v => adicionarDistrator(cands, v, "um", 1));
+    fatores.forEach(t => { for (let n = 1; n <= 10; n++) { const p = t * n; if (Math.abs(p - resposta) <= 18) adicionarDistrator(cands, p, "prod", 2); } });
+    if (resposta === 1) [2, 10, 11].forEach(v => adicionarDistrator(cands, v, "um", 1));
     const filtrados = cands.filter(c => c.valor !== resposta).sort((a, b) => a.prioridade - b.prioridade || Math.abs(a.valor - resposta) - Math.abs(b.valor - resposta));
     let ops = [resposta];
     for (const pr of [1, 2, 3]) {
@@ -1551,7 +1590,7 @@ function gerarDistratoresInteligentes(fA, fB, resposta, total, baseMod = modalid
     }
     while (ops.length < total) {
         const r = sortearItem([-15,-12,-9,-6,-4,-2,2,4,6,9,12,15]);
-        const v = Math.max(0, Math.min(120, resposta + r));
+        const v = Math.max(1, Math.min(100, resposta + r));
         if (v !== resposta && !ops.includes(v)) ops.push(v);
     }
     return ops.sort((a, b) => a - b);
@@ -1565,10 +1604,10 @@ function calcularPontosResposta(t) {
     return base + bv + bs;
 }
 function dicaMultiplicacao(fA, fB) {
-    if (fA === 0 || fB === 0) return `Qualquer número vezes 0 é 0.`;
     if (fA === 1) return `Todo número vezes 1 é ele mesmo: ${fB}.`;
     if (fB === 1) return `Todo número vezes 1 é ele mesmo: ${fA}.`;
     if (fB === 10) return `${fA} vezes 10 é ${fA} com um zero no final.`;
+    if (fA === 10) return `${fB} vezes 10 é ${fB} com um zero no final.`;
     return `${fA} x ${fB} é somar ${fA}, ${fB} vezes.`;
 }
 function mostrarTela(id) {
@@ -1989,7 +2028,7 @@ async function preencherResultado(melhor, tent, posAntes) {
     document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
     if (tent.desempenhoTabuadas) desempenhoTabuadas = tent.desempenhoTabuadas;
     mapaFonteUltima = tent.desempenhoOperacoes || {};
-    mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(tent.nome, tent.turma, tent.modalidade);
+    mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(tent.nome, tent.turma);
     if (Object.keys(mapaFonteAgregada).length === 0) mapaFonteAgregada = mapaFonteUltima;
     promocoesRecentes = await verificarPromocoes(tent.nome, tent.turma, tent.modalidade, mapaFonteAgregada);
     document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
@@ -2057,8 +2096,9 @@ function corDaOperacao(d) {
 }
 function obterListaFracos() {
     const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
-    const fa = MODALIDADES[modalidadeAtual]?.fatores || [];
-    const fb = [0,1,2,3,4,5,6,7,8,9,10];
+    const fatoresMod = MODALIDADES[modalidadeAtual]?.fatores || [];
+    const fa = fatoresMod.filter(f => FATORES_MAPA.includes(f));
+    const fb = FATORES_MAPA;
     const fracos = [];
     fa.forEach(a => fb.forEach(b => {
         const k = `${a}x${b}`, d = fonte[k], c = corDaOperacao(d);
@@ -2071,8 +2111,8 @@ function obterListaFracos() {
     return fracos.slice(0, 15);
 }
 function renderizarMapa() {
-    const fa = MODALIDADES[modalidadeAtual]?.fatores || [];
-    const fb = [0,1,2,3,4,5,6,7,8,9,10];
+    const fa = FATORES_MAPA;
+    const fb = FATORES_MAPA;
     const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
     const cont = { verde: 0, amarelo: 0, vermelho: 0, cinza: 0 };
     fa.forEach(a => fb.forEach(b => { cont[corDaOperacao(fonte[`${a}x${b}`])]++; }));
@@ -2083,7 +2123,7 @@ function renderizarMapa() {
         <button class="toggle-btn ${modoVisualizacaoMapa === 'agregado' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('agregado')">📚 Todas as partidas</button>
         <button class="toggle-btn ${modoVisualizacaoMapa === 'ultima' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('ultima')">🎯 Uma partida</button>
     </div>
-    <p class="mapa-fonte-aviso">${modoVisualizacaoMapa === 'agregado' ? 'Somando o desempenho de todas as partidas registradas.' : 'Mostrando apenas uma partida.'}</p>`;
+    <p class="mapa-fonte-aviso">${modoVisualizacaoMapa === 'agregado' ? 'Somando o desempenho de todas as partidas, em todas as modalidades.' : 'Mostrando apenas uma partida.'}</p>`;
 
     const fracos = obterListaFracos();
     const qFracos = fracos.length;
@@ -2138,7 +2178,6 @@ function treinarPontosFracosVariacoes() {
 }
 function gerarDicaDecomposicao(fA, fB) {
     const r = fA * fB;
-    if (fA === 0 || fB === 0) return `Qualquer número vezes 0 é <strong>0</strong>.`;
     if (fA === 1) return `${fA}×${fB} é <strong>${fB}</strong>.`;
     if (fB === 1) return `${fA}×${fB} é <strong>${fA}</strong>.`;
     if (fA === 10) return `${fA}×${fB} = ${fB} com zero no final = <strong>${r}</strong>.`;
@@ -2197,7 +2236,12 @@ function renderizarDetalheOperacao(k) {
             <div class="chips-variacoes">${chips}</div>
         `;
     } else {
-        htmlChips = `<div class="nota-sem-variacoes">Esta operação não tem variações dentro da modalidade.<br>Explore outras células do mapa para treinar.</div>`;
+        const foraDaModalidade = !(MODALIDADES[modalidadeAtual]?.fatores || []).includes(a);
+        if (foraDaModalidade) {
+            htmlChips = `<div class="nota-sem-variacoes">Esta operação pertence a outra modalidade.<br>Altere a modalidade para treiná-la.</div>`;
+        } else {
+            htmlChips = `<div class="nota-sem-variacoes">Esta operação não tem variações dentro da modalidade.<br>Explore outras células do mapa para treinar.</div>`;
+        }
     }
 
     document.getElementById("modal-corpo").innerHTML = `
@@ -2447,7 +2491,7 @@ async function carregarPerfil() {
     alunoAtual = melhor.nome; turmaAtual = melhor.turma; modalidadeAtual = melhor.modalidade;
     treinoFocoOperacoes = null; promocoesRecentes = [];
     mapaFonteUltima = melhor.desempenhoOperacoes || {};
-    mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(melhor.nome, melhor.turma, melhor.modalidade);
+    mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(melhor.nome, melhor.turma);
     if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
     document.getElementById("perfil-mapa").innerHTML = renderizarMapa();
     document.getElementById("perfil-conteudo").classList.remove("hidden");
