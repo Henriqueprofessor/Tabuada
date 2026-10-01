@@ -189,6 +189,134 @@
             font-style: italic;
         }
 
+        /* ============ MODAL DE OPERAÇÃO (Parte 2) ============ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 16px;
+            animation: modalFadeIn 0.18s ease;
+        }
+        .modal-overlay.hidden { display: none; }
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-card {
+            background: #fff;
+            border-radius: 16px;
+            max-width: 440px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            text-align: left;
+            animation: modalSlideUp 0.22s ease;
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 17px;
+            color: #102a43;
+        }
+        .modal-close {
+            width: auto;
+            margin: 0;
+            padding: 6px 12px;
+            background: transparent;
+            color: #6c757d;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: none;
+            transition: all 0.15s;
+        }
+        .modal-close:hover { background: #f1f5f9; color: #dc3545; }
+
+        .modal-operacao-titulo {
+            font-size: 36px;
+            font-weight: 900;
+            text-align: center;
+            color: #0d6efd;
+            margin: 4px 0 14px;
+            letter-spacing: 1px;
+        }
+        .modal-status {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 9px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            margin: 0 0 14px;
+        }
+        .modal-status.verde    { background: #dcfce7; color: #166534; }
+        .modal-status.amarelo  { background: #fef9c3; color: #854d0e; }
+        .modal-status.vermelho { background: #fee2e2; color: #991b1b; }
+        .modal-status.cinza    { background: #f1f5f9; color: #475569; }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .modal-stat {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px 12px;
+            text-align: center;
+        }
+        .modal-stat .rotulo {
+            display: block;
+            font-size: 10px;
+            font-weight: 800;
+            color: #6c757d;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .modal-stat .valor {
+            font-size: 20px;
+            font-weight: bold;
+            color: #222;
+        }
+        .modal-stat.destaque .valor { color: #0d6efd; }
+
+        .modal-dica {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: #6d4c41;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+        .modal-dica strong { color: #bf360c; }
+
+        .modal-acoes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .modal-acoes button { margin: 0; }
+
         .ranking-principal { margin-top: 14px; }
         .aba-principal {
             width: 100%;
@@ -560,7 +688,6 @@
             .tabela-medias tr.minha-turma td { background: rgba(74,158,255,0.15); }
             tr.voce-linha td { background: rgba(74,158,255,0.18) !important; }
 
-            /* Dark mode do mapa v2 */
             .mapa-tabuadas-v2 { background: #1a1a1a; }
             .mapa-resumo { background: #2a2a2a; }
             .mapa-resumo .resumo-titulo { color: #f0f0f0; }
@@ -571,12 +698,27 @@
             .contador.vermelho { background: #450a0a; color: #fca5a5; border-color: #991b1b; }
             .contador.cinza    { background: #1e293b; color: #cbd5e1; border-color: #334155; }
 
-            /* Dark mode do toggle */
             .mapa-toggle { background: #334155; }
             .mapa-toggle .toggle-btn { color: #cbd5e1; }
             .mapa-toggle .toggle-btn:hover:not(.ativa) { background: rgba(255,255,255,.06); }
             .mapa-toggle .toggle-btn.ativa { background: #1e293b; color: #4a9eff; }
             .mapa-fonte-aviso { color: #94a3b8; }
+
+            /* Modal dark mode */
+            .modal-card { background: #1e1e1e; color: #e8e8e8; }
+            .modal-header { border-color: #333; }
+            .modal-header h3 { color: #f0f0f0; }
+            .modal-close { color: #b0b0b0; }
+            .modal-close:hover { background: #333; }
+            .modal-stat { background: #2a2a2a; }
+            .modal-stat .valor { color: #e8e8e8; }
+            .modal-stat.destaque .valor { color: #4a9eff; }
+            .modal-dica { background: #3a2e1a; color: #e8d0a0; border-color: #5a4a2a; }
+            .modal-dica strong { color: #ffd166; }
+            .modal-status.verde    { background: #14532d; color: #86efac; }
+            .modal-status.amarelo  { background: #422006; color: #fde047; }
+            .modal-status.vermelho { background: #450a0a; color: #fca5a5; }
+            .modal-status.cinza    { background: #1e293b; color: #cbd5e1; }
         }
 
         @media (max-width: 700px) {
@@ -793,10 +935,25 @@
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
 </div>
 
+<!-- ============ MODAL DE OPERAÇÃO (Parte 2) ============ -->
+<div id="modal-operacao" class="modal-overlay hidden" onclick="fecharModalOperacao(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>📊 Detalhes da operação</h3>
+            <button class="modal-close" onclick="fecharModalOperacao()" aria-label="Fechar">✕</button>
+        </div>
+        <div id="modal-corpo" class="modal-corpo"></div>
+        <div class="modal-acoes">
+            <button id="modal-btn-treinar" class="botao-treino">🎯 Treinar esta operação</button>
+            <button class="botao-secundario" onclick="fecharModalOperacao()">🔙 Fechar</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "6.2";
+const APP_VERSION = "6.3";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -860,6 +1017,7 @@ let desempenhoOperacoes = {};
 let mapaFonteUltima = {};
 let mapaFonteAgregada = {};
 let modoVisualizacaoMapa = "agregado";
+let treinoOperacaoFixa = null; // { fA, fB } quando treino focado, null caso contrário
 let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
 let alunosData=[], alunosFiltrados=[];
 let melhorMediaAluno = null, mediaTurma = null;
@@ -909,17 +1067,13 @@ function tocarNotaAgora(ctx, frequencia, duracao, tipo, volume, delay) {
         const inicio = ctx.currentTime + delay;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-
         osc.type = tipo;
         osc.frequency.setValueAtTime(frequencia, inicio);
-
         gain.gain.setValueAtTime(0.0001, inicio);
         gain.gain.linearRampToValueAtTime(volume, inicio + 0.015);
         gain.gain.exponentialRampToValueAtTime(0.0001, inicio + duracao);
-
         osc.connect(gain);
         gain.connect(ctx.destination);
-
         osc.start(inicio);
         osc.stop(inicio + duracao + 0.05);
     } catch(e) { /* silencioso */ }
@@ -929,45 +1083,21 @@ function somAcerto() {
     tocarNota(880, 0.08, "sine", 0.10);
     tocarNota(1174, 0.06, "sine", 0.06, 0.04);
 }
-
-function somErro() {
-    tocarNota(220, 0.18, "sawtooth", 0.08);
-}
-
+function somErro() { tocarNota(220, 0.18, "sawtooth", 0.08); }
 function somCombo(nivel) {
-    const notas = {
-        5:  [523, 659, 784],
-        10: [523, 659, 784, 1047],
-        15: [523, 659, 784, 1047, 1319],
-        20: [523, 659, 784, 1047, 1319, 1568]
-    };
+    const notas = { 5: [523, 659, 784], 10: [523, 659, 784, 1047], 15: [523, 659, 784, 1047, 1319], 20: [523, 659, 784, 1047, 1319, 1568] };
     const sequencia = notas[nivel] || [523, 659, 784];
-    sequencia.forEach((f, i) => {
-        setTimeout(() => tocarNota(f, 0.12, "sine", 0.13), i * 70);
-    });
+    sequencia.forEach((f, i) => { setTimeout(() => tocarNota(f, 0.12, "sine", 0.13), i * 70); });
 }
-
-function somConclusao() {
-    tocarNota(659, 0.18, "sine", 0.12, 0);
-    tocarNota(880, 0.32, "sine", 0.12, 0.14);
-}
-
-function somNovoRecorde() {
-    tocarNota(523, 0.14, "sine", 0.12, 0);
-    tocarNota(659, 0.14, "sine", 0.12, 0.13);
-    tocarNota(1047, 0.30, "sine", 0.13, 0.26);
-}
+function somConclusao() { tocarNota(659, 0.18, "sine", 0.12, 0); tocarNota(880, 0.32, "sine", 0.12, 0.14); }
+function somNovoRecorde() { tocarNota(523, 0.14, "sine", 0.12, 0); tocarNota(659, 0.14, "sine", 0.12, 0.13); tocarNota(1047, 0.30, "sine", 0.13, 0.26); }
 
 function toggleSom() {
     somAtivo = !somAtivo;
     const btn = document.getElementById("btn-som");
     btn.innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO";
     btn.classList.toggle("mudo", !somAtivo);
-
-    if (somAtivo) {
-        desbloquearAudio();
-        setTimeout(() => somAcerto(), 100);
-    }
+    if (somAtivo) { desbloquearAudio(); setTimeout(() => somAcerto(), 100); }
 }
 // ==================== FIM DO SISTEMA DE ÁUDIO ====================
 
@@ -984,10 +1114,7 @@ function notificar(mensagem, tipo = "info", duracao = 3500) {
     toast.className = `toast toast-${tipo}`;
     toast.innerHTML = `<span class="toast-icone">${icones[tipo] || "ℹ️"}</span><span>${escaparHtml(mensagem)}</span>`;
     container.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.add("saindo");
-        setTimeout(() => toast.remove(), 300);
-    }, duracao);
+    setTimeout(() => { toast.classList.add("saindo"); setTimeout(() => toast.remove(), 300); }, duracao);
 }
 
 function animarNumero(elemento, de, para, duracao = 400) {
@@ -1027,7 +1154,6 @@ function atualizarDisplayUltimaSincronizacao() {
     const el = document.getElementById("ultima-sincronizacao");
     if (el) el.innerText = lastSync ? `Última atualização: ${formatarDataHora(parseInt(lastSync))}` : "Última atualização: --";
 }
-
 function ehMelhorResultado(a, b) {
     if (!b) return true;
     if (a.pontos !== b.pontos) return a.pontos > b.pontos;
@@ -1037,30 +1163,18 @@ function ehMelhorResultado(a, b) {
     return false;
 }
 function compararParaOrdenacao(a, b) {
-    return (b.pontos || 0) - (a.pontos || 0)
-        || (b.acertos || 0) - (a.acertos || 0)
-        || (a.tempoMedio || 999) - (b.tempoMedio || 999)
-        || (b.maiorSequencia || 0) - (a.maiorSequencia || 0)
-        || new Date(a.data || 0) - new Date(b.data || 0);
+    return (b.pontos || 0) - (a.pontos || 0) || (b.acertos || 0) - (a.acertos || 0) || (a.tempoMedio || 999) - (b.tempoMedio || 999) || (b.maiorSequencia || 0) - (a.maiorSequencia || 0) || new Date(a.data || 0) - new Date(b.data || 0);
 }
 
 function explicarDesempate(aluno, quartoLugar) {
-    if (!quartoLugar) {
-        return { tipo: "sem-corte", mensagem: "Ainda não há quatro participantes nesta modalidade. Sua posição pode mudar quando novos resultados forem registrados." };
-    }
+    if (!quartoLugar) return { tipo: "sem-corte", mensagem: "Ainda não há quatro participantes nesta modalidade. Sua posição pode mudar quando novos resultados forem registrados." };
     if (aluno.pontos < quartoLugar.pontos) {
         const diferenca = quartoLugar.pontos - aluno.pontos;
         return { tipo: "pontos", diferenca: diferenca, mensagem: `O 4º lugar está <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> à sua frente. Continue treinando para alcançar.` };
     }
-    if (aluno.acertos < quartoLugar.acertos) {
-        return { tipo: "acertos", mensagem: `Você está empatado em pontos com o 4º lugar. A vaga está sendo definida pelos <strong>acertos</strong> — quanto mais acertos, melhor.` };
-    }
-    if ((aluno.tempoMedio || 999) > (quartoLugar.tempoMedio || 999)) {
-        return { tipo: "tempo", mensagem: `Você está empatado em pontos e acertos. A vaga está sendo definida pelo <strong>tempo médio</strong> — responda mais rápido para avançar.` };
-    }
-    if ((aluno.maiorSequencia || 0) < (quartoLugar.maiorSequencia || 0)) {
-        return { tipo: "sequencia", mensagem: `Você está empatado em pontos, acertos e tempo. A vaga está sendo definida pela <strong>maior sequência de acertos</strong>.` };
-    }
+    if (aluno.acertos < quartoLugar.acertos) return { tipo: "acertos", mensagem: `Você está empatado em pontos com o 4º lugar. A vaga está sendo definida pelos <strong>acertos</strong>.` };
+    if ((aluno.tempoMedio || 999) > (quartoLugar.tempoMedio || 999)) return { tipo: "tempo", mensagem: `Empate em pontos e acertos. A vaga está sendo definida pelo <strong>tempo médio</strong>.` };
+    if ((aluno.maiorSequencia || 0) < (quartoLugar.maiorSequencia || 0)) return { tipo: "sequencia", mensagem: `Empate em pontos, acertos e tempo. A vaga está sendo definida pela <strong>maior sequência</strong>.` };
     return { tipo: "empate", mensagem: "Você está muito próximo do 4º lugar. Continue treinando — a próxima tentativa pode definir a vaga." };
 }
 
@@ -1089,10 +1203,7 @@ function gerarHashSenhaFallback(valor, seed = 0) {
     h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 }
-function professorAutenticado() {
-    let ts = Number(sessionStorage.getItem("professorCEIBAuth") || 0);
-    return ts && Date.now() - ts < PROFESSOR_SESSION_MS;
-}
+function professorAutenticado() { let ts = Number(sessionStorage.getItem("professorCEIBAuth") || 0); return ts && Date.now() - ts < PROFESSOR_SESSION_MS; }
 function exigirProfessorAutenticado() {
     if(professorAutenticado()) { sessionStorage.setItem("professorCEIBAuth", String(Date.now())); return true; }
     notificar("A sessão do professor expirou. Digite a senha novamente.", "aviso");
@@ -1192,6 +1303,13 @@ function escolherFatorAdaptativo() {
     });
 }
 function gerarPerguntaAdaptativa(modalidade) {
+    // Treino focado: força a operação específica
+    if (treinoOperacaoFixa && modoTreino) {
+        const { fA, fB } = treinoOperacaoFixa;
+        const chave = `${fA}x${fB}`;
+        perguntasGeradas.push({ fA, fB, chave });
+        return { fA, fB, resposta: fA * fB };
+    }
     let fA, fB, chave, tentativas=0;
     do { fA = escolherFatorAdaptativo(); fB = Math.floor(Math.random()*11); chave = `${fA}x${fB}`; tentativas++; }
     while(perguntasGeradas.slice(-5).some(p=>p.chave===chave) && tentativas < 20);
@@ -1278,32 +1396,22 @@ function salvarTurmaENomeAluno(turma, nome) {
     if (turma) localStorage.setItem(STORAGE_TURMA_ALUNO, turma);
     if (nome) localStorage.setItem(STORAGE_NOME_ALUNO, nome);
 }
-function obterTurmaSalvaAluno() {
-    return localStorage.getItem(STORAGE_TURMA_ALUNO);
-}
-function obterNomeSalvoAluno() {
-    return localStorage.getItem(STORAGE_NOME_ALUNO);
-}
+function obterTurmaSalvaAluno() { return localStorage.getItem(STORAGE_TURMA_ALUNO); }
+function obterNomeSalvoAluno() { return localStorage.getItem(STORAGE_NOME_ALUNO); }
 function aplicarTurmaSalvaNoFiltro() {
     const turmaSalva = obterTurmaSalvaAluno();
     const select = document.getElementById("filtro-turma");
     if (!select) return;
     if (turmaSalva && tipoRankingAtual === "turma") {
         const opcoes = Array.from(select.options).map(o => o.value);
-        if (opcoes.includes(turmaSalva)) {
-            select.value = turmaSalva;
-        }
+        if (opcoes.includes(turmaSalva)) select.value = turmaSalva;
     }
 }
 function atualizarBotaoMinhaTurma() {
     const btn = document.getElementById("aba-turma");
     if (!btn) return;
     const turmaSalva = obterTurmaSalvaAluno();
-    if (turmaSalva) {
-        btn.innerHTML = `🏆 Minha Turma — ${turmaSalva}`;
-    } else {
-        btn.innerHTML = `🏆 Minha Turma`;
-    }
+    btn.innerHTML = turmaSalva ? `🏆 Minha Turma — ${turmaSalva}` : `🏆 Minha Turma`;
 }
 function onMudancaTurmaFiltro() {
     const select = document.getElementById("filtro-turma");
@@ -1318,46 +1426,31 @@ function atualizarHintTurmaAluno() {
     if (!hint) return;
     const turmaSalva = obterTurmaSalvaAluno();
     const ehRankingTurma = tipoRankingAtual === "turma";
-    if (ehRankingTurma && !turmaSalva) {
-        hint.classList.remove("hidden");
-    } else {
-        hint.classList.add("hidden");
-    }
+    if (ehRankingTurma && !turmaSalva) hint.classList.remove("hidden");
+    else hint.classList.add("hidden");
 }
 
 function obterIdDispositivo() {
     let id = localStorage.getItem('dispositivoId');
     if (!id) {
-        id = crypto.randomUUID ? crypto.randomUUID() : 
-             'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-             });
+        id = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
         localStorage.setItem('dispositivoId', id);
     }
     return id;
 }
 function chaveVinculo(nome, turma) { return `${normalizarNome(nome)}|${turma}`.replace(/[.#$\/\[\]]/g, '_'); }
-async function obterVinculo(nome, turma) {
-    const chave = chaveVinculo(nome, turma);
-    const snap = await database.ref(`vinculos/${chave}`).once('value');
-    return snap.val();
-}
-async function criarVinculo(nome, turma, dispositivoId) {
-    const chave = chaveVinculo(nome, turma);
-    await database.ref(`vinculos/${chave}`).set({ dispositivoId, criadoEm: Date.now() });
-}
+async function obterVinculo(nome, turma) { const chave = chaveVinculo(nome, turma); const snap = await database.ref(`vinculos/${chave}`).once('value'); return snap.val(); }
+async function criarVinculo(nome, turma, dispositivoId) { const chave = chaveVinculo(nome, turma); await database.ref(`vinculos/${chave}`).set({ dispositivoId, criadoEm: Date.now() }); }
 async function verificarVinculo(nome, turma) {
     const dispositivoId = obterIdDispositivo();
     const vinculo = await obterVinculo(nome, turma);
-    if (!vinculo) {
-        await criarVinculo(nome, turma, dispositivoId);
-        return { permitido: true, primeiroUso: true };
-    } else {
-        if (vinculo.dispositivoId === dispositivoId) return { permitido: true, primeiroUso: false };
-        return { permitido: false, mensagem: `O nome "${nome}" já está vinculado a outro dispositivo. Para usar neste dispositivo, peça ao professor para desvincular.` };
-    }
+    if (!vinculo) { await criarVinculo(nome, turma, dispositivoId); return { permitido: true, primeiroUso: true }; }
+    if (vinculo.dispositivoId === dispositivoId) return { permitido: true, primeiroUso: false };
+    return { permitido: false, mensagem: `O nome "${nome}" já está vinculado a outro dispositivo. Para usar neste dispositivo, peça ao professor para desvincular.` };
 }
 
 async function obterRanking() {
@@ -1469,9 +1562,7 @@ async function calcularMediasTop4Turmas(modalidade) {
         if (!porTurma.has(r.turma)) porTurma.set(r.turma, new Map());
         const chave = normalizarNome(r.nome);
         const mapaAluno = porTurma.get(r.turma);
-        if (!mapaAluno.has(chave) || ehMelhorResultado(r, mapaAluno.get(chave))) {
-            mapaAluno.set(chave, r);
-        }
+        if (!mapaAluno.has(chave) || ehMelhorResultado(r, mapaAluno.get(chave))) mapaAluno.set(chave, r);
     });
     const resultado = [];
     porTurma.forEach((mapaAluno, turma) => {
@@ -1480,13 +1571,7 @@ async function calcularMediasTop4Turmas(modalidade) {
         if (top4.length === 0) return;
         const soma = top4.reduce((s, a) => s + (a.pontos || 0), 0);
         const media = soma / top4.length;
-        resultado.push({
-            turma,
-            media: Math.round(media),
-            totalJogadores: top4.length,
-            totalTurma: listaAlunos.length,
-            melhorAluno: top4[0]
-        });
+        resultado.push({ turma, media: Math.round(media), totalJogadores: top4.length, totalTurma: listaAlunos.length, melhorAluno: top4[0] });
     });
     resultado.sort((a, b) => b.media - a.media);
     return resultado;
@@ -1539,7 +1624,6 @@ async function renderizarCardClassificacao(r) {
     const modalidadeNome = MODALIDADES[r.modalidade]?.nome || r.modalidade;
     const quartoLugar = rankingTurma[VAGAS_CLASSIFICACAO - 1] || null;
     const explicacao = explicarDesempate(r, quartoLugar);
-
     const top6 = rankingTurma.slice(0, 6);
     let miniRankingHtml = '<div class="mini-ranking">';
     for (let i = 0; i < top6.length; i++) {
@@ -1548,18 +1632,13 @@ async function renderizarCardClassificacao(r) {
         const classeExtra = ehVoce ? 'voce' : (pos <= VAGAS_CLASSIFICACAO ? 'classificado' : (pos <= 6 ? 'reserva' : 'fora'));
         const medalha = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos === 4 ? '🎫' : '';
         miniRankingHtml += `<div class="mini-ranking-item ${classeExtra}"><span>${pos}º ${medalha} ${escaparHtml(item.nome)}${ehVoce ? ' ← Você' : ''}</span><span><strong>${item.pontos.toLocaleString('pt-BR')}</strong> pts</span></div>`;
-        if (i === VAGAS_CLASSIFICACAO - 1 && top6.length > VAGAS_CLASSIFICACAO) {
-            miniRankingHtml += `<div class="divisor-ranking">— linha de corte (${VAGAS_CLASSIFICACAO} vagas) —</div>`;
-        }
+        if (i === VAGAS_CLASSIFICACAO - 1 && top6.length > VAGAS_CLASSIFICACAO) miniRankingHtml += `<div class="divisor-ranking">— linha de corte (${VAGAS_CLASSIFICACAO} vagas) —</div>`;
     }
     miniRankingHtml += '</div>';
 
     if (posicao <= VAGAS_CLASSIFICACAO) {
         const confettiKey = `ceib_confetti_${normalizarNome(r.nome)}_${r.turma}`;
-        if (!localStorage.getItem(confettiKey)) {
-            setTimeout(() => dispararConfetes(), 300);
-            localStorage.setItem(confettiKey, "1");
-        }
+        if (!localStorage.getItem(confettiKey)) { setTimeout(() => dispararConfetes(), 300); localStorage.setItem(confettiKey, "1"); }
         return `<div class="card-classificacao zona-classificacao">
             <h3>🎉 VOCÊ ESTÁ NA ZONA DE CLASSIFICAÇÃO!</h3>
             <div class="posicao-destaque">${posicao}º<span class="sufixo"> lugar</span></div>
@@ -1598,6 +1677,7 @@ async function registrarAluno(treino) {
     alunoAtual=nome; turmaAtual=turma; modalidadeAtual=document.getElementById("modalidade-tabuada").value; modoTreino=treino;
 
     salvarTurmaENomeAluno(turma, nome);
+    treinoOperacaoFixa = null; // limpa treino focado ao iniciar novo treino geral
 
     if (!modoTreino) {
         const resultado = await verificarVinculo(nome, turma);
@@ -1654,7 +1734,10 @@ async function registrarAluno(treino) {
 function iniciarPartidaTreino() {
     modoTreino = true;
     reiniciarVariaveisJogo();
-    document.getElementById("cabecalho-turma").innerText = `🎯 TREINO — TURMA ${turmaAtual}`;
+    const titulo = treinoOperacaoFixa
+        ? `🎯 TREINO FOCADO — ${treinoOperacaoFixa.fA}×${treinoOperacaoFixa.fB}`
+        : `🎯 TREINO — TURMA ${turmaAtual}`;
+    document.getElementById("cabecalho-turma").innerText = titulo;
     mostrarTela("tela-jogo");
     proximaPergunta();
 }
@@ -1662,6 +1745,7 @@ function iniciarPartidaClassificatoria() {
     if (!window._pendingGame) return;
     const { nome, turma, modalidade } = window._pendingGame;
     alunoAtual = nome; turmaAtual = turma; modalidadeAtual = modalidade; modoTreino = false;
+    treinoOperacaoFixa = null; // classificação nunca é treino focado
     salvarTurmaENomeAluno(turma, nome);
     reiniciarVariaveisJogo();
     document.getElementById("cabecalho-turma").innerText = `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
@@ -1752,11 +1836,7 @@ function processarResposta(pontos,acertou,tempo) {
     if(perguntaAtual===1 && acertou) acertouPrimeira=true;
     if(acertou && tempo<0.8) temposRapidos++;
 
-    if (acertou) {
-        somAcerto();
-    } else {
-        somErro();
-    }
+    if (acertou) somAcerto(); else somErro();
 
     if(!modoTreino && !acertou){
         let pDiv=document.getElementById("pergunta");
@@ -1779,7 +1859,6 @@ function processarResposta(pontos,acertou,tempo) {
     let pontosAntes = pontosAcumulados;
     pontosAcumulados+=pontos;
 
-    // Rastreio por tabuada (mantido) + por operação (novo)
     if(perguntaAtual<=TOTAL_PERGUNTAS){
         let tab=tabuadaAtualPergunta;
         if(tab !== null && !isNaN(tab)){
@@ -1791,9 +1870,7 @@ function processarResposta(pontos,acertou,tempo) {
         let ultima = perguntasGeradas[perguntasGeradas.length - 1];
         if (ultima) {
             const chaveOp = `${ultima.fA}x${ultima.fB}`;
-            if (!desempenhoOperacoes[chaveOp]) {
-                desempenhoOperacoes[chaveOp] = { acertos: 0, erros: 0, tentativas: 0 };
-            }
+            if (!desempenhoOperacoes[chaveOp]) desempenhoOperacoes[chaveOp] = { acertos: 0, erros: 0, tentativas: 0 };
             desempenhoOperacoes[chaveOp].tentativas++;
             if (acertou) desempenhoOperacoes[chaveOp].acertos++;
             else         desempenhoOperacoes[chaveOp].erros++;
@@ -1810,14 +1887,15 @@ function processarResposta(pontos,acertou,tempo) {
 }
 function atualizarStatus(pontosAntes) {
     const cabecalho = document.getElementById("cabecalho-turma");
-    if (cabecalho) cabecalho.innerText = modoTreino ? `🎯 TREINO — TURMA ${turmaAtual}` : `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
+    if (cabecalho) {
+        if (treinoOperacaoFixa) cabecalho.innerText = `🎯 TREINO FOCADO — ${treinoOperacaoFixa.fA}×${treinoOperacaoFixa.fB}`;
+        else if (modoTreino) cabecalho.innerText = `🎯 TREINO — TURMA ${turmaAtual}`;
+        else cabecalho.innerText = `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
+    }
     const pontosEl = document.getElementById("cabecalho-pontos");
     if (pontosEl) {
-        if (typeof pontosAntes === "number" && pontosAntes !== pontosAcumulados) {
-            animarNumero(pontosEl, pontosAntes, pontosAcumulados, 400);
-        } else if (!pontosEl.classList.contains("contando")) {
-            pontosEl.innerText = `${pontosAcumulados.toLocaleString('pt-BR')} pts`;
-        }
+        if (typeof pontosAntes === "number" && pontosAntes !== pontosAcumulados) animarNumero(pontosEl, pontosAntes, pontosAcumulados, 400);
+        else if (!pontosEl.classList.contains("contando")) pontosEl.innerText = `${pontosAcumulados.toLocaleString('pt-BR')} pts`;
     }
     const infoPerg = document.getElementById("info-pergunta-destaque");
     if (infoPerg) infoPerg.innerText = `Pergunta ${Math.min(perguntaAtual, TOTAL_PERGUNTAS)} de ${TOTAL_PERGUNTAS}`;
@@ -1862,11 +1940,15 @@ async function finalizarCircuito() {
         desempenhoOperacoes:desempenhoOperacoes,
         data:new Date().toISOString(),
         idPartida:criarChavePartida({nome:alunoAtual}),
-        temposRapidos:temposRapidos, acertouPrimeira:acertouPrimeira
+        temposRapidos:temposRapidos, acertouPrimeira:acertouPrimeira,
+        treinoFocado: treinoOperacaoFixa ? { fA: treinoOperacaoFixa.fA, fB: treinoOperacaoFixa.fB } : null
     };
 
     if(modoTreino){
-        document.getElementById("resultado-titulo").innerHTML="🎯 Resultado do Treino";
+        const tituloTreino = treinoOperacaoFixa
+            ? `🎯 Treino focado — ${treinoOperacaoFixa.fA}×${treinoOperacaoFixa.fB}`
+            : "🎯 Resultado do Treino";
+        document.getElementById("resultado-titulo").innerHTML = tituloTreino;
         document.getElementById("feedback-pontos").innerHTML=`${alunoAtual}, treino concluído!`;
         document.getElementById("cards-comparacao-resultado").innerHTML = "";
         document.getElementById("card-classificacao-container").innerHTML = "";
@@ -1878,7 +1960,7 @@ async function finalizarCircuito() {
         document.getElementById("resumo-media-turma").innerText="--";
         document.getElementById("resumo-turma").innerText=turmaAtual;
         document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[modalidadeAtual].nome;
-        document.getElementById("resumo-status").innerHTML="Modo Treino";
+        document.getElementById("resumo-status").innerHTML= treinoOperacaoFixa ? "Treino Focado" : "Modo Treino";
         mapaFonteUltima = desempenhoOperacoes;
         mapaFonteAgregada = desempenhoOperacoes;
         document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
@@ -1887,6 +1969,7 @@ async function finalizarCircuito() {
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
         document.getElementById("btn-compartilhar")?.classList.add("hidden");
         somConclusao();
+        treinoOperacaoFixa = null; // limpa após finalizar
         mostrarTela("tela-resultado");
         return;
     }
@@ -1902,11 +1985,8 @@ async function finalizarCircuito() {
         await salvarPartida(resultado);
         let melhorOficial = await salvarResultado(resultado);
         const ehNovoRecorde = melhorOficial.data === resultado.data;
-        if (ehNovoRecorde && posicaoAntes !== null) {
-            somNovoRecorde();
-        } else {
-            somConclusao();
-        }
+        if (ehNovoRecorde && posicaoAntes !== null) somNovoRecorde();
+        else somConclusao();
         await preencherResultado(melhorOficial, resultado, posicaoAntes);
         mostrarTela("tela-resultado");
     }catch(e){
@@ -1973,13 +2053,9 @@ async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
     document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
 
     if(tentativaAtual.desempenhoTabuadas) desempenhoTabuadas = tentativaAtual.desempenhoTabuadas;
-
     mapaFonteUltima = tentativaAtual.desempenhoOperacoes || {};
-    mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(
-        tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade
-    );
+    mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade);
     if (Object.keys(mapaFonteAgregada).length === 0) mapaFonteAgregada = mapaFonteUltima;
-
     document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
 
     let historico = await obterHistoricoAluno(tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade);
@@ -2000,45 +2076,32 @@ async function iniciarTreinoDaTelaResultado() {
         return;
     }
     modoTreino = true;
+    treinoOperacaoFixa = null; // garante que é treino geral
     await carregarFocoTreino(alunoAtual, turmaAtual, modalidadeAtual);
     iniciarPartidaTreino();
 }
 
 async function compartilharResultado() {
-    if (!ultimoMelhorOficial) {
-        notificar("Nenhum resultado para compartilhar.", "aviso");
-        return;
-    }
-
-    let posicao = null;
-    let totalParticipantes = 0;
-    let badge = "";
-
+    if (!ultimoMelhorOficial) { notificar("Nenhum resultado para compartilhar.", "aviso"); return; }
+    let posicao = null, totalParticipantes = 0, badge = "";
     try {
         const rankingTurma = await obterRankingPorPontos(ultimoMelhorOficial.modalidade, ultimoMelhorOficial.turma);
         totalParticipantes = rankingTurma.length;
-        const idx = rankingTurma.findIndex(r =>
-            normalizarNome(r.nome) === normalizarNome(ultimoMelhorOficial.nome) &&
-            r.turma === ultimoMelhorOficial.turma
-        );
+        const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(ultimoMelhorOficial.nome) && r.turma === ultimoMelhorOficial.turma);
         if (idx !== -1) {
             posicao = idx + 1;
             if (posicao <= VAGAS_CLASSIFICACAO) badge = "🎟️ Zona de classificação";
             else if (posicao <= 6) badge = "🔄 Zona de reserva";
         }
-    } catch(e) {
-        console.warn("Não foi possível calcular posição para compartilhamento", e);
-    }
+    } catch(e) { console.warn("Não foi possível calcular posição para compartilhamento", e); }
 
     let texto = `🏆 Copa da Tabuada CEIB 2026\n`;
     texto += `👤 ${alunoAtual} · Turma ${turmaAtual}\n`;
-
     if (posicao !== null && totalParticipantes > 0) {
         const plural = totalParticipantes > 1 ? "alunos" : "aluno";
         texto += `\n🏅 ${posicao}º lugar entre ${totalParticipantes} ${plural}\n`;
         if (badge) texto += `${badge}\n`;
     }
-
     texto += `\n📊 ${ultimoMelhorOficial.pontos.toLocaleString('pt-BR')} pontos\n`;
     texto += `✅ ${ultimoMelhorOficial.acertos}/20 acertos\n`;
     texto += `⏱️ Tempo médio: ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n`;
@@ -2046,9 +2109,7 @@ async function compartilharResultado() {
     texto += `\n⚠️ Classificação provisória até o encerramento da etapa`;
 
     if (navigator.share) {
-        try {
-            await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: texto, url: window.location.href });
-        } catch(e) { /* usuário cancelou */ }
+        try { await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: texto, url: window.location.href }); } catch(e) {}
     } else {
         try {
             await navigator.clipboard.writeText(texto + '\n' + window.location.href);
@@ -2083,18 +2144,14 @@ function corDaOperacao(dados) {
 function renderizarMapa() {
     const fatoresA = MODALIDADES[modalidadeAtual]?.fatores || [];
     const fatoresB = [0,1,2,3,4,5,6,7,8,9,10];
-
     const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
 
     const cont = { verde: 0, amarelo: 0, vermelho: 0, cinza: 0 };
-    fatoresA.forEach(a => fatoresB.forEach(b => {
-        cont[corDaOperacao(fonte[`${a}x${b}`])]++;
-    }));
+    fatoresA.forEach(a => fatoresB.forEach(b => { cont[corDaOperacao(fonte[`${a}x${b}`])]++; }));
     const totalOps = fatoresA.length * fatoresB.length;
     const dominio = totalOps ? Math.round((cont.verde / totalOps) * 100) : 0;
 
     let html = `<div class="mapa-tabuadas-v2">`;
-
     html += `
         <div class="mapa-toggle">
             <button class="toggle-btn ${modoVisualizacaoMapa === 'agregado' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('agregado')">📚 Todas as partidas</button>
@@ -2151,7 +2208,90 @@ function mudarVisualizacaoMapa(modo) {
     });
 }
 
-// Mantida para compatibilidade (não usada no mapa v2)
+// ==================== PARTE 2: MODAL DE OPERAÇÃO ====================
+function gerarDicaDecomposicao(fA, fB) {
+    const res = fA * fB;
+    if (fA === 0 || fB === 0) return `Qualquer número vezes 0 é <strong>0</strong>.`;
+    if (fA === 1) return `${fA}×${fB} é o próprio <strong>${fB}</strong>. Todo número vezes 1 é ele mesmo.`;
+    if (fB === 1) return `${fA}×${fB} é o próprio <strong>${fA}</strong>. Todo número vezes 1 é ele mesmo.`;
+    if (fA === 10) return `${fA}×${fB} = <strong>${fB}</strong> com um zero no final = <strong>${res}</strong>.`;
+    if (fB === 10) return `${fA}×${fB} = <strong>${fA}</strong> com um zero no final = <strong>${res}</strong>.`;
+    if (fA === 9) return `${fA}×${fB} = (10−1)×${fB} = 10×${fB} − ${fB} = ${10*fB} − ${fB} = <strong>${res}</strong>.`;
+    if (fB === 9) return `${fA}×${fB} = ${fA}×(10−1) = ${fA}×10 − ${fA} = ${10*fA} − ${fA} = <strong>${res}</strong>.`;
+    if (fA === 5) return `${fA}×${fB} = (10×${fB})÷2 = ${10*fB}÷2 = <strong>${res}</strong>.`;
+    if (fB === 5) return `${fA}×${fB} = (10×${fA})÷2 = ${10*fA}÷2 = <strong>${res}</strong>.`;
+    if (fB >= 6 && fB <= 8) {
+        const dif = 10 - fB;
+        return `${fA}×${fB} = ${fA}×(10−${dif}) = ${fA}×10 − ${fA}×${dif} = ${10*fA} − ${fA*dif} = <strong>${res}</strong>.`;
+    }
+    if (fA >= 6 && fA <= 8) {
+        const dif = 10 - fA;
+        return `${fA}×${fB} = (10−${dif})×${fB} = 10×${fB} − ${dif}×${fB} = ${10*fB} − ${dif*fB} = <strong>${res}</strong>.`;
+    }
+    if (fB % 2 === 0) return `${fA}×${fB} = ${fA}×${fB/2}×2 = ${fA*(fB/2)}×2 = <strong>${res}</strong>.`;
+    if (fA % 2 === 0) return `${fA}×${fB} = ${fA/2}×2×${fB} = ${fA/2}×${fB*2} = <strong>${res}</strong>.`;
+    if (fB < 5) {
+        const dif = 5 - fB;
+        return `${fA}×${fB} = ${fA}×(5−${dif}) = ${fA}×5 − ${fA}×${dif} = ${fA*5} − ${fA*dif} = <strong>${res}</strong>.`;
+    }
+    return `${fA}×${fB} = somar ${fA} ${fB} vezes = <strong>${res}</strong>.`;
+}
+
+function abrirDetalheOperacao(chave) {
+    const partes = chave.split("x");
+    const a = Number(partes[0]);
+    const b = Number(partes[1]);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return;
+
+    const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
+    const d = fonte[chave] || { acertos: 0, erros: 0, tentativas: 0 };
+    const cor = corDaOperacao(d);
+    const precisao = d.tentativas > 0 ? (d.acertos / d.tentativas * 100) : 0;
+
+    const statusTexto = {
+        verde:    "🟢 Dominada — você domina esta operação!",
+        amarelo:  "🟡 Em desenvolvimento — está quase lá! Continue praticando.",
+        vermelho: "🔴 Precisa melhorar — atenção! Esta operação precisa de reforço.",
+        cinza:    "⚪ Ainda não praticada — vamos começar?"
+    };
+
+    const corpo = `
+        <div class="modal-operacao-titulo">${a} × ${b} = ?</div>
+        <div class="modal-status ${cor}">${statusTexto[cor]}</div>
+        <div class="modal-stats">
+            <div class="modal-stat"><span class="rotulo">✅ Acertos</span><span class="valor">${d.acertos}</span></div>
+            <div class="modal-stat"><span class="rotulo">❌ Erros</span><span class="valor">${d.erros}</span></div>
+            <div class="modal-stat"><span class="rotulo">📈 Tentativas</span><span class="valor">${d.tentativas}</span></div>
+            <div class="modal-stat destaque"><span class="rotulo">🎯 Precisão</span><span class="valor">${precisao.toFixed(1)}%</span></div>
+        </div>
+        <div class="modal-dica">
+            <strong>💡 Dica de decomposição</strong><br>
+            ${gerarDicaDecomposicao(a, b)}
+        </div>
+    `;
+    document.getElementById("modal-corpo").innerHTML = corpo;
+    document.getElementById("modal-btn-treinar").onclick = () => treinarOperacaoEspecifica(a, b);
+    document.getElementById("modal-operacao").classList.remove("hidden");
+}
+
+function fecharModalOperacao(evt) {
+    if (evt && evt.target && evt.target.closest(".modal-card")) return;
+    document.getElementById("modal-operacao").classList.add("hidden");
+}
+
+function treinarOperacaoEspecifica(fA, fB) {
+    fecharModalOperacao();
+    if (!alunoAtual || !turmaAtual || !modalidadeAtual) {
+        notificar("Dados do aluno não encontrados. Volte ao início.", "aviso");
+        return;
+    }
+    treinoOperacaoFixa = { fA, fB };
+    modoTreino = true;
+    iniciarPartidaTreino();
+    notificar(`🎯 Treino focado: ${fA}×${fB}. Vamos lá!`, "info");
+}
+// ==================== FIM PARTE 2 ====================
+
 function gerarDicaMelhoria() {
     let piores = Object.entries(desempenhoTabuadas).filter(([t,d])=>d.total>0 && d.acertos/d.total<0.8).sort((a,b)=>(a[1].acertos/a[1].total)-(b[1].acertos/b[1].total));
     if(piores.length===0) return "Parabéns! Você domina todas as tabuadas! 🎉";
@@ -2162,61 +2302,30 @@ function mostrarSkeletonRanking(colunas) {
     const tabelaBody = document.getElementById("tabela-ranking-body");
     if (!tabelaBody) return;
     let html = "";
-    for (let i = 0; i < 5; i++) {
-        html += `<tr><td colspan="${colunas}"><div class="skeleton-line"></div></td></tr>`;
-    }
+    for (let i = 0; i < 5; i++) html += `<tr><td colspan="${colunas}"><div class="skeleton-line"></div></td></tr>`;
     tabelaBody.innerHTML = html;
 }
 
 async function renderizarBannerPosicaoGlobal(rankingCompleto, modalidade) {
     const banner = document.getElementById("banner-posicao-global");
     if (!banner) return;
-
     const nomeSalvo = obterNomeSalvoAluno();
     const turmaSalva = obterTurmaSalvaAluno();
-
-    if (!nomeSalvo || !turmaSalva) {
-        banner.classList.add("hidden");
-        return;
-    }
-
-    const idx = rankingCompleto.findIndex(r =>
-        normalizarNome(r.nome) === normalizarNome(nomeSalvo) && r.turma === turmaSalva
-    );
-
-    if (idx === -1) {
-        banner.classList.add("hidden");
-        return;
-    }
-
+    if (!nomeSalvo || !turmaSalva) { banner.classList.add("hidden"); return; }
+    const idx = rankingCompleto.findIndex(r => normalizarNome(r.nome) === normalizarNome(nomeSalvo) && r.turma === turmaSalva);
+    if (idx === -1) { banner.classList.add("hidden"); return; }
     const posicao = idx + 1;
     const total = rankingCompleto.length;
-
-    if (posicao <= 100) {
-        banner.classList.add("hidden");
-        return;
-    }
-
+    if (posicao <= 100) { banner.classList.add("hidden"); return; }
     const centesimo = rankingCompleto[99];
-    const diferenca = centesimo && centesimo.pontos > rankingCompleto[idx].pontos
-        ? centesimo.pontos - rankingCompleto[idx].pontos
-        : 0;
-
+    const diferenca = centesimo && centesimo.pontos > rankingCompleto[idx].pontos ? centesimo.pontos - rankingCompleto[idx].pontos : 0;
     const proximoAcima = rankingCompleto[idx - 1];
-    const diferencaProximo = proximoAcima && proximoAcima.pontos > rankingCompleto[idx].pontos
-        ? proximoAcima.pontos - rankingCompleto[idx].pontos
-        : 0;
-
+    const diferencaProximo = proximoAcima && proximoAcima.pontos > rankingCompleto[idx].pontos ? proximoAcima.pontos - rankingCompleto[idx].pontos : 0;
     const plural = total > 1 ? "participantes" : "participante";
     let html = `<span class="destaque-posicao">📍 ${posicao}º lugar entre ${total} ${plural}</span>`;
     html += `Você está fora do Top 100. `;
-    if (diferenca > 0) {
-        html += `Faltam <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> para alcançar a 100ª posição.`;
-    }
-    if (proximoAcima && diferencaProximo > 0) {
-        html += `<br>🎯 Seu próximo objetivo é alcançar <strong>${escaparHtml(proximoAcima.nome)}</strong> (${diferencaProximo.toLocaleString('pt-BR')} pontos à frente).`;
-    }
-
+    if (diferenca > 0) html += `Faltam <strong>${diferenca.toLocaleString('pt-BR')} pontos</strong> para alcançar a 100ª posição.`;
+    if (proximoAcima && diferencaProximo > 0) html += `<br>🎯 Seu próximo objetivo é alcançar <strong>${escaparHtml(proximoAcima.nome)}</strong> (${diferencaProximo.toLocaleString('pt-BR')} pontos à frente).`;
     banner.innerHTML = html;
     banner.classList.remove("hidden");
 }
@@ -2224,20 +2333,13 @@ async function renderizarBannerPosicaoGlobal(rankingCompleto, modalidade) {
 async function renderizarMediasTurmas(modalidade) {
     const container = document.getElementById("medias-turmas-container");
     if (!container) return;
-
     try {
         const medias = await calcularMediasTop4Turmas(modalidade);
-        if (medias.length <= 1) {
-            container.classList.add("hidden");
-            return;
-        }
-
+        if (medias.length <= 1) { container.classList.add("hidden"); return; }
         const turmaSalva = obterTurmaSalvaAluno();
-
         let html = `<h4>🏫 Comparação das turmas — Top 4</h4>`;
         html += `<p class="subtitulo-bloco">Média dos melhores alunos de cada turma (até 4). Turmas com menos de 4 participantes têm a média calculada com os alunos disponíveis.</p>`;
         html += `<table class="tabela-medias"><thead><tr><th>Turma</th><th>Participantes (top 4)</th><th>Média dos pontos</th></tr></thead><tbody>`;
-
         medias.forEach((m, idx) => {
             const cls = m.turma === turmaSalva ? ' class="minha-turma"' : '';
             let tag = '';
@@ -2246,14 +2348,11 @@ async function renderizarMediasTurmas(modalidade) {
             else if (idx === 2) tag = ' <span class="tag-media-3">🥉 3º</span>';
             html += `<tr${cls}><td><strong>${m.turma}</strong>${tag}</td><td>${m.totalJogadores} de ${m.totalTurma}</td><td><strong>${m.media.toLocaleString('pt-BR')}</strong> pts</td></tr>`;
         });
-
         html += `</tbody></table>`;
-
         if (turmaSalva) {
             const posicaoTurma = medias.findIndex(m => m.turma === turmaSalva);
-            if (posicaoTurma === -1) {
-                html += `<p class="subtitulo-bloco" style="margin-top:12px;">Ainda não há dados suficientes da turma ${turmaSalva} nesta modalidade.</p>`;
-            } else if (posicaoTurma > 2) {
+            if (posicaoTurma === -1) html += `<p class="subtitulo-bloco" style="margin-top:12px;">Ainda não há dados suficientes da turma ${turmaSalva} nesta modalidade.</p>`;
+            else if (posicaoTurma > 2) {
                 const acima = medias[posicaoTurma - 1];
                 const minha = medias[posicaoTurma];
                 if (acima && minha) {
@@ -2262,13 +2361,9 @@ async function renderizarMediasTurmas(modalidade) {
                 }
             }
         }
-
         container.innerHTML = html;
         container.classList.remove("hidden");
-    } catch(e) {
-        console.warn("Erro ao calcular médias das turmas", e);
-        container.classList.add("hidden");
-    }
+    } catch(e) { console.warn("Erro ao calcular médias das turmas", e); container.classList.add("hidden"); }
 }
 
 async function renderizarRanking() {
@@ -2276,25 +2371,17 @@ async function renderizarRanking() {
     const tabelaBody = document.getElementById("tabela-ranking-body");
     const tituloEl = document.getElementById("titulo-ranking");
     if(!tabelaBody || !tituloEl) return;
-
     mostrarSkeletonRanking(8);
-
     atualizarHintTurmaAluno();
-
     let modalidade = document.getElementById("filtro-modalidade")?.value || "0-10";
     let turma = document.getElementById("filtro-turma")?.value || "901";
     let ranking = [];
     let titulo = "";
-
     const nomeAluno = obterNomeSalvoAluno();
 
     if(tipoRankingAtual === "turma"){
         const turmaSalva = obterTurmaSalvaAluno();
-        if (turmaSalva) {
-            turma = turmaSalva;
-            document.getElementById("filtro-turma").value = turma;
-        }
-
+        if (turmaSalva) { turma = turmaSalva; document.getElementById("filtro-turma").value = turma; }
         const todasPartidas = await obterPartidas();
         const mapaJogos = new Map();
         todasPartidas.forEach(p => { if(p.modalidade === modalidade && p.turma === turma) { const chave = `${normalizarNome(p.nome)}|${p.turma}`; mapaJogos.set(chave, (mapaJogos.get(chave) || 0) + 1); } });
@@ -2401,43 +2488,27 @@ function toggleRankingsEspeciais() {
     const toggle = document.getElementById("toggle-rankings-especiais");
     if (!container || !toggle) return;
     const estaAberto = !container.classList.contains("hidden");
-    if (estaAberto) {
-        container.classList.add("hidden");
-        toggle.classList.remove("aberto");
-    } else {
-        container.classList.remove("hidden");
-        toggle.classList.add("aberto");
-    }
+    if (estaAberto) { container.classList.add("hidden"); toggle.classList.remove("aberto"); }
+    else { container.classList.remove("hidden"); toggle.classList.add("aberto"); }
 }
 
 function mudarTipoRanking(tipo) {
     tipoRankingAtual = tipo;
-
     const abaPrincipal = document.getElementById("aba-turma");
     if (abaPrincipal) abaPrincipal.classList.toggle("ativa", tipo === "turma");
-
     const abasEspeciais = ["aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma"];
-    abasEspeciais.forEach(abaId=>{ 
-        let el=document.getElementById(abaId); 
-        if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); 
-    });
-
+    abasEspeciais.forEach(abaId=>{ let el=document.getElementById(abaId); if(el) el.classList.toggle("ativa", abaId.replace("aba-","") === tipo); });
     if (tipo !== "turma") {
         const container = document.getElementById("rankings-especiais");
         const toggle = document.getElementById("toggle-rankings-especiais");
         if (container) container.classList.remove("hidden");
         if (toggle) toggle.classList.add("aberto");
     }
-
-    if (tipo === "turma" || tipo === "precisao-turma" || tipo === "velocidade-turma") {
-        aplicarTurmaSalvaNoFiltro();
-    }
-
+    if (tipo === "turma" || tipo === "precisao-turma" || tipo === "velocidade-turma") aplicarTurmaSalvaNoFiltro();
     const isGlobal = (tipo === "global" || tipo === "precisao-global" || tipo === "velocidade-global");
     document.getElementById("filtro-modalidade").classList.toggle("hidden", false);
     document.getElementById("filtro-turma").classList.toggle("hidden", isGlobal);
     document.getElementById("observacao-velocidade").classList.toggle("hidden", !(tipo==="velocidade-global"||tipo==="velocidade-turma"));
-
     atualizarHintTurmaAluno();
     renderizarRanking();
 }
@@ -2463,12 +2534,9 @@ async function carregarPerfil() {
     let conquistas = calcularConquistas(melhor, partidas).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
     document.getElementById("perfil-conquistas").innerHTML = conquistas || "Nenhuma conquista ainda";
     if(melhor.desempenhoTabuadas) desempenhoTabuadas = melhor.desempenhoTabuadas;
-
-    // Prepara as duas fontes do mapa (no perfil, "ultima" = partida de melhor pontuação)
     mapaFonteUltima = melhor.desempenhoOperacoes || {};
     mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(melhor.nome, melhor.turma, melhor.modalidade);
     if (Object.keys(mapaFonteAgregada).length === 0) mapaFonteAgregada = mapaFonteUltima;
-
     modalidadeAtual = melhor.modalidade;
     document.getElementById("perfil-mapa").innerHTML = renderizarMapa();
     document.getElementById("perfil-conteudo").classList.remove("hidden");
@@ -2635,7 +2703,21 @@ document.getElementById("btn-comecar-partida")?.addEventListener("click", () => 
 document.addEventListener("click", desbloquearAudio, { passive: true });
 document.addEventListener("touchstart", desbloquearAudio, { passive: true });
 document.addEventListener("keydown", desbloquearAudio, { passive: true });
-// ==================== FIM DO DESBLOQUEIO ====================
+
+// ==================== PARTE 2: EVENT DELEGATION NO GRID ====================
+document.addEventListener("click", (e) => {
+    const celula = e.target.closest(".mapa-celula");
+    if (celula && celula.dataset.op) {
+        abrirDetalheOperacao(celula.dataset.op);
+    }
+});
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        const modal = document.getElementById("modal-operacao");
+        if (modal && !modal.classList.contains("hidden")) fecharModalOperacao();
+    }
+});
+// ==================== FIM PARTE 2 ====================
 
 let cliquesTitulo = 0;
 let tempoResetClique = null;
