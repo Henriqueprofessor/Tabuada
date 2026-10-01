@@ -77,7 +77,7 @@
         .media-geral { font-size: 16px; margin-bottom: 8px; }
         .dica-melhoria { background: #e7f5ff; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: #0a58ca; }
 
-        /* ============ [PARTE-1] MAPA DE TABUADAS V2 ============ */
+        /* ============ MAPA DE TABUADAS V2 ============ */
         .mapa-tabuadas-v2 {
             margin-top: 20px;
             padding: 18px;
@@ -148,7 +148,46 @@
         .mapa-celula.cinza    { background: #e2e8f0; color: #94a3b8; box-shadow: none; }
         .mapa-celula:hover    { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,.18); }
         .mapa-celula:active   { transform: scale(.95); }
-        /* ============ FIM [PARTE-1] ============ */
+
+        /* ============ TOGGLE DO MAPA ============ */
+        .mapa-toggle {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 10px;
+            width: fit-content;
+        }
+        .mapa-toggle .toggle-btn {
+            padding: 8px 14px;
+            margin: 0;
+            font-size: 12px;
+            font-weight: 700;
+            background: transparent;
+            color: #475569;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .2s;
+            width: auto;
+            box-shadow: none;
+        }
+        .mapa-toggle .toggle-btn:hover:not(.ativa) {
+            background: rgba(255,255,255,.5);
+            transform: none;
+        }
+        .mapa-toggle .toggle-btn.ativa {
+            background: #fff;
+            color: #0066cc;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        }
+        .mapa-fonte-aviso {
+            font-size: 11px;
+            color: #64748b;
+            margin: 0 0 12px;
+            font-style: italic;
+        }
 
         .ranking-principal { margin-top: 14px; }
         .aba-principal {
@@ -521,7 +560,7 @@
             .tabela-medias tr.minha-turma td { background: rgba(74,158,255,0.15); }
             tr.voce-linha td { background: rgba(74,158,255,0.18) !important; }
 
-            /* [PARTE-1] Dark mode do mapa v2 */
+            /* Dark mode do mapa v2 */
             .mapa-tabuadas-v2 { background: #1a1a1a; }
             .mapa-resumo { background: #2a2a2a; }
             .mapa-resumo .resumo-titulo { color: #f0f0f0; }
@@ -531,6 +570,13 @@
             .contador.amarelo  { background: #422006; color: #fde047; border-color: #854d0e; }
             .contador.vermelho { background: #450a0a; color: #fca5a5; border-color: #991b1b; }
             .contador.cinza    { background: #1e293b; color: #cbd5e1; border-color: #334155; }
+
+            /* Dark mode do toggle */
+            .mapa-toggle { background: #334155; }
+            .mapa-toggle .toggle-btn { color: #cbd5e1; }
+            .mapa-toggle .toggle-btn:hover:not(.ativa) { background: rgba(255,255,255,.06); }
+            .mapa-toggle .toggle-btn.ativa { background: #1e293b; color: #4a9eff; }
+            .mapa-fonte-aviso { color: #94a3b8; }
         }
 
         @media (max-width: 700px) {
@@ -750,7 +796,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "6.1";   // [PARTE-1] bump de versão para forçar reload
+const APP_VERSION = "6.2";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -810,7 +856,10 @@ const CONQUISTAS = [
 let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
 let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
 let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
-let desempenhoOperacoes = {};   // [PARTE-1] {"7x8": {acertos, erros, tentativas}, ...}
+let desempenhoOperacoes = {};
+let mapaFonteUltima = {};
+let mapaFonteAgregada = {};
+let modoVisualizacaoMapa = "agregado";
 let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
 let alunosData=[], alunosFiltrados=[];
 let melhorMediaAluno = null, mediaTurma = null;
@@ -1373,6 +1422,20 @@ async function obterHistoricoAluno(nome, turma, modalidade=null) {
     let ranking = await obterRanking();
     return ranking.filter(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma && (!modalidade || r.modalidade === modalidade)).sort(ordenarPorDataDesc);
 }
+async function obterDesempenhoOperacoesAgregado(nome, turma, modalidade) {
+    const partidas = await obterHistoricoAluno(nome, turma, modalidade);
+    const agregado = {};
+    partidas.forEach(p => {
+        if (!p.desempenhoOperacoes) return;
+        Object.entries(p.desempenhoOperacoes).forEach(([chave, d]) => {
+            if (!agregado[chave]) agregado[chave] = { acertos: 0, erros: 0, tentativas: 0 };
+            agregado[chave].acertos    += d.acertos    || 0;
+            agregado[chave].erros      += d.erros      || 0;
+            agregado[chave].tentativas += d.tentativas || 0;
+        });
+    });
+    return agregado;
+}
 async function obterRankingPorPontos(modalidade, turma=null){
     let rank = await obterRanking();
     let filt = rank.filter(r=>r.modalidade===modalidade);
@@ -1609,7 +1672,7 @@ function iniciarPartidaClassificatoria() {
 function reiniciarVariaveisJogo() {
     perguntaAtual=0; pontosAcumulados=0; acertos=0; erros=0; sequenciaAtual=0; maiorSequencia=0;
     temposCorretas=[]; temposRespostas=[]; desempenhoTabuadas={};
-    desempenhoOperacoes={};   // [PARTE-1]
+    desempenhoOperacoes={};
     perguntasGeradas=[]; tabuadaAtualPergunta=null;
     acertouPrimeira=false; temposRapidos=0;
     jogoAtivo=true; finalizando=false;
@@ -1716,7 +1779,7 @@ function processarResposta(pontos,acertou,tempo) {
     let pontosAntes = pontosAcumulados;
     pontosAcumulados+=pontos;
 
-    // ========== [PARTE-1] Rastreio por tabuada (mantido) + por operação (novo) ==========
+    // Rastreio por tabuada (mantido) + por operação (novo)
     if(perguntaAtual<=TOTAL_PERGUNTAS){
         let tab=tabuadaAtualPergunta;
         if(tab !== null && !isNaN(tab)){
@@ -1736,7 +1799,6 @@ function processarResposta(pontos,acertou,tempo) {
             else         desempenhoOperacoes[chaveOp].erros++;
         }
     }
-    // ========== FIM [PARTE-1] ==========
 
     if(acertou){
         acertos++; sequenciaAtual++; maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
@@ -1797,7 +1859,7 @@ async function finalizarCircuito() {
         pontos:pontosAcumulados, acertos:acertos, erros:erros,
         tempoMedio:tempoMedio, maiorSequencia:maiorSequencia,
         desempenhoTabuadas:desempenhoTabuadas,
-        desempenhoOperacoes:desempenhoOperacoes,   // [PARTE-1]
+        desempenhoOperacoes:desempenhoOperacoes,
         data:new Date().toISOString(),
         idPartida:criarChavePartida({nome:alunoAtual}),
         temposRapidos:temposRapidos, acertouPrimeira:acertouPrimeira
@@ -1817,6 +1879,8 @@ async function finalizarCircuito() {
         document.getElementById("resumo-turma").innerText=turmaAtual;
         document.getElementById("resumo-modalidade").innerHTML=MODALIDADES[modalidadeAtual].nome;
         document.getElementById("resumo-status").innerHTML="Modo Treino";
+        mapaFonteUltima = desempenhoOperacoes;
+        mapaFonteAgregada = desempenhoOperacoes;
         document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
         document.getElementById("novas-conquistas").innerHTML="";
         document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
@@ -1909,7 +1973,13 @@ async function preencherResultado(melhorOficial, tentativaAtual, posicaoAntes) {
     document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
 
     if(tentativaAtual.desempenhoTabuadas) desempenhoTabuadas = tentativaAtual.desempenhoTabuadas;
-    if(tentativaAtual.desempenhoOperacoes) desempenhoOperacoes = tentativaAtual.desempenhoOperacoes;   // [PARTE-1]
+
+    mapaFonteUltima = tentativaAtual.desempenhoOperacoes || {};
+    mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(
+        tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade
+    );
+    if (Object.keys(mapaFonteAgregada).length === 0) mapaFonteAgregada = mapaFonteUltima;
+
     document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
 
     let historico = await obterHistoricoAluno(tentativaAtual.nome, tentativaAtual.turma, tentativaAtual.modalidade);
@@ -2001,7 +2071,7 @@ async function gerarFeedbackRanking(melhorOficial, posTurmaAtual, posicaoAntes) 
     document.getElementById("feedback-ranking-container").innerHTML = feedbackHtml;
 }
 
-// ==================== [PARTE-1] MAPA V2 ====================
+// ==================== MAPA DE TABUADAS V2 ====================
 function corDaOperacao(dados) {
     if (!dados || !dados.tentativas) return "cinza";
     const precisao = dados.acertos / dados.tentativas;
@@ -2014,17 +2084,28 @@ function renderizarMapa() {
     const fatoresA = MODALIDADES[modalidadeAtual]?.fatores || [];
     const fatoresB = [0,1,2,3,4,5,6,7,8,9,10];
 
-    // Contadores
+    const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
+
     const cont = { verde: 0, amarelo: 0, vermelho: 0, cinza: 0 };
     fatoresA.forEach(a => fatoresB.forEach(b => {
-        cont[corDaOperacao(desempenhoOperacoes[`${a}x${b}`])]++;
+        cont[corDaOperacao(fonte[`${a}x${b}`])]++;
     }));
     const totalOps = fatoresA.length * fatoresB.length;
     const dominio = totalOps ? Math.round((cont.verde / totalOps) * 100) : 0;
 
     let html = `<div class="mapa-tabuadas-v2">`;
 
-    // Resumo no topo
+    html += `
+        <div class="mapa-toggle">
+            <button class="toggle-btn ${modoVisualizacaoMapa === 'agregado' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('agregado')">📚 Todas as partidas</button>
+            <button class="toggle-btn ${modoVisualizacaoMapa === 'ultima'   ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('ultima')">🎯 Uma partida</button>
+        </div>
+        <p class="mapa-fonte-aviso">${
+            modoVisualizacaoMapa === 'agregado'
+              ? 'Somando o desempenho de todas as partidas registradas nesta modalidade.'
+              : 'Mostrando apenas uma partida (a mais recente ou a de melhor desempenho no perfil).'
+        }</p>`;
+
     html += `
         <div class="mapa-resumo">
             <div class="resumo-titulo">🏆 Seu domínio da tabuada: <strong>${dominio}%</strong></div>
@@ -2036,7 +2117,6 @@ function renderizarMapa() {
             </div>
         </div>`;
 
-    // Legenda
     html += `
         <div class="mapa-legenda">
             <span class="legenda-item"><span class="legenda-cor verde"></span> Dominada (≥90%)</span>
@@ -2045,7 +2125,6 @@ function renderizarMapa() {
             <span class="legenda-item"><span class="legenda-cor cinza"></span> Não praticada</span>
         </div>`;
 
-    // Grade
     html += `<div class="mapa-grid-wrapper"><table class="mapa-grid"><thead><tr><th></th>`;
     fatoresB.forEach(b => { html += `<th>${b}</th>`; });
     html += `</tr></thead><tbody>`;
@@ -2054,7 +2133,7 @@ function renderizarMapa() {
         html += `<tr><th>${a}</th>`;
         fatoresB.forEach(b => {
             const chave = `${a}x${b}`;
-            const cor = corDaOperacao(desempenhoOperacoes[chave]);
+            const cor = corDaOperacao(fonte[chave]);
             html += `<td class="mapa-celula ${cor}" data-op="${chave}" title="${a} × ${b}">${a}×${b}</td>`;
         });
         html += `</tr>`;
@@ -2063,9 +2142,16 @@ function renderizarMapa() {
     html += `</tbody></table></div></div>`;
     return html;
 }
-// ==================== FIM [PARTE-1] ====================
 
-// Mantido para compatibilidade (usado em outros pontos, se necessário)
+function mudarVisualizacaoMapa(modo) {
+    modoVisualizacaoMapa = modo;
+    ["mapa-tabuadas-container", "perfil-mapa"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.innerHTML.trim()) el.innerHTML = renderizarMapa();
+    });
+}
+
+// Mantida para compatibilidade (não usada no mapa v2)
 function gerarDicaMelhoria() {
     let piores = Object.entries(desempenhoTabuadas).filter(([t,d])=>d.total>0 && d.acertos/d.total<0.8).sort((a,b)=>(a[1].acertos/a[1].total)-(b[1].acertos/b[1].total));
     if(piores.length===0) return "Parabéns! Você domina todas as tabuadas! 🎉";
@@ -2377,8 +2463,12 @@ async function carregarPerfil() {
     let conquistas = calcularConquistas(melhor, partidas).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
     document.getElementById("perfil-conquistas").innerHTML = conquistas || "Nenhuma conquista ainda";
     if(melhor.desempenhoTabuadas) desempenhoTabuadas = melhor.desempenhoTabuadas;
-    // [PARTE-1] restaura operações para o perfil
-    if(melhor.desempenhoOperacoes) desempenhoOperacoes = melhor.desempenhoOperacoes;
+
+    // Prepara as duas fontes do mapa (no perfil, "ultima" = partida de melhor pontuação)
+    mapaFonteUltima = melhor.desempenhoOperacoes || {};
+    mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(melhor.nome, melhor.turma, melhor.modalidade);
+    if (Object.keys(mapaFonteAgregada).length === 0) mapaFonteAgregada = mapaFonteUltima;
+
     modalidadeAtual = melhor.modalidade;
     document.getElementById("perfil-mapa").innerHTML = renderizarMapa();
     document.getElementById("perfil-conteudo").classList.remove("hidden");
