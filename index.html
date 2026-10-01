@@ -141,6 +141,7 @@
         .chip-variacao.comutada:hover:not(:disabled) { background: #ffecb3; border-color: #ffc107; color: #664d03; box-shadow: 0 3px 8px rgba(255,193,7,0.3); }
         .btn-voltar-chips { display: inline-flex; align-items: center; gap: 4px; background: transparent; color: #495057; border: 1px solid #dee2e6; padding: 6px 12px; font-size: 12px; width: auto; margin: 0 0 12px 0; cursor: pointer; border-radius: 6px; font-weight: 600; box-shadow: none; transition: all 0.15s; }
         .btn-voltar-chips:hover:not(:disabled) { background: #f8f9fa; border-color: #adb5bd; color: #212529; transform: none; }
+        .nota-sem-variacoes { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #64748b; text-align: center; margin-top: 4px; line-height: 1.5; }
         .changelog-trigger { display: inline-flex; align-items: center; gap: 6px; margin: 18px auto 0; padding: 6px 12px; background: transparent; color: #94a3b8; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: auto; letter-spacing: 0.3px; box-shadow: none; }
         .changelog-trigger:hover:not(:disabled) { background: #f8fafc; color: #475569; border-color: #cbd5e1; transform: none; }
         .changelog-modal-card { max-width: 520px; }
@@ -427,6 +428,7 @@
             .btn-voltar-chips { color: #cbd5e1; border-color: #334155; }
             .btn-voltar-chips:hover:not(:disabled) { background: #1e293b; border-color: #475569; color: #f0f0f0; }
             .modal-acoes .btn-variacoes { background: linear-gradient(135deg, #6f42c1 0%, #4c2d8f 100%); }
+            .nota-sem-variacoes { background: #1e293b; border-color: #334155; color: #94a3b8; }
         }
         @media (max-width: 700px) {
             .acoes-secundarias { grid-template-columns: 1fr; }
@@ -468,7 +470,7 @@
         <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
     </div>
     <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">
-        ⚙️ v<span id="changelog-versao-atual">7.0</span> · histórico
+        ⚙️ v<span id="changelog-versao-atual">7.2</span> · histórico
     </button>
 </div>
 
@@ -658,7 +660,19 @@
         <div class="changelog-lista">
 
             <div class="changelog-item">
-                <span class="changelog-versao atual">v7.0 · atual</span>
+                <span class="changelog-versao atual">v7.2 · atual</span>
+                <h4 class="changelog-titulo">Treino mais enxuto</h4>
+                <p class="changelog-descricao">Ao clicar numa operação do mapa, você só poderá treinar ela <strong>junto com suas variações</strong>. Operações sem variações mostram apenas a dica, sem botão de treino — evita treinos repetitivos.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v7.1</span>
+                <h4 class="changelog-titulo">Botão de treino inteligente</h4>
+                <p class="changelog-descricao">O botão de treino no mapa agora aparece apenas quando você tem <strong>3 ou mais operações fracas</strong>. Antes disso, o foco é explorar o mapa célula por célula.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v7.0</span>
                 <h4 class="changelog-titulo">Treino com variações</h4>
                 <p class="changelog-descricao">Errou uma operação? Agora você pode treinar ela <strong>junto com outras que dão o mesmo resultado</strong>. Errou 4×5? Treine 4×5, 5×4 e 2×10 de uma vez. Clique nos chips do modal para explorar cada variação.</p>
             </div>
@@ -724,7 +738,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "7.0";
+const APP_VERSION = "7.2";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -1450,19 +1464,19 @@ function montarListaComVariacoes(operacoesBase, mod = modalidadeAtual) {
 function treinarComVariacoes(operacoesBase) {
     if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
     const lista = montarListaComVariacoes(operacoesBase, modalidadeAtual);
-    if (lista.length <= operacoesBase.length) {
-        treinoFocoOperacoes = lista;
-        modoTreino = true;
-        iniciarPartidaTreino();
+    if (lista.length === 0) {
+        notificar("Nenhuma variação disponível para treinar.", "aviso");
         return;
     }
     treinoFocoOperacoes = lista;
     modoTreino = true;
     iniciarPartidaTreino();
     const qVar = lista.length - operacoesBase.length;
-    const pluralBase = operacoesBase.length === 1 ? "operação" : "operações";
-    const pluralVar = qVar === 1 ? "variação" : "variações";
-    notificar(`🔀 ${operacoesBase.length} ${pluralBase} base + ${qVar} ${pluralVar}`, "info", 4000);
+    if (qVar > 0) {
+        const pluralBase = operacoesBase.length === 1 ? "operação" : "operações";
+        const pluralVar = qVar === 1 ? "variação" : "variações";
+        notificar(`🔀 ${operacoesBase.length} ${pluralBase} base + ${qVar} ${pluralVar}`, "info", 4000);
+    }
 }
 // ==================== FIM VARIAÇÕES ====================
 
@@ -2074,20 +2088,8 @@ function renderizarMapa() {
     const fracos = obterListaFracos();
     const qFracos = fracos.length;
     let botoesTreino = "";
-    if (qFracos === 1) {
-        const temVar = obterVariacoesDeOperacao(fracos[0].fA, fracos[0].fB, modalidadeAtual).length > 0;
-        if (temVar) {
-            botoesTreino = `<button class="btn-treinar-fracos" onclick="treinarPontosFracosVariacoes()">🔀 Treinar com variações</button>`;
-        } else {
-            botoesTreino = `<button class="btn-treinar-fracos" onclick="treinarPontosFracos()">🎯 Treinar esta operação</button>`;
-        }
-    } else if (qFracos >= 2) {
-        botoesTreino = `
-            <div class="acoes-treino-fracos">
-                <button class="btn-treinar-fracos" onclick="treinarPontosFracos()">🎯 Só fracos (${qFracos})</button>
-                <button class="btn-treinar-fracos btn-treinar-fracos-var" onclick="treinarPontosFracosVariacoes()">🔀 Com variações</button>
-            </div>
-        `;
+    if (qFracos >= 3) {
+        botoesTreino = `<button class="btn-treinar-fracos btn-treinar-fracos-var" onclick="treinarPontosFracosVariacoes()">🔀 Treinar com variações</button>`;
     }
 
     h += `<div class="mapa-resumo">
@@ -2127,15 +2129,6 @@ function mudarVisualizacaoMapa(m) {
         const el = document.getElementById(id);
         if (el && el.innerHTML.trim()) el.innerHTML = renderizarMapa();
     });
-}
-function treinarPontosFracos() {
-    if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
-    const fracos = obterListaFracos();
-    if (!fracos.length) { notificar("🎉 Você não tem pontos fracos! Continue treinando.", "info"); return; }
-    treinoFocoOperacoes = fracos.map(f => ({ fA: f.fA, fB: f.fB, peso: f.cor === "vermelho" ? 2 : 1 }));
-    modoTreino = true;
-    iniciarPartidaTreino();
-    notificar(`🎯 Treino focado em ${fracos.length} operação(ões)!`, "info");
 }
 function treinarPontosFracosVariacoes() {
     if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
@@ -2203,6 +2196,8 @@ function renderizarDetalheOperacao(k) {
             </div>
             <div class="chips-variacoes">${chips}</div>
         `;
+    } else {
+        htmlChips = `<div class="nota-sem-variacoes">Esta operação não tem variações dentro da modalidade.<br>Explore outras células do mapa para treinar.</div>`;
     }
 
     document.getElementById("modal-corpo").innerHTML = `
@@ -2222,14 +2217,16 @@ function renderizarDetalheOperacao(k) {
     document.getElementById("modal-operacao").dataset.opAtual = k;
 
     const btnTreinar = document.getElementById("modal-btn-treinar");
+    const acoes = document.getElementById("modal-acoes-container");
     if (temVariacoes) {
+        btnTreinar.classList.remove("hidden");
         btnTreinar.classList.add("btn-variacoes");
         btnTreinar.innerText = `🔀 Treinar com variações (${1 + variacoes.length})`;
         btnTreinar.onclick = () => treinarComVariacoes([{ fA: a, fB: b }]);
+        acoes.classList.remove("uma-coluna");
     } else {
-        btnTreinar.classList.remove("btn-variacoes");
-        btnTreinar.innerText = `🎯 Treinar esta operação`;
-        btnTreinar.onclick = () => treinarOperacaoEspecifica(a, b);
+        btnTreinar.classList.add("hidden");
+        acoes.classList.add("uma-coluna");
     }
 
     document.getElementById("modal-operacao").classList.remove("hidden");
@@ -2245,14 +2242,6 @@ function abrirChangelog() {
 function fecharChangelog(e) {
     if (e && e.target && e.target.closest(".modal-card")) return;
     document.getElementById("modal-changelog").classList.add("hidden");
-}
-function treinarOperacaoEspecifica(fA, fB) {
-    fecharModalOperacao();
-    if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
-    treinoFocoOperacoes = [{ fA, fB, peso: 1 }];
-    modoTreino = true;
-    iniciarPartidaTreino();
-    notificar(`🎯 Treino focado: ${fA}×${fB}.`, "info");
 }
 function mostrarSkeletonRanking(c) {
     const t = document.getElementById("tabela-ranking-body"); if (!t) return;
