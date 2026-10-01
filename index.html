@@ -31,6 +31,10 @@
         .botao-som:hover { background: rgba(0,0,0,0.8); }
         @media (max-width: 700px) { .botao-som { top: 10px; right: 10px; padding: 6px 12px; font-size: 15px; } }
         @media (max-width: 500px) { .botao-som { font-size: 0; padding: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 50%; } .botao-som::before { content: "🔊"; font-size: 20px; line-height: 1; } .botao-som.mudo::before { content: "🔇"; } }
+        .aviso-vinculo { background: #e7f5ff; border: 1px solid #b8daff; border-left: 4px solid #0d6efd; border-radius: 10px; padding: 12px 14px; margin: 12px 0 4px; text-align: left; font-size: 13px; line-height: 1.55; color: #084298; }
+        .aviso-vinculo strong { color: #084298; }
+        .aviso-vinculo .linha { display: block; margin-bottom: 4px; }
+        .aviso-vinculo .linha:last-child { margin-bottom: 0; }
         #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
         #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; transition: background 0.2s; }
@@ -287,6 +291,8 @@
             .botao-treino { background: #fd7e14; }
             .botao-perfil { background: #6f42c1; }
             .botao-forcar { background: #dc3545; }
+            .aviso-vinculo { background: #1a2a3a; border-color: #2a4a6a; color: #a8c8e8; border-left-color: #4a9eff; }
+            .aviso-vinculo strong { color: #a8c8e8; }
             .resumo-resultado div { background: #2a2a2a; color: #e8e8e8; }
             .mapa-tabuadas { background: #2a2a2a; }
             .card-tabuada { background: #1a1a1a; color: #e8e8e8; }
@@ -424,6 +430,11 @@
     <h2>🏆 Etapa Classificatória</h2>
     <label for="nome-aluno">Nome completo</label>
     <input type="text" id="nome-aluno" placeholder="Ex: Maria Eduarda">
+    <div class="aviso-vinculo">
+        <span class="linha">📱 <strong>Jogue sempre no mesmo celular.</strong> Seu nome será vinculado a este aparelho.</span>
+        <span class="linha">⏱️ Se você trocar de celular e ficar <strong>2 dias sem acessar o app</strong>, poderá continuar automaticamente em outro aparelho.</span>
+        <span class="linha">🔓 Para liberar antes disso, peça ajuda ao professor.</span>
+    </div>
     <label for="turma-aluno">Turma</label>
     <select id="turma-aluno">
         <option value="">Selecione a turma</option>
@@ -595,7 +606,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "6.6";
+const APP_VERSION = "6.8";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -636,6 +647,8 @@ const STORAGE_PARTIDAS = "partidasCEIB";
 const STORAGE_LAST_SYNC = "lastSyncTime";
 const TOTAL_PERGUNTAS = 20;
 const VAGAS_CLASSIFICACAO = 4;
+const JANELA_COOLDOWN_MS = 48 * 60 * 60 * 1000;
+const THROTTLE_ACESSO_MS = 30 * 60 * 1000;
 const MODALIDADES = {
     "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
     "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
@@ -1017,13 +1030,58 @@ function obterIdDispositivo() {
 }
 function chaveVinculo(n, t) { return `${normalizarNome(n)}|${t}`.replace(/[.#$\/\[\]]/g, '_'); }
 async function obterVinculo(n, t) { const c = chaveVinculo(n, t); const s = await database.ref(`${CAMINHO_VINCULOS}/${c}`).once('value'); return s.val(); }
-async function criarVinculo(n, t, id) { await database.ref(`${CAMINHO_VINCULOS}/${chaveVinculo(n, t)}`).set({ dispositivoId: id, criadoEm: Date.now() }); }
+async function criarVinculo(n, t, id) {
+    await database.ref(`${CAMINHO_VINCULOS}/${chaveVinculo(n, t)}`).set({
+        dispositivoId: id,
+        criadoEm: Date.now(),
+        ultimoAcesso: Date.now()
+    });
+}
+async function atualizarUltimoAcesso(n, t) {
+    try {
+        const c = chaveVinculo(n, t);
+        await database.ref(`${CAMINHO_VINCULOS}/${c}/ultimoAcesso`).set(Date.now());
+    } catch(e) { /* silencioso */ }
+}
 async function verificarVinculo(n, t) {
     const id = obterIdDispositivo();
     const v = await obterVinculo(n, t);
-    if (!v) { await criarVinculo(n, t, id); return { permitido: true, primeiroUso: true }; }
-    if (v.dispositivoId === id) return { permitido: true, primeiroUso: false };
-    return { permitido: false, mensagem: `O nome "${n}" já está vinculado a outro dispositivo.` };
+    if (!v) {
+        await criarVinculo(n, t, id);
+        return { permitido: true, status: "novo" };
+    }
+    if (v.dispositivoId === id) {
+        await atualizarUltimoAcesso(n, t);
+        return { permitido: true, status: "reconhecido" };
+    }
+    const ultimoAcesso = v.ultimoAcesso || v.criadoEm || 0;
+    const tempoParado = Date.now() - ultimoAcesso;
+    if (tempoParado >= JANELA_COOLDOWN_MS) {
+        await criarVinculo(n, t, id);
+        return { permitido: true, status: "revinculado" };
+    }
+    const msRestantes = JANELA_COOLDOWN_MS - tempoParado;
+    const horasRestantes = Math.ceil(msRestantes / (60 * 60 * 1000));
+    return {
+        permitido: false,
+        status: "bloqueado",
+        horasRestantes: horasRestantes,
+        mensagem: `Este nome está vinculado a outro celular e ficou ativo recentemente. Se você trocou de aparelho, aguarde cerca de ${horasRestantes}h ou peça ajuda ao professor.`
+    };
+}
+async function atualizarAcessoSeConhecido() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) return;
+    try {
+        const id = obterIdDispositivo();
+        const v = await obterVinculo(nome, turma);
+        if (!v || v.dispositivoId !== id) return;
+        const ultimo = v.ultimoAcesso || v.criadoEm || 0;
+        if (Date.now() - ultimo > THROTTLE_ACESSO_MS) {
+            await atualizarUltimoAcesso(nome, turma);
+        }
+    } catch(e) { /* silencioso */ }
 }
 
 async function obterRanking() {
@@ -1347,8 +1405,15 @@ async function registrarAluno(treino) {
 
     if (!modoTreino) {
         const r = await verificarVinculo(nome, turma);
-        if (!r.permitido) { notificar(r.mensagem, "aviso", 5000); return; }
-        if (r.primeiroUso) notificar(`Dispositivo vinculado ao nome "${nome}".`, "sucesso", 5000);
+        if (!r.permitido) {
+            notificar(r.mensagem, "aviso", 8000);
+            return;
+        }
+        if (r.status === "novo") {
+            notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
+        } else if (r.status === "revinculado") {
+            notificar(`Bem-vindo de volta! Como você ficou mais de 2 dias sem acessar o app, liberamos este aparelho automaticamente.`, "info", 8000);
+        }
         const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
         await carregarFocoTreino(nome, turma, modalidadeAtual);
         melhorMediaAluno = medias.melhorMediaAluno;
@@ -1491,13 +1556,11 @@ function processarResposta(pontos, acertou, tempo) {
     if (perguntaAtual === 1 && acertou) acertouPrimeira = true;
     if (acertou && tempo < 0.8) temposRapidos++;
     if (acertou) somAcerto(); else somErro();
-
     if (!modoTreino && !acertou) {
         const d = document.getElementById("pergunta");
         if (d) d.classList.add("erro-visual");
         setTimeout(() => d?.classList.remove("erro-visual"), 300);
     } else if (!modoTreino && pontos > 0) mostrarToast(`+${pontos} pontos! 🎉`);
-
     if (modoTreino) {
         const dd = document.getElementById("dica-resposta");
         if (dd) {
@@ -1513,7 +1576,6 @@ function processarResposta(pontos, acertou, tempo) {
     }
     const pAntes = pontosAcumulados;
     pontosAcumulados += pontos;
-
     if (perguntaAtual <= TOTAL_PERGUNTAS) {
         const tab = tabuadaAtualPergunta;
         if (tab !== null && !isNaN(tab)) {
@@ -1717,17 +1779,14 @@ async function preencherResultado(melhor, tent, posAntes) {
     ultimoMelhorOficial = melhor; ultimaTentativa = tent;
     document.getElementById("card-classificacao-container").innerHTML = await renderizarCardClassificacao(melhor);
     document.getElementById("cards-comparacao-resultado").innerHTML = gerarCardsComparacao(melhor, tent);
-
     const rt = await obterRankingPorPontos(melhor.modalidade, melhor.turma);
     const ia = rt.findIndex(x => normalizarNome(x.nome) === normalizarNome(melhor.nome) && x.turma === melhor.turma);
     const pT = ia === -1 ? rt.length + 1 : ia + 1;
     const status = pT <= VAGAS_CLASSIFICACAO ? "Classificado" : (pT <= 6 ? "Reserva" : "Participante");
-
     let fb = `${escaparHtml(tent.nome)}, você concluiu!`;
     if (ehMelhorResultado(tent, melhor) && tent.pontos === melhor.pontos && tent.data === melhor.data) fb += `<br><small style="color:#198754;font-weight:bold;">✨ Novo recorde pessoal!</small>`;
     else if (melhor.pontos > tent.pontos) fb += `<br><small style="color:#6c757d;">Não superou o recorde — o melhor continua valendo.</small>`;
     document.getElementById("feedback-pontos").innerHTML = fb;
-
     document.getElementById("resumo-turma").innerText = tent.turma;
     document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[tent.modalidade]?.nome || tent.modalidade;
     document.getElementById("resumo-acertos").innerText = `${tent.acertos}/20`;
@@ -1735,16 +1794,13 @@ async function preencherResultado(melhor, tent, posAntes) {
     document.getElementById("resumo-tempo").innerText = `${tent.tempoMedio.toFixed(2)}s`;
     document.getElementById("resumo-sequencia").innerText = tent.maiorSequencia;
     document.getElementById("resumo-status").innerHTML = `<span class="tag ${status === 'Classificado' ? 'tag-classificado' : status === 'Reserva' ? 'tag-reserva' : 'tag-participante'}">${status}</span>`;
-
     const medias = await carregarMediasReferencia(tent.nome, tent.turma, tent.modalidade);
     document.getElementById("resumo-melhor-media").innerText = medias.melhorMediaAluno ? `${medias.melhorMediaAluno.toFixed(2)} s` : "---";
     document.getElementById("resumo-media-turma").innerText = medias.mediaTurma ? `${medias.mediaTurma.toFixed(2)} s` : "---";
-
     if (tent.desempenhoTabuadas) desempenhoTabuadas = tent.desempenhoTabuadas;
     mapaFonteUltima = tent.desempenhoOperacoes || {};
     mapaFonteAgregada = await obterDesempenhoOperacoesAgregado(tent.nome, tent.turma, tent.modalidade);
     if (Object.keys(mapaFonteAgregada).length === 0) mapaFonteAgregada = mapaFonteUltima;
-
     promocoesRecentes = await verificarPromocoes(tent.nome, tent.turma, tent.modalidade, mapaFonteAgregada);
     document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
     if (promocoesRecentes.length > 0) {
@@ -1752,15 +1808,12 @@ async function preencherResultado(melhor, tent, posAntes) {
         dispararConfetes();
         setTimeout(() => { promocoesRecentes = []; }, 6000);
     }
-
     const hist = await obterHistoricoAluno(tent.nome, tent.turma, tent.modalidade);
     const cq = calcularConquistas(tent, hist).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("");
     document.getElementById("novas-conquistas").innerHTML = cq ? `<strong>🏅 CONQUISTAS DESBLOQUEADAS</strong><br><div class="conquistas-grid">${cq}</div>` : "";
-
     const btnT = document.getElementById("btn-treinar-novamente");
     if (btnT) { if (pT > VAGAS_CLASSIFICACAO) btnT.classList.remove("hidden"); else btnT.classList.add("hidden"); }
     const btnS = document.getElementById("btn-compartilhar"); if (btnS) btnS.classList.remove("hidden");
-
     await gerarFeedbackRanking(melhor, pT, posAntes);
 }
 async function iniciarTreinoDaTelaResultado() {
@@ -1816,19 +1869,16 @@ function renderizarMapa() {
     const fa = MODALIDADES[modalidadeAtual]?.fatores || [];
     const fb = [0,1,2,3,4,5,6,7,8,9,10];
     const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
-
     const cont = { verde: 0, amarelo: 0, vermelho: 0, cinza: 0 };
     fa.forEach(a => fb.forEach(b => { cont[corDaOperacao(fonte[`${a}x${b}`])]++; }));
     const tot = fa.length * fb.length;
     const dom = tot ? Math.round((cont.verde / tot) * 100) : 0;
-
     let h = `<div class="mapa-tabuadas-v2">`;
     h += `<div class="mapa-toggle">
         <button class="toggle-btn ${modoVisualizacaoMapa === 'agregado' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('agregado')">📚 Todas as partidas</button>
         <button class="toggle-btn ${modoVisualizacaoMapa === 'ultima' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('ultima')">🎯 Uma partida</button>
     </div>
     <p class="mapa-fonte-aviso">${modoVisualizacaoMapa === 'agregado' ? 'Somando o desempenho de todas as partidas registradas.' : 'Mostrando apenas uma partida.'}</p>`;
-
     const qFracos = cont.vermelho + cont.amarelo;
     h += `<div class="mapa-resumo">
         <div class="resumo-titulo">🏆 Seu domínio da tabuada: <strong>${dom}%</strong></div>
@@ -1840,14 +1890,12 @@ function renderizarMapa() {
         </div>
         ${qFracos > 0 ? `<button class="btn-treinar-fracos" onclick="treinarPontosFracos()">🎯 Treinar pontos fracos (${qFracos})</button>` : ""}
     </div>`;
-
     h += `<div class="mapa-legenda">
         <span class="legenda-item"><span class="legenda-cor verde"></span> Dominada (≥90%)</span>
         <span class="legenda-item"><span class="legenda-cor amarelo"></span> Em desenvolvimento (60–89%)</span>
         <span class="legenda-item"><span class="legenda-cor vermelho"></span> Reforço (&lt;60%)</span>
         <span class="legenda-item"><span class="legenda-cor cinza"></span> Não praticada</span>
     </div>`;
-
     h += `<div class="mapa-grid-wrapper"><table class="mapa-grid"><thead><tr><th></th>`;
     fb.forEach(b => h += `<th>${b}</th>`);
     h += `</tr></thead><tbody>`;
@@ -2005,7 +2053,6 @@ async function renderizarRanking() {
     let turma = document.getElementById("filtro-turma")?.value || "901";
     let rank = [], tit = "";
     const nomeA = obterNomeSalvoAluno();
-
     if (tipoRankingAtual === "turma") {
         const ts = obterTurmaSalvaAluno();
         if (ts) { turma = ts; document.getElementById("filtro-turma").value = turma; }
@@ -2145,7 +2192,6 @@ async function carregarPerfil() {
     document.getElementById("perfil-melhor-status").innerHTML = `<span class="tag tag-${status === 'Classificado' ? 'classificado' : status === 'Reserva' ? 'reserva' : 'participante'}">${status}</span>`;
     document.getElementById("perfil-conquistas").innerHTML = calcularConquistas(melhor, partidas).map(c => `<div class="conquista-card desbloqueada" title="${c.descricao}">${c.icone} ${c.nome}</div>`).join("") || "Nenhuma conquista ainda";
     if (melhor.desempenhoTabuadas) desempenhoTabuadas = melhor.desempenhoTabuadas;
-
     alunoAtual = melhor.nome; turmaAtual = melhor.turma; modalidadeAtual = melhor.modalidade;
     treinoFocoOperacoes = null; promocoesRecentes = [];
     mapaFonteUltima = melhor.desempenhoOperacoes || {};
@@ -2172,11 +2218,9 @@ async function confirmarReset() {
     const turma = document.getElementById("reset-turma").value;
     const mod = document.getElementById("reset-modalidade").value;
     const limparVinculos = document.getElementById("reset-limpar-vinculos")?.checked || false;
-
     let msg = `Resetar ${turma === "todas" ? "TODAS" : turma} - ${mod === "todas" ? "TODAS" : MODALIDADES[mod]?.nome}?`;
     if (limparVinculos) msg += `\n\n⚠️ TAMBÉM irá apagar TODOS os vínculos de dispositivo.\nOs nomes ficarão livres para serem usados em qualquer aparelho.`;
     if (!confirm(msg)) return;
-
     const rank = await obterRanking();
     const novos = rank.filter(r => !resultadoCombinaFiltro(r, turma, mod));
     for (const item of rank) { if (!novos.includes(item)) { const c = criarChaveResultado(item); await database.ref(`${CAMINHO_RANKING}/${c}`).remove(); } }
@@ -2249,7 +2293,7 @@ function renderizarListaAlunos() {
             const cell = document.getElementById(`vinculo-${k}`);
             if (cell) {
                 const v = await obterVinculo(a.nome, a.turma);
-                if (v) { cell.innerHTML = `🔒 ${v.dispositivoId.slice(0, 8)}...`; cell.title = `Dispositivo: ${v.dispositivoId}`; }
+                if (v) { cell.innerHTML = `🔒 ${v.dispositivoId.slice(0, 8)}...`; cell.title = `Dispositivo: ${v.dispositivoId}\nÚltimo acesso: ${formatarDataHora(v.ultimoAcesso || v.criadoEm)}`; }
                 else cell.innerHTML = `🔓 Não vinculado`;
             }
         }
@@ -2324,7 +2368,7 @@ async function salvarEdicoesNomes() {
 }
 async function desvincularAluno(nome, turma) {
     if (!exigirProfessorAutenticado()) return;
-    if (!confirm(`Desvincular ${nome} (Turma ${turma})?`)) return;
+    if (!confirm(`Desvincular ${nome} (Turma ${turma})? O próximo acesso vai liberar qualquer aparelho.`)) return;
     const c = chaveVinculo(nome, turma);
     await database.ref(`${CAMINHO_VINCULOS}/${c}`).remove();
     notificar(`Vínculo de ${nome} removido.`, "sucesso");
@@ -2367,6 +2411,7 @@ window.addEventListener("DOMContentLoaded", () => {
     mudarTipoRanking("turma");
     configurarToqueSecreto();
     inicializarAudio();
+    atualizarAcessoSeConhecido();
 });
 </script>
 </body>
