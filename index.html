@@ -280,7 +280,7 @@
         .conquista-card.desbloqueada { background: #ffc107; color: #000; }
         .estatistica-destaque { font-size: 24px; font-weight: bold; color: #0066cc; }
         .painel-botoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
-        .senha-container { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+        .senha-container { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e9ecef; }
         .alunos-table { width: 100%; font-size: 13px; border-collapse: collapse; }
         .alunos-table th, .alunos-table td { padding: 8px; border-bottom: 1px solid #dee2e6; text-align: left; }
         .editar-nome { width: 130px; padding: 4px 6px; font-size: 12px; margin: 0; }
@@ -518,6 +518,14 @@
             .btn-voltar-chips:hover:not(:disabled) { background: #1e293b; border-color: #475569; color: #f0f0f0; }
             .modal-acoes .btn-variacoes { background: linear-gradient(135deg, #6f42c1 0%, #4c2d8f 100%); }
             .nota-sem-variacoes { background: #1e293b; border-color: #334155; color: #94a3b8; }
+            /* Painel do professor no modo escuro */
+            .senha-container { background: #2a2a2a; border-color: #3a3a3a; }
+            .senha-container h4 { color: #f0f0f0; }
+            .senha-container label { color: #e8e8e8; }
+            .senha-container p { color: #b0b0b0; }
+            .senha-container div { color: #e8e8e8; }
+            .senha-container strong { color: #f0f0f0; }
+            .senha-container .info-sincronizacao { color: #94a3b8; }
         }
         @media (max-width: 700px) {
             .acoes-secundarias { grid-template-columns: 1fr; }
@@ -1195,7 +1203,6 @@ function validarNomeCompleto(nomeBruto) {
     if (!limpo) {
         return { ok: false, motivo: "Digite seu nome completo." };
     }
-    // Bloqueia ponto de abreviação (ex: "João P.", "M. Silva")
     if (/\b[a-zA-ZÀ-ÿ]\./.test(limpo)) {
         return { ok: false, motivo: "Não use abreviações com ponto. Escreva o nome completo." };
     }
@@ -1203,16 +1210,13 @@ function validarNomeCompleto(nomeBruto) {
     if (partes.length < 2) {
         return { ok: false, motivo: "Escreva nome e sobrenome (mínimo 2 palavras)." };
     }
-    // Cada parte precisa ter pelo menos 2 letras
     const curtas = partes.filter(p => p.replace(/[^a-zA-ZÀ-ÿ]/g, "").length < 2);
     if (curtas.length > 0) {
         return { ok: false, motivo: "Cada parte do nome precisa ter pelo menos 2 letras." };
     }
-    // Bloqueia sequências numéricas
     if (/\d/.test(limpo)) {
         return { ok: false, motivo: "O nome não pode conter números." };
     }
-    // Normaliza capitalização (preserva partículas: de, da, do, dos, das, e)
     const particulas = new Set(["de","da","do","dos","das","e","di","du","del","della"]);
     const normalizado = partes.map(p => {
         const min = p.toLowerCase();
@@ -2293,7 +2297,7 @@ async function registrarAluno(treino) {
         return;
     }
     const nome = v.normalizado;
-    document.getElementById("nome-aluno").value = nome; // mostra já corrigido
+    document.getElementById("nome-aluno").value = nome;
 
     if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
 
@@ -3322,7 +3326,7 @@ async function salvarEdicoesNomes() {
             return;
         }
         const nomeNovo = vv.normalizado;
-        input.value = nomeNovo; // ajusta visualmente
+        input.value = nomeNovo;
         if (normalizarNome(nomeAntigo) !== normalizarNome(nomeNovo) && nomeNovo) {
             const regs = alunosData.filter(a => a.modalidade === mod && a.turma === turma && normalizarNome(a.nome) === normalizarNome(nomeAntigo));
             for (const reg of regs) {
