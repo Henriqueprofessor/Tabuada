@@ -68,6 +68,11 @@
         .btn-treinar-fracos { width: 100%; margin-top: 14px; padding: 12px 16px; background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 3px 8px rgba(220,53,69,0.25); }
         .btn-treinar-fracos:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(220,53,69,0.4); background: linear-gradient(135deg, #e8690b 0%, #c82333 100%); }
         .btn-treinar-fracos:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+        .btn-treinar-fracos-var { background: linear-gradient(135deg, #6f42c1 0%, #4c2d8f 100%); box-shadow: 0 3px 8px rgba(111,66,193,0.25); }
+        .btn-treinar-fracos-var:hover:not(:disabled) { background: linear-gradient(135deg, #5a34a4 0%, #3f2577 100%); box-shadow: 0 5px 14px rgba(111,66,193,0.4); }
+        .acoes-treino-fracos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+        .acoes-treino-fracos .btn-treinar-fracos { margin-top: 0; font-size: 12px; padding: 11px 10px; }
+        @media (max-width: 500px) { .acoes-treino-fracos { grid-template-columns: 1fr; } }
         .mapa-legenda { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: #495057; }
         .mapa-legenda .legenda-item { display: flex; align-items: center; gap: 5px; }
         .mapa-legenda .legenda-cor { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
@@ -124,6 +129,18 @@
         .modal-dica strong { color: #bf360c; }
         .modal-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
         .modal-acoes button { margin: 0; }
+        .modal-acoes.uma-coluna { grid-template-columns: 1fr; }
+        .modal-acoes .btn-variacoes { background: linear-gradient(135deg, #6f42c1 0%, #4c2d8f 100%); }
+        .modal-acoes .btn-variacoes:hover:not(:disabled) { background: linear-gradient(135deg, #5a34a4 0%, #3f2577 100%); }
+        .linha-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+        .linha-chips .rotulo-chips { font-weight: 700; color: #475569; letter-spacing: 0.2px; }
+        .chips-variacoes { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+        .chip-variacao { padding: 7px 14px; background: #e7f5ff; color: #0a58ca; border: 1px solid #b8daff; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; width: auto; margin: 0; box-shadow: none; }
+        .chip-variacao:hover:not(:disabled) { background: #cfe2ff; border-color: #0d6efd; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(13,110,253,0.25); color: #084298; }
+        .chip-variacao.comutada { background: #fff8e1; color: #6b4e00; border-color: #ffe082; }
+        .chip-variacao.comutada:hover:not(:disabled) { background: #ffecb3; border-color: #ffc107; color: #664d03; box-shadow: 0 3px 8px rgba(255,193,7,0.3); }
+        .btn-voltar-chips { display: inline-flex; align-items: center; gap: 4px; background: transparent; color: #495057; border: 1px solid #dee2e6; padding: 6px 12px; font-size: 12px; width: auto; margin: 0 0 12px 0; cursor: pointer; border-radius: 6px; font-weight: 600; box-shadow: none; transition: all 0.15s; }
+        .btn-voltar-chips:hover:not(:disabled) { background: #f8f9fa; border-color: #adb5bd; color: #212529; transform: none; }
         .changelog-trigger { display: inline-flex; align-items: center; gap: 6px; margin: 18px auto 0; padding: 6px 12px; background: transparent; color: #94a3b8; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: auto; letter-spacing: 0.3px; box-shadow: none; }
         .changelog-trigger:hover:not(:disabled) { background: #f8fafc; color: #475569; border-color: #cbd5e1; transform: none; }
         .changelog-modal-card { max-width: 520px; }
@@ -394,6 +411,7 @@
             .banner-promocao { background: linear-gradient(135deg, #14532d 0%, #166534 100%); border-color: #22c55e; color: #bbf7d0; }
             .banner-promocao .ops-destaque { background: #1e293b; color: #86efac; border-color: #22c55e; }
             .btn-treinar-fracos { background: linear-gradient(135deg, #c2410c 0%, #991b1b 100%); }
+            .btn-treinar-fracos-var { background: linear-gradient(135deg, #6f42c1 0%, #4c2d8f 100%); }
             .changelog-trigger { color: #64748b; border-color: #334155; }
             .changelog-trigger:hover:not(:disabled) { background: #1e293b; color: #cbd5e1; border-color: #475569; }
             .changelog-item { border-color: #334155; }
@@ -401,6 +419,14 @@
             .changelog-versao.atual { background: #14532d; color: #86efac; }
             .changelog-titulo { color: #f0f0f0; }
             .changelog-descricao { color: #94a3b8; }
+            .chip-variacao { background: #1e293b; color: #93c5fd; border-color: #334155; }
+            .chip-variacao:hover:not(:disabled) { background: #334155; border-color: #475569; color: #bfdbfe; }
+            .chip-variacao.comutada { background: #3a2e1a; color: #fde047; border-color: #5a4a2a; }
+            .chip-variacao.comutada:hover:not(:disabled) { background: #5a4a2a; border-color: #854d0e; color: #fef08a; }
+            .linha-chips .rotulo-chips { color: #cbd5e1; }
+            .btn-voltar-chips { color: #cbd5e1; border-color: #334155; }
+            .btn-voltar-chips:hover:not(:disabled) { background: #1e293b; border-color: #475569; color: #f0f0f0; }
+            .modal-acoes .btn-variacoes { background: linear-gradient(135deg, #6f42c1 0%, #4c2d8f 100%); }
         }
         @media (max-width: 700px) {
             .acoes-secundarias { grid-template-columns: 1fr; }
@@ -442,7 +468,7 @@
         <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
     </div>
     <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">
-        ⚙️ v<span id="changelog-versao-atual">6.9</span> · histórico
+        ⚙️ v<span id="changelog-versao-atual">7.0</span> · histórico
     </button>
 </div>
 
@@ -616,7 +642,7 @@
             <button class="modal-close" onclick="fecharModalOperacao()" aria-label="Fechar">✕</button>
         </div>
         <div id="modal-corpo" class="modal-corpo"></div>
-        <div class="modal-acoes">
+        <div class="modal-acoes" id="modal-acoes-container">
             <button id="modal-btn-treinar" class="botao-treino">🎯 Treinar esta operação</button>
             <button class="botao-secundario" onclick="fecharModalOperacao()">🔙 Fechar</button>
         </div>
@@ -632,7 +658,13 @@
         <div class="changelog-lista">
 
             <div class="changelog-item">
-                <span class="changelog-versao atual">v6.9 · atual</span>
+                <span class="changelog-versao atual">v7.0 · atual</span>
+                <h4 class="changelog-titulo">Treino com variações</h4>
+                <p class="changelog-descricao">Errou uma operação? Agora você pode treinar ela <strong>junto com outras que dão o mesmo resultado</strong>. Errou 4×5? Treine 4×5, 5×4 e 2×10 de uma vez. Clique nos chips do modal para explorar cada variação.</p>
+            </div>
+
+            <div class="changelog-item">
+                <span class="changelog-versao">v6.9</span>
                 <h4 class="changelog-titulo">Histórico de versões</h4>
                 <p class="changelog-descricao">Agora o jogo tem um espaço para registrar todas as novidades. Clique em <strong>⚙️ histórico</strong> na tela inicial sempre que quiser consultar.</p>
             </div>
@@ -692,7 +724,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "6.9";
+const APP_VERSION = "7.0";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -735,6 +767,9 @@ const TOTAL_PERGUNTAS = 20;
 const VAGAS_CLASSIFICACAO = 4;
 const JANELA_COOLDOWN_MS = 48 * 60 * 60 * 1000;
 const THROTTLE_ACESSO_MS = 30 * 60 * 1000;
+const PESO_ORIGINAL_VARIACAO = 2.0;
+const PESO_COMUTADA_VARIACAO = 1.5;
+const PESO_DISTANTE_VARIACAO = 1.0;
 const MODALIDADES = {
     "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
     "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
@@ -766,6 +801,7 @@ let mapaFonteAgregada = {};
 let modoVisualizacaoMapa = "agregado";
 let treinoFocoOperacoes = null;
 let promocoesRecentes = [];
+let pilhaDetalhes = [];
 let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
 let alunosData=[], alunosFiltrados=[];
 let melhorMediaAluno = null, mediaTurma = null;
@@ -1376,6 +1412,60 @@ function gerarPlanoTreinoResultado() {
     return `<div class="feedback-ranking"><strong>Plano de treino recomendado</strong><ul style="text-align:left;margin:8px 0 0;">${linhas}</ul></div>`;
 }
 
+// ==================== VARIAÇÕES DE PRODUTO ====================
+function obterVariacoesDeOperacao(fA, fB, mod = modalidadeAtual) {
+    const produto = fA * fB;
+    if (produto === 0 || produto === 1) return [];
+    const fatoresPermitidos = MODALIDADES[mod]?.fatores || [];
+    const variacoes = [];
+    for (const a of fatoresPermitidos) {
+        for (let b = 0; b <= 10; b++) {
+            if (a * b !== produto) continue;
+            if (a === fA && b === fB) continue;
+            const tipo = (a === fB && b === fA) ? "comutada" : "distante";
+            variacoes.push({ fA: a, fB: b, tipo });
+        }
+    }
+    variacoes.sort((x, y) => {
+        if (x.tipo !== y.tipo) return x.tipo === "comutada" ? -1 : 1;
+        return x.fA - y.fA;
+    });
+    return variacoes;
+}
+function montarListaComVariacoes(operacoesBase, mod = modalidadeAtual) {
+    const mapa = new Map();
+    for (const op of operacoesBase) {
+        const k = `${op.fA}x${op.fB}`;
+        if (!mapa.has(k)) mapa.set(k, { fA: op.fA, fB: op.fB, peso: PESO_ORIGINAL_VARIACAO });
+        const varia = obterVariacoesDeOperacao(op.fA, op.fB, mod);
+        for (const v of varia) {
+            const kv = `${v.fA}x${v.fB}`;
+            if (!mapa.has(kv)) {
+                mapa.set(kv, { fA: v.fA, fB: v.fB, peso: v.tipo === "comutada" ? PESO_COMUTADA_VARIACAO : PESO_DISTANTE_VARIACAO });
+            }
+        }
+    }
+    return Array.from(mapa.values());
+}
+function treinarComVariacoes(operacoesBase) {
+    if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
+    const lista = montarListaComVariacoes(operacoesBase, modalidadeAtual);
+    if (lista.length <= operacoesBase.length) {
+        treinoFocoOperacoes = lista;
+        modoTreino = true;
+        iniciarPartidaTreino();
+        return;
+    }
+    treinoFocoOperacoes = lista;
+    modoTreino = true;
+    iniciarPartidaTreino();
+    const qVar = lista.length - operacoesBase.length;
+    const pluralBase = operacoesBase.length === 1 ? "operação" : "operações";
+    const pluralVar = qVar === 1 ? "variação" : "variações";
+    notificar(`🔀 ${operacoesBase.length} ${pluralBase} base + ${qVar} ${pluralVar}`, "info", 4000);
+}
+// ==================== FIM VARIAÇÕES ====================
+
 function escolherPorPeso(itens, pesoFn) {
     let total = itens.reduce((s, i) => s + Math.max(0.1, pesoFn(i)), 0);
     let alvo = Math.random() * total;
@@ -1951,6 +2041,21 @@ function corDaOperacao(d) {
     if (p >= 0.6) return "amarelo";
     return "vermelho";
 }
+function obterListaFracos() {
+    const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
+    const fa = MODALIDADES[modalidadeAtual]?.fatores || [];
+    const fb = [0,1,2,3,4,5,6,7,8,9,10];
+    const fracos = [];
+    fa.forEach(a => fb.forEach(b => {
+        const k = `${a}x${b}`, d = fonte[k], c = corDaOperacao(d);
+        if (c === "vermelho" || c === "amarelo") {
+            const p = d && d.tentativas ? d.acertos / d.tentativas : 0;
+            fracos.push({ fA: a, fB: b, cor: c, precisao: p, tentativas: (d && d.tentativas) || 0 });
+        }
+    }));
+    fracos.sort((x, y) => x.precisao - y.precisao || x.tentativas - y.tentativas);
+    return fracos.slice(0, 15);
+}
 function renderizarMapa() {
     const fa = MODALIDADES[modalidadeAtual]?.fatores || [];
     const fb = [0,1,2,3,4,5,6,7,8,9,10];
@@ -1965,7 +2070,26 @@ function renderizarMapa() {
         <button class="toggle-btn ${modoVisualizacaoMapa === 'ultima' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('ultima')">🎯 Uma partida</button>
     </div>
     <p class="mapa-fonte-aviso">${modoVisualizacaoMapa === 'agregado' ? 'Somando o desempenho de todas as partidas registradas.' : 'Mostrando apenas uma partida.'}</p>`;
-    const qFracos = cont.vermelho + cont.amarelo;
+
+    const fracos = obterListaFracos();
+    const qFracos = fracos.length;
+    let botoesTreino = "";
+    if (qFracos === 1) {
+        const temVar = obterVariacoesDeOperacao(fracos[0].fA, fracos[0].fB, modalidadeAtual).length > 0;
+        if (temVar) {
+            botoesTreino = `<button class="btn-treinar-fracos" onclick="treinarPontosFracosVariacoes()">🔀 Treinar com variações</button>`;
+        } else {
+            botoesTreino = `<button class="btn-treinar-fracos" onclick="treinarPontosFracos()">🎯 Treinar esta operação</button>`;
+        }
+    } else if (qFracos >= 2) {
+        botoesTreino = `
+            <div class="acoes-treino-fracos">
+                <button class="btn-treinar-fracos" onclick="treinarPontosFracos()">🎯 Só fracos (${qFracos})</button>
+                <button class="btn-treinar-fracos btn-treinar-fracos-var" onclick="treinarPontosFracosVariacoes()">🔀 Com variações</button>
+            </div>
+        `;
+    }
+
     h += `<div class="mapa-resumo">
         <div class="resumo-titulo">🏆 Seu domínio da tabuada: <strong>${dom}%</strong></div>
         <div class="resumo-contadores">
@@ -1974,7 +2098,7 @@ function renderizarMapa() {
             <span class="contador vermelho">🔴 Precisa melhorar: ${cont.vermelho}</span>
             <span class="contador cinza">⚪ Não praticadas: ${cont.cinza}</span>
         </div>
-        ${qFracos > 0 ? `<button class="btn-treinar-fracos" onclick="treinarPontosFracos()">🎯 Treinar pontos fracos (${qFracos})</button>` : ""}
+        ${botoesTreino}
     </div>`;
     h += `<div class="mapa-legenda">
         <span class="legenda-item"><span class="legenda-cor verde"></span> Dominada (≥90%)</span>
@@ -2006,24 +2130,18 @@ function mudarVisualizacaoMapa(m) {
 }
 function treinarPontosFracos() {
     if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
-    const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
-    const fa = MODALIDADES[modalidadeAtual]?.fatores || [];
-    const fb = [0,1,2,3,4,5,6,7,8,9,10];
-    const fracos = [];
-    fa.forEach(a => fb.forEach(b => {
-        const k = `${a}x${b}`, d = fonte[k], c = corDaOperacao(d);
-        if (c === "vermelho" || c === "amarelo") {
-            const p = d && d.tentativas ? d.acertos / d.tentativas : 0;
-            fracos.push({ fA: a, fB: b, cor: c, precisao: p, tentativas: (d && d.tentativas) || 0 });
-        }
-    }));
+    const fracos = obterListaFracos();
     if (!fracos.length) { notificar("🎉 Você não tem pontos fracos! Continue treinando.", "info"); return; }
-    fracos.sort((x, y) => x.precisao - y.precisao || x.tentativas - y.tentativas);
-    const foco = fracos.slice(0, 15);
-    treinoFocoOperacoes = foco.map(f => ({ fA: f.fA, fB: f.fB, peso: f.cor === "vermelho" ? 2 : 1 }));
+    treinoFocoOperacoes = fracos.map(f => ({ fA: f.fA, fB: f.fB, peso: f.cor === "vermelho" ? 2 : 1 }));
     modoTreino = true;
     iniciarPartidaTreino();
-    notificar(`🎯 Treino focado em ${foco.length} operação(ões) difíceis!`, "info");
+    notificar(`🎯 Treino focado em ${fracos.length} operação(ões)!`, "info");
+}
+function treinarPontosFracosVariacoes() {
+    if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
+    const fracos = obterListaFracos();
+    if (!fracos.length) { notificar("🎉 Você não tem pontos fracos! Continue treinando.", "info"); return; }
+    treinarComVariacoes(fracos.map(f => ({ fA: f.fA, fB: f.fB })));
 }
 function gerarDicaDecomposicao(fA, fB) {
     const r = fA * fB;
@@ -2044,6 +2162,19 @@ function gerarDicaDecomposicao(fA, fB) {
     return `${fA}×${fB} = somar ${fA} ${fB} vezes = <strong>${r}</strong>.`;
 }
 function abrirDetalheOperacao(k) {
+    pilhaDetalhes = [];
+    renderizarDetalheOperacao(k);
+}
+function irParaVariacao(k) {
+    const atual = document.getElementById("modal-operacao")?.dataset?.opAtual;
+    if (atual && atual !== k) pilhaDetalhes.push(atual);
+    renderizarDetalheOperacao(k);
+}
+function voltarDetalhe() {
+    if (!pilhaDetalhes.length) return;
+    renderizarDetalheOperacao(pilhaDetalhes.pop());
+}
+function renderizarDetalheOperacao(k) {
     const [a, b] = k.split("x").map(Number);
     if (!Number.isFinite(a) || !Number.isFinite(b)) return;
     const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
@@ -2051,7 +2182,31 @@ function abrirDetalheOperacao(k) {
     const c = corDaOperacao(d);
     const p = d.tentativas > 0 ? (d.acertos / d.tentativas * 100) : 0;
     const st = { verde: "🟢 Dominada!", amarelo: "🟡 Em desenvolvimento.", vermelho: "🔴 Precisa melhorar.", cinza: "⚪ Ainda não praticada." };
+    const variacoes = obterVariacoesDeOperacao(a, b, modalidadeAtual);
+    const temVariacoes = variacoes.length > 0;
+
+    let htmlVoltar = "";
+    if (pilhaDetalhes.length > 0) {
+        const anterior = pilhaDetalhes[pilhaDetalhes.length - 1];
+        htmlVoltar = `<button class="btn-voltar-chips" onclick="voltarDetalhe()">← Voltar para ${anterior}</button>`;
+    }
+
+    let htmlChips = "";
+    if (temVariacoes) {
+        const chips = variacoes.map(v => {
+            const cls = v.tipo === "comutada" ? "chip-variacao comutada" : "chip-variacao";
+            return `<button class="${cls}" onclick="irParaVariacao('${v.fA}x${v.fB}')" title="${v.tipo === 'comutada' ? 'Propriedade comutativa' : 'Outra forma de escrever'}">${v.fA}×${v.fB}</button>`;
+        }).join("");
+        htmlChips = `
+            <div class="linha-chips">
+                <span class="rotulo-chips">✨ Também dão ${a*b}:</span>
+            </div>
+            <div class="chips-variacoes">${chips}</div>
+        `;
+    }
+
     document.getElementById("modal-corpo").innerHTML = `
+        ${htmlVoltar}
         <div class="modal-operacao-titulo">${a} × ${b} = ?</div>
         <div class="modal-status ${c}">${st[c]}</div>
         <div class="modal-stats">
@@ -2061,13 +2216,28 @@ function abrirDetalheOperacao(k) {
             <div class="modal-stat destaque"><span class="rotulo">🎯 Precisão</span><span class="valor">${p.toFixed(1)}%</span></div>
         </div>
         <div class="modal-dica"><strong>💡 Dica de decomposição</strong><br>${gerarDicaDecomposicao(a, b)}</div>
+        ${htmlChips}
     `;
-    document.getElementById("modal-btn-treinar").onclick = () => treinarOperacaoEspecifica(a, b);
+
+    document.getElementById("modal-operacao").dataset.opAtual = k;
+
+    const btnTreinar = document.getElementById("modal-btn-treinar");
+    if (temVariacoes) {
+        btnTreinar.classList.add("btn-variacoes");
+        btnTreinar.innerText = `🔀 Treinar com variações (${1 + variacoes.length})`;
+        btnTreinar.onclick = () => treinarComVariacoes([{ fA: a, fB: b }]);
+    } else {
+        btnTreinar.classList.remove("btn-variacoes");
+        btnTreinar.innerText = `🎯 Treinar esta operação`;
+        btnTreinar.onclick = () => treinarOperacaoEspecifica(a, b);
+    }
+
     document.getElementById("modal-operacao").classList.remove("hidden");
 }
 function fecharModalOperacao(e) {
     if (e && e.target && e.target.closest(".modal-card")) return;
     document.getElementById("modal-operacao").classList.add("hidden");
+    pilhaDetalhes = [];
 }
 function abrirChangelog() {
     document.getElementById("modal-changelog").classList.remove("hidden");
