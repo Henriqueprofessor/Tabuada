@@ -178,7 +178,7 @@
         .info-destaque.vermelho { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-color: #ef4444; color: #7f1d1d; }
         .info-destaque.vermelho strong { color: #991b1b; }
 
-        /* ============ CARD DE VOTAÇÃO (v7.6) ============ */
+        /* ============ CARD DE VOTAÇÃO ============ */
         .card-votacao { position: relative; overflow: hidden; background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 55%, #7c3aed 100%); color: #fff; text-align: left; padding: 22px 24px; margin: 20px auto 0; border-radius: 18px; max-width: 1000px; box-shadow: 0 10px 24px rgba(76,29,149,.28); }
         .card-votacao::after { content: "🗳️"; position: absolute; right: 18px; top: 8px; font-size: 72px; opacity: .12; transform: rotate(-12deg); pointer-events: none; }
         .votacao-kicker { font-size: 11px; font-weight: 800; letter-spacing: .14em; color: #ddd6fe; margin-bottom: 6px; }
@@ -198,8 +198,6 @@
         .btn-voto strong { display: block; font-size: 22px; margin-bottom: 2px; color: #fde68a; }
         .btn-voto small { display: block; font-size: 11px; color: #ede9fe; font-weight: 600; letter-spacing: .3px; }
         .btn-voto:disabled { cursor: not-allowed; opacity: .55; }
-        .btn-voto.escolhido { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border-color: #fbbf24; color: #422006; box-shadow: 0 4px 14px rgba(251,191,36,.45); }
-        .btn-voto.escolhido strong, .btn-voto.escolhido small { color: #422006; }
         .votacao-seu-voto { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 12px; padding: 12px 14px; margin-top: 12px; font-size: 13px; color: #f5f3ff; text-align: center; }
         .votacao-seu-voto strong { color: #fde68a; font-weight: 800; }
         .votacao-grafico { margin-top: 14px; }
@@ -208,12 +206,8 @@
         .votacao-grafico .barra-voto .rotulo-barra .num { color: #fff; }
         .votacao-grafico .trilha { height: 14px; background: rgba(255,255,255,.12); border-radius: 8px; overflow: hidden; }
         .votacao-grafico .preenchimento { height: 100%; transition: width .6s ease; border-radius: 8px; }
-        .votacao-grafico .preenchimento.set {
-            background: linear-gradient(90deg, #facc15 0%, #eab308 100%);
-        }
-        .votacao-grafico .preenchimento.qua {
-            background: linear-gradient(90deg, #22d3ee 0%, #06b6d4 100%);
-        }
+        .votacao-grafico .preenchimento.set { background: linear-gradient(90deg, #facc15 0%, #eab308 100%); }
+        .votacao-grafico .preenchimento.qua { background: linear-gradient(90deg, #22d3ee 0%, #06b6d4 100%); }
         .votacao-resultado-final { margin-top: 14px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); border-radius: 12px; padding: 14px; }
         .votacao-resultado-final .ganhador { font-size: 14px; color: #fff; text-align: center; line-height: 1.6; }
         .votacao-resultado-final .ganhador strong { font-size: 20px; color: #fde68a; display: block; margin-bottom: 4px; }
@@ -526,7 +520,6 @@
             .senha-container div { color: #e8e8e8; }
             .senha-container strong { color: #f0f0f0; }
             .senha-container .info-sincronizacao { color: #94a3b8; }
-            /* Blocos com estilo inline (Resetar Ranking / Gerenciar Alunos) */
             #painel-reset { background: #3a2e1a !important; color: #e8d0a0; border: 1px solid #5a4a2a; }
             #painel-reset h4 { color: #fde047; }
             #painel-reset p { color: #e8d0a0 !important; }
@@ -536,6 +529,218 @@
             #painel-alunos h4 { color: #f0f0f0; }
             #painel-alunos .subtitulo-bloco { color: #b0b0b0; }
         }
+
+        /* ============ TELA MEU DESEMPENHO ============ */
+        .acoes-secundarias.tres-colunas { grid-template-columns: repeat(3, 1fr); }
+        .botao-desempenho { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); }
+        .botao-desempenho:hover { background: linear-gradient(135deg, #0284c7 0%, #075985 100%); }
+        @media (max-width: 700px) {
+            .acoes-secundarias.tres-colunas { grid-template-columns: 1fr; }
+        }
+
+        .desempenho-cabecalho {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 14px;
+            padding: 16px 20px; margin-bottom: 16px; text-align: left;
+        }
+        .desempenho-cabecalho-esq { display: flex; flex-direction: column; gap: 2px; }
+        .desempenho-aluno-nome { font-size: 19px; font-weight: 800; color: #102a43; line-height: 1.2; word-break: break-word; }
+        .desempenho-aluno-turma { font-size: 12.5px; color: #6c757d; font-weight: 600; letter-spacing: 0.3px; }
+        .desempenho-cabecalho-emoji { font-size: 40px; line-height: 1; opacity: 0.85; }
+
+        .desempenho-filtros { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .desempenho-filtro-btn {
+            width: auto; margin: 0; padding: 8px 14px; font-size: 12px; font-weight: 700;
+            background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
+            border-radius: 20px; cursor: pointer; transition: all 0.15s; box-shadow: none; letter-spacing: 0.2px;
+        }
+        .desempenho-filtro-btn:hover:not(.ativa) { background: #e2e8f0; transform: none; color: #1e293b; }
+        .desempenho-filtro-btn.ativa {
+            background: linear-gradient(135deg, #0066cc 0%, #004f9f 100%); color: #fff;
+            border-color: #0066cc; box-shadow: 0 3px 8px rgba(0,102,204,0.28);
+        }
+        .desempenho-filtro-btn.ativa:hover { transform: none; }
+
+        .desempenho-secao-titulo { font-size: 15px; font-weight: 800; color: #102a43; text-align: left; margin: 0 0 14px 0; letter-spacing: 0.2px; }
+
+        .desempenho-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+        .desempenho-card {
+            background: #fff; border: 1px solid #e9ecef; border-radius: 14px;
+            padding: 20px 12px 16px; text-align: center;
+            transition: transform 0.18s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        .desempenho-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); border-color: #b8daff; }
+        .desempenho-card.destaque { background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%); border-color: #ffc107; box-shadow: 0 3px 10px rgba(255,193,7,0.22); }
+        .desempenho-card.destaque .desempenho-valor { color: #856404; }
+        .desempenho-card.destaque:hover { box-shadow: 0 8px 22px rgba(255,193,7,0.32); border-color: #ffb800; }
+        .desempenho-icone { display: block; font-size: 34px; line-height: 1; margin-bottom: 10px; }
+        .desempenho-valor { display: block; font-size: 26px; font-weight: 800; color: #0066cc; line-height: 1.05; margin-bottom: 6px; letter-spacing: -0.3px; }
+        .desempenho-rotulo { display: block; font-size: 11.5px; font-weight: 700; color: #6c757d; letter-spacing: 0.3px; text-transform: uppercase; }
+
+        .desempenho-nota-rodape {
+            font-size: 11.5px; color: #6c757d; text-align: left; line-height: 1.55;
+            background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 10px 12px; margin: 4px 0 0;
+        }
+        .desempenho-loading { grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: #6c757d; font-size: 14px; }
+        .desempenho-empty-msg {
+            grid-column: 1 / -1; padding: 30px 20px; text-align: center; color: #6c757d; font-size: 14px;
+            background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; line-height: 1.6;
+        }
+        .desempenho-empty-state { padding: 44px 20px; text-align: center; }
+        .desempenho-empty-icone { font-size: 68px; display: block; margin-bottom: 14px; opacity: 0.5; }
+        .desempenho-empty-state h3 { font-size: 18px; color: #102a43; margin: 0 0 8px; }
+        .desempenho-empty-state p { font-size: 14px; color: #6c757d; line-height: 1.6; max-width: 420px; margin: 0 auto 20px; }
+
+        /* GRÁFICO DE EVOLUÇÃO */
+        .desempenho-chart-wrap {
+            position: relative; background: #fff; border: 1px solid #e9ecef; border-radius: 14px;
+            padding: 16px 12px 12px; margin-bottom: 16px; max-width: 520px;
+            margin-left: auto; margin-right: auto;
+        }
+        #desempenho-chart { min-height: 200px; }
+        .desempenho-svg { display: block; width: 100%; height: auto; overflow: visible; font-family: inherit; }
+        .desempenho-axis-label { font-size: 11px; fill: #64748b; font-weight: 600; font-family: inherit; }
+        .desempenho-axis-title { font-size: 9.5px; fill: #94a3b8; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; font-family: inherit; }
+        .desempenho-avg-label { font-size: 10.5px; fill: #b45309; font-weight: 700; font-family: inherit; }
+        .desempenho-recorde-icone { font-size: 15px; opacity: 0; animation: desempenhoPontoIn 0.35s ease forwards; }
+        .desempenho-linha { filter: drop-shadow(0 3px 6px rgba(14,165,233,0.28)); }
+        .desempenho-area { opacity: 0; animation: desempenhoAreaIn 0.7s ease 0.9s forwards; }
+        @keyframes desempenhoAreaIn { from { opacity: 0; } to { opacity: 1; } }
+        .desempenho-ponto { fill: #fff; stroke: #0ea5e9; stroke-width: 2; cursor: pointer; opacity: 0; animation: desempenhoPontoIn 0.35s ease forwards; transition: r 0.15s ease; }
+        .desempenho-ponto:hover { r: 5.5; }
+        .desempenho-ponto.recorde { fill: #fbbf24; stroke: #b45309; stroke-width: 2.5; filter: drop-shadow(0 0 6px rgba(251,191,36,0.75)); animation: desempenhoPontoIn 0.35s ease forwards, desempenhoPulso 2.2s ease-in-out infinite; }
+        @keyframes desempenhoPontoIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes desempenhoPulso { 0%, 100% { filter: drop-shadow(0 0 6px rgba(251,191,36,0.75)); } 50% { filter: drop-shadow(0 0 14px rgba(251,191,36,1)); } }
+
+        .desempenho-chart-legenda { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 12px; font-size: 11.5px; color: #64748b; font-weight: 600; }
+        .desempenho-chart-legenda .legenda-item { display: inline-flex; align-items: center; gap: 6px; }
+        .desempenho-chart-legenda .legenda-cor { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+        .desempenho-chart-legenda .legenda-cor.azul { background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%); }
+        .desempenho-chart-legenda .legenda-cor.tracejada { background: linear-gradient(90deg, #f59e0b 0%, #f59e0b 55%, transparent 55%, transparent 100%); background-size: 8px 3px; }
+        .desempenho-chart-legenda .legenda-cor.dourada { width: 12px; height: 12px; border-radius: 50%; background: #fbbf24; border: 2px solid #b45309; }
+
+        .desempenho-tooltip {
+            position: absolute; background: rgba(15, 23, 42, 0.95); color: #fff;
+            padding: 9px 12px; border-radius: 10px; font-size: 11.5px; line-height: 1.5;
+            pointer-events: none; opacity: 0; z-index: 20; white-space: nowrap;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3); transition: opacity 0.15s ease;
+            transform: translate(-50%, -100%) translateY(-12px); text-align: left;
+        }
+        .desempenho-tooltip.visivel { opacity: 1; }
+        .desempenho-tooltip::after { content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid rgba(15, 23, 42, 0.95); }
+        .desempenho-tooltip-titulo { font-weight: 800; font-size: 12px; color: #fde68a; margin-bottom: 4px; }
+        .desempenho-tooltip-linha { display: flex; justify-content: space-between; gap: 14px; font-size: 11.5px; color: #cbd5e1; }
+        .desempenho-tooltip-linha .val { font-weight: 700; color: #fff; }
+
+        /* COMPARATIVO COM A TURMA */
+        .desempenho-turma-wrap { background: #fff; border: 1px solid #e9ecef; border-radius: 14px; padding: 18px 18px 14px; margin-bottom: 16px; text-align: left; }
+        .desempenho-turma-cabecalho { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #475569; line-height: 1.4; }
+        .desempenho-turma-cabecalho-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .desempenho-turma-cabecalho-txt strong { color: #102a43; font-weight: 800; }
+        .desempenho-turma-metrica { padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+        .desempenho-turma-metrica:last-child { border-bottom: none; padding-bottom: 4px; }
+        .desempenho-turma-metrica-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+        .desempenho-turma-metrica-label { font-size: 13px; font-weight: 700; color: #102a43; letter-spacing: 0.15px; }
+        .desempenho-turma-metrica-valor { font-size: 12px; font-weight: 800; color: #0066cc; background: #e7f5ff; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.2px; white-space: nowrap; }
+        .desempenho-turma-barra { height: 10px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 8px; position: relative; }
+        .desempenho-turma-barra-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%); border-radius: 6px; box-shadow: 0 1px 4px rgba(14,165,233,0.35); transform-origin: left center; animation: desempenhoBarraIn 0.85s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay: 0.15s; }
+        @keyframes desempenhoBarraIn { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        .desempenho-turma-metrica-sub { font-size: 12px; color: #6c757d; line-height: 1.5; }
+        .desempenho-turma-metrica-sub strong { color: #102a43; font-weight: 800; }
+
+        /* EVOLUÇÃO NO RANKING */
+        .desempenho-evolucao-wrap { background: #fff; border: 1px solid #e9ecef; border-radius: 14px; padding: 18px; margin-bottom: 16px; text-align: left; }
+        .desempenho-evolucao-cabecalho { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #475569; font-weight: 600; line-height: 1.4; }
+        .desempenho-evolucao-cabecalho-emoji { font-size: 24px; line-height: 1; flex-shrink: 0; }
+        .evolucao-linha { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 11px 4px; border-bottom: 1px solid #f8fafc; font-size: 13.5px; }
+        .evolucao-linha:last-of-type { border-bottom: none; }
+        .evolucao-linha.atual { background: linear-gradient(90deg, #e7f5ff 0%, rgba(231,245,255,0.35) 100%); border-radius: 10px; padding: 13px 12px; border-bottom: none; margin-top: 6px; box-shadow: 0 0 0 1px #b8daff; }
+        .evolucao-linha.atual .evolucao-momento { color: #084298; }
+        .evolucao-linha.atual .evolucao-posicao { color: #0d6efd; }
+        .evolucao-momento { font-weight: 700; color: #102a43; line-height: 1.3; }
+        .evolucao-posicao { font-weight: 800; color: #0066cc; font-size: 15px; white-space: nowrap; letter-spacing: -0.2px; }
+        .evolucao-posicao small { font-weight: 600; color: #6c757d; font-size: 11px; }
+        .evolucao-badge { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 800; letter-spacing: 0.3px; white-space: nowrap; min-width: 54px; text-align: center; }
+        .evolucao-badge.subiu  { background: #dcfce7; color: #166534; }
+        .evolucao-badge.caiu   { background: #fee2e2; color: #991b1b; }
+        .evolucao-badge.neutro { background: #f1f5f9; color: #475569; }
+        .desempenho-evolucao-fechamento { margin-top: 16px; padding: 12px 14px; background: linear-gradient(135deg, #dcfce7 0%, #a7f3d0 100%); border-left: 4px solid #22c55e; border-radius: 10px; font-size: 13.5px; line-height: 1.55; color: #14532d; text-align: left; }
+        .desempenho-evolucao-fechamento strong { color: #15803d; font-weight: 800; }
+        @media (max-width: 400px) {
+            .evolucao-linha { grid-template-columns: 1fr auto; row-gap: 6px; }
+            .evolucao-badge { grid-column: 1 / -1; justify-self: start; min-width: auto; }
+        }
+
+        /* SKELETON + ENTRADA EM CASCATA */
+        .desempenho-skeleton { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+        .desempenho-skeleton-linha { height: 14px; border-radius: 7px; background: linear-gradient(90deg, #e9ecef 25%, #f8f9fa 50%, #e9ecef 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+        .desempenho-skeleton-linha.curta { width: 55%; }
+        .desempenho-skeleton-linha.media { width: 75%; }
+        .desempenho-skeleton-linha.longa { width: 100%; }
+        .desempenho-skeleton-card { height: 96px; border-radius: 14px; background: linear-gradient(90deg, #e9ecef 25%, #f8f9fa 50%, #e9ecef 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+
+        @media (prefers-color-scheme: dark) {
+            .desempenho-cabecalho { background: #2a2a2a; border-color: #3a3a3a; }
+            .desempenho-aluno-nome { color: #f0f0f0; }
+            .desempenho-aluno-turma { color: #b0b0b0; }
+            .desempenho-filtro-btn { background: #1e293b; color: #cbd5e1; border-color: #334155; }
+            .desempenho-filtro-btn:hover:not(.ativa) { background: #334155; color: #f0f0f0; }
+            .desempenho-filtro-btn.ativa { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-color: #0ea5e9; color: #fff; }
+            .desempenho-secao-titulo { color: #f0f0f0; }
+            .desempenho-card { background: #2a2a2a; border-color: #3a3a3a; }
+            .desempenho-card:hover { border-color: #4a9eff; box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
+            .desempenho-card.destaque { background: linear-gradient(135deg, #3a2e1a 0%, #4a3a1a 100%); border-color: #ffc107; }
+            .desempenho-card.destaque .desempenho-valor { color: #ffd166; }
+            .desempenho-valor { color: #4a9eff; }
+            .desempenho-rotulo { color: #94a3b8; }
+            .desempenho-nota-rodape { background: #1e293b; border-color: #334155; color: #94a3b8; }
+            .desempenho-loading, .desempenho-empty-msg { color: #94a3b8; }
+            .desempenho-empty-msg { background: #1e293b; border-color: #334155; }
+            .desempenho-empty-state h3 { color: #f0f0f0; }
+            .desempenho-empty-state p { color: #94a3b8; }
+            .desempenho-chart-wrap { background: #1e1e1e; border-color: #3a3a3a; }
+            .desempenho-axis-label { fill: #94a3b8; }
+            .desempenho-axis-title { fill: #64748b; }
+            .desempenho-avg-label { fill: #fbbf24; }
+            .desempenho-ponto { fill: #1e1e1e; stroke: #0ea5e9; }
+            .desempenho-ponto.recorde { fill: #fbbf24; stroke: #b45309; }
+            .desempenho-chart-legenda { color: #94a3b8; }
+            .desempenho-tooltip { background: rgba(2, 6, 23, 0.96); }
+            .desempenho-tooltip::after { border-top-color: rgba(2, 6, 23, 0.96); }
+            .desempenho-turma-wrap { background: #2a2a2a; border-color: #3a3a3a; }
+            .desempenho-turma-cabecalho { border-color: #334155; color: #cbd5e1; }
+            .desempenho-turma-cabecalho-txt strong { color: #f0f0f0; }
+            .desempenho-turma-metrica { border-color: #334155; }
+            .desempenho-turma-metrica-label { color: #f0f0f0; }
+            .desempenho-turma-metrica-valor { background: #1e3a5a; color: #93c5fd; }
+            .desempenho-turma-barra { background: #334155; }
+            .desempenho-turma-metrica-sub { color: #94a3b8; }
+            .desempenho-turma-metrica-sub strong { color: #f0f0f0; }
+            .desempenho-evolucao-wrap { background: #2a2a2a; border-color: #3a3a3a; }
+            .desempenho-evolucao-cabecalho { border-color: #334155; color: #cbd5e1; }
+            .evolucao-momento { color: #f0f0f0; }
+            .evolucao-posicao { color: #4a9eff; }
+            .evolucao-posicao small { color: #94a3b8; }
+            .evolucao-linha.atual { background: linear-gradient(90deg, #1e3a5a 0%, rgba(30,58,90,0.3) 100%); box-shadow: 0 0 0 1px #2a4a6a; }
+            .evolucao-linha.atual .evolucao-momento { color: #93c5fd; }
+            .evolucao-linha.atual .evolucao-posicao { color: #93c5fd; }
+            .evolucao-badge.subiu  { background: #14532d; color: #86efac; }
+            .evolucao-badge.caiu   { background: #450a0a; color: #fca5a5; }
+            .evolucao-badge.neutro { background: #1e293b; color: #cbd5e1; }
+            .desempenho-evolucao-fechamento { background: linear-gradient(135deg, #14532d 0%, #166534 100%); border-color: #22c55e; color: #bbf7d0; }
+            .desempenho-evolucao-fechamento strong { color: #86efac; }
+            .desempenho-skeleton-linha, .desempenho-skeleton-card { background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%); background-size: 200% 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .desempenho-card, .desempenho-cabecalho { animation: none; }
+            .desempenho-turma-metrica, .desempenho-turma-barra-fill { animation: none; }
+            .evolucao-linha, .desempenho-evolucao-fechamento { animation: none; }
+            #desempenho-conteudo > * { animation: none !important; }
+            .desempenho-ponto, .desempenho-recorde-icone, .desempenho-area { animation: none; opacity: 1; }
+            .desempenho-ponto.recorde { animation: none; }
+        }
+
         @media (max-width: 700px) {
             .acoes-secundarias { grid-template-columns: 1fr; }
             .hero-classificatoria { padding: 20px 16px; }
@@ -552,6 +757,27 @@
             .atalhos-iniciais .changelog-trigger { font-size: 10px; padding: 5px 10px; }
             .card-votacao { padding: 18px 16px; }
             .card-votacao::after { right: 8px; font-size: 56px; }
+        }
+
+        /* Entrada em cascata da tela de desempenho */
+        #desempenho-conteudo > .desempenho-cabecalho      { animation: desempenhoFadeUp 0.4s ease 0.00s backwards; }
+        #desempenho-conteudo > .desempenho-filtros        { animation: desempenhoFadeUp 0.4s ease 0.08s backwards; }
+        #desempenho-conteudo > .desempenho-secao-titulo:nth-of-type(1) { animation: desempenhoFadeUp 0.4s ease 0.12s backwards; }
+        #desempenho-conteudo > #desempenho-stats          { animation: desempenhoFadeUp 0.4s ease 0.16s backwards; }
+        #desempenho-conteudo > .desempenho-secao-titulo:nth-of-type(2) { animation: desempenhoFadeUp 0.4s ease 0.24s backwards; }
+        #desempenho-conteudo > .desempenho-chart-wrap     { animation: desempenhoFadeUp 0.4s ease 0.28s backwards; }
+        #desempenho-conteudo > .desempenho-secao-titulo:nth-of-type(3) { animation: desempenhoFadeUp 0.4s ease 0.36s backwards; }
+        #desempenho-conteudo > #desempenho-turma          { animation: desempenhoFadeUp 0.4s ease 0.40s backwards; }
+        #desempenho-conteudo > .desempenho-secao-titulo:nth-of-type(4) { animation: desempenhoFadeUp 0.4s ease 0.48s backwards; }
+        #desempenho-conteudo > #desempenho-evolucao       { animation: desempenhoFadeUp 0.4s ease 0.52s backwards; }
+        #desempenho-conteudo > .desempenho-nota-rodape    { animation: desempenhoFadeUp 0.4s ease 0.60s backwards; }
+        @keyframes desempenhoFadeUp {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes desempenhoCardIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
     </style>
 </head>
@@ -575,8 +801,9 @@
     </section>
     <button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
     <p class="nota-provisoria">📌 Os 4 melhores alunos de cada turma, em cada modalidade, serão convidados para a Copa. A classificação é provisória até o encerramento da etapa.</p>
-    <div class="acoes-secundarias">
-        <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">📊 Classificação</button>
+    <div class="acoes-secundarias tres-colunas">
+        <button onclick="abrirMeuDesempenho()" class="botao-desempenho">📊 Meu Desempenho</button>
+        <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">🏆 Classificação</button>
         <button onclick="mostrarTela('tela-perfil')" class="botao-perfil">👤 Meu Perfil</button>
     </div>
     <div class="atalhos-iniciais">
@@ -584,7 +811,7 @@
             📖 Como funciona
         </button>
         <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">
-            ⚙️ v<span id="changelog-versao-atual">7.8</span> · histórico
+            ⚙️ v<span id="changelog-versao-atual">7.9</span> · histórico
         </button>
     </div>
 </div>
@@ -752,6 +979,78 @@
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
 </div>
 
+<div id="tela-desempenho" class="card hidden">
+    <h2>📊 Meu Desempenho</h2>
+
+    <div id="desempenho-identificacao" class="hidden">
+        <p class="subtitulo" style="text-align:left;">Você ainda não se identificou neste aparelho. Digite seu nome para ver sua trajetória.</p>
+        <input type="text" id="desempenho-nome" placeholder="Seu nome completo" autocomplete="name">
+        <select id="desempenho-turma">
+            <option value="">Selecione a turma</option>
+            <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+        </select>
+        <button onclick="carregarMeuDesempenho()" class="botao-verde">🔍 Ver meu desempenho</button>
+    </div>
+
+    <div id="desempenho-conteudo" class="hidden">
+        <div class="desempenho-cabecalho">
+            <div class="desempenho-cabecalho-esq">
+                <span class="desempenho-aluno-nome" id="desempenho-nome-curr">—</span>
+                <span class="desempenho-aluno-turma">Turma <span id="desempenho-turma-curr">—</span></span>
+            </div>
+            <span class="desempenho-cabecalho-emoji">🎓</span>
+        </div>
+
+        <div class="desempenho-filtros">
+            <button class="desempenho-filtro-btn ativa" data-mod="todas" onclick="mudarModalidadeDesempenho('todas')">📚 Todas</button>
+            <button class="desempenho-filtro-btn" data-mod="2-5" onclick="mudarModalidadeDesempenho('2-5')">Tabuadas 2-5</button>
+            <button class="desempenho-filtro-btn" data-mod="6-9" onclick="mudarModalidadeDesempenho('6-9')">Tabuadas 6-9</button>
+            <button class="desempenho-filtro-btn" data-mod="0-10" onclick="mudarModalidadeDesempenho('0-10')">Tabuadas 1-10</button>
+        </div>
+
+        <h3 class="desempenho-secao-titulo">📈 Suas estatísticas</h3>
+        <div id="desempenho-stats" class="desempenho-stats-grid"></div>
+
+        <h3 class="desempenho-secao-titulo" style="margin-top:24px;">📈 Sua evolução</h3>
+        <div class="desempenho-chart-wrap">
+            <div id="desempenho-chart"></div>
+            <div id="desempenho-tooltip" class="desempenho-tooltip"></div>
+            <div class="desempenho-chart-legenda">
+                <span class="legenda-item"><span class="legenda-cor azul"></span> Sua pontuação</span>
+                <span class="legenda-item"><span class="legenda-cor tracejada"></span> Sua média</span>
+                <span class="legenda-item"><span class="legenda-cor dourada"></span> Recorde pessoal</span>
+            </div>
+        </div>
+
+        <h3 class="desempenho-secao-titulo" style="margin-top:24px;">🏫 Você na sua turma</h3>
+        <div id="desempenho-turma" class="desempenho-turma-wrap">
+            <div class="desempenho-loading">⏳ Calculando sua posição na turma…</div>
+        </div>
+
+        <h3 class="desempenho-secao-titulo" style="margin-top:24px;">🏁 Evolução no ranking</h3>
+        <div id="desempenho-evolucao" class="desempenho-evolucao-wrap">
+            <div class="desempenho-loading">⏳ Calculando sua trajetória…</div>
+        </div>
+
+        <p class="desempenho-nota-rodape">
+            💡 Estas estatísticas consideram todas as suas partidas oficiais. A modalidade "Todas" soma o desempenho em 2-5, 6-9 e 1-10.
+        </p>
+    </div>
+
+    <div id="desempenho-vazio" class="hidden">
+        <div class="desempenho-empty-state">
+            <span class="desempenho-empty-icone">🎯</span>
+            <h3>Você ainda não jogou nenhuma partida</h3>
+            <p>Que tal começar agora? Suas estatísticas vão aparecer aqui conforme você joga.</p>
+            <button onclick="mostrarTela('tela-single')" class="botao-verde">🏆 Começar a jogar</button>
+        </div>
+    </div>
+
+    <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:14px;">🏠 Voltar ao início</button>
+</div>
+
 <div id="tela-painel" class="card hidden">
     <h2>🔧 Painel do Professor</h2>
     <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()" class="botao-verde">🔓 Acessar</button></div>
@@ -804,7 +1103,6 @@
             <button class="modal-close" onclick="fecharComoFunciona()" aria-label="Fechar">✕</button>
         </div>
         <div class="info-lista-wrap">
-
             <div class="info-secao">
                 <span class="info-icone">🏆</span>
                 <div class="info-conteudo">
@@ -812,7 +1110,6 @@
                     <p class="info-texto">É uma competição entre os alunos do colégio. Você responde <strong>20 perguntas de multiplicação</strong> o mais rápido que conseguir e entra no ranking da sua turma.</p>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">🚨</span>
                 <div class="info-conteudo">
@@ -828,7 +1125,6 @@
                     <div class="info-destaque vermelho">🚨 <strong>Atenção:</strong> se você se classificar com o nome abreviado ou fora do padrão, poderá ser <strong>desclassificado</strong> da Copa. O nome precisa conferir com a chamada oficial da turma.</div>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">🎯</span>
                 <div class="info-conteudo">
@@ -837,7 +1133,6 @@
                     <div class="info-destaque azul">📌 Ao final da etapa, os nomes dos classificados serão publicados em um <strong>painel no mural da escola</strong>.</div>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">📚</span>
                 <div class="info-conteudo">
@@ -851,7 +1146,6 @@
                     <div class="info-destaque azul">💡 Só o <strong>seu melhor resultado</strong> em cada modalidade conta. Pode tentar várias vezes até acertar!</div>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">🎮</span>
                 <div class="info-conteudo">
@@ -864,7 +1158,6 @@
                     </ul>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">✅</span>
                 <div class="info-conteudo">
@@ -872,7 +1165,6 @@
                     <p class="info-texto">Os <strong>4 melhores</strong> de cada turma em cada modalidade são convidados para a Copa. Isso significa que mesmo que você não seja top na sua turma em uma modalidade, pode se destacar em outra!</p>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">🗺️</span>
                 <div class="info-conteudo">
@@ -887,7 +1179,6 @@
                     <p class="info-texto">Dominar <strong>todas as tabuadas</strong> é chegar a <em>100% do mapa</em>.</p>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">🎯</span>
                 <div class="info-conteudo">
@@ -895,7 +1186,6 @@
                     <p class="info-texto">Existe um <strong>Modo Treino</strong> que você pode usar sempre que quiser. Nesse modo você <strong>não entra na classificação</strong>, mas pode reforçar as tabuadas que erra mais, sem pressão.</p>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">📱</span>
                 <div class="info-conteudo">
@@ -903,7 +1193,6 @@
                     <p class="info-texto">Seu nome fica vinculado ao aparelho para evitar que outras pessoas usem o seu nome. Se você trocar de celular e ficar <strong>2 dias sem acessar</strong>, o app libera automaticamente. Antes disso, é só pedir ajuda ao professor.</p>
                 </div>
             </div>
-
             <div class="info-secao">
                 <span class="info-icone">💡</span>
                 <div class="info-conteudo">
@@ -915,7 +1204,6 @@
                     </ul>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -927,115 +1215,101 @@
             <button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button>
         </div>
         <div class="changelog-lista">
-
             <div class="changelog-item">
-                <span class="changelog-versao atual">v7.8 · atual</span>
+                <span class="changelog-versao atual">v7.9 · atual</span>
+                <h4 class="changelog-titulo">Nova tela: Meu Desempenho</h4>
+                <p class="changelog-descricao">Uma tela dedicada para o aluno acompanhar sua trajetória na competição. Reúne <strong>estatísticas pessoais</strong>, <strong>gráfico de evolução</strong> da pontuação partida a partida, <strong>comparativo com a turma</strong> em 4 métricas (pontuação, precisão, velocidade e partidas jogadas) e <strong>evolução no ranking</strong> da turma. Tudo calculado em tempo real a partir do histórico já existente — sem peso extra na jogabilidade.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v7.8</span>
                 <h4 class="changelog-titulo">Nome completo obrigatório (sem abreviações)</h4>
                 <p class="changelog-descricao">Agora o sistema exige <strong>nome e sobrenome completos</strong>, sem abreviações com ponto e sem apelidos. Nomes são normalizados automaticamente (primeira letra maiúscula, partículas "de/da/do" em minúsculo). Fica registrada a regra: <strong>quem se classificar com o nome fora do padrão pode ser desclassificado</strong> da Copa. Isso melhora a identificação no ranking e evita vínculos duplicados.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.7</span>
                 <h4 class="changelog-titulo">Critérios configuráveis da votação</h4>
                 <p class="changelog-descricao">O professor pode ajustar no painel o <strong>percentual do mapa de tabuada</strong> (padrão 30%) e a <strong>quantidade mínima de partidas</strong> (padrão 10) necessários para votar na duração da etapa.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.6</span>
                 <h4 class="changelog-titulo">Consulta sobre a duração da etapa</h4>
                 <p class="changelog-descricao">Os alunos que atingirem <strong>10 partidas e 20 operações dominadas</strong> podem votar se a etapa deve durar 7 ou 14 dias. A votação fica aberta pelos primeiros dias da etapa e a maioria define a duração final.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.5</span>
                 <h4 class="changelog-titulo">Ajuste no regulamento</h4>
                 <p class="changelog-descricao">A etapa classificatória agora <strong>não emite certificado</strong>. Os classificados serão anunciados em um painel no mural da escola ao final da etapa, e seguirão para a Final onde estarão os prêmios.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.4</span>
                 <h4 class="changelog-titulo">Como funciona a Copa</h4>
                 <p class="changelog-descricao">Novo botão <strong>📖 Como funciona</strong> na tela inicial. Tudo o que você precisa saber sobre a Copa em um só lugar: modalidades, formato das partidas, como se classificar, mapa de domínio e regra do celular.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.3</span>
                 <h4 class="changelog-titulo">Mapa completo + foco no essencial</h4>
                 <p class="changelog-descricao">O mapa agora mostra <strong>todas as tabuadas de 1 a 10</strong>, independente da modalidade. Dominar "2-5" corresponde a 40% do mapa — jogue todas para chegar a 100%. Também <strong>removemos todas as operações envolvendo 0</strong>: nada de 5×0 ou 0×6.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.2</span>
                 <h4 class="changelog-titulo">Treino mais enxuto</h4>
                 <p class="changelog-descricao">Ao clicar numa operação do mapa, você só poderá treinar ela <strong>junto com suas variações</strong>. Operações sem variações mostram apenas a dica, sem botão de treino — evita treinos repetitivos.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.1</span>
                 <h4 class="changelog-titulo">Botão de treino inteligente</h4>
                 <p class="changelog-descricao">O botão de treino no mapa agora aparece apenas quando você tem <strong>3 ou mais operações fracas</strong>. Antes disso, o foco é explorar o mapa célula por célula.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v7.0</span>
                 <h4 class="changelog-titulo">Treino com variações</h4>
                 <p class="changelog-descricao">Errou uma operação? Agora você pode treinar ela <strong>junto com outras que dão o mesmo resultado</strong>. Errou 4×5? Treine 4×5, 5×4 e 2×10 de uma vez. Clique nos chips do modal para explorar cada variação.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.9</span>
                 <h4 class="changelog-titulo">Histórico de versões</h4>
                 <p class="changelog-descricao">Agora o jogo tem um espaço para registrar todas as novidades. Clique em <strong>⚙️ histórico</strong> na tela inicial sempre que quiser consultar.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.8</span>
                 <h4 class="changelog-titulo">Contagem de tempo mais justa</h4>
                 <p class="changelog-descricao">O tempo para liberar o jogo em um novo celular agora conta desde a última vez que você abriu o app.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.7</span>
                 <h4 class="changelog-titulo">Troca de celular mais fácil</h4>
                 <p class="changelog-descricao">Se você ficar 2 dias sem acessar o app, pode continuar no mesmo nome em outro celular automaticamente. Para liberar antes, peça ajuda ao professor.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.5</span>
                 <h4 class="changelog-titulo">Progresso salvo na nuvem</h4>
                 <p class="changelog-descricao">Seu mapa de tabuadas fica salvo com segurança. Mesmo trocando de rede ou fechando o app, seu progresso continua igual.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.4</span>
                 <h4 class="changelog-titulo">Treinar pontos fracos + Efeitos visuais</h4>
                 <p class="changelog-descricao">Novo botão para treinar só as tabuadas que você erra mais. As operações difíceis pulsam em vermelho, e ao dominá-las você ganha brilho e confetes 🎉</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.3</span>
                 <h4 class="changelog-titulo">Detalhes da operação</h4>
                 <p class="changelog-descricao">Clique em qualquer célula do mapa para ver acertos, erros, dicas de decomposição e treinar só aquela operação.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.2</span>
                 <h4 class="changelog-titulo">Ver todas ou uma partida</h4>
                 <p class="changelog-descricao">No mapa de tabuadas você pode alternar entre ver o acumulado de todas as partidas ou apenas a última.</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.1</span>
                 <h4 class="changelog-titulo">Mapa de Tabuadas visual</h4>
                 <p class="changelog-descricao">Novo mapa com cores mostrando o que você domina 🟢, está desenvolvendo 🟡, precisa melhorar 🔴 ou ainda não praticou ⚪</p>
             </div>
-
             <div class="changelog-item">
                 <span class="changelog-versao">v6.0</span>
                 <h4 class="changelog-titulo">Sons do jogo</h4>
                 <p class="changelog-descricao">Efeitos sonoros ao acertar, errar e completar combos. Você pode ligar ou desligar no botão 🔊 no canto superior.</p>
             </div>
-
         </div>
     </div>
 </div>
@@ -1043,7 +1317,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "7.8";
+const APP_VERSION = "7.9";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -1092,14 +1366,11 @@ const PESO_ORIGINAL_VARIACAO = 2.0;
 const PESO_COMUTADA_VARIACAO = 1.5;
 const PESO_DISTANTE_VARIACAO = 1.0;
 const FATORES_MAPA = [1,2,3,4,5,6,7,8,9,10];
-const TOTAL_OPERACOES_MAPA = 100; // grade 10×10
+const TOTAL_OPERACOES_MAPA = 100;
 const VOTACAO_DURACAO_MS = 4 * 24 * 60 * 60 * 1000;
 const VOTACAO_MIN_PARTIDAS = 10;
 const VOTACAO_MIN_VERDES = 20;
-const CONFIG_DEFAULT = {
-    percentualMapa: 30,
-    minPartidas: 10
-};
+const CONFIG_DEFAULT = { percentualMapa: 30, minPartidas: 10 };
 const MODALIDADES = {
     "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
     "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
@@ -1139,6 +1410,13 @@ let somAtivo = true, jaToCouSomSuperacao = false;
 let ultimoMelhorOficial = null, ultimaTentativa = null;
 let votacaoInicioCache = null;
 let votacaoTimerInterval = null;
+
+// Meu Desempenho
+let desempenhoPartidasCache = [];
+let desempenhoPartidasFiltradas = [];
+let desempenhoPartidasGrafico = [];
+let desempenhoModalidadeAtual = "todas";
+let comparativoTurmaCache = null;
 
 let audioContext = null;
 function inicializarAudio() {
@@ -1209,23 +1487,13 @@ function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); 
 function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
 function validarNomeCompleto(nomeBruto) {
     const limpo = String(nomeBruto || "").trim().replace(/\s+/g, " ");
-    if (!limpo) {
-        return { ok: false, motivo: "Digite seu nome completo." };
-    }
-    if (/\b[a-zA-ZÀ-ÿ]\./.test(limpo)) {
-        return { ok: false, motivo: "Não use abreviações com ponto. Escreva o nome completo." };
-    }
+    if (!limpo) return { ok: false, motivo: "Digite seu nome completo." };
+    if (/\b[a-zA-ZÀ-ÿ]\./.test(limpo)) return { ok: false, motivo: "Não use abreviações com ponto. Escreva o nome completo." };
     const partes = limpo.split(" ").filter(p => p.length > 0);
-    if (partes.length < 2) {
-        return { ok: false, motivo: "Escreva nome e sobrenome (mínimo 2 palavras)." };
-    }
+    if (partes.length < 2) return { ok: false, motivo: "Escreva nome e sobrenome (mínimo 2 palavras)." };
     const curtas = partes.filter(p => p.replace(/[^a-zA-ZÀ-ÿ]/g, "").length < 2);
-    if (curtas.length > 0) {
-        return { ok: false, motivo: "Cada parte do nome precisa ter pelo menos 2 letras." };
-    }
-    if (/\d/.test(limpo)) {
-        return { ok: false, motivo: "O nome não pode conter números." };
-    }
+    if (curtas.length > 0) return { ok: false, motivo: "Cada parte do nome precisa ter pelo menos 2 letras." };
+    if (/\d/.test(limpo)) return { ok: false, motivo: "O nome não pode conter números." };
     const particulas = new Set(["de","da","do","dos","das","e","di","du","del","della"]);
     const normalizado = partes.map(p => {
         const min = p.toLowerCase();
@@ -1306,7 +1574,7 @@ function exigirProfessorAutenticado() {
     return false;
 }
 
-// ==================== CONFIGURAÇÕES (v7.7) ====================
+// ==================== CONFIGURAÇÕES ====================
 async function obterConfiguracao() {
     try {
         const snap = await database.ref(CAMINHO_CONFIG).once("value");
@@ -1315,15 +1583,10 @@ async function obterConfiguracao() {
             percentualMapa: Number.isFinite(Number(d.percentualMapa)) ? Number(d.percentualMapa) : CONFIG_DEFAULT.percentualMapa,
             minPartidas: Number.isFinite(Number(d.minPartidas)) ? Number(d.minPartidas) : CONFIG_DEFAULT.minPartidas
         };
-    } catch(e) {
-        return { ...CONFIG_DEFAULT };
-    }
+    } catch(e) { return { ...CONFIG_DEFAULT }; }
 }
 async function salvarConfiguracao(cfg) {
-    await database.ref(CAMINHO_CONFIG).set({
-        percentualMapa: cfg.percentualMapa,
-        minPartidas: cfg.minPartidas
-    });
+    await database.ref(CAMINHO_CONFIG).set({ percentualMapa: cfg.percentualMapa, minPartidas: cfg.minPartidas });
 }
 function calcularMinVerdes(percentualMapa) {
     return Math.max(1, Math.ceil((percentualMapa / 100) * TOTAL_OPERACOES_MAPA));
@@ -1347,13 +1610,10 @@ async function salvarConfiguracaoPainel() {
         notificar("Configurações salvas!", "sucesso");
         await renderizarCardVotacao();
         await renderizarPainelVotacao();
-    } catch(e) {
-        notificar("Não foi possível salvar as configurações.", "erro");
-    }
+    } catch(e) { notificar("Não foi possível salvar as configurações.", "erro"); }
 }
-// ==================== FIM CONFIGURAÇÕES ====================
 
-// ==================== VOTAÇÃO (v7.6) ====================
+// ==================== VOTAÇÃO ====================
 function calcularFechamentoVotacao(inicioTs) {
     const d = new Date(inicioTs);
     d.setHours(23, 59, 59, 999);
@@ -1361,13 +1621,8 @@ function calcularFechamentoVotacao(inicioTs) {
     return d.getTime();
 }
 async function obterDadosVotacao() {
-    try {
-        const snap = await database.ref(CAMINHO_VOTACAO).once("value");
-        return snap.val() || {};
-    } catch(e) {
-        console.warn("Falha ao ler votação:", e);
-        return {};
-    }
+    try { const snap = await database.ref(CAMINHO_VOTACAO).once("value"); return snap.val() || {}; }
+    catch(e) { console.warn("Falha ao ler votação:", e); return {}; }
 }
 async function calcularElegibilidadeVoto(nome, turma) {
     const cfg = await obterConfiguracao();
@@ -1388,24 +1643,11 @@ async function calcularElegibilidadeVoto(nome, turma) {
             });
         });
         let verdes = 0;
-        Object.values(agregado).forEach(d => {
-            if (d.tentativas > 0 && d.acertos / d.tentativas >= 0.9) verdes++;
-        });
-        return {
-            totalPartidas,
-            verdes,
-            minPartidas: cfg.minPartidas,
-            minVerdes,
-            percentualMapa: cfg.percentualMapa,
-            elegivel: totalPartidas >= cfg.minPartidas && verdes >= minVerdes
-        };
+        Object.values(agregado).forEach(d => { if (d.tentativas > 0 && d.acertos / d.tentativas >= 0.9) verdes++; });
+        return { totalPartidas, verdes, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: totalPartidas >= cfg.minPartidas && verdes >= minVerdes };
     } catch(e) {
         console.warn("Falha ao calcular elegibilidade:", e);
-        return {
-            totalPartidas: 0, verdes: 0,
-            minPartidas: cfg.minPartidas, minVerdes,
-            percentualMapa: cfg.percentualMapa, elegivel: false
-        };
+        return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
     }
 }
 async function registrarVoto(opcao) {
@@ -1420,19 +1662,11 @@ async function registrarVoto(opcao) {
     if (Date.now() > fechamento) { notificar("A votação já foi encerrada.", "aviso"); return; }
     const chave = chaveVinculo(nome, turma);
     try {
-        await database.ref(`${CAMINHO_VOTACAO}/votos/${chave}`).set({
-            nome,
-            turma,
-            opcao: String(opcao),
-            data: Date.now()
-        });
+        await database.ref(`${CAMINHO_VOTACAO}/votos/${chave}`).set({ nome, turma, opcao: String(opcao), data: Date.now() });
         notificar(`Voto registrado: ${opcao} dias! 🗳️`, "sucesso");
         await renderizarCardVotacao();
         await renderizarPainelVotacao();
-    } catch(e) {
-        notificar("Não foi possível registrar seu voto. Tente novamente.", "erro");
-        console.warn(e);
-    }
+    } catch(e) { notificar("Não foi possível registrar seu voto. Tente novamente.", "erro"); console.warn(e); }
 }
 function tempoRestanteHumano(ms) {
     if (ms <= 0) return "encerrada";
@@ -1448,129 +1682,49 @@ async function renderizarCardVotacao() {
     const timerContainer = document.getElementById("votacao-timer-container");
     const corpo = document.getElementById("votacao-corpo");
     if (!card || !corpo) return;
-
     const dados = await obterDadosVotacao();
-    if (!dados.inicio) {
-        card.classList.add("hidden");
-        return;
-    }
+    if (!dados.inicio) { card.classList.add("hidden"); return; }
     card.classList.remove("hidden");
-
     const fechamento = calcularFechamentoVotacao(dados.inicio);
     const agora = Date.now();
     const encerrada = agora > fechamento;
     const restanteMs = fechamento - agora;
-
     const votos = dados.votos ? Object.values(dados.votos) : [];
     const totalVotos = votos.length;
     const votos7 = votos.filter(v => String(v.opcao) === "7").length;
     const votos14 = votos.filter(v => String(v.opcao) === "14").length;
     const pct7 = totalVotos ? Math.round((votos7 / totalVotos) * 100) : 0;
     const pct14 = totalVotos ? Math.round((votos14 / totalVotos) * 100) : 0;
-
     const nome = obterNomeSalvoAluno();
     const turma = obterTurmaSalvaAluno();
     const eleg = (nome && turma)
         ? await calcularElegibilidadeVoto(nome, turma)
-        : await obterConfiguracao().then(cfg => ({
-            totalPartidas: 0, verdes: 0,
-            minPartidas: cfg.minPartidas,
-            minVerdes: calcularMinVerdes(cfg.percentualMapa),
-            percentualMapa: cfg.percentualMapa,
-            elegivel: false
-        }));
+        : await obterConfiguracao().then(cfg => ({ totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes: calcularMinVerdes(cfg.percentualMapa), percentualMapa: cfg.percentualMapa, elegivel: false }));
     const chave = (nome && turma) ? chaveVinculo(nome, turma) : null;
     const meuVoto = chave && dados.votos && dados.votos[chave] ? String(dados.votos[chave].opcao) : null;
-
     if (encerrada) {
         const ganhador = votos14 > votos7 ? 14 : 7;
         const motivo = votos14 > votos7 ? "A maioria escolheu 14 dias." : (votos7 > votos14 ? "A maioria escolheu 7 dias." : "Empate — prevalece 7 dias (padrão).");
         timerContainer.innerHTML = `<span class="votacao-status-timer">🔒 Votação encerrada em ${formatarDataCurta(fechamento)}</span>`;
-        corpo.innerHTML = `
-            <div class="votacao-resultado-final">
-                <div class="ganhador">
-                    <strong>${ganhador} dias</strong>
-                    A etapa classificatória vai durar ${ganhador} dias.
-                </div>
-                <div class="detalhe-final">${motivo} · ${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div>
-            </div>
-            ${renderizarGrafico(votos7, votos14, pct7, pct14, totalVotos)}
-        `;
+        corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador"><strong>${ganhador} dias</strong>A etapa classificatória vai durar ${ganhador} dias.</div><div class="detalhe-final">${motivo} · ${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGrafico(votos7, votos14, pct7, pct14, totalVotos)}`;
         return;
     }
-
     timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)} · ${formatarDataCurta(fechamento)} às 23:59</span>`;
-
     if (!eleg.elegivel) {
         const faltaPartidas = Math.max(0, eleg.minPartidas - eleg.totalPartidas);
         const faltaVerdes = Math.max(0, eleg.minVerdes - eleg.verdes);
-        corpo.innerHTML = `
-            <div class="votacao-progresso">
-                <div style="font-weight:800;color:#fff;margin-bottom:6px;">Para votar, você precisa cumprir o critério:</div>
-                <div class="linha-prog ${eleg.totalPartidas >= eleg.minPartidas ? 'completa' : ''}">
-                    <span class="rotulo">Partidas jogadas</span>
-                    <span class="valor">${eleg.totalPartidas} / ${eleg.minPartidas}</span>
-                </div>
-                <div class="linha-prog ${eleg.verdes >= eleg.minVerdes ? 'completa' : ''}">
-                    <span class="rotulo">Operações dominadas (${eleg.percentualMapa}% do mapa)</span>
-                    <span class="valor">${eleg.verdes} / ${eleg.minVerdes}</span>
-                </div>
-                <span class="falta">${faltaPartidas > 0 ? `Faltam ${faltaPartidas} ${faltaPartidas === 1 ? "partida" : "partidas"}. ` : ""}${faltaVerdes > 0 ? `Faltam ${faltaVerdes} ${faltaVerdes === 1 ? "operação" : "operações"} para dominar.` : ""} ${faltaPartidas === 0 && faltaVerdes === 0 ? "Recarregue para votar!" : ""}</span>
-            </div>
-        `;
+        corpo.innerHTML = `<div class="votacao-progresso"><div style="font-weight:800;color:#fff;margin-bottom:6px;">Para votar, você precisa cumprir o critério:</div><div class="linha-prog ${eleg.totalPartidas >= eleg.minPartidas ? 'completa' : ''}"><span class="rotulo">Partidas jogadas</span><span class="valor">${eleg.totalPartidas} / ${eleg.minPartidas}</span></div><div class="linha-prog ${eleg.verdes >= eleg.minVerdes ? 'completa' : ''}"><span class="rotulo">Operações dominadas (${eleg.percentualMapa}% do mapa)</span><span class="valor">${eleg.verdes} / ${eleg.minVerdes}</span></div><span class="falta">${faltaPartidas > 0 ? `Faltam ${faltaPartidas} ${faltaPartidas === 1 ? "partida" : "partidas"}. ` : ""}${faltaVerdes > 0 ? `Faltam ${faltaVerdes} ${faltaVerdes === 1 ? "operação" : "operações"} para dominar.` : ""} ${faltaPartidas === 0 && faltaVerdes === 0 ? "Recarregue para votar!" : ""}</span></div>`;
         return;
     }
-
     if (meuVoto) {
-        corpo.innerHTML = `
-            <div class="votacao-seu-voto">Você votou em <strong>${meuVoto} dias</strong>. Obrigado por participar!</div>
-            ${renderizarGrafico(votos7, votos14, pct7, pct14, totalVotos)}
-        `;
+        corpo.innerHTML = `<div class="votacao-seu-voto">Você votou em <strong>${meuVoto} dias</strong>. Obrigado por participar!</div>${renderizarGrafico(votos7, votos14, pct7, pct14, totalVotos)}`;
         return;
     }
-
-    corpo.innerHTML = `
-        <div class="votacao-botoes">
-            <button class="btn-voto" onclick="registrarVoto('7')">
-                <strong>7</strong>
-                dias
-                <small>original</small>
-            </button>
-            <button class="btn-voto" onclick="registrarVoto('14')">
-                <strong>14</strong>
-                dias
-                <small>estendida</small>
-            </button>
-        </div>
-        <div style="font-size:12px;color:#ede9fe;text-align:center;margin-top:10px;line-height:1.5;">
-            Após votar, você verá o resultado parcial. Sua escolha não pode ser alterada.
-        </div>
-    `;
+    corpo.innerHTML = `<div class="votacao-botoes"><button class="btn-voto" onclick="registrarVoto('7')"><strong>7</strong>dias<small>original</small></button><button class="btn-voto" onclick="registrarVoto('14')"><strong>14</strong>dias<small>estendida</small></button></div><div style="font-size:12px;color:#ede9fe;text-align:center;margin-top:10px;line-height:1.5;">Após votar, você verá o resultado parcial. Sua escolha não pode ser alterada.</div>`;
 }
 function renderizarGrafico(votos7, votos14, pct7, pct14, totalVotos) {
-    if (totalVotos === 0) {
-        return `<div class="votacao-grafico"><div style="text-align:center;color:#ede9fe;font-size:13px;padding:14px 0;">Nenhum voto ainda. Seja o primeiro!</div></div>`;
-    }
-    return `
-        <div class="votacao-grafico">
-            <div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div>
-            <div class="barra-voto">
-                <div class="rotulo-barra">
-                    <span>🗓️ 7 dias</span>
-                    <span class="num">${pct7}% · ${votos7} ${votos7 === 1 ? "voto" : "votos"}</span>
-                </div>
-                <div class="trilha"><div class="preenchimento set" style="width:${pct7}%"></div></div>
-            </div>
-            <div class="barra-voto">
-                <div class="rotulo-barra">
-                    <span>📆 14 dias</span>
-                    <span class="num">${pct14}% · ${votos14} ${votos14 === 1 ? "voto" : "votos"}</span>
-                </div>
-                <div class="trilha"><div class="preenchimento qua" style="width:${pct14}%"></div></div>
-            </div>
-            <div style="text-align:center;color:#ede9fe;font-size:11.5px;margin-top:8px;">${totalVotos} ${totalVotos === 1 ? "voto computado" : "votos computados"} até agora</div>
-        </div>
-    `;
+    if (totalVotos === 0) return `<div class="votacao-grafico"><div style="text-align:center;color:#ede9fe;font-size:13px;padding:14px 0;">Nenhum voto ainda. Seja o primeiro!</div></div>`;
+    return `<div class="votacao-grafico"><div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div><div class="barra-voto"><div class="rotulo-barra"><span>🗓️ 7 dias</span><span class="num">${pct7}% · ${votos7} ${votos7 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento set" style="width:${pct7}%"></div></div></div><div class="barra-voto"><div class="rotulo-barra"><span>📆 14 dias</span><span class="num">${pct14}% · ${votos14} ${votos14 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento qua" style="width:${pct14}%"></div></div></div><div style="text-align:center;color:#ede9fe;font-size:11.5px;margin-top:8px;">${totalVotos} ${totalVotos === 1 ? "voto computado" : "votos computados"} até agora</div></div>`;
 }
 async function abrirVotacaoProfessor() {
     if (!exigirProfessorAutenticado()) return;
@@ -1584,10 +1738,7 @@ async function abrirVotacaoProfessor() {
         notificar("Votação aberta!", "sucesso");
         await renderizarPainelVotacao();
         await renderizarCardVotacao();
-    } catch(e) {
-        notificar("Não foi possível abrir a votação.", "erro");
-        console.warn(e);
-    }
+    } catch(e) { notificar("Não foi possível abrir a votação.", "erro"); console.warn(e); }
 }
 async function resetarVotacao() {
     if (!exigirProfessorAutenticado()) return;
@@ -1597,20 +1748,14 @@ async function resetarVotacao() {
         notificar("Votação resetada.", "sucesso");
         await renderizarPainelVotacao();
         await renderizarCardVotacao();
-    } catch(e) {
-        notificar("Não foi possível resetar.", "erro");
-        console.warn(e);
-    }
+    } catch(e) { notificar("Não foi possível resetar.", "erro"); console.warn(e); }
 }
 async function renderizarPainelVotacao() {
     const container = document.getElementById("painel-votacao-conteudo");
     if (!container) return;
     const dados = await obterDadosVotacao();
     if (!dados.inicio) {
-        container.innerHTML = `
-            <p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (até 23:59 do 4º dia).</p>
-            <button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação</button>
-        `;
+        container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (até 23:59 do 4º dia).</p><button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação</button>`;
         return;
     }
     const fechamento = calcularFechamentoVotacao(dados.inicio);
@@ -1621,19 +1766,8 @@ async function renderizarPainelVotacao() {
     const votos14 = votos.filter(v => String(v.opcao) === "14").length;
     const estado = encerrada ? "🔒 Encerrada" : "🟢 Em andamento";
     const ganhador = votos14 > votos7 ? "14 dias" : "7 dias";
-    container.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-            <div><strong>Estado:</strong><br>${estado}</div>
-            <div><strong>Fecha em:</strong><br>${formatarDataCurta(fechamento)} às 23:59</div>
-            <div><strong>Votos "7 dias":</strong><br>${votos7}</div>
-            <div><strong>Votos "14 dias":</strong><br>${votos14}</div>
-            <div><strong>Total:</strong><br>${totalVotos}</div>
-            <div><strong>Resultado atual:</strong><br>${totalVotos ? ganhador : "—"}</div>
-        </div>
-        <button onclick="resetarVotacao()" class="botao-forcar" style="margin:0;">🗑️ Resetar votação</button>
-    `;
+    container.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;"><div><strong>Estado:</strong><br>${estado}</div><div><strong>Fecha em:</strong><br>${formatarDataCurta(fechamento)} às 23:59</div><div><strong>Votos "7 dias":</strong><br>${votos7}</div><div><strong>Votos "14 dias":</strong><br>${votos14}</div><div><strong>Total:</strong><br>${totalVotos}</div><div><strong>Resultado atual:</strong><br>${totalVotos ? ganhador : "—"}</div></div><button onclick="resetarVotacao()" class="botao-forcar" style="margin:0;">🗑️ Resetar votação</button>`;
 }
-// ==================== FIM VOTAÇÃO ====================
 
 function chaveAlunoCopa(nome, turma) { return chaveVinculo(nome, turma); }
 function chaveLocalMapa(nome, turma, mod) { return `${PREFIXO_LOCAL_MAPA}${chaveAlunoCopa(nome, turma)}_${mod}`; }
@@ -1645,21 +1779,13 @@ async function obterMapaFirebase(nome, turma, mod) {
         const chave = chaveAlunoCopa(nome, turma);
         const snap = await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chave}/${mod}`).once("value");
         const dados = snap.val();
-        if (dados) {
-            localStorage.setItem(chaveLocalMapa(nome, turma, mod), JSON.stringify(dados));
-            return dados;
-        }
+        if (dados) { localStorage.setItem(chaveLocalMapa(nome, turma, mod), JSON.stringify(dados)); return dados; }
         return null;
-    } catch(e) {
-        console.warn("Falha ao ler mapa do Firebase:", e);
-        return null;
-    }
+    } catch(e) { console.warn("Falha ao ler mapa do Firebase:", e); return null; }
 }
 function obterMapaLocal(nome, turma, mod) {
-    try {
-        const raw = localStorage.getItem(chaveLocalMapa(nome, turma, mod));
-        return raw ? JSON.parse(raw) : null;
-    } catch(e) { return null; }
+    try { const raw = localStorage.getItem(chaveLocalMapa(nome, turma, mod)); return raw ? JSON.parse(raw) : null; }
+    catch(e) { return null; }
 }
 async function salvarMapaFirebase(nome, turma, mod, dados) {
     localStorage.setItem(chaveLocalMapa(nome, turma, mod), JSON.stringify(dados));
@@ -1717,10 +1843,7 @@ async function obterDesempenhoOperacoesAgregado(nome, turma, mod) {
         });
         if (Object.keys(agregado).length > 0) await salvarMapaFirebase(nome, turma, mod, agregado);
         return agregado;
-    } catch(e) {
-        console.warn("Falha na migração retroativa:", e);
-        return {};
-    }
+    } catch(e) { console.warn("Falha na migração retroativa:", e); return {}; }
 }
 async function obterDesempenhoOperacoesGlobal(nome, turma) {
     const todas = Object.keys(MODALIDADES);
@@ -1741,11 +1864,8 @@ async function obterDesempenhoOperacoesGlobal(nome, turma) {
                         agregado[k].tentativas += d.tentativas || 0;
                     });
                 });
-                if (Object.keys(agregado).length) {
-                    await salvarMapaFirebase(nome, turma, m, agregado);
-                    dados = agregado;
-                }
-            } catch(e) { /* silencioso */ }
+                if (Object.keys(agregado).length) { await salvarMapaFirebase(nome, turma, m, agregado); dados = agregado; }
+            } catch(e) {}
         }
         if (dados && Object.keys(dados).length) {
             Object.entries(dados).forEach(([k, d]) => {
@@ -1764,9 +1884,7 @@ async function verificarPromocoes(nome, turma, mod, fonteAtual) {
     try { anterior = JSON.parse(localStorage.getItem(chave) || "null"); } catch(_) { anterior = null; }
     if (!anterior) {
         const legada = localStorage.getItem(chaveLegadaCores(nome, turma, mod));
-        if (legada) {
-            try { anterior = JSON.parse(legada); localStorage.removeItem(chaveLegadaCores(nome, turma, mod)); } catch(_) { anterior = null; }
-        }
+        if (legada) { try { anterior = JSON.parse(legada); localStorage.removeItem(chaveLegadaCores(nome, turma, mod)); } catch(_) { anterior = null; } }
     }
     if (!anterior) anterior = await obterUltimasCoresFirebase(nome, turma, mod) || {};
     const promocoes = [], novasCores = {};
@@ -1807,9 +1925,7 @@ async function limparCopaV2PorFiltro(turma, mod) {
             }
         });
         await Promise.all(promessas);
-    } catch(e) {
-        console.warn("Erro ao limpar copaV2 no Firebase:", e);
-    }
+    } catch(e) { console.warn("Erro ao limpar copaV2 no Firebase:", e); }
 }
 async function removerCopaV2Aluno(nome, turma, mod = null) {
     const chave = chaveAlunoCopa(nome, turma);
@@ -1830,16 +1946,10 @@ async function migrarCopaV2Aluno(nomeAntigo, nomeNovo, turma) {
     try {
         const snap = await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chaveAntiga}`).once("value");
         const dados = snap.val();
-        if (dados) {
-            await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chaveNova}`).set(dados);
-            await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chaveAntiga}`).remove();
-        }
+        if (dados) { await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chaveNova}`).set(dados); await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chaveAntiga}`).remove(); }
         const snapCores = await database.ref(`${CAMINHO_ULTIMAS_CORES}/${chaveAntiga}`).once("value");
         const cores = snapCores.val();
-        if (cores) {
-            await database.ref(`${CAMINHO_ULTIMAS_CORES}/${chaveNova}`).set(cores);
-            await database.ref(`${CAMINHO_ULTIMAS_CORES}/${chaveAntiga}`).remove();
-        }
+        if (cores) { await database.ref(`${CAMINHO_ULTIMAS_CORES}/${chaveNova}`).set(cores); await database.ref(`${CAMINHO_ULTIMAS_CORES}/${chaveAntiga}`).remove(); }
     } catch(e) { console.warn("Erro ao migrar chave copaV2:", e); }
 }
 
@@ -1881,43 +1991,23 @@ function obterIdDispositivo() {
 function chaveVinculo(n, t) { return `${normalizarNome(n)}|${t}`.replace(/[.#$\/\[\]]/g, '_'); }
 async function obterVinculo(n, t) { const c = chaveVinculo(n, t); const s = await database.ref(`${CAMINHO_VINCULOS}/${c}`).once('value'); return s.val(); }
 async function criarVinculo(n, t, id) {
-    await database.ref(`${CAMINHO_VINCULOS}/${chaveVinculo(n, t)}`).set({
-        dispositivoId: id,
-        criadoEm: Date.now(),
-        ultimoAcesso: Date.now()
-    });
+    await database.ref(`${CAMINHO_VINCULOS}/${chaveVinculo(n, t)}`).set({ dispositivoId: id, criadoEm: Date.now(), ultimoAcesso: Date.now() });
 }
 async function atualizarUltimoAcesso(n, t) {
-    try {
-        const c = chaveVinculo(n, t);
-        await database.ref(`${CAMINHO_VINCULOS}/${c}/ultimoAcesso`).set(Date.now());
-    } catch(e) { /* silencioso */ }
+    try { const c = chaveVinculo(n, t); await database.ref(`${CAMINHO_VINCULOS}/${c}/ultimoAcesso`).set(Date.now()); }
+    catch(e) {}
 }
 async function verificarVinculo(n, t) {
     const id = obterIdDispositivo();
     const v = await obterVinculo(n, t);
-    if (!v) {
-        await criarVinculo(n, t, id);
-        return { permitido: true, status: "novo" };
-    }
-    if (v.dispositivoId === id) {
-        await atualizarUltimoAcesso(n, t);
-        return { permitido: true, status: "reconhecido" };
-    }
+    if (!v) { await criarVinculo(n, t, id); return { permitido: true, status: "novo" }; }
+    if (v.dispositivoId === id) { await atualizarUltimoAcesso(n, t); return { permitido: true, status: "reconhecido" }; }
     const ultimoAcesso = v.ultimoAcesso || v.criadoEm || 0;
     const tempoParado = Date.now() - ultimoAcesso;
-    if (tempoParado >= JANELA_COOLDOWN_MS) {
-        await criarVinculo(n, t, id);
-        return { permitido: true, status: "revinculado" };
-    }
+    if (tempoParado >= JANELA_COOLDOWN_MS) { await criarVinculo(n, t, id); return { permitido: true, status: "revinculado" }; }
     const msRestantes = JANELA_COOLDOWN_MS - tempoParado;
     const horasRestantes = Math.ceil(msRestantes / (60 * 60 * 1000));
-    return {
-        permitido: false,
-        status: "bloqueado",
-        horasRestantes: horasRestantes,
-        mensagem: `Este nome está vinculado a outro celular e ficou ativo recentemente. Se você trocou de aparelho, aguarde cerca de ${horasRestantes}h ou peça ajuda ao professor.`
-    };
+    return { permitido: false, status: "bloqueado", horasRestantes: horasRestantes, mensagem: `Este nome está vinculado a outro celular e ficou ativo recentemente. Se você trocou de aparelho, aguarde cerca de ${horasRestantes}h ou peça ajuda ao professor.` };
 }
 async function atualizarAcessoSeConhecido() {
     const nome = obterNomeSalvoAluno();
@@ -1928,10 +2018,8 @@ async function atualizarAcessoSeConhecido() {
         const v = await obterVinculo(nome, turma);
         if (!v || v.dispositivoId !== id) return;
         const ultimo = v.ultimoAcesso || v.criadoEm || 0;
-        if (Date.now() - ultimo > THROTTLE_ACESSO_MS) {
-            await atualizarUltimoAcesso(nome, turma);
-        }
-    } catch(e) { /* silencioso */ }
+        if (Date.now() - ultimo > THROTTLE_ACESSO_MS) await atualizarUltimoAcesso(nome, turma);
+    } catch(e) {}
 }
 
 async function obterRanking() {
@@ -2043,10 +2131,8 @@ async function salvarResultado(res) {
     try {
         const ant = await database.ref(`${CAMINHO_RANKING}/${chave}`).once("value");
         const av = ant.val();
-        if (!av || ehMelhorResultado(res, av)) {
-            await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro: "recorde" });
-            melhor = res;
-        } else melhor = av;
+        if (!av || ehMelhorResultado(res, av)) { await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro: "recorde" }); melhor = res; }
+        else melhor = av;
     } catch(e) {
         console.warn("Recorde salvo apenas localmente", e);
         const lc = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
@@ -2177,10 +2263,7 @@ function montarListaComVariacoes(operacoesBase, mod = modalidadeAtual) {
 function treinarComVariacoes(operacoesBase) {
     if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
     const lista = montarListaComVariacoes(operacoesBase, modalidadeAtual);
-    if (lista.length === 0) {
-        notificar("Nenhuma variação disponível para treinar.", "aviso");
-        return;
-    }
+    if (lista.length === 0) { notificar("Nenhuma variação disponível para treinar.", "aviso"); return; }
     treinoFocoOperacoes = lista;
     modoTreino = true;
     iniciarPartidaTreino();
@@ -2191,7 +2274,6 @@ function treinarComVariacoes(operacoesBase) {
         notificar(`🔀 ${operacoesBase.length} ${pluralBase} base + ${qVar} ${pluralVar}`, "info", 4000);
     }
 }
-
 function escolherPorPeso(itens, pesoFn) {
     let total = itens.reduce((s, i) => s + Math.max(0.1, pesoFn(i)), 0);
     let alvo = Math.random() * total;
@@ -2283,7 +2365,7 @@ function dicaMultiplicacao(fA, fB) {
     return `${fA} x ${fB} é somar ${fA}, ${fB} vezes.`;
 }
 function mostrarTela(id) {
-    ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-painel","tela-preparacao"].forEach(t => {
+    ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao"].forEach(t => {
         document.getElementById(t)?.classList.add("hidden");
     });
     document.getElementById(id)?.classList.remove("hidden");
@@ -2298,35 +2380,21 @@ function mostrarTela(id) {
 async function registrarAluno(treino) {
     const nomeBruto = document.getElementById("nome-aluno").value;
     const turma = document.getElementById("turma-aluno").value;
-
     const v = validarNomeCompleto(nomeBruto);
-    if (!v.ok) {
-        notificar(v.motivo, "aviso", 5000);
-        document.getElementById("nome-aluno").focus();
-        return;
-    }
+    if (!v.ok) { notificar(v.motivo, "aviso", 5000); document.getElementById("nome-aluno").focus(); return; }
     const nome = v.normalizado;
     document.getElementById("nome-aluno").value = nome;
-
     if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
-
     alunoAtual = nome; turmaAtual = turma;
     modalidadeAtual = document.getElementById("modalidade-tabuada").value;
     modoTreino = treino;
     salvarTurmaENomeAluno(turma, nome);
     treinoFocoOperacoes = null;
-
     if (!modoTreino) {
         const r = await verificarVinculo(nome, turma);
-        if (!r.permitido) {
-            notificar(r.mensagem, "aviso", 8000);
-            return;
-        }
-        if (r.status === "novo") {
-            notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
-        } else if (r.status === "revinculado") {
-            notificar(`Bem-vindo de volta! Como você ficou mais de 2 dias sem acessar o app, liberamos este aparelho automaticamente.`, "info", 8000);
-        }
+        if (!r.permitido) { notificar(r.mensagem, "aviso", 8000); return; }
+        if (r.status === "novo") notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
+        else if (r.status === "revinculado") notificar(`Bem-vindo de volta! Como você ficou mais de 2 dias sem acessar o app, liberamos este aparelho automaticamente.`, "info", 8000);
         const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
         await carregarFocoTreino(nome, turma, modalidadeAtual);
         melhorMediaAluno = medias.melhorMediaAluno;
@@ -2345,27 +2413,11 @@ async function registrarAluno(treino) {
                 <div class="prep-card"><span class="prep-rotulo">📚 Modalidade</span><span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span></div>
                 <div class="prep-card"><span class="prep-rotulo">⏱️ Formato</span><span class="prep-valor">20 questões · 10s cada</span></div>
             </div>
-            <div class="prep-bloco">
-                <h4>📋 Como funciona?</h4>
-                <ul>
-                    <li><strong>20 perguntas</strong> de multiplicação.</li>
-                    <li>Até <strong>10 segundos</strong> por questão.</li>
-                    <li>Respostas rápidas valem <strong>mais pontos</strong>.</li>
-                    <li>Apenas o seu <strong>melhor resultado</strong> entra na classificação.</li>
-                </ul>
-            </div>
-            <div class="prep-bloco">
-                <h4>📊 Suas referências</h4>
-                <div class="prep-referencias-linha">
-                    <div><span class="prep-rotulo">Sua melhor média</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div>
-                    <div><span class="prep-rotulo">Média da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div>
-                </div>
-            </div>
+            <div class="prep-bloco"><h4>📋 Como funciona?</h4><ul><li><strong>20 perguntas</strong> de multiplicação.</li><li>Até <strong>10 segundos</strong> por questão.</li><li>Respostas rápidas valem <strong>mais pontos</strong>.</li><li>Apenas o seu <strong>melhor resultado</strong> entra na classificação.</li></ul></div>
+            <div class="prep-bloco"><h4>📊 Suas referências</h4><div class="prep-referencias-linha"><div><span class="prep-rotulo">Sua melhor média</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div><div><span class="prep-rotulo">Média da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div></div></div>
             ${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado</strong><br>${descreverFocoTreino()}</div>` : ""}
             <div class="prep-motivacao" style="margin-top:14px;">${msg}</div>
-            <div style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffc107;border-radius:10px;padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;color:#6d4c41;margin-top:14px;">
-                ⚠️ <strong>Lembrete:</strong> seu nome cadastrado é <strong>${escaparHtml(nome)}</strong>. Se você se classificar e o nome não conferir com a chamada oficial, poderá ser <strong>desclassificado</strong>. Qualquer correção, procure o professor <em>antes</em> do fim da etapa.
-            </div>
+            <div style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffc107;border-radius:10px;padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;color:#6d4c41;margin-top:14px;">⚠️ <strong>Lembrete:</strong> seu nome cadastrado é <strong>${escaparHtml(nome)}</strong>. Se você se classificar e o nome não conferir com a chamada oficial, poderá ser <strong>desclassificado</strong>. Qualquer correção, procure o professor <em>antes</em> do fim da etapa.</div>
         `;
         mostrarTela("tela-preparacao");
         window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
@@ -2571,7 +2623,6 @@ async function finalizarCircuito() {
         temposRapidos, acertouPrimeira,
         treinoFocado: treinoFocoOperacoes ? treinoFocoOperacoes.map(o => ({ fA: o.fA, fB: o.fB })) : null
     };
-
     if (modoTreino) {
         let t = "🎯 Resultado do Treino";
         if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 Treino focado — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
@@ -2602,14 +2653,12 @@ async function finalizarCircuito() {
         mostrarTela("tela-resultado");
         return;
     }
-
     let posicaoAntes = null;
     try {
         const ra = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
         const i = ra.findIndex(x => normalizarNome(x.nome) === normalizarNome(resultado.nome) && x.turma === resultado.turma);
         posicaoAntes = i === -1 ? null : i + 1;
     } catch(e) {}
-
     try {
         await salvarPartida(resultado);
         const melhor = await salvarResultado(resultado);
@@ -2632,26 +2681,12 @@ async function finalizarCircuito() {
 }
 function gerarCardsComparacao(melhor, tent) {
     const novo = ehMelhorResultado(tent, melhor) && tent.data === melhor.data;
-    return `
-        <div class="cards-comparacao">
-            <div class="card-compcard">
-                <div class="card-comp-rotulo">Esta tentativa</div>
-                <div class="card-comp-valor">${tent.pontos.toLocaleString('pt-BR')}</div>
-                <div class="card-comp-unidade">pontos</div>
-            </div>
-            <div class="card-compcard card-recorde">
-                <div class="card-comp-rotulo">${novo ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div>
-                <div class="card-comp-valor">${melhor.pontos.toLocaleString('pt-BR')}</div>
-                <div class="card-comp-unidade">pontos</div>
-            </div>
-        </div>`;
+    return `<div class="cards-comparacao"><div class="card-compcard"><div class="card-comp-rotulo">Esta tentativa</div><div class="card-comp-valor">${tent.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div><div class="card-compcard card-recorde"><div class="card-comp-rotulo">${novo ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div><div class="card-comp-valor">${melhor.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div></div>`;
 }
 async function renderizarCardClassificacao(r) {
     const rank = await obterRankingPorPontos(r.modalidade, r.turma);
     let pos = -1;
-    for (let i = 0; i < rank.length; i++) {
-        if (normalizarNome(rank[i].nome) === normalizarNome(r.nome) && rank[i].turma === r.turma) { pos = i + 1; break; }
-    }
+    for (let i = 0; i < rank.length; i++) { if (normalizarNome(rank[i].nome) === normalizarNome(r.nome) && rank[i].turma === r.turma) { pos = i + 1; break; } }
     if (pos === -1) return "";
     const mn = MODALIDADES[r.modalidade]?.nome || r.modalidade;
     const q4 = rank[VAGAS_CLASSIFICACAO - 1] || null;
@@ -2667,34 +2702,15 @@ async function renderizarCardClassificacao(r) {
         if (i === VAGAS_CLASSIFICACAO - 1 && top6.length > VAGAS_CLASSIFICACAO) mini += `<div class="divisor-ranking">— corte (${VAGAS_CLASSIFICACAO} vagas) —</div>`;
     }
     mini += '</div>';
-
     const avisoNome = `<div class="aviso-nome-classificado">🚨 <strong>Confira seu nome:</strong> "${escaparHtml(r.nome)}". Ele precisa estar completo e <strong>idêntico à chamada oficial</strong>. Nome abreviado ou fora do padrão pode causar <strong>desclassificação</strong>. Se houver erro, fale com o professor antes do fim da etapa.</div>`;
-
     if (pos <= VAGAS_CLASSIFICACAO) {
         const ck = `ceib_confetti_${normalizarNome(r.nome)}_${r.turma}`;
         if (!localStorage.getItem(ck)) { setTimeout(() => dispararConfetes(), 300); localStorage.setItem(ck, "1"); }
-        return `<div class="card-classificacao zona-classificacao"><h3>🎉 VOCÊ ESTÁ NA ZONA DE CLASSIFICAÇÃO!</h3>
-            <div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div>
-            <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div>
-            <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>${mini}
-            ${avisoNome}
-            <div class="mensagem-rodape">✅ Os <strong>${VAGAS_CLASSIFICACAO} primeiros</strong> de cada turma/modalidade serão convidados para a Copa.<br>⚠️ <strong>Classificação provisória</strong>.</div></div>`;
+        return `<div class="card-classificacao zona-classificacao"><h3>🎉 VOCÊ ESTÁ NA ZONA DE CLASSIFICAÇÃO!</h3><div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div><div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div><div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>${mini}${avisoNome}<div class="mensagem-rodape">✅ Os <strong>${VAGAS_CLASSIFICACAO} primeiros</strong> de cada turma/modalidade serão convidados para a Copa.<br>⚠️ <strong>Classificação provisória</strong>.</div></div>`;
     } else if (pos <= 6) {
-        return `<div class="card-classificacao zona-reserva"><h3>💪 VOCÊ ESTÁ PERTO DA CLASSIFICAÇÃO!</h3>
-            <div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div>
-            <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div>
-            <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
-            <p class="mensagem-corte">${ex.mensagem}</p>${mini}
-            ${avisoNome}
-            <div class="mensagem-rodape">⚠️ <strong>Classificação provisória</strong>.</div></div>`;
+        return `<div class="card-classificacao zona-reserva"><h3>💪 VOCÊ ESTÁ PERTO DA CLASSIFICAÇÃO!</h3><div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div><div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div><div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div><p class="mensagem-corte">${ex.mensagem}</p>${mini}${avisoNome}<div class="mensagem-rodape">⚠️ <strong>Classificação provisória</strong>.</div></div>`;
     } else {
-        return `<div class="card-classificacao fora-zona"><h3>🎯 CONTINUE TREINANDO!</h3>
-            <div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div>
-            <div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div>
-            <div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>
-            <p class="mensagem-corte">${ex.mensagem}</p>${mini}
-            ${avisoNome}
-            <div class="mensagem-rodape">💡 Use o <strong>Modo Treino</strong>.<br>⚠️ <strong>Classificação provisória</strong>.</div></div>`;
+        return `<div class="card-classificacao fora-zona"><h3>🎯 CONTINUE TREINANDO!</h3><div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div><div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div><div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div><p class="mensagem-corte">${ex.mensagem}</p>${mini}${avisoNome}<div class="mensagem-rodape">💡 Use o <strong>Modo Treino</strong>.<br>⚠️ <strong>Classificação provisória</strong>.</div></div>`;
     }
 }
 async function preencherResultado(melhor, tent, posAntes) {
@@ -2813,35 +2829,13 @@ function renderizarMapa() {
     const tot = fa.length * fb.length;
     const dom = tot ? Math.round((cont.verde / tot) * 100) : 0;
     let h = `<div class="mapa-tabuadas-v2">`;
-    h += `<div class="mapa-toggle">
-        <button class="toggle-btn ${modoVisualizacaoMapa === 'agregado' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('agregado')">📚 Todas as partidas</button>
-        <button class="toggle-btn ${modoVisualizacaoMapa === 'ultima' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('ultima')">🎯 Uma partida</button>
-    </div>
-    <p class="mapa-fonte-aviso">${modoVisualizacaoMapa === 'agregado' ? 'Somando o desempenho de todas as partidas, em todas as modalidades.' : 'Mostrando apenas uma partida.'}</p>`;
-
+    h += `<div class="mapa-toggle"><button class="toggle-btn ${modoVisualizacaoMapa === 'agregado' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('agregado')">📚 Todas as partidas</button><button class="toggle-btn ${modoVisualizacaoMapa === 'ultima' ? 'ativa' : ''}" onclick="mudarVisualizacaoMapa('ultima')">🎯 Uma partida</button></div><p class="mapa-fonte-aviso">${modoVisualizacaoMapa === 'agregado' ? 'Somando o desempenho de todas as partidas, em todas as modalidades.' : 'Mostrando apenas uma partida.'}</p>`;
     const fracos = obterListaFracos();
     const qFracos = fracos.length;
     let botoesTreino = "";
-    if (qFracos >= 3) {
-        botoesTreino = `<button class="btn-treinar-fracos btn-treinar-fracos-var" onclick="treinarPontosFracosVariacoes()">🔀 Treinar com variações</button>`;
-    }
-
-    h += `<div class="mapa-resumo">
-        <div class="resumo-titulo">🏆 Seu domínio da tabuada: <strong>${dom}%</strong></div>
-        <div class="resumo-contadores">
-            <span class="contador verde">🟢 Dominadas: ${cont.verde}</span>
-            <span class="contador amarelo">🟡 Em desenvolvimento: ${cont.amarelo}</span>
-            <span class="contador vermelho">🔴 Precisa melhorar: ${cont.vermelho}</span>
-            <span class="contador cinza">⚪ Não praticadas: ${cont.cinza}</span>
-        </div>
-        ${botoesTreino}
-    </div>`;
-    h += `<div class="mapa-legenda">
-        <span class="legenda-item"><span class="legenda-cor verde"></span> Dominada (≥90%)</span>
-        <span class="legenda-item"><span class="legenda-cor amarelo"></span> Em desenvolvimento (60–89%)</span>
-        <span class="legenda-item"><span class="legenda-cor vermelho"></span> Reforço (&lt;60%)</span>
-        <span class="legenda-item"><span class="legenda-cor cinza"></span> Não praticada</span>
-    </div>`;
+    if (qFracos >= 3) botoesTreino = `<button class="btn-treinar-fracos btn-treinar-fracos-var" onclick="treinarPontosFracosVariacoes()">🔀 Treinar com variações</button>`;
+    h += `<div class="mapa-resumo"><div class="resumo-titulo">🏆 Seu domínio da tabuada: <strong>${dom}%</strong></div><div class="resumo-contadores"><span class="contador verde">🟢 Dominadas: ${cont.verde}</span><span class="contador amarelo">🟡 Em desenvolvimento: ${cont.amarelo}</span><span class="contador vermelho">🔴 Precisa melhorar: ${cont.vermelho}</span><span class="contador cinza">⚪ Não praticadas: ${cont.cinza}</span></div>${botoesTreino}</div>`;
+    h += `<div class="mapa-legenda"><span class="legenda-item"><span class="legenda-cor verde"></span> Dominada (≥90%)</span><span class="legenda-item"><span class="legenda-cor amarelo"></span> Em desenvolvimento (60–89%)</span><span class="legenda-item"><span class="legenda-cor vermelho"></span> Reforço (&lt;60%)</span><span class="legenda-item"><span class="legenda-cor cinza"></span> Não praticada</span></div>`;
     h += `<div class="mapa-grid-wrapper"><table class="mapa-grid"><thead><tr><th></th>`;
     fb.forEach(b => h += `<th>${b}</th>`);
     h += `</tr></thead><tbody>`;
@@ -2910,50 +2904,25 @@ function renderizarDetalheOperacao(k) {
     const st = { verde: "🟢 Dominada!", amarelo: "🟡 Em desenvolvimento.", vermelho: "🔴 Precisa melhorar.", cinza: "⚪ Ainda não praticada." };
     const variacoes = obterVariacoesDeOperacao(a, b, modalidadeAtual);
     const temVariacoes = variacoes.length > 0;
-
     let htmlVoltar = "";
     if (pilhaDetalhes.length > 0) {
         const anterior = pilhaDetalhes[pilhaDetalhes.length - 1];
         htmlVoltar = `<button class="btn-voltar-chips" onclick="voltarDetalhe()">← Voltar para ${anterior}</button>`;
     }
-
     let htmlChips = "";
     if (temVariacoes) {
         const chips = variacoes.map(v => {
             const cls = v.tipo === "comutada" ? "chip-variacao comutada" : "chip-variacao";
             return `<button class="${cls}" onclick="irParaVariacao('${v.fA}x${v.fB}')" title="${v.tipo === 'comutada' ? 'Propriedade comutativa' : 'Outra forma de escrever'}">${v.fA}×${v.fB}</button>`;
         }).join("");
-        htmlChips = `
-            <div class="linha-chips">
-                <span class="rotulo-chips">✨ Também dão ${a*b}:</span>
-            </div>
-            <div class="chips-variacoes">${chips}</div>
-        `;
+        htmlChips = `<div class="linha-chips"><span class="rotulo-chips">✨ Também dão ${a*b}:</span></div><div class="chips-variacoes">${chips}</div>`;
     } else {
         const foraDaModalidade = !(MODALIDADES[modalidadeAtual]?.fatores || []).includes(a);
-        if (foraDaModalidade) {
-            htmlChips = `<div class="nota-sem-variacoes">Esta operação pertence a outra modalidade.<br>Altere a modalidade para treiná-la.</div>`;
-        } else {
-            htmlChips = `<div class="nota-sem-variacoes">Esta operação não tem variações dentro da modalidade.<br>Explore outras células do mapa para treinar.</div>`;
-        }
+        if (foraDaModalidade) htmlChips = `<div class="nota-sem-variacoes">Esta operação pertence a outra modalidade.<br>Altere a modalidade para treiná-la.</div>`;
+        else htmlChips = `<div class="nota-sem-variacoes">Esta operação não tem variações dentro da modalidade.<br>Explore outras células do mapa para treinar.</div>`;
     }
-
-    document.getElementById("modal-corpo").innerHTML = `
-        ${htmlVoltar}
-        <div class="modal-operacao-titulo">${a} × ${b} = ?</div>
-        <div class="modal-status ${c}">${st[c]}</div>
-        <div class="modal-stats">
-            <div class="modal-stat"><span class="rotulo">✅ Acertos</span><span class="valor">${d.acertos}</span></div>
-            <div class="modal-stat"><span class="rotulo">❌ Erros</span><span class="valor">${d.erros}</span></div>
-            <div class="modal-stat"><span class="rotulo">📈 Tentativas</span><span class="valor">${d.tentativas}</span></div>
-            <div class="modal-stat destaque"><span class="rotulo">🎯 Precisão</span><span class="valor">${p.toFixed(1)}%</span></div>
-        </div>
-        <div class="modal-dica"><strong>💡 Dica de decomposição</strong><br>${gerarDicaDecomposicao(a, b)}</div>
-        ${htmlChips}
-    `;
-
+    document.getElementById("modal-corpo").innerHTML = `${htmlVoltar}<div class="modal-operacao-titulo">${a} × ${b} = ?</div><div class="modal-status ${c}">${st[c]}</div><div class="modal-stats"><div class="modal-stat"><span class="rotulo">✅ Acertos</span><span class="valor">${d.acertos}</span></div><div class="modal-stat"><span class="rotulo">❌ Erros</span><span class="valor">${d.erros}</span></div><div class="modal-stat"><span class="rotulo">📈 Tentativas</span><span class="valor">${d.tentativas}</span></div><div class="modal-stat destaque"><span class="rotulo">🎯 Precisão</span><span class="valor">${p.toFixed(1)}%</span></div></div><div class="modal-dica"><strong>💡 Dica de decomposição</strong><br>${gerarDicaDecomposicao(a, b)}</div>${htmlChips}`;
     document.getElementById("modal-operacao").dataset.opAtual = k;
-
     const btnTreinar = document.getElementById("modal-btn-treinar");
     const acoes = document.getElementById("modal-acoes-container");
     if (temVariacoes) {
@@ -2966,7 +2935,6 @@ function renderizarDetalheOperacao(k) {
         btnTreinar.classList.add("hidden");
         acoes.classList.add("uma-coluna");
     }
-
     document.getElementById("modal-operacao").classList.remove("hidden");
 }
 function fecharModalOperacao(e) {
@@ -2974,16 +2942,12 @@ function fecharModalOperacao(e) {
     document.getElementById("modal-operacao").classList.add("hidden");
     pilhaDetalhes = [];
 }
-function abrirComoFunciona() {
-    document.getElementById("modal-como-funciona").classList.remove("hidden");
-}
+function abrirComoFunciona() { document.getElementById("modal-como-funciona").classList.remove("hidden"); }
 function fecharComoFunciona(e) {
     if (e && e.target && e.target.closest(".modal-card")) return;
     document.getElementById("modal-como-funciona").classList.add("hidden");
 }
-function abrirChangelog() {
-    document.getElementById("modal-changelog").classList.remove("hidden");
-}
+function abrirChangelog() { document.getElementById("modal-changelog").classList.remove("hidden"); }
 function fecharChangelog(e) {
     if (e && e.target && e.target.closest(".modal-card")) return;
     document.getElementById("modal-changelog").classList.add("hidden");
@@ -3197,6 +3161,409 @@ async function carregarPerfil() {
     document.getElementById("perfil-mapa").innerHTML = renderizarMapa();
     document.getElementById("perfil-conteudo").classList.remove("hidden");
 }
+
+// ==================== MEU DESEMPENHO ====================
+function skeletonStatsCards(qtd = 7) {
+    return Array.from({ length: qtd }, () => `<div class="desempenho-skeleton-card"></div>`).join("");
+}
+function skeletonTexto(linhas = 3) {
+    const classes = ["media", "longa", "curta", "media", "longa"];
+    return `<div class="desempenho-skeleton">${Array.from({ length: linhas }, (_, i) => `<div class="desempenho-skeleton-linha ${classes[i % classes.length]}"></div>`).join("")}</div>`;
+}
+
+function abrirMeuDesempenho() {
+    mostrarTela("tela-desempenho");
+    comparativoTurmaCache = null;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) {
+        document.getElementById("desempenho-identificacao").classList.remove("hidden");
+        document.getElementById("desempenho-conteudo").classList.add("hidden");
+        document.getElementById("desempenho-vazio").classList.add("hidden");
+        return;
+    }
+    document.getElementById("desempenho-identificacao").classList.add("hidden");
+    carregarMeuDesempenho(nome, turma);
+}
+
+async function carregarMeuDesempenho(nomeForcado, turmaForcada) {
+    let nome = nomeForcado;
+    let turma = turmaForcada;
+    if (!nome || !turma) {
+        const vv = validarNomeCompleto(document.getElementById("desempenho-nome").value);
+        if (!vv.ok) { notificar(vv.motivo, "aviso", 5000); return; }
+        nome = vv.normalizado;
+        turma = document.getElementById("desempenho-turma").value;
+        if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
+        document.getElementById("desempenho-nome").value = nome;
+    }
+    document.getElementById("desempenho-identificacao").classList.add("hidden");
+    document.getElementById("desempenho-vazio").classList.add("hidden");
+    document.getElementById("desempenho-conteudo").classList.remove("hidden");
+    document.getElementById("desempenho-nome-curr").textContent = nome;
+    document.getElementById("desempenho-turma-curr").textContent = turma;
+    document.getElementById("desempenho-stats").innerHTML = skeletonStatsCards(7);
+    document.getElementById("desempenho-chart").innerHTML = skeletonTexto(2);
+    document.getElementById("desempenho-turma").innerHTML = skeletonTexto(3);
+    document.getElementById("desempenho-evolucao").innerHTML = skeletonTexto(3);
+    let partidas = [];
+    try { partidas = await obterHistoricoAluno(nome, turma); }
+    catch(e) { console.warn("Falha ao carregar histórico para desempenho:", e); }
+    if (!partidas.length) {
+        document.getElementById("desempenho-conteudo").classList.add("hidden");
+        document.getElementById("desempenho-vazio").classList.remove("hidden");
+        desempenhoPartidasCache = [];
+        desempenhoPartidasFiltradas = [];
+        desempenhoPartidasGrafico = [];
+        return;
+    }
+    desempenhoPartidasCache = partidas;
+    desempenhoModalidadeAtual = "todas";
+    document.querySelectorAll(".desempenho-filtro-btn").forEach(b => {
+        b.classList.toggle("ativa", b.dataset.mod === "todas");
+    });
+    renderizarDesempenho();
+}
+
+function mudarModalidadeDesempenho(mod) {
+    desempenhoModalidadeAtual = mod;
+    document.querySelectorAll(".desempenho-filtro-btn").forEach(b => {
+        b.classList.toggle("ativa", b.dataset.mod === mod);
+    });
+    renderizarDesempenho();
+}
+
+function renderizarDesempenho() {
+    renderizarEstatisticasDesempenho();
+    renderizarGraficoDesempenho();
+    renderizarComparativoTurma();
+    renderizarEvolucaoRanking();
+}
+
+function renderizarEstatisticasDesempenho() {
+    const container = document.getElementById("desempenho-stats");
+    if (!container) return;
+    const modal = desempenhoModalidadeAtual;
+    const partidas = (modal === "todas") ? desempenhoPartidasCache : desempenhoPartidasCache.filter(p => p.modalidade === modal);
+    desempenhoPartidasFiltradas = partidas;
+    if (!partidas.length) {
+        const nomeModal = modal === "todas" ? "" : `em <strong>${MODALIDADES[modal]?.nome || modal}</strong>`;
+        container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não jogou nenhuma partida ${nomeModal}.<br>Escolha a modalidade e comece a jogar para ver suas estatísticas aqui.</div>`;
+        return;
+    }
+    const n = partidas.length;
+    const pontos = partidas.map(p => Number(p.pontos) || 0);
+    const melhor = Math.max(...pontos);
+    const media = pontos.reduce((a, b) => a + b, 0) / n;
+    const totalAcertos = partidas.reduce((s, p) => s + (Number(p.acertos) || 0), 0);
+    const totalErros = partidas.reduce((s, p) => s + (Number(p.erros) || 0), 0);
+    const totalPerguntas = totalAcertos + totalErros;
+    const precisao = totalPerguntas ? (totalAcertos / totalPerguntas) * 100 : 0;
+    const tempos = partidas.map(p => Number(p.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
+    const velocidade = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : 0;
+    const cards = [
+        { icone: "🏆", valor: melhor.toLocaleString("pt-BR"), rotulo: "Melhor pontuação", classe: "destaque" },
+        { icone: "📊", valor: Math.round(media).toLocaleString("pt-BR"), rotulo: "Média geral" },
+        { icone: "🎯", valor: `${precisao.toFixed(0)}%`, rotulo: "Precisão média" },
+        { icone: "⚡", valor: velocidade ? `${velocidade.toFixed(2)}s` : "—", rotulo: "Velocidade média" },
+        { icone: "🎮", valor: n.toLocaleString("pt-BR"), rotulo: n === 1 ? "Partida jogada" : "Partidas jogadas" },
+        { icone: "✅", valor: totalAcertos.toLocaleString("pt-BR"), rotulo: "Total de acertos" },
+        { icone: "❌", valor: totalErros.toLocaleString("pt-BR"), rotulo: "Total de erros" }
+    ];
+    container.innerHTML = cards.map(c => `<div class="desempenho-card ${c.classe || ""}"><span class="desempenho-icone">${c.icone}</span><span class="desempenho-valor">${c.valor}</span><span class="desempenho-rotulo">${c.rotulo}</span></div>`).join("");
+}
+
+function formatarNumeroEixo(v, yMax) {
+    if (v === 0) return "0";
+    if (yMax <= 5000) return Math.round(v).toLocaleString("pt-BR");
+    return (v / 1000).toFixed((v % 1000 === 0) ? 0 : 1).replace(".", ",") + "k";
+}
+function renderizarGraficoDesempenho() {
+    const container = document.getElementById("desempenho-chart");
+    const tooltip = document.getElementById("desempenho-tooltip");
+    if (!container) return;
+    if (tooltip) tooltip.classList.remove("visivel");
+    const ordenadas = [...desempenhoPartidasFiltradas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+    const MAX_PONTOS = 25;
+    const partidasVisiveis = ordenadas.length > MAX_PONTOS ? ordenadas.slice(-MAX_PONTOS) : ordenadas;
+    desempenhoPartidasGrafico = partidasVisiveis;
+    const n = partidasVisiveis.length;
+    if (n === 0) { container.innerHTML = `<div class="desempenho-empty-msg">Nenhuma partida nesta modalidade ainda.</div>`; return; }
+    if (n === 1) { container.innerHTML = `<div class="desempenho-empty-msg">🎯 Você tem apenas <strong>1 partida</strong> registrada. Jogue mais para desenhar sua linha de evolução!</div>`; return; }
+    const VBW = 360, VBH = 280;
+    const padL = 42, padR = 14, padT = 26, padB = 38;
+    const cW = VBW - padL - padR;
+    const cH = VBH - padT - padB;
+    const valores = partidasVisiveis.map(p => Number(p.pontos) || 0);
+    const maxScore = Math.max(...valores);
+    const yMax = Math.max(1000, Math.ceil((maxScore * 1.12) / 500) * 500);
+    const xFor = i => padL + (i / (n - 1)) * cW;
+    const yFor = v => padT + cH - (v / yMax) * cH;
+    const coords = valores.map((v, i) => ({ x: xFor(i), y: yFor(v), valor: v, idx: i }));
+    const media = valores.reduce((a, b) => a + b, 0) / n;
+    const yMedia = Math.max(padT + 2, Math.min(padT + cH - 2, yFor(media)));
+    const idxRecorde = valores.indexOf(maxScore);
+    let svg = `<svg viewBox="0 0 ${VBW} ${VBH}" class="desempenho-svg" preserveAspectRatio="xMidYMid meet" aria-label="Gráfico de evolução da pontuação" role="img">`;
+    svg += `<defs><linearGradient id="gradArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.25"/><stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/></linearGradient><linearGradient id="gradLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#0ea5e9"/></linearGradient></defs>`;
+    const ticks = 4;
+    for (let i = 0; i <= ticks; i++) {
+        const y = padT + (cH * i / ticks);
+        const val = yMax * (1 - i / ticks);
+        svg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + cW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(148,163,184,0.18)" stroke-width="1" />`;
+        svg += `<text x="${padL - 6}" y="${(y + 3.5).toFixed(1)}" text-anchor="end" class="desempenho-axis-label">${formatarNumeroEixo(val, yMax)}</text>`;
+    }
+    svg += `<line x1="${padL}" y1="${(padT + cH).toFixed(1)}" x2="${(padL + cW).toFixed(1)}" y2="${(padT + cH).toFixed(1)}" stroke="rgba(148,163,184,0.35)" stroke-width="1" />`;
+    svg += `<line x1="${padL}" y1="${yMedia.toFixed(1)}" x2="${(padL + cW).toFixed(1)}" y2="${yMedia.toFixed(1)}" stroke="#f59e0b" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.85" />`;
+    svg += `<text x="${(padL + cW - 3).toFixed(1)}" y="${(yMedia - 4).toFixed(1)}" text-anchor="end" class="desempenho-avg-label">média ${formatarNumeroEixo(media, yMax)}</text>`;
+    let pathD = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
+    for (let i = 1; i < coords.length; i++) pathD += ` L ${coords[i].x.toFixed(1)} ${coords[i].y.toFixed(1)}`;
+    const areaD = pathD + ` L ${coords[coords.length - 1].x.toFixed(1)} ${(padT + cH).toFixed(1)} L ${coords[0].x.toFixed(1)} ${(padT + cH).toFixed(1)} Z`;
+    svg += `<path d="${areaD}" class="desempenho-area" fill="url(#gradArea)" />`;
+    svg += `<path d="${pathD}" class="desempenho-linha" fill="none" stroke="url(#gradLine)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+    coords.forEach((c, i) => {
+        const isRecord = i === idxRecorde;
+        const delay = 0.25 + (i * (0.85 / n));
+        const cls = isRecord ? "desempenho-ponto recorde" : "desempenho-ponto";
+        const r = isRecord ? 5.5 : 3.5;
+        const delayAttr = isRecord ? `${delay}s, ${delay + 0.4}s` : `${delay}s`;
+        svg += `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${r}" class="${cls}" data-idx="${i}" style="animation-delay: ${delayAttr}" />`;
+    });
+    const rec = coords[idxRecorde];
+    if (rec) {
+        const delayCoroa = 0.45 + (idxRecorde * (0.85 / n));
+        svg += `<text x="${rec.x.toFixed(1)}" y="${Math.max(14, rec.y - 9).toFixed(1)}" text-anchor="middle" class="desempenho-recorde-icone" style="animation-delay: ${delayCoroa}s">🏆</text>`;
+    }
+    const step = Math.max(1, Math.ceil(n / 8));
+    const indices = [];
+    for (let i = 0; i < n; i += step) indices.push(i);
+    if (indices[indices.length - 1] !== n - 1) indices.push(n - 1);
+    indices.forEach(i => {
+        svg += `<text x="${coords[i].x.toFixed(1)}" y="${(padT + cH + 14).toFixed(1)}" text-anchor="middle" class="desempenho-axis-label">${i + 1}</text>`;
+    });
+    svg += `<text x="${(padL + cW / 2).toFixed(1)}" y="${VBH - 5}" text-anchor="middle" class="desempenho-axis-title">Número da partida</text>`;
+    svg += `</svg>`;
+    container.innerHTML = svg;
+    requestAnimationFrame(() => {
+        const linha = container.querySelector(".desempenho-linha");
+        if (!linha) return;
+        try {
+            const len = linha.getTotalLength();
+            linha.style.strokeDasharray = len;
+            linha.style.strokeDashoffset = len;
+            void linha.getBoundingClientRect();
+            linha.style.transition = "stroke-dashoffset 1.2s cubic-bezier(0.65, 0, 0.35, 1)";
+            linha.style.strokeDashoffset = "0";
+        } catch(e) {}
+    });
+    configurarTooltipsGrafico();
+}
+function configurarTooltipsGrafico() {
+    const wrap = document.querySelector(".desempenho-chart-wrap");
+    const chart = document.getElementById("desempenho-chart");
+    const tooltip = document.getElementById("desempenho-tooltip");
+    if (!wrap || !chart || !tooltip) return;
+    const svgEl = chart.querySelector("svg");
+    if (!svgEl) return;
+    const VBW = 360, VBH = 280;
+    const mostrar = (idx) => {
+        const partida = desempenhoPartidasGrafico[idx];
+        const circle = chart.querySelector(`.desempenho-ponto[data-idx="${idx}"]`);
+        if (!partida || !circle) return;
+        const svgRect = svgEl.getBoundingClientRect();
+        const wrapRect = wrap.getBoundingClientRect();
+        const cx = parseFloat(circle.getAttribute("cx"));
+        const cy = parseFloat(circle.getAttribute("cy"));
+        const px = svgRect.left + (cx / VBW) * svgRect.width;
+        const py = svgRect.top + (cy / VBH) * svgRect.height;
+        tooltip.innerHTML = `<div class="desempenho-tooltip-titulo">🎯 Partida ${idx + 1}</div><div class="desempenho-tooltip-linha"><span>Pontos</span><span class="val">${(Number(partida.pontos) || 0).toLocaleString("pt-BR")}</span></div><div class="desempenho-tooltip-linha"><span>Acertos</span><span class="val">${partida.acertos || 0}/20</span></div><div class="desempenho-tooltip-linha"><span>Tempo</span><span class="val">${(Number(partida.tempoMedio) || 0).toFixed(2)}s</span></div><div class="desempenho-tooltip-linha"><span>Data</span><span class="val">${formatarDataCurta(partida.data)}</span></div>`;
+        tooltip.style.left = (px - wrapRect.left) + "px";
+        tooltip.style.top = (py - wrapRect.top) + "px";
+        tooltip.classList.add("visivel");
+    };
+    const esconder = () => tooltip.classList.remove("visivel");
+    chart.querySelectorAll(".desempenho-ponto").forEach(circle => {
+        const idx = parseInt(circle.dataset.idx, 10);
+        circle.addEventListener("mouseenter", () => mostrar(idx));
+        circle.addEventListener("mouseleave", esconder);
+        circle.addEventListener("touchstart", (e) => { e.preventDefault(); mostrar(idx); }, { passive: false });
+        circle.addEventListener("touchend", () => { setTimeout(esconder, 1600); });
+    });
+}
+
+async function renderizarComparativoTurma() {
+    const container = document.getElementById("desempenho-turma");
+    if (!container) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { container.innerHTML = ""; return; }
+    const modal = desempenhoModalidadeAtual;
+    if (comparativoTurmaCache && comparativoTurmaCache.turma === turma && comparativoTurmaCache.modalidade === modal) {
+        renderizarComparativoComDados(comparativoTurmaCache.dados, nome, turma);
+        return;
+    }
+    container.innerHTML = skeletonTexto(3);
+    let dados;
+    try { dados = await calcularMetricasTurma(turma, modal); }
+    catch(e) {
+        console.warn("Falha ao calcular comparativo:", e);
+        container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível calcular o comparativo com a turma agora.</div>`;
+        return;
+    }
+    comparativoTurmaCache = { turma, modalidade: modal, dados };
+    renderizarComparativoComDados(dados, nome, turma);
+}
+async function calcularMetricasTurma(turma, modalFiltro) {
+    const todasPartidas = await obterPartidas();
+    const partidasTurma = todasPartidas.filter(p => p.turma === turma && (modalFiltro === "todas" || p.modalidade === modalFiltro));
+    const porAluno = new Map();
+    partidasTurma.forEach(p => {
+        const k = normalizarNome(p.nome);
+        if (!porAluno.has(k)) porAluno.set(k, { nome: p.nome, partidas: [] });
+        porAluno.get(k).partidas.push(p);
+    });
+    const metricas = { pontos: [], precisao: [], velocidade: [], partidas: [] };
+    porAluno.forEach(({ nome, partidas }) => {
+        const pontos = partidas.map(p => Number(p.pontos) || 0);
+        const melhorPonto = Math.max(...pontos, 0);
+        const acertos = partidas.map(p => Number(p.acertos) || 0);
+        const melhorAcertos = Math.max(...acertos, 0);
+        const precisao = (melhorAcertos / 20) * 100;
+        const tempos = partidas.map(p => Number(p.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
+        const vel = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : 999;
+        metricas.pontos.push({ nome, valor: melhorPonto });
+        metricas.precisao.push({ nome, valor: precisao });
+        metricas.velocidade.push({ nome, valor: vel });
+        metricas.partidas.push({ nome, valor: partidas.length });
+    });
+    return metricas;
+}
+function calcularPosicaoMetrica(lista, nomeAluno, ordem = "desc") {
+    const nomeNorm = normalizarNome(nomeAluno);
+    const alunoItem = lista.find(i => normalizarNome(i.nome) === nomeNorm);
+    if (!alunoItem) return null;
+    const valorAluno = alunoItem.valor;
+    const sorted = [...lista].sort((a, b) => ordem === "desc" ? b.valor - a.valor : a.valor - b.valor);
+    const idx = sorted.findIndex(i => normalizarNome(i.nome) === nomeNorm);
+    let pos = 1;
+    for (let i = 0; i < idx; i++) {
+        if (ordem === "desc" ? sorted[i].valor > valorAluno : sorted[i].valor < valorAluno) pos++;
+    }
+    return { pos, total: sorted.length, valor: valorAluno };
+}
+function calcularMediaMetrica(lista) {
+    if (!lista.length) return 0;
+    return lista.reduce((s, i) => s + i.valor, 0) / lista.length;
+}
+function renderizarComparativoComDados(dados, nomeAluno, turma) {
+    const container = document.getElementById("desempenho-turma");
+    if (!container) return;
+    const mPontos     = calcularPosicaoMetrica(dados.pontos,     nomeAluno, "desc");
+    const mPrecisao   = calcularPosicaoMetrica(dados.precisao,   nomeAluno, "desc");
+    const mVelocidade = calcularPosicaoMetrica(dados.velocidade, nomeAluno, "asc");
+    const mPartidas   = calcularPosicaoMetrica(dados.partidas,   nomeAluno, "desc");
+    if (!mPontos && !mPrecisao && !mVelocidade && !mPartidas) {
+        container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não jogou nesta modalidade.</div>`;
+        return;
+    }
+    const total = mPontos?.total || 0;
+    if (total < 2) {
+        container.innerHTML = `<div class="desempenho-empty-msg">🎯 Ainda há poucos colegas com partidas nesta modalidade. Jogue mais para comparar!</div>`;
+        return;
+    }
+    const fillFor = (pos, tot) => tot <= 1 ? 100 : Math.max(8, ((tot - pos) / (tot - 1)) * 100);
+    let html = `<div class="desempenho-turma-cabecalho"><span class="desempenho-turma-cabecalho-emoji">👥</span><span class="desempenho-turma-cabecalho-txt">Comparando com <strong>${total}</strong> ${total === 1 ? "colega" : "colegas"} da turma <strong>${turma}</strong></span></div>`;
+    const linhaMetrica = ({ icone, label, pos, sub }) => `<div class="desempenho-turma-metrica"><div class="desempenho-turma-metrica-topo"><span class="desempenho-turma-metrica-label">${icone} ${label}</span><span class="desempenho-turma-metrica-valor">${pos}º de ${total}</span></div><div class="desempenho-turma-barra"><div class="desempenho-turma-barra-fill" style="width: ${fillFor(pos, total).toFixed(1)}%"></div></div><div class="desempenho-turma-metrica-sub">${sub}</div></div>`;
+    if (mPontos) {
+        const media = calcularMediaMetrica(dados.pontos);
+        const diff = media > 0 ? ((mPontos.valor - media) / media) * 100 : 0;
+        const sub = diff >= 1 ? `Sua melhor pontuação está <strong>${diff.toFixed(0)}% acima</strong> da média da turma` : diff <= -1 ? `Sua melhor pontuação está <strong>${Math.abs(diff).toFixed(0)}% abaixo</strong> da média da turma` : `Sua melhor pontuação está <strong>na média</strong> da turma`;
+        html += linhaMetrica({ icone: "🏆", label: "Melhor pontuação", pos: mPontos.pos, sub });
+    }
+    if (mPrecisao) {
+        const media = calcularMediaMetrica(dados.precisao);
+        const diff = mPrecisao.valor - media;
+        const sub = diff >= 1 ? `Sua melhor precisão está <strong>${diff.toFixed(1)} pontos acima</strong> da média` : diff <= -1 ? `Sua melhor precisão está <strong>${Math.abs(diff).toFixed(1)} pontos abaixo</strong> da média` : `Sua precisão está <strong>na média</strong> da turma`;
+        html += linhaMetrica({ icone: "🎯", label: "Precisão (melhor partida)", pos: mPrecisao.pos, sub });
+    }
+    if (mVelocidade && mVelocidade.valor < 900) {
+        const validos = dados.velocidade.filter(v => v.valor < 900);
+        const media = calcularMediaMetrica(validos);
+        const diff = media > 0 ? ((media - mVelocidade.valor) / media) * 100 : 0;
+        const sub = diff >= 1 ? `Você é <strong>${diff.toFixed(0)}% mais rápido</strong> que a média da turma` : diff <= -1 ? `Você é <strong>${Math.abs(diff).toFixed(0)}% mais lento</strong> que a média da turma` : `Sua velocidade está <strong>na média</strong> da turma`;
+        html += linhaMetrica({ icone: "⚡", label: "Velocidade média", pos: mVelocidade.pos, sub });
+    }
+    if (mPartidas) {
+        const qtdAbaixo = dados.partidas.filter(i => i.valor < mPartidas.valor).length;
+        const pctAcima = total > 1 ? (qtdAbaixo / (total - 1)) * 100 : 0;
+        const sub = pctAcima >= 80 ? `Você jogou mais que <strong>${pctAcima.toFixed(0)}%</strong> da turma 💪` : pctAcima >= 40 ? `Você jogou mais que <strong>${pctAcima.toFixed(0)}%</strong> da turma` : `Você jogou mais que <strong>${pctAcima.toFixed(0)}%</strong> da turma — bora jogar mais!`;
+        html += linhaMetrica({ icone: "🎮", label: "Partidas jogadas", pos: mPartidas.pos, sub });
+    }
+    container.innerHTML = html;
+}
+
+async function renderizarEvolucaoRanking() {
+    const container = document.getElementById("desempenho-evolucao");
+    if (!container) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { container.innerHTML = ""; return; }
+    const modal = desempenhoModalidadeAtual;
+    const minhas = (modal === "todas") ? desempenhoPartidasCache : desempenhoPartidasCache.filter(p => p.modalidade === modal);
+    if (!minhas.length) { container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não tem partidas nesta modalidade.</div>`; return; }
+    const minhasOrdenadas = [...minhas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+    const total = minhasOrdenadas.length;
+    if (total < 2) { container.innerHTML = `<div class="desempenho-empty-msg">🎯 Jogue pelo menos <strong>2 partidas</strong> nesta modalidade para ver sua evolução no ranking da turma.</div>`; return; }
+    const cps = new Set([1]);
+    [5, 10, 15, 20].forEach(k => { if (k < total) cps.add(k); });
+    cps.add(total);
+    const checkpoints = Array.from(cps).sort((a, b) => a - b);
+    const todas = await obterPartidas();
+    const daTurma = todas.filter(p => p.turma === turma && (modal === "todas" || p.modalidade === modal));
+    const minhaChave = normalizarNome(nome);
+    const resultados = [];
+    for (const cp of checkpoints) {
+        const partidaRef = minhasOrdenadas[cp - 1];
+        const tsLimite = new Date(partidaRef.data || 0).getTime();
+        const melhorPorAluno = new Map();
+        daTurma.forEach(p => {
+            const ts = new Date(p.data || 0).getTime();
+            if (ts > tsLimite) return;
+            const k = normalizarNome(p.nome);
+            const pts = Number(p.pontos) || 0;
+            if (!melhorPorAluno.has(k) || pts > melhorPorAluno.get(k)) melhorPorAluno.set(k, pts);
+        });
+        if (!melhorPorAluno.has(minhaChave)) continue;
+        const lista = Array.from(melhorPorAluno.entries()).map(([k, v]) => ({ chave: k, pontos: v })).sort((a, b) => b.pontos - a.pontos);
+        const idx = lista.findIndex(i => i.chave === minhaChave);
+        if (idx === -1) continue;
+        resultados.push({ cp, pos: idx + 1, totalAlunos: lista.length });
+    }
+    if (resultados.length < 2) { container.innerHTML = `<div class="desempenho-empty-msg">Ainda não há colegas suficientes no ranking para comparar sua evolução. Continue jogando!</div>`; return; }
+    let html = `<div class="desempenho-evolucao-cabecalho"><span class="desempenho-evolucao-cabecalho-emoji">📉</span><span>Sua trajetória no ranking da turma <strong>${turma}</strong></span></div>`;
+    resultados.forEach((r, i) => {
+        const anterior = i > 0 ? resultados[i - 1] : null;
+        const delta = anterior ? anterior.pos - r.pos : 0;
+        const isAtual = i === resultados.length - 1;
+        let badge;
+        if (!anterior) badge = `<span class="evolucao-badge neutro">início</span>`;
+        else if (delta > 0) badge = `<span class="evolucao-badge subiu">▲ ${delta}</span>`;
+        else if (delta < 0) badge = `<span class="evolucao-badge caiu">▼ ${Math.abs(delta)}</span>`;
+        else badge = `<span class="evolucao-badge neutro">▬</span>`;
+        const label = r.cp === 1 ? "Primeira partida" : (isAtual ? `Após ${r.cp} partidas <em style="opacity:.7;font-style:normal;">(agora)</em>` : `Após ${r.cp} partidas`);
+        html += `<div class="evolucao-linha ${isAtual ? "atual" : ""}"><span class="evolucao-momento">${label}</span><span class="evolucao-posicao">${r.pos}º <small>de ${r.totalAlunos}</small></span>${badge}</div>`;
+    });
+    const primeira = resultados[0].pos;
+    const ultima = resultados[resultados.length - 1].pos;
+    const ganho = primeira - ultima;
+    let fechamento;
+    if (ganho > 0) fechamento = `🚀 Você subiu <strong>${ganho} ${ganho === 1 ? "posição" : "posições"}</strong> desde o início da sua trajetória. Continue assim!`;
+    else if (ganho < 0) fechamento = `💪 Você caiu <strong>${Math.abs(ganho)} ${Math.abs(ganho) === 1 ? "posição" : "posições"}</strong>. Use o Modo Treino para recuperar o ritmo!`;
+    else fechamento = `🎯 Sua posição se manteve estável desde a primeira partida.`;
+    html += `<div class="desempenho-evolucao-fechamento">${fechamento}</div>`;
+    container.innerHTML = html;
+}
+
+// ==================== PAINEL DO PROFESSOR ====================
 async function autenticarProfessor() {
     const i = document.getElementById("senha-professor");
     const s = i.value;
@@ -3229,13 +3596,8 @@ async function confirmarReset() {
     await limparCopaV2PorFiltro(turma, mod);
     limparLocalStorageCopaV2(turma, mod);
     if (limparVinculos) {
-        try {
-            await database.ref(CAMINHO_VINCULOS).remove();
-            notificar("Todos os vínculos de dispositivo foram removidos.", "info", 4000);
-        } catch(e) {
-            console.warn("Erro ao limpar vínculos:", e);
-            notificar("Aviso: não foi possível limpar os vínculos agora.", "aviso", 4000);
-        }
+        try { await database.ref(CAMINHO_VINCULOS).remove(); notificar("Todos os vínculos de dispositivo foram removidos.", "info", 4000); }
+        catch(e) { console.warn("Erro ao limpar vínculos:", e); notificar("Aviso: não foi possível limpar os vínculos agora.", "aviso", 4000); }
     }
     localStorage.setItem(STORAGE_RANKING, JSON.stringify(novos));
     localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasN));
@@ -3272,17 +3634,7 @@ function renderizarListaAlunos() {
     let h = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Vínculo</th><th>Ações</th></tr></thead><tbody>';
     for (const a of alunosFiltrados) {
         const cv = chaveVinculo(a.nome, a.turma);
-        h += `<tr id="row-${cv}">
-            <td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td>
-            <td style="text-align:center">${a.turma}</td>
-            <td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td>
-            <td style="text-align:center">${a.pontos}</td>
-            <td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td>
-            <td style="text-align:center" id="vinculo-${cv}">🔍</td>
-            <td style="text-align:center">
-                <button onclick="desvincularAluno('${escaparHtml(a.nome)}','${a.turma}')" class="btn-desvincular" title="Desvincular">🔓</button>
-                <button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button>
-            </td></tr>`;
+        h += `<tr id="row-${cv}"><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td><td style="text-align:center">${a.turma}</td><td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td><td style="text-align:center">${a.pontos}</td><td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td><td style="text-align:center" id="vinculo-${cv}">🔍</td><td style="text-align:center"><button onclick="desvincularAluno('${escaparHtml(a.nome)}','${a.turma}')" class="btn-desvincular" title="Desvincular">🔓</button><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
     }
     h += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
     c.innerHTML = h;
@@ -3330,10 +3682,7 @@ async function salvarEdicoesNomes() {
         const [mod, turma, nomeAntigo] = ca.split("|");
         const nomeNovoBruto = input.value.trim();
         const vv = validarNomeCompleto(nomeNovoBruto);
-        if (!vv.ok) {
-            notificar(`Nome inválido em "${nomeAntigo}": ${vv.motivo}`, "aviso", 5000);
-            return;
-        }
+        if (!vv.ok) { notificar(`Nome inválido em "${nomeAntigo}": ${vv.motivo}`, "aviso", 5000); return; }
         const nomeNovo = vv.normalizado;
         input.value = nomeNovo;
         if (normalizarNome(nomeAntigo) !== normalizarNome(nomeNovo) && nomeNovo) {
@@ -3408,11 +3757,8 @@ function configurarToqueSecreto() {
     t.addEventListener("click", () => {
         cliquesTitulo++;
         if (tempoResetClique) clearTimeout(tempoResetClique);
-        if (cliquesTitulo >= 5) {
-            cliquesTitulo = 0;
-            mostrarTela("tela-painel");
-            notificar("Acesso administrativo liberado!", "info");
-        } else tempoResetClique = setTimeout(() => { cliquesTitulo = 0; }, 1500);
+        if (cliquesTitulo >= 5) { cliquesTitulo = 0; mostrarTela("tela-painel"); notificar("Acesso administrativo liberado!", "info"); }
+        else tempoResetClique = setTimeout(() => { cliquesTitulo = 0; }, 1500);
     });
 }
 window.addEventListener("DOMContentLoaded", async () => {
@@ -3424,15 +3770,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     atualizarAcessoSeConhecido();
     const elV = document.getElementById("changelog-versao-atual");
     if (elV) elV.textContent = APP_VERSION;
-
     await renderizarCardVotacao();
-
     if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
     votacaoTimerInterval = setInterval(async () => {
         const card = document.getElementById("card-votacao");
-        if (card && !card.classList.contains("hidden")) {
-            await renderizarCardVotacao();
-        }
+        if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
     }, 60000);
 });
 </script>
