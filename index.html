@@ -323,6 +323,10 @@
         .acoes-secundarias { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
         .acoes-secundarias button { margin: 0; font-size: 14px; padding: 14px 12px; }
         .nota-provisoria { margin: 14px 0 0; padding: 10px 12px; border-radius: 9px; color: #6b4e00; background: #fff8df; border: 1px solid #f2d675; font-size: 12px; text-align: left; }
+        .nota-espontanea { margin: 10px 0 0; padding: 12px 14px; border-radius: 10px; color: #084298; background: linear-gradient(135deg, #e7f5ff 0%, #cfe2ff 100%); border: 1px solid #b8daff; border-left: 4px solid #0d6efd; font-size: 13px; text-align: left; line-height: 1.55; }
+        .nota-espontanea strong { color: #0d6efd; }
+        .nota-calculadora { margin: 6px 0 12px; padding: 12px 14px; border-radius: 10px; color: #14532d; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 1px solid #86efac; border-left: 4px solid #22c55e; font-size: 13px; text-align: left; line-height: 1.55; }
+        .nota-calculadora strong { color: #15803d; }
         .jogo-cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px; gap: 12px; }
         .jogo-titulo-turma { font-size: 13px; font-weight: bold; color: #495057; letter-spacing: 0.5px; text-transform: uppercase; }
         .jogo-pontos-destaque { font-size: 22px; font-weight: bold; color: #0066cc; white-space: nowrap; transition: transform 0.15s ease; }
@@ -409,6 +413,10 @@
             .tag-participante { background: #4a4a4a; }
             .toast { background: #2a2a2a; color: #e8e8e8; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
             .nota-provisoria { background: #3a2e1a; color: #e8d0a0; border-color: #5a4a2a; }
+            .nota-espontanea { background: linear-gradient(135deg, #1a2a3a 0%, #1e3a5a 100%); border-color: #2a4a6a; color: #a8c8e8; }
+            .nota-espontanea strong { color: #93c5fd; }
+            .nota-calculadora { background: linear-gradient(135deg, #14532d 0%, #166534 100%); border-color: #22c55e; color: #bbf7d0; }
+            .nota-calculadora strong { color: #86efac; }
             .dica-melhoria { background: #1a2a3a; color: #a8c8e8; }
             .conquista-card { background: #2a2a2a; color: #e8e8e8; }
             .conquista-card.desbloqueada { background: #ffc107; color: #000; }
@@ -2290,6 +2298,7 @@
     <div id="meta-pessoal-container"></div>
     <button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
     <p class="nota-provisoria">📌 Os 4 melhores alunos de cada turma, em cada modalidade, serão convidados para a Copa. A classificação é provisória até o encerramento da etapa.</p>
+    <p class="nota-espontanea">🤝 <strong>Sua participação é espontânea.</strong> Você joga quando quiser, quantas vezes quiser. Não há obrigação — é uma escolha livre, e a Copa é para quem tem vontade de competir e se divertir.</p>
     <div class="acoes-secundarias" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
         <button onclick="abrirMeuDesempenho()" class="botao-desempenho">📊 Meu Desempenho</button>
         <button onclick="abrirAlbum()" class="botao-album" aria-label="Abrir o Álbum de Conquistas">📖 Meu Álbum<span id="album-badge" class="hidden" role="status" aria-label="Você tem medalhas novas para ver"></span></button>
@@ -2299,7 +2308,7 @@
     </div>
     <div class="atalhos-iniciais">
         <button class="changelog-trigger" onclick="abrirComoFunciona()" title="Como funciona a Copa">📖 Como funciona</button>
-        <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.7.1</span> · histórico</button>
+        <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.7.2</span> · histórico</button>
     </div>
 </div>
 
@@ -2351,6 +2360,7 @@
 <div id="tela-preparacao" class="card hidden">
     <h2>🏁 Preparação para a Classificatória</h2>
     <div id="preparacao-conteudo" style="margin: 20px 0;"></div>
+    <p class="nota-calculadora">🧮 <strong>Calculadora permitida!</strong> Nesta fase, você pode usar calculadora para conferir suas respostas. O foco é a <strong>velocidade de raciocínio</strong>, não a aritmética manual.</p>
     <button id="btn-comecar-partida" class="botao-verde">🎮 Começar Partida</button>
     <button onclick="mostrarTela('tela-single')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar e alterar dados</button>
 </div>
@@ -2699,6 +2709,22 @@
                 </div>
             </div>
             <div class="info-secao">
+                <span class="info-icone">🧮</span>
+                <div class="info-conteudo">
+                    <h4 class="info-titulo">Calculadora permitida</h4>
+                    <p class="info-texto">Nesta etapa classificatória, o uso de <strong>calculadora é livremente permitido</strong>. Você pode conferir suas respostas, se quiser.</p>
+                    <p class="info-texto">O que está sendo medido é a <strong>agilidade do raciocínio</strong> com as tabuadas — quem sabe de cabeça sai na frente pela velocidade.</p>
+                </div>
+            </div>
+            <div class="info-secao">
+                <span class="info-icone">🤝</span>
+                <div class="info-conteudo">
+                    <h4 class="info-titulo">Participação livre e espontânea</h4>
+                    <p class="info-texto">Esta etapa é uma <strong>oportunidade</strong>, não uma obrigação. Você participa se quiser, quando quiser. Não há nenhum prejuízo escolar em não jogar.</p>
+                    <p class="info-texto">Quem decide participar está fazendo uma <strong>escolha pessoal</strong> — e a Copa é para quem tem vontade de competir e se divertir.</p>
+                </div>
+            </div>
+            <div class="info-secao">
                 <span class="info-icone">✅</span>
                 <div class="info-conteudo">
                     <h4 class="info-titulo">Quem se classifica</h4>
@@ -2809,7 +2835,12 @@
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual">v8.7.1 · atual</span>
+                <span class="changelog-versao atual">v8.7.2 · atual</span>
+                <h4 class="changelog-titulo">🧮 Calculadora permitida + 🤝 Participação espontânea</h4>
+                <p class="changelog-descricao">Duas informações importantes agora aparecem em locais-chave. <strong>(1) Calculadora permitida:</strong> aviso verde na tela de preparação (antes de começar a partida) e seção dedicada no "Como funciona" — o foco é a velocidade de raciocínio, não a aritmética manual. <strong>(2) Participação espontânea:</strong> nota azul na tela inicial, logo abaixo das regras de classificação, e seção dedicada no "Como funciona" — a etapa é uma oportunidade, não uma obrigação, e o aluno escolhe livremente quando e se quer jogar.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v8.7.1</span>
                 <h4 class="changelog-titulo">🔓 Liberação manual de acesso + identificação reforçada no chat</h4>
                 <p class="changelog-descricao">Dois ajustes no canal aluno↔professor. <strong>(1)</strong> O painel do professor ganhou um bloco <strong>🔓 Liberar acesso manualmente</strong>: basta digitar nome e turma para remover o vínculo de qualquer aluno — <strong>sem depender de mensagem no app</strong>. Útil quando o aluno pede por outro canal (oral, WhatsApp). O sistema mostra o ID do aparelho anterior ao liberar, para confirmação visual. <strong>(2)</strong> Quando o aluno tenta abrir o chat sem ter se identificado, aparece um aviso explícito com atalho direto para o cadastro — reforça que <strong>identificação é pré-requisito obrigatório</strong> para usar o canal com o professor, independente do assunto.</p>
             </div>
@@ -2977,7 +3008,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "8.7.1";
+const APP_VERSION = "8.7.2";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
