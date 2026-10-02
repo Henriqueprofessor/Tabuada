@@ -1140,6 +1140,239 @@
             .album-capa { box-shadow: none; }
             .album-figurinha { break-inside: avoid; }
         }
+
+        /* ==================== META PESSOAL — v8.1 · Parte 1 (estrutura visual) ==================== */
+        .meta-card {
+            position: relative;
+            overflow: hidden;
+            max-width: 1000px;
+            margin: 0 auto 18px;
+            padding: 20px 22px 18px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #102a43 0%, #174a73 55%, #0d7a61 100%);
+            color: #fff;
+            text-align: left;
+            box-shadow: 0 8px 24px rgba(16, 42, 67, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+            transition: background .35s ease, box-shadow .35s ease;
+        }
+        .meta-card::after {
+            content: "🎯";
+            position: absolute;
+            right: 18px;
+            top: 12px;
+            font-size: 70px;
+            opacity: 0.10;
+            transform: rotate(-12deg);
+            pointer-events: none;
+            transition: opacity .35s ease, transform .35s ease;
+        }
+        .meta-card.meta-conquistada {
+            background: linear-gradient(135deg, #b45309 0%, #d97706 45%, #fbbf24 100%);
+            box-shadow: 0 10px 30px rgba(180, 83, 9, 0.35), inset 0 0 0 1px rgba(255, 215, 120, 0.5);
+            animation: metaPulsoDourado 2.4s ease-in-out infinite;
+        }
+        .meta-card.meta-conquistada::after {
+            content: "🏆";
+            opacity: 0.18;
+            transform: rotate(8deg);
+        }
+        @keyframes metaPulsoDourado {
+            0%, 100% { box-shadow: 0 10px 30px rgba(180, 83, 9, 0.35), inset 0 0 0 1px rgba(255, 215, 120, 0.5); }
+            50%      { box-shadow: 0 10px 34px rgba(251, 191, 36, 0.55), inset 0 0 0 2px rgba(255, 215, 120, 0.75); }
+        }
+        .meta-card.meta-vazio { background: linear-gradient(135deg, #1e3a5f 0%, #2a4a6a 100%); }
+        .meta-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .16em;
+            color: #ffd166;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .meta-card.meta-conquistada .meta-kicker { color: #fff7cc; }
+        .meta-mensagem {
+            font-size: clamp(16px, 3.2vw, 20px);
+            font-weight: 800;
+            line-height: 1.3;
+            color: #fff;
+            margin: 0 0 14px;
+            letter-spacing: .2px;
+            max-width: 90%;
+            word-break: break-word;
+        }
+        .meta-card.meta-conquistada .meta-mensagem {
+            color: #fff;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+        }
+        .meta-selo {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #7c2d12;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            animation: metaSeloPop .5s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        @keyframes metaSeloPop {
+            0%   { opacity: 0; transform: scale(0.5) rotate(-8deg); }
+            60%  { opacity: 1; transform: scale(1.08) rotate(2deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0); }
+        }
+        .meta-comparacao {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .meta-comp-item {
+            background: rgba(255, 255, 255, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .meta-card.meta-conquistada .meta-comp-item {
+            background: rgba(255, 255, 255, 0.20);
+            border-color: rgba(255, 255, 255, 0.32);
+        }
+        .meta-comp-rotulo {
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: #cbd5e1;
+            opacity: 0.9;
+        }
+        .meta-card.meta-conquistada .meta-comp-rotulo { color: #fff7cc; opacity: 1; }
+        .meta-comp-valor {
+            font-size: clamp(18px, 3.4vw, 22px);
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.1;
+            letter-spacing: -.3px;
+        }
+        .meta-comp-valor .unidade {
+            font-size: 12px;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-left: 3px;
+            letter-spacing: 0;
+        }
+        .meta-card.meta-conquistada .meta-comp-valor { color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.15); }
+        .meta-card.meta-conquistada .meta-comp-valor .unidade { color: #fff7cc; }
+        .meta-progresso-wrap {
+            margin-bottom: 12px;
+        }
+        .meta-progresso-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #cbd5e1;
+            letter-spacing: .3px;
+            margin-bottom: 6px;
+        }
+        .meta-progresso-cabecalho .pct {
+            font-weight: 900;
+            color: #fff;
+            font-size: 13px;
+            letter-spacing: 0;
+        }
+        .meta-card.meta-conquistada .meta-progresso-cabecalho { color: #fff7cc; }
+        .meta-card.meta-conquistada .meta-progresso-cabecalho .pct { color: #fff; }
+        .meta-progresso-trilha {
+            height: 12px;
+            background: rgba(0, 0, 0, 0.30);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+        }
+        .meta-card.meta-conquistada .meta-progresso-trilha {
+            background: rgba(120, 53, 15, 0.35);
+        }
+        .meta-progresso-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 8px;
+            transition: width 1s cubic-bezier(.22, 1, .36, 1), background .35s ease;
+            transform-origin: left center;
+        }
+        .meta-progresso-fill.meta-p-0   { background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); box-shadow: 0 0 10px rgba(239, 68, 68, 0.45); }
+        .meta-progresso-fill.meta-p-33  { background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%); box-shadow: 0 0 10px rgba(245, 158, 11, 0.45); }
+        .meta-progresso-fill.meta-p-66  { background: linear-gradient(90deg, #15803d 0%, #22c55e 100%); box-shadow: 0 0 10px rgba(34, 197, 94, 0.45); }
+        .meta-progresso-fill.meta-p-100 { background: linear-gradient(90deg, #fbbf24 0%, #ffea94 100%); box-shadow: 0 0 14px rgba(251, 191, 36, 0.65); }
+        .meta-motivacao {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.5;
+            color: #e8f1f8;
+            letter-spacing: .2px;
+            padding: 9px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-left: 3px solid #ffd166;
+            border-radius: 8px;
+        }
+        .meta-card.meta-conquistada .meta-motivacao {
+            background: rgba(255, 255, 255, 0.22);
+            border-left-color: #fff;
+            color: #fff;
+        }
+        .meta-trocando { animation: metaTroca .45s ease; }
+        @keyframes metaTroca {
+            0%   { opacity: 1; transform: translateY(0); }
+            40%  { opacity: 0; transform: translateY(-6px); }
+            60%  { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-color-scheme: dark) {
+            .meta-card {
+                background: linear-gradient(135deg, #0b1f33 0%, #143a5a 55%, #0a6349 100%);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            }
+            .meta-card.meta-conquistada {
+                background: linear-gradient(135deg, #78350f 0%, #b45309 45%, #f59e0b 100%);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 215, 120, 0.45);
+            }
+            .meta-card.meta-vazio {
+                background: linear-gradient(135deg, #14304d 0%, #1e3a5f 100%);
+            }
+            .meta-comp-item { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.10); }
+            .meta-card.meta-conquistada .meta-comp-item { background: rgba(255, 255, 255, 0.18); }
+            .meta-motivacao { background: rgba(255, 255, 255, 0.06); }
+            .meta-card.meta-conquistada .meta-motivacao { background: rgba(255, 255, 255, 0.18); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .meta-card,
+            .meta-progresso-fill { transition: none !important; }
+            .meta-card.meta-conquistada { animation: none; }
+            .meta-selo { animation: none; }
+            .meta-trocando { animation: none !important; }
+        }
+        @media (max-width: 520px) {
+            .meta-card { padding: 18px 16px 16px; margin-bottom: 14px; }
+            .meta-card::after { font-size: 54px; right: 10px; top: 10px; }
+            .meta-mensagem { max-width: 100%; font-size: 16px; }
+            .meta-comparacao { grid-template-columns: 1fr; gap: 8px; }
+            .meta-comp-item { padding: 8px 12px; }
+            .meta-motivacao { font-size: 12.5px; padding: 8px 10px; }
+        }
+        @media print {
+            .meta-card { box-shadow: none; }
+            .meta-card::after { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -1160,6 +1393,9 @@
             <div class="vaga-card"><span class="vaga-numero">10s</span><span class="vaga-label">por questão</span></div>
         </div>
     </section>
+    <!-- ==================== META PESSOAL ==================== -->
+    <div id="meta-pessoal-container"></div>
+    <!-- ==================== FIM DA META PESSOAL ==================== -->
     <button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
     <p class="nota-provisoria">📌 Os 4 melhores alunos de cada turma, em cada modalidade, serão convidados para a Copa. A classificação é provisória até o encerramento da etapa.</p>
     <div class="acoes-secundarias" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
@@ -1173,7 +1409,7 @@
             📖 Como funciona
         </button>
         <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">
-            ⚙️ v<span id="changelog-versao-atual">8.0</span> · histórico
+            ⚙️ v<span id="changelog-versao-atual">8.1</span> · histórico
         </button>
     </div>
 </div>
@@ -1607,6 +1843,18 @@
                 </div>
             </div>
             <div class="info-secao">
+                <span class="info-icone">🎯</span>
+                <div class="info-conteudo">
+                    <h4 class="info-titulo">Sua Meta Pessoal</h4>
+                    <p class="info-texto">Na tela inicial, você vê um card com <strong>sua próxima meta</strong>. Ele muda conforme seu momento: se você está perto do Top 4, se está atrás do seu recorde, se já é líder, ou até se está a poucos pontos de um novo marco.</p>
+                    <ul class="info-lista">
+                        <li>Compare <strong>seu melhor</strong> com a <strong>meta atual</strong></li>
+                        <li>Acompanhe a <strong>barra de progresso</strong> — ela fica vermelha, amarela, verde ou dourada conforme você avança</li>
+                        <li>Cada partida é uma chance de <strong>bater a meta</strong> 🎉</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="info-secao">
                 <span class="info-icone">💡</span>
                 <div class="info-conteudo">
                     <h4 class="info-titulo">Dicas rápidas</h4>
@@ -1629,7 +1877,12 @@
         </div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual">v8.0 · atual</span>
+                <span class="changelog-versao atual">v8.1 · atual</span>
+                <h4 class="changelog-titulo">🎯 Meta Pessoal</h4>
+                <p class="changelog-descricao">Um card de incentivo na tela inicial mostra ao aluno <strong>qual é a próxima meta dele</strong> — sempre baseada no próprio desempenho, nunca na comparação com os outros. O card identifica automaticamente 9 situações: primeira partida, líder, Top 4 (classificação), Top 6 (reserva), fora do Top 6, marcos de pontuação (5 mil / 8 mil / 12 mil / 17 mil), queda de posição recente e título de Mestre. Tem <strong>barra de progresso colorida</strong> por faixa (vermelho → amarelo → verde → dourado), <strong>frases motivacionais dinâmicas</strong>, <strong>estado "meta conquistada"</strong> com fundo dourado brilhante, som e confetes — e recalculado automaticamente a cada partida.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v8.0</span>
                 <h4 class="changelog-titulo">📖 Álbum de Conquistas</h4>
                 <p class="changelog-descricao">Uma tela dedicada para o aluno colecionar medalhas como figurinhas de um álbum de Copa. Cada conquista é uma figurinha, que pode estar <strong>colada</strong> (com data e selo) ou <strong>vazia</strong> (mostrando a dica de como conquistar). São <strong>32 medalhas</strong> distribuídas em <strong>6 seções temáticas</strong> — Primeiros Passos, Velocidade, Precisão, Dedicação, Explorador e Rumo à Final — cada uma com recompensa própria ao completar. O álbum tem <strong>5 níveis de raridade</strong> (comum, incomum, raro, épico e lendário), <strong>filtros</strong> por status/raridade/seção, <strong>ordenação</strong>, <strong>badges de seção</strong>, <strong>estrelas</strong> acumuladas, popup de celebração ao completar uma seção, animações de colagem, som próprio e badge no botão quando há medalha nova.</p>
             </div>
@@ -1745,7 +1998,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "8.0";
+const APP_VERSION = "8.1";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -2046,38 +2299,41 @@ async function migrarConquistasAntigas(nome, turma) {
     });
     if (alterou) await salvarMedalsFirebase(nome, turma, persistidas);
 }
-// ==================== ÁLBUM — Sincronização de medalhas (Parte 1 + Parte 5) ====================
-// Detecta medalhas novas, persiste no Firebase com data, verifica seções completas
-// e recalcula as estrelas totais. Chamada a cada abertura do álbum e após cada partida.
 
+// ==================== ÁLBUM — Sincronização de medalhas ====================
 async function sincronizarMedalhas(nome, turma) {
     const dados = await compilarDadosAluno(nome, turma);
     const { desbloqueadas } = calcularMedalhasDesbloqueadas(dados);
     const persistidas = dados._medalhasPersistidas || {};
     const agora = new Date().toISOString();
     const novas = [];
-
     desbloqueadas.forEach(m => {
-        if (!persistidas[m.id]) {
-            persistidas[m.id] = { data: agora };
-            novas.push(m.id);
-        }
+        if (!persistidas[m.id]) { persistidas[m.id] = { data: agora }; novas.push(m.id); }
     });
-
     if (novas.length > 0) await salvarMedalsFirebase(nome, turma, persistidas);
-
-    // Parte 5 — verifica seções completas + recalcula estrelas
     const secoes = await verificarSecoesCompletas(nome, turma, persistidas);
-
-    return {
-        persistidas,
-        novas,
-        dados,
-        novasSecoes: secoes.novasSecoes,
-        estrelas: secoes.estrelas,
-        secoesCompletas: secoes.reg
-    };
+    return { persistidas, novas, dados, novasSecoes: secoes.novasSecoes, estrelas: secoes.estrelas, secoesCompletas: secoes.reg };
 }
+
+// ==================== ÁLBUM — Limpeza no reset ====================
+async function limparAlbumPorFiltro(turma) {
+    const caminhos = [CAMINHO_MEDALS, CAMINHO_ESTRELAS, CAMINHO_SECOES_COMPLETAS, CAMINHO_POSICAO_BASELINE, CAMINHO_SNAPSHOT_DIARIO];
+    if (turma === "todas") {
+        for (const c of caminhos) { try { await database.ref(c).remove(); } catch(e) { console.warn(`Erro ao limpar ${c}:`, e); } }
+        try { localStorage.removeItem("copa_album_vistas_count"); } catch(e) {}
+        return;
+    }
+    const sufixo = `|${turma}`;
+    for (const c of caminhos) {
+        try {
+            const snap = await database.ref(c).once("value");
+            const dados = snap.val() || {};
+            const alvos = Object.keys(dados).filter(k => k.endsWith(sufixo));
+            for (const chave of alvos) { await database.ref(`${c}/${chave}`).remove(); }
+        } catch(e) { console.warn(`Erro ao limpar ${c} da turma ${turma}:`, e); }
+    }
+}
+
 // ==================== ÁLBUM — Parte 5: seções completas + recompensas ====================
 async function obterSecoesCompletas(nome, turma) {
     try { const snap = await database.ref(`${CAMINHO_SECOES_COMPLETAS}/${chaveAlbum(nome, turma)}`).once("value"); return snap.val() || {}; }
@@ -2112,9 +2368,7 @@ async function verificarSecoesCompletas(nome, turma, persistidas) {
     const alterou = novasSecoes.length > 0 || !reg._vistoEm;
     if (alterou) await salvarSecoesCompletas(nome, turma, reg);
     let estrelas = 0;
-    Object.keys(persistidas).forEach(id => {
-        const m = MEDALS_POR_ID[id]; if (m) estrelas += m.recompensaEstrelas;
-    });
+    Object.keys(persistidas).forEach(id => { const m = MEDALS_POR_ID[id]; if (m) estrelas += m.recompensaEstrelas; });
     SECOES.forEach(s => { if (reg[s.id]) estrelas += s.recompensaCompleta.estrelas; });
     await salvarEstrelasFirebase(nome, turma, estrelas);
     return { novasSecoes, estrelas, reg, primeiroAcesso };
@@ -2164,42 +2418,7 @@ function fecharModalSecaoCompleta(e) {
     if (albumEstado) albumEstado.novasSecoes = [];
     document.querySelector("#album-conteudo-view .album-btn-voltar-capa")?.focus();
 }
-// ==================== ÁLBUM — Limpeza no reset ====================
-// Chamado pelo painel do professor em confirmarReset().
-// turma === "todas" → apaga TODOS os nós do álbum de uma vez.
-// turma específica  → apaga apenas as entradas cuja chave termina em "|{turma}".
 
-async function limparAlbumPorFiltro(turma) {
-    const caminhos = [
-        CAMINHO_MEDALS,
-        CAMINHO_ESTRELAS,
-        CAMINHO_SECOES_COMPLETAS,
-        CAMINHO_POSICAO_BASELINE,
-        CAMINHO_SNAPSHOT_DIARIO
-    ];
-
-    if (turma === "todas") {
-        for (const c of caminhos) {
-            try { await database.ref(c).remove(); }
-            catch(e) { console.warn(`Erro ao limpar ${c}:`, e); }
-        }
-        // Zera o contador local de "medalhas vistas" (senão o badge fica com estado inconsistente)
-        try { localStorage.removeItem("copa_album_vistas_count"); } catch(e) {}
-        return;
-    }
-
-    const sufixo = `|${turma}`;
-    for (const c of caminhos) {
-        try {
-            const snap = await database.ref(c).once("value");
-            const dados = snap.val() || {};
-            const alvos = Object.keys(dados).filter(k => k.endsWith(sufixo));
-            for (const chave of alvos) {
-                await database.ref(`${c}/${chave}`).remove();
-            }
-        } catch(e) { console.warn(`Erro ao limpar ${c} da turma ${turma}:`, e); }
-    }
-}
 // ==================== ÁLBUM — Parte 6: badge, sons e integração com resultado ====================
 const STORAGE_ALBUM_VISTAS = "copa_album_vistas_count";
 
@@ -2272,9 +2491,8 @@ function injetarCTAAlbumResultado(idsNovas) {
     container.classList.remove("hidden");
     setTimeout(() => { somColarFigurinha(); dispararConfetes(); }, 300);
 }
-// ==================== FIM DA PARTE 6 ====================
 
-// ==================== ÁLBUM — Parte 2/3/4: estado, capa, header, corpo ====================
+// ==================== ÁLBUM — estado, capa, header, corpo ====================
 let albumEstado = { nome: null, turma: null, persistidas: {}, dados: null, estrelas: 0, pronta: false };
 
 const METAS_MEDAL = {
@@ -2461,7 +2679,7 @@ async function abrirAlbum() {
     if (botao) botao.disabled = false;
 }
 
-// ==================== ÁLBUM — Parte 4: filtros + ordenação ====================
+// ==================== ÁLBUM — filtros + ordenação ====================
 const STORAGE_ALBUM_FILTROS = "copa_album_filtros";
 const FILTROS_DEFAULT = { status: "todas", raridade: "todas", secao: "todas", ordem: "padrao" };
 let albumFiltros = { ...FILTROS_DEFAULT };
@@ -2567,7 +2785,7 @@ function renderizarFiltrosAlbum() {
     `;
 }
 
-// ==================== ÁLBUM — Parte 3: grid de figurinhas ====================
+// ==================== ÁLBUM — grid de figurinhas ====================
 function renderizarCorpoAlbum() {
     const c = document.getElementById("album-conteudo");
     if (!c) return;
@@ -2654,7 +2872,296 @@ function renderizarFigurinhaAlbum(medalha, persistida) {
         <div class="album-figurinha-rodape">${rodape}</div>
     </article>`;
 }
-// ==================== FIM DO BLOCO DO ÁLBUM ====================
+
+// ==================== META PESSOAL — v8.1 (Partes 1-5) ====================
+const MARCOS_PONTOS = [
+    { pts: 5000,  nome: "Bronze",  icone: "🥉" },
+    { pts: 8000,  nome: "Prata",   icone: "🥈" },
+    { pts: 12000, nome: "Ouro",    icone: "🥇" },
+    { pts: 17000, nome: "Mestre",  icone: "👑" }
+];
+const STORAGE_META_PREFIXO = "copa_meta_";
+
+function chaveMetaEstado(nome, turma, mod) {
+    return `${STORAGE_META_PREFIXO}${chaveVinculo(nome, turma)}_${mod}`;
+}
+function obterEstadoMeta(nome, turma, mod) {
+    try {
+        const raw = localStorage.getItem(chaveMetaEstado(nome, turma, mod));
+        return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+}
+function salvarEstadoMeta(nome, turma, mod, estado) {
+    try { localStorage.setItem(chaveMetaEstado(nome, turma, mod), JSON.stringify(estado)); } catch(e) {}
+}
+function calcularPctProgressoMeta(atual, alvo) {
+    if (!alvo || alvo <= 0) return 0;
+    return Math.max(0, Math.min(100, (atual / alvo) * 100));
+}
+function classeProgressoMeta(pct) {
+    if (pct >= 100) return "meta-p-100";
+    if (pct >= 67)  return "meta-p-66";
+    if (pct >= 34)  return "meta-p-33";
+    return "meta-p-0";
+}
+function motivacaoPorPct(pct) {
+    if (pct >= 100) return "🎉 Meta conquistada! Estabeleça uma nova!";
+    if (pct >= 67)  return "💪 Você está muito perto! Jogue mais uma vez!";
+    if (pct >= 34)  return "🔥 Você está no caminho certo!";
+    return "💪 Continue firme! Cada partida é uma chance!";
+}
+function formatarPtsMeta(n) {
+    return Math.round(n).toLocaleString("pt-BR");
+}
+function obterModalidadeMetaAtual() {
+    const sel = document.getElementById("modalidade-tabuada");
+    return sel && sel.value ? sel.value : "0-10";
+}
+
+async function calcularMetaPessoal(nome, turma, mod) {
+    const partidas = await obterHistoricoAluno(nome, turma, mod);
+    const ranking = await obterRankingPorPontos(mod, turma);
+    const totalPartidas = partidas.length;
+    const melhorPontuacao = totalPartidas ? Math.max(...partidas.map(p => Number(p.pontos) || 0)) : 0;
+    const idx = ranking.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+    const posicao = idx === -1 ? null : idx + 1;
+    const estado = obterEstadoMeta(nome, turma, mod);
+    const posicaoAnterior = estado.ultimaPosicao || null;
+
+    // 1. Nunca jogou
+    if (totalPartidas === 0) {
+        return {
+            tipo: "primeira_partida", icone: "🎯",
+            mensagem: "🎯 Jogue sua primeira partida para começar!",
+            valorAtual: 0, valorMeta: 0, mostrarComparacao: false,
+            progressoPct: 0, motivacao: "💪 Cada jornada tem um começo!",
+            conquistada: false
+        };
+    }
+
+    // 2. É líder
+    if (posicao === 1) {
+        return {
+            tipo: "lider", icone: "👑",
+            mensagem: "👑 Você é o líder da turma! Defenda sua posição!",
+            valorAtual: melhorPontuacao, valorMeta: melhorPontuacao,
+            mostrarComparacao: false, progressoPct: 100,
+            motivacao: "🎯 Mantenha o ritmo — cada partida conta!",
+            conquistada: false
+        };
+    }
+
+    // 3. Bateu 17k
+    if (melhorPontuacao >= 17000) {
+        return {
+            tipo: "mestre", icone: "🌟",
+            mensagem: "🌟 Você é MESTRE! 17.000+ pontos alcançados!",
+            valorAtual: melhorPontuacao, valorMeta: 17000,
+            mostrarComparacao: true, progressoPct: 100,
+            motivacao: "🎉 Meta máxima conquistada! Agora é manter o título!",
+            conquistada: true
+        };
+    }
+
+    // 4. Caiu posição recentemente
+    if (posicaoAnterior && posicao && posicao > posicaoAnterior + 1) {
+        const caiu = posicao - posicaoAnterior;
+        const proximo = ranking[posicao - 2];
+        const alvoValor = proximo ? proximo.pontos + 1 : melhorPontuacao + 100;
+        const falta = Math.max(0, alvoValor - melhorPontuacao);
+        return {
+            tipo: "recuperar", icone: "📈",
+            mensagem: `📈 Você caiu ${caiu} ${caiu === 1 ? "posição" : "posições"}. Recupere!`,
+            valorAtual: melhorPontuacao, valorMeta: alvoValor,
+            mostrarComparacao: true,
+            progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor),
+            motivacao: `🎯 Faltam ${formatarPtsMeta(falta)} pts para recuperar`,
+            conquistada: false
+        };
+    }
+
+    // 5. Top 4 (classificado)
+    if (posicao && posicao <= 4) {
+        const proximo = ranking[posicao - 2];
+        const alvoValor = proximo ? proximo.pontos + 1 : melhorPontuacao + 100;
+        return {
+            tipo: "classificado", icone: "🎟️",
+            mensagem: `🎟️ Você está CLASSIFICADO! ${posicao}º lugar — não escorregue!`,
+            valorAtual: melhorPontuacao, valorMeta: alvoValor,
+            mostrarComparacao: true,
+            progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor),
+            motivacao: posicao === 1 ? "👑 Você é o líder!" : `🎯 Suba mais ${posicao - 1} ${posicao - 1 === 1 ? "posição" : "posições"} para o 1º lugar`,
+            conquistada: false
+        };
+    }
+
+    // 6. Top 6 (reserva, fora do Top 4)
+    if (posicao && posicao <= 6) {
+        const q4 = ranking[3];
+        const alvoValor = q4 ? q4.pontos + 1 : melhorPontuacao + 50;
+        const falta = Math.max(0, alvoValor - melhorPontuacao);
+        return {
+            tipo: "quase_top4", icone: "💪",
+            mensagem: `💪 Faltam ${formatarPtsMeta(falta)} pts para voltar ao Top 4!`,
+            valorAtual: melhorPontuacao, valorMeta: alvoValor,
+            mostrarComparacao: true,
+            progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor),
+            motivacao: "🔥 Você está na zona de reserva — quase lá!",
+            conquistada: false
+        };
+    }
+
+    // 7. Fora do Top 6
+    if (posicao && posicao > 6) {
+        const q6 = ranking[5];
+        const alvoValor = q6 ? q6.pontos + 1 : melhorPontuacao + 100;
+        const falta = Math.max(0, alvoValor - melhorPontuacao);
+        return {
+            tipo: "top6", icone: "🎯",
+            mensagem: `🎯 Faltam ${formatarPtsMeta(falta)} pts para entrar no Top 6!`,
+            valorAtual: melhorPontuacao, valorMeta: alvoValor,
+            mostrarComparacao: true,
+            progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor),
+            motivacao: "💪 Cada partida te aproxima da classificação!",
+            conquistada: false
+        };
+    }
+
+    // 8. Marcos de pontuação (5k/8k/12k/17k)
+    for (const marco of MARCOS_PONTOS) {
+        if (melhorPontuacao < marco.pts) {
+            const pct = calcularPctProgressoMeta(melhorPontuacao, marco.pts);
+            return {
+                tipo: "marco_pontos", icone: marco.icone,
+                mensagem: `${marco.icone} Alcance ${formatarPtsMeta(marco.pts)} pontos (${marco.nome})!`,
+                valorAtual: melhorPontuacao, valorMeta: marco.pts,
+                mostrarComparacao: true, progressoPct: pct,
+                motivacao: motivacaoPorPct(pct),
+                conquistada: false
+            };
+        }
+    }
+
+    // 9. Fallback: bater recorde pessoal (+3% + 50)
+    const meta = Math.round(melhorPontuacao * 1.03) + 50;
+    return {
+        tipo: "recorde_pessoal", icone: "🏆",
+        mensagem: `🏆 Bata seu recorde de ${formatarPtsMeta(melhorPontuacao)} pontos!`,
+        valorAtual: melhorPontuacao, valorMeta: meta,
+        mostrarComparacao: true, progressoPct: 97,
+        motivacao: "💪 Você está muito perto! Jogue mais uma vez!",
+        conquistada: false
+    };
+}
+
+async function verificarCelebracaoMeta(nome, turma, mod, meta) {
+    const estado = obterEstadoMeta(nome, turma, mod);
+    const chaveMetaAtual = `${meta.tipo}|${meta.valorMeta}`;
+    const jaCelebrou = estado.metaCelebrada === chaveMetaAtual;
+    if (meta.conquistada && !jaCelebrou) {
+        setTimeout(() => {
+            if (somAtivo) somNovoRecorde();
+            dispararConfetes();
+        }, 500);
+        estado.metaCelebrada = chaveMetaAtual;
+    }
+    // Atualiza posição para detectar "caiu" na próxima
+    try {
+        const ranking = await obterRankingPorPontos(mod, turma);
+        const idx = ranking.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+        const posicaoAtual = idx === -1 ? null : idx + 1;
+        if (posicaoAtual !== null) estado.ultimaPosicao = posicaoAtual;
+    } catch(e) {}
+    salvarEstadoMeta(nome, turma, mod, estado);
+}
+
+async function renderizarMetaPessoal() {
+    const container = document.getElementById("meta-pessoal-container");
+    if (!container) return;
+
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    const mod = obterModalidadeMetaAtual();
+
+    // Sem identificação: mostra primeira partida
+    if (!nome || !turma) {
+        container.innerHTML = `
+            <div class="meta-card meta-vazio">
+                <div class="meta-kicker">🎯 Sua próxima meta</div>
+                <p class="meta-mensagem">🎯 Jogue sua primeira partida para começar!</p>
+                <div class="meta-motivacao">💪 Cada jornada tem um começo!</div>
+            </div>`;
+        return;
+    }
+
+    let meta;
+    try {
+        meta = await calcularMetaPessoal(nome, turma, mod);
+    } catch(e) {
+        console.warn("Falha ao calcular meta pessoal:", e);
+        container.innerHTML = "";
+        return;
+    }
+
+    const classes = ["meta-card"];
+    if (meta.conquistada) classes.push("meta-conquistada");
+    if (!meta.mostrarComparacao) classes.push("meta-vazio");
+
+    let html = `<div class="${classes.join(" ")}">
+        <div class="meta-kicker">🎯 Sua próxima meta</div>`;
+    if (meta.conquistada) html += `<div class="meta-selo">🎉 Meta conquistada!</div>`;
+    html += `<p class="meta-mensagem">${escaparHtml(meta.mensagem)}</p>`;
+    if (meta.mostrarComparacao) {
+        html += `<div class="meta-comparacao">
+            <div class="meta-comp-item">
+                <span class="meta-comp-rotulo">📊 Seu melhor</span>
+                <span class="meta-comp-valor">${formatarPtsMeta(meta.valorAtual)}<span class="unidade">pts</span></span>
+            </div>
+            <div class="meta-comp-item">
+                <span class="meta-comp-rotulo">🎯 Sua meta</span>
+                <span class="meta-comp-valor">${formatarPtsMeta(meta.valorMeta)}<span class="unidade">pts</span></span>
+            </div>
+        </div>`;
+    }
+    const pct = Math.max(0, Math.min(100, meta.progressoPct || 0));
+    html += `<div class="meta-progresso-wrap">
+        <div class="meta-progresso-cabecalho">
+            <span>Progresso</span>
+            <span class="pct">${Math.round(pct)}%</span>
+        </div>
+        <div class="meta-progresso-trilha">
+            <div class="meta-progresso-fill ${classeProgressoMeta(pct)}" style="width: 0%"></div>
+        </div>
+    </div>`;
+    html += `<div class="meta-motivacao">${escaparHtml(meta.motivacao)}</div>`;
+    html += `</div>`;
+
+    const jaRenderizado = container.querySelector(".meta-card");
+    if (jaRenderizado) {
+        container.classList.add("meta-trocando");
+        setTimeout(() => {
+            container.innerHTML = html;
+            container.classList.remove("meta-trocando");
+            animarBarraMetaPessoal(container, pct);
+        }, 200);
+    } else {
+        container.innerHTML = html;
+        animarBarraMetaPessoal(container, pct);
+    }
+
+    await verificarCelebracaoMeta(nome, turma, mod, meta);
+}
+
+function animarBarraMetaPessoal(container, pct) {
+    const fill = container.querySelector(".meta-progresso-fill");
+    if (!fill) return;
+    fill.style.width = "0%";
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => { fill.style.width = pct + "%"; });
+    });
+}
+
+// ==================== FIM DO BLOCO DO ÁLBUM/META ====================
 
 let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
 let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
@@ -3621,6 +4128,7 @@ function mostrarTela(id) {
         document.getElementById(t)?.classList.add("hidden");
     });
     document.getElementById(id)?.classList.remove("hidden");
+    if (id === "tela-inicial") renderizarMetaPessoal();
     if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
     if (id === "tela-painel") { renderizarPainelVotacao(); renderizarPainelConfig(); }
     if (id !== "tela-resultado") {
@@ -4846,7 +5354,7 @@ async function confirmarReset() {
     const partidas = await obterPartidas();
     const partidasN = partidas.filter(p => !resultadoCombinaFiltro(p, turma, mod));
     for (const p of partidas) { if (!partidasN.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).remove(); }
-        await limparCopaV2PorFiltro(turma, mod);
+    await limparCopaV2PorFiltro(turma, mod);
     limparLocalStorageCopaV2(turma, mod);
     await limparAlbumPorFiltro(turma);
     if (limparVinculos) {
