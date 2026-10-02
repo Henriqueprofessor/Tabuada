@@ -1475,7 +1475,7 @@
             <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
             <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
         </div>
-        <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 1-10</option><option value="todas">📚 TODAS</option></select><label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label><p style="font-size:11px;color:#856404;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.</p><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
+        <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 1-10</option><option value="todas">📚 TODAS</option></select><label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label><p style="font-size:11px;color:#856404;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.<br>O reset também apaga as <strong>medalhas, estrelas e seções completas do Álbum</strong> do aluno.</p><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
         <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
     </div>
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -2164,7 +2164,42 @@ function fecharModalSecaoCompleta(e) {
     if (albumEstado) albumEstado.novasSecoes = [];
     document.querySelector("#album-conteudo-view .album-btn-voltar-capa")?.focus();
 }
+// ==================== ÁLBUM — Limpeza no reset ====================
+// Chamado pelo painel do professor em confirmarReset().
+// turma === "todas" → apaga TODOS os nós do álbum de uma vez.
+// turma específica  → apaga apenas as entradas cuja chave termina em "|{turma}".
 
+async function limparAlbumPorFiltro(turma) {
+    const caminhos = [
+        CAMINHO_MEDALS,
+        CAMINHO_ESTRELAS,
+        CAMINHO_SECOES_COMPLETAS,
+        CAMINHO_POSICAO_BASELINE,
+        CAMINHO_SNAPSHOT_DIARIO
+    ];
+
+    if (turma === "todas") {
+        for (const c of caminhos) {
+            try { await database.ref(c).remove(); }
+            catch(e) { console.warn(`Erro ao limpar ${c}:`, e); }
+        }
+        // Zera o contador local de "medalhas vistas" (senão o badge fica com estado inconsistente)
+        try { localStorage.removeItem("copa_album_vistas_count"); } catch(e) {}
+        return;
+    }
+
+    const sufixo = `|${turma}`;
+    for (const c of caminhos) {
+        try {
+            const snap = await database.ref(c).once("value");
+            const dados = snap.val() || {};
+            const alvos = Object.keys(dados).filter(k => k.endsWith(sufixo));
+            for (const chave of alvos) {
+                await database.ref(`${c}/${chave}`).remove();
+            }
+        } catch(e) { console.warn(`Erro ao limpar ${c} da turma ${turma}:`, e); }
+    }
+}
 // ==================== ÁLBUM — Parte 6: badge, sons e integração com resultado ====================
 const STORAGE_ALBUM_VISTAS = "copa_album_vistas_count";
 
@@ -4811,8 +4846,9 @@ async function confirmarReset() {
     const partidas = await obterPartidas();
     const partidasN = partidas.filter(p => !resultadoCombinaFiltro(p, turma, mod));
     for (const p of partidas) { if (!partidasN.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).remove(); }
-    await limparCopaV2PorFiltro(turma, mod);
+        await limparCopaV2PorFiltro(turma, mod);
     limparLocalStorageCopaV2(turma, mod);
+    await limparAlbumPorFiltro(turma);
     if (limparVinculos) {
         try { await database.ref(CAMINHO_VINCULOS).remove(); notificar("Todos os vínculos de dispositivo foram removidos.", "info", 4000); }
         catch(e) { console.warn("Erro ao limpar vínculos:", e); notificar("Aviso: não foi possível limpar os vínculos agora.", "aviso", 4000); }
