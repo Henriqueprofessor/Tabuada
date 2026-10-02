@@ -2046,7 +2046,38 @@ async function migrarConquistasAntigas(nome, turma) {
     });
     if (alterou) await salvarMedalsFirebase(nome, turma, persistidas);
 }
+// ==================== ÁLBUM — Sincronização de medalhas (Parte 1 + Parte 5) ====================
+// Detecta medalhas novas, persiste no Firebase com data, verifica seções completas
+// e recalcula as estrelas totais. Chamada a cada abertura do álbum e após cada partida.
 
+async function sincronizarMedalhas(nome, turma) {
+    const dados = await compilarDadosAluno(nome, turma);
+    const { desbloqueadas } = calcularMedalhasDesbloqueadas(dados);
+    const persistidas = dados._medalhasPersistidas || {};
+    const agora = new Date().toISOString();
+    const novas = [];
+
+    desbloqueadas.forEach(m => {
+        if (!persistidas[m.id]) {
+            persistidas[m.id] = { data: agora };
+            novas.push(m.id);
+        }
+    });
+
+    if (novas.length > 0) await salvarMedalsFirebase(nome, turma, persistidas);
+
+    // Parte 5 — verifica seções completas + recalcula estrelas
+    const secoes = await verificarSecoesCompletas(nome, turma, persistidas);
+
+    return {
+        persistidas,
+        novas,
+        dados,
+        novasSecoes: secoes.novasSecoes,
+        estrelas: secoes.estrelas,
+        secoesCompletas: secoes.reg
+    };
+}
 // ==================== ÁLBUM — Parte 5: seções completas + recompensas ====================
 async function obterSecoesCompletas(nome, turma) {
     try { const snap = await database.ref(`${CAMINHO_SECOES_COMPLETAS}/${chaveAlbum(nome, turma)}`).once("value"); return snap.val() || {}; }
