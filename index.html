@@ -723,7 +723,9 @@
         #desempenho-conteudo > #desempenho-turma          { animation: desempenhoFadeUp 0.4s ease 0.40s backwards; }
         #desempenho-conteudo > .desempenho-secao-titulo:nth-of-type(4) { animation: desempenhoFadeUp 0.4s ease 0.48s backwards; }
         #desempenho-conteudo > #desempenho-evolucao       { animation: desempenhoFadeUp 0.4s ease 0.52s backwards; }
-        #desempenho-conteudo > .desempenho-nota-rodape    { animation: desempenhoFadeUp 0.4s ease 0.60s backwards; }
+        #desempenho-conteudo > .desempenho-secao-titulo:nth-of-type(5) { animation: desempenhoFadeUp 0.4s ease 0.56s backwards; }
+        #desempenho-conteudo > #desempenho-historico      { animation: desempenhoFadeUp 0.4s ease 0.60s backwards; }
+        #desempenho-conteudo > .desempenho-nota-rodape    { animation: desempenhoFadeUp 0.4s ease 0.68s backwards; }
         @keyframes desempenhoFadeUp {
             from { opacity: 0; transform: translateY(-6px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -1373,6 +1375,270 @@
             .meta-card { box-shadow: none; }
             .meta-card::after { display: none; }
         }
+
+        /* ==================== HISTÓRICO DE PARTIDAS — v8.2 ==================== */
+        .desempenho-historico-wrap {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 14px;
+            padding: 18px 18px 14px;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .desempenho-historico-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            padding-bottom: 14px;
+            margin-bottom: 4px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13.5px;
+            color: #475569;
+            line-height: 1.4;
+            flex-wrap: wrap;
+        }
+        .desempenho-historico-cabecalho-esq {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .desempenho-historico-cabecalho-emoji {
+            font-size: 24px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .desempenho-historico-cabecalho-txt strong {
+            color: #102a43;
+            font-weight: 800;
+        }
+        .desempenho-historico-contagem {
+            font-size: 12px;
+            font-weight: 800;
+            color: #0066cc;
+            background: #e7f5ff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: .2px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .desempenho-historico-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 2px;
+            margin-top: 10px;
+        }
+        .desempenho-historico-tabela {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 560px;
+        }
+        .desempenho-historico-tabela thead th {
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .desempenho-historico-tabela thead th.col-num { text-align: right; }
+        .desempenho-historico-tabela tbody td {
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+        .desempenho-historico-tabela tbody tr:last-child td { border-bottom: none; }
+        .desempenho-historico-tabela tbody tr:hover {
+            background: #f8fafc;
+        }
+        .desempenho-historico-tabela tbody tr.linha-recorde {
+            background: linear-gradient(90deg, #fff8e1 0%, rgba(255,248,225,0.35) 100%);
+        }
+        .desempenho-historico-tabela tbody tr.linha-recorde:hover {
+            background: linear-gradient(90deg, #fef3c7 0%, rgba(254,243,199,0.45) 100%);
+        }
+        .desempenho-historico-tabela tbody tr.linha-recorde td:first-child {
+            border-left: 3px solid #fbbf24;
+            padding-left: 7px;
+        }
+        .col-data {
+            white-space: nowrap;
+            font-weight: 600;
+            color: #102a43;
+            font-size: 12.5px;
+        }
+        .col-data .hora {
+            color: #94a3b8;
+            font-weight: 600;
+            margin-left: 3px;
+        }
+        .col-modalidade {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #0066cc;
+            background: #e7f5ff;
+            padding: 3px 9px !important;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 6px 0;
+            letter-spacing: .2px;
+            white-space: nowrap;
+        }
+        tbody tr.linha-recorde .col-modalidade {
+            background: #fff;
+            border: 1px solid #fde68a;
+        }
+        .col-pontos {
+            text-align: right;
+            font-weight: 800;
+            color: #0066cc;
+            font-size: 14.5px;
+            white-space: nowrap;
+            letter-spacing: -.2px;
+        }
+        tbody tr.linha-recorde .col-pontos {
+            color: #b45309;
+        }
+        .col-pontos .trofeu {
+            font-size: 12px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        .col-acertos {
+            text-align: right;
+            font-weight: 700;
+            color: #334155;
+            white-space: nowrap;
+        }
+        .col-acertos .denominador {
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 11.5px;
+            margin-left: 1px;
+        }
+        .col-acertos.alto { color: #15803d; }
+        .col-acertos.baixo { color: #b91c1c; }
+        .col-tempo {
+            text-align: right;
+            color: #475569;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .col-sequencia {
+            text-align: right;
+            font-weight: 700;
+            color: #334155;
+            white-space: nowrap;
+        }
+        .col-sequencia .fogo {
+            color: #fd7e14;
+            margin-right: 2px;
+        }
+        .col-sequencia.zero { color: #cbd5e1; font-weight: 600; }
+        .desempenho-historico-nota {
+            font-size: 11.5px;
+            color: #94a3b8;
+            margin: 10px 0 0;
+            line-height: 1.55;
+            text-align: left;
+        }
+        .desempenho-historico-nota strong { color: #64748b; }
+        .desempenho-historico-skeleton {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 0;
+        }
+        .desempenho-historico-skeleton .linha-sk {
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #e9ecef 25%, #f8f9fa 50%, #e9ecef 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        @media (prefers-color-scheme: dark) {
+            .desempenho-historico-wrap {
+                background: #2a2a2a;
+                border-color: #3a3a3a;
+            }
+            .desempenho-historico-cabecalho {
+                border-color: #334155;
+                color: #cbd5e1;
+            }
+            .desempenho-historico-cabecalho-txt strong { color: #f0f0f0; }
+            .desempenho-historico-contagem {
+                background: #1e3a5a;
+                color: #93c5fd;
+            }
+            .desempenho-historico-tabela thead th {
+                background: #1e293b;
+                color: #94a3b8;
+                border-bottom-color: #334155;
+            }
+            .desempenho-historico-tabela tbody td {
+                border-bottom-color: #334155;
+                color: #cbd5e1;
+            }
+            .desempenho-historico-tabela tbody tr:hover {
+                background: #1e293b;
+            }
+            .desempenho-historico-tabela tbody tr.linha-recorde {
+                background: linear-gradient(90deg, #3a2e1a 0%, rgba(58,46,26,0.35) 100%);
+            }
+            .desempenho-historico-tabela tbody tr.linha-recorde:hover {
+                background: linear-gradient(90deg, #4a3a1a 0%, rgba(74,58,26,0.5) 100%);
+            }
+            .desempenho-historico-tabela tbody tr.linha-recorde td:first-child {
+                border-left-color: #fbbf24;
+            }
+            .col-data { color: #f0f0f0; }
+            .col-data .hora { color: #94a3b8; }
+            .col-modalidade {
+                background: #1e3a5a;
+                color: #93c5fd;
+            }
+            tbody tr.linha-recorde .col-modalidade {
+                background: #2a2a2a;
+                border-color: #854d0e;
+            }
+            .col-pontos { color: #4a9eff; }
+            tbody tr.linha-recorde .col-pontos { color: #ffd166; }
+            .col-acertos { color: #cbd5e1; }
+            .col-acertos .denominador { color: #64748b; }
+            .col-acertos.alto { color: #86efac; }
+            .col-acertos.baixo { color: #fca5a5; }
+            .col-tempo { color: #94a3b8; }
+            .col-sequencia { color: #cbd5e1; }
+            .col-sequencia.zero { color: #475569; }
+            .desempenho-historico-nota { color: #64748b; }
+            .desempenho-historico-nota strong { color: #94a3b8; }
+            .desempenho-historico-skeleton .linha-sk {
+                background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+                background-size: 200% 100%;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .desempenho-historico-tabela tbody tr { transition: none !important; }
+            .desempenho-historico-skeleton .linha-sk { animation: none; }
+        }
+        @media (max-width: 520px) {
+            .desempenho-historico-wrap { padding: 14px 12px 10px; }
+            .desempenho-historico-cabecalho-emoji { font-size: 20px; }
+            .desempenho-historico-tabela { font-size: 12.5px; }
+            .desempenho-historico-tabela thead th,
+            .desempenho-historico-tabela tbody td { padding: 8px 6px; }
+            .col-pontos { font-size: 13.5px; }
+        }
     </style>
 </head>
 <body>
@@ -1409,7 +1675,7 @@
             📖 Como funciona
         </button>
         <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">
-            ⚙️ v<span id="changelog-versao-atual">8.1</span> · histórico
+            ⚙️ v<span id="changelog-versao-atual">8.2</span> · histórico
         </button>
     </div>
 </div>
@@ -1629,6 +1895,10 @@
         <h3 class="desempenho-secao-titulo" style="margin-top:24px;">🏁 Evolução no ranking</h3>
         <div id="desempenho-evolucao" class="desempenho-evolucao-wrap">
             <div class="desempenho-loading">⏳ Calculando sua trajetória…</div>
+        </div>
+        <h3 class="desempenho-secao-titulo" style="margin-top:24px;">📋 Histórico completo</h3>
+        <div id="desempenho-historico" class="desempenho-historico-wrap">
+            <div class="desempenho-loading">⏳ Carregando seu histórico…</div>
         </div>
         <p class="desempenho-nota-rodape">
             💡 Estas estatísticas consideram todas as suas partidas oficiais. A modalidade "Todas" soma o desempenho em 2-5, 6-9 e 1-10.
@@ -1877,7 +2147,12 @@
         </div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual">v8.1 · atual</span>
+                <span class="changelog-versao atual">v8.2 · atual</span>
+                <h4 class="changelog-titulo">📋 Histórico completo de partidas</h4>
+                <p class="changelog-descricao">Nova seção em "Meu Desempenho" com a <strong>lista completa das suas partidas</strong>. Cada linha mostra data, hora, modalidade, pontos, acertos, tempo médio e maior sequência. Seu <strong>recorde pessoal</strong> ganha um destaque dourado com 🏆. Reaproveita o filtro de modalidade existente — quer ver só as partidas de tabuadas 6-9? É só clicar. A lista é atualizada automaticamente a cada nova partida.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v8.1</span>
                 <h4 class="changelog-titulo">🎯 Meta Pessoal</h4>
                 <p class="changelog-descricao">Um card de incentivo na tela inicial mostra ao aluno <strong>qual é a próxima meta dele</strong> — sempre baseada no próprio desempenho, nunca na comparação com os outros. O card identifica automaticamente 9 situações: primeira partida, líder, Top 4 (classificação), Top 6 (reserva), fora do Top 6, marcos de pontuação (5 mil / 8 mil / 12 mil / 17 mil), queda de posição recente e título de Mestre. Tem <strong>barra de progresso colorida</strong> por faixa (vermelho → amarelo → verde → dourado), <strong>frases motivacionais dinâmicas</strong>, <strong>estado "meta conquistada"</strong> com fundo dourado brilhante, som e confetes — e recalculado automaticamente a cada partida.</p>
             </div>
@@ -1998,7 +2273,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "8.1";
+const APP_VERSION = "8.2";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -2217,7 +2492,7 @@ async function compilarDadosAluno(nome, turma) {
     const melhorouNaSegundaTentativa = Object.values(porMod).some(lista => lista.length >= 2 && Number(lista[1].pontos) > Number(lista[0].pontos));
     const modalidadesJogadas = new Set(partidas.map(p => p.modalidade)).size;
     const operacoesExploradas = Object.values(mapaGlobal).filter(d => d && d.tentativas > 0).length;
-    const treinosFocados = partidas.filter(p => Array.isArray(p.treinoFocado) && p.treinoFocado.length > 0).length;
+    const treinosFocados = partidas.filter(p => Array.isArray(p.treinoFocado) && p.treinoFoco && p.treinoFocado.length > 0).length;
     const posicoes = {};
     for (const mod of Object.keys(MODALIDADES)) {
         try {
@@ -2928,7 +3203,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
     const estado = obterEstadoMeta(nome, turma, mod);
     const posicaoAnterior = estado.ultimaPosicao || null;
 
-    // 1. Nunca jogou
     if (totalPartidas === 0) {
         return {
             tipo: "primeira_partida", icone: "🎯",
@@ -2939,7 +3213,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         };
     }
 
-    // 2. É líder
     if (posicao === 1) {
         return {
             tipo: "lider", icone: "👑",
@@ -2951,7 +3224,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         };
     }
 
-    // 3. Bateu 17k
     if (melhorPontuacao >= 17000) {
         return {
             tipo: "mestre", icone: "🌟",
@@ -2963,7 +3235,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         };
     }
 
-    // 4. Caiu posição recentemente
     if (posicaoAnterior && posicao && posicao > posicaoAnterior + 1) {
         const caiu = posicao - posicaoAnterior;
         const proximo = ranking[posicao - 2];
@@ -2980,7 +3251,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         };
     }
 
-    // 5. Top 4 (classificado)
     if (posicao && posicao <= 4) {
         const proximo = ranking[posicao - 2];
         const alvoValor = proximo ? proximo.pontos + 1 : melhorPontuacao + 100;
@@ -2995,7 +3265,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         };
     }
 
-    // 6. Top 6 (reserva, fora do Top 4)
     if (posicao && posicao <= 6) {
         const q4 = ranking[3];
         const alvoValor = q4 ? q4.pontos + 1 : melhorPontuacao + 50;
@@ -3011,7 +3280,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         };
     }
 
-    // 7. Fora do Top 6
     if (posicao && posicao > 6) {
         const q6 = ranking[5];
         const alvoValor = q6 ? q6.pontos + 1 : melhorPontuacao + 100;
@@ -3027,7 +3295,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         };
     }
 
-    // 8. Marcos de pontuação (5k/8k/12k/17k)
     for (const marco of MARCOS_PONTOS) {
         if (melhorPontuacao < marco.pts) {
             const pct = calcularPctProgressoMeta(melhorPontuacao, marco.pts);
@@ -3042,7 +3309,6 @@ async function calcularMetaPessoal(nome, turma, mod) {
         }
     }
 
-    // 9. Fallback: bater recorde pessoal (+3% + 50)
     const meta = Math.round(melhorPontuacao * 1.03) + 50;
     return {
         tipo: "recorde_pessoal", icone: "🏆",
@@ -3065,7 +3331,6 @@ async function verificarCelebracaoMeta(nome, turma, mod, meta) {
         }, 500);
         estado.metaCelebrada = chaveMetaAtual;
     }
-    // Atualiza posição para detectar "caiu" na próxima
     try {
         const ranking = await obterRankingPorPontos(mod, turma);
         const idx = ranking.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
@@ -3083,7 +3348,6 @@ async function renderizarMetaPessoal() {
     const turma = obterTurmaSalvaAluno();
     const mod = obterModalidadeMetaAtual();
 
-    // Sem identificação: mostra primeira partida
     if (!nome || !turma) {
         container.innerHTML = `
             <div class="meta-card meta-vazio">
@@ -3161,7 +3425,125 @@ function animarBarraMetaPessoal(container, pct) {
     });
 }
 
-// ==================== FIM DO BLOCO DO ÁLBUM/META ====================
+// ==================== HISTÓRICO DE PARTIDAS — v8.2 ====================
+
+function formatarDataHoraHistorico(dataISO) {
+    if (!dataISO) return { data: "--", hora: "" };
+    const d = new Date(dataISO);
+    if (isNaN(d.getTime())) return { data: "--", hora: "" };
+
+    const agora = new Date();
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    const alvo = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDias = Math.round((hoje - alvo) / (1000 * 60 * 60 * 24));
+
+    const hora = `${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`;
+
+    if (diffDias === 0) return { data: "hoje", hora };
+    if (diffDias === 1) return { data: "ontem", hora };
+    if (d.getFullYear() === agora.getFullYear()) {
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        return { data: `${dd}/${mm}`, hora };
+    }
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const aa = String(d.getFullYear()).slice(-2);
+    return { data: `${dd}/${mm}/${aa}`, hora };
+}
+
+function abreviarModalidade(mod) {
+    if (mod === "2-5")  return "2-5";
+    if (mod === "6-9")  return "6-9";
+    if (mod === "0-10") return "1-10";
+    return mod || "—";
+}
+
+function renderizarHistoricoPartidas() {
+    const container = document.getElementById("desempenho-historico");
+    if (!container) return;
+
+    if (!container.querySelector(".desempenho-historico-tabela")) {
+        container.innerHTML = `<div class="desempenho-historico-skeleton">
+            <div class="linha-sk"></div><div class="linha-sk"></div><div class="linha-sk"></div>
+            <div class="linha-sk"></div><div class="linha-sk"></div>
+        </div>`;
+    }
+
+    const partidas = desempenhoPartidasFiltradas || [];
+
+    if (!partidas.length) {
+        const mod = desempenhoModalidadeAtual;
+        const nomeMod = mod === "todas" ? "" : ` em <strong>${MODALIDADES[mod]?.nome || mod}</strong>`;
+        container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não jogou nenhuma partida${nomeMod}.<br>Escolha outra modalidade ou comece a jogar para ver seu histórico aqui.</div>`;
+        return;
+    }
+
+    const ordenadas = [...partidas].sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+
+    const melhorPontos = Math.max(...ordenadas.map(p => Number(p.pontos) || 0));
+    let recordeJaMarcado = false;
+
+    const linhas = ordenadas.map(p => {
+        const pontos = Number(p.pontos) || 0;
+        const acertos = Number(p.acertos) || 0;
+        const tempo = Number(p.tempoMedio) || 0;
+        const seq = Number(p.maiorSequencia) || 0;
+        const { data, hora } = formatarDataHoraHistorico(p.data);
+
+        const ehRecorde = pontos === melhorPontos && !recordeJaMarcado;
+        if (ehRecorde) recordeJaMarcado = true;
+
+        const clsAcertos = acertos >= 17 ? "alto" : (acertos <= 10 ? "baixo" : "");
+        const clsSeq = seq === 0 ? "zero" : "";
+
+        return `<tr class="${ehRecorde ? "linha-recorde" : ""}">
+            <td class="col-data">${data}<span class="hora">· ${hora}</span></td>
+            <td><span class="col-modalidade">${abreviarModalidade(p.modalidade)}</span></td>
+            <td class="col-pontos">${pontos.toLocaleString("pt-BR")}${ehRecorde ? '<span class="trofeu">🏆</span>' : ""}</td>
+            <td class="col-acertos ${clsAcertos}">${acertos}<span class="denominador">/20</span></td>
+            <td class="col-tempo">${tempo.toFixed(2)}s</td>
+            <td class="col-sequencia ${clsSeq}">${seq > 0 ? `<span class="fogo">🔥</span>${seq}` : "—"}</td>
+        </tr>`;
+    }).join("");
+
+    const total = ordenadas.length;
+    const pluralPartida = total === 1 ? "partida" : "partidas";
+
+    container.innerHTML = `
+        <div class="desempenho-historico-cabecalho">
+            <div class="desempenho-historico-cabecalho-esq">
+                <span class="desempenho-historico-cabecalho-emoji">📋</span>
+                <span class="desempenho-historico-cabecalho-txt">
+                    Suas <strong>${total} ${pluralPartida}</strong> registradas
+                </span>
+            </div>
+            <span class="desempenho-historico-contagem">${total} ${pluralPartida}</span>
+        </div>
+        <div class="desempenho-historico-scroll">
+            <table class="desempenho-historico-tabela">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Modalidade</th>
+                        <th class="col-num">Pontos</th>
+                        <th class="col-num">Acertos</th>
+                        <th class="col-num">Tempo</th>
+                        <th class="col-num">Sequência</th>
+                    </tr>
+                </thead>
+                <tbody>${linhas}</tbody>
+            </table>
+        </div>
+        <p class="desempenho-historico-nota">
+            🏆 Marca seu <strong>recorde pessoal</strong> nesta modalidade.
+            ${desempenhoModalidadeAtual !== "todas" ? `Mostrando só partidas de <strong>${MODALIDADES[desempenhoModalidadeAtual]?.nome}</strong>. ` : ""}
+            A lista é atualizada a cada nova partida oficial.
+        </p>
+    `;
+}
+
+// ==================== FIM DO BLOCO DO ÁLBUM/META/HISTÓRICO ====================
 
 let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
 let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
@@ -4989,6 +5371,7 @@ async function carregarMeuDesempenho(nomeForcado, turmaForcada) {
     document.getElementById("desempenho-chart").innerHTML = skeletonTexto(2);
     document.getElementById("desempenho-turma").innerHTML = skeletonTexto(3);
     document.getElementById("desempenho-evolucao").innerHTML = skeletonTexto(3);
+    document.getElementById("desempenho-historico").innerHTML = `<div class="desempenho-historico-skeleton"><div class="linha-sk"></div><div class="linha-sk"></div><div class="linha-sk"></div></div>`;
     let partidas = [];
     try { partidas = await obterHistoricoAluno(nome, turma); }
     catch(e) { console.warn("Falha ao carregar histórico para desempenho:", e); }
@@ -5015,6 +5398,7 @@ function renderizarDesempenho() {
     renderizarGraficoDesempenho();
     renderizarComparativoTurma();
     renderizarEvolucaoRanking();
+    renderizarHistoricoPartidas();
 }
 function renderizarEstatisticasDesempenho() {
     const container = document.getElementById("desempenho-stats");
