@@ -2299,7 +2299,7 @@
     </div>
     <div class="atalhos-iniciais">
         <button class="changelog-trigger" onclick="abrirComoFunciona()" title="Como funciona a Copa">📖 Como funciona</button>
-        <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.7</span> · histórico</button>
+        <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.7.1</span> · histórico</button>
     </div>
 </div>
 
@@ -2586,6 +2586,18 @@
         <div class="senha-container" style="margin-bottom:16px;">
             <h4 style="margin-top:0;">💬 Mensagens dos alunos <span id="msg-painel-badge" class="hidden">0</span></h4>
             <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Canal de suporte. Alunos enviam mensagens categorizadas; você responde e pode <strong>liberar acessos direto daqui</strong> quando o problema for bloqueio de aparelho.</p>
+
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #22c55e;border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+                <div style="font-size:12.5px;font-weight:800;color:#14532d;margin-bottom:6px;">🔓 Liberar acesso manualmente</div>
+                <p style="font-size:11px;color:#166534;margin:0 0 8px;line-height:1.5;">Use quando o aluno pedir por outro canal (oral, WhatsApp, etc.) — <strong>não precisa de mensagem no app</strong>. Digite o nome exato e a turma.</p>
+                <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;align-items:center;">
+                    <input type="text" id="liberar-nome" placeholder="Nome completo" autocomplete="off" style="margin:0;font-size:13px;padding:8px 10px;">
+                    <input type="text" id="liberar-turma" placeholder="Turma" autocomplete="off" style="margin:0;font-size:13px;padding:8px 10px;">
+                    <button onclick="liberarAcessoManual()" class="botao-verde" style="margin:0;padding:9px 14px;font-size:13px;white-space:nowrap;">🔓 Liberar</button>
+                </div>
+                <div id="liberar-resultado" style="font-size:11.5px;color:#166534;margin-top:8px;line-height:1.4;"></div>
+            </div>
+
             <button onclick="carregarMensagensPainel()" class="botao-secundario" style="margin:0 0 4px;">🔄 Recarregar</button>
             <div id="msg-painel-lista" class="msg-painel-lista"><div class="desempenho-loading">⏳ Carregando mensagens…</div></div>
         </div>
@@ -2767,9 +2779,9 @@
                 <span class="info-icone">💬</span>
                 <div class="info-conteudo">
                     <h4 class="info-titulo">Fale com o professor</h4>
-                    <p class="info-texto">Precisou de ajuda e não consegue encontrar o professor na escola? Use o botão <strong>💬 Falar com o professor</strong> na tela inicial. Você escolhe uma categoria (bloqueio, corrigir nome, problema técnico, outro assunto) e o sistema já envia seus dados de identificação automaticamente.</p>
+                    <p class="info-texto">Precisou de ajuda e não consegue encontrar o professor na escola? Use o botão <strong>💬 Falar com o professor</strong> na tela inicial. <strong>É obrigatório estar identificado</strong> (nome completo + turma) para usar o canal — assim o professor sabe exatamente quem está pedindo ajuda.</p>
                     <ul class="info-lista">
-                        <li><strong>🔓 Estou bloqueado</strong> — resolva em 1 clique se o professor liberar</li>
+                        <li><strong>🔓 Estou bloqueado</strong> — aparece só quando o sistema detecta bloqueio</li>
                         <li><strong>✏️ Corrigir meu nome</strong> — para arrumar o nome cadastrado</li>
                         <li><strong>🐛 Problema técnico</strong> — bugs e travamentos</li>
                         <li><strong>💬 Outro assunto</strong> — qualquer outra coisa</li>
@@ -2797,9 +2809,14 @@
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual">v8.7 · atual</span>
+                <span class="changelog-versao atual">v8.7.1 · atual</span>
+                <h4 class="changelog-titulo">🔓 Liberação manual de acesso + identificação reforçada no chat</h4>
+                <p class="changelog-descricao">Dois ajustes no canal aluno↔professor. <strong>(1)</strong> O painel do professor ganhou um bloco <strong>🔓 Liberar acesso manualmente</strong>: basta digitar nome e turma para remover o vínculo de qualquer aluno — <strong>sem depender de mensagem no app</strong>. Útil quando o aluno pede por outro canal (oral, WhatsApp). O sistema mostra o ID do aparelho anterior ao liberar, para confirmação visual. <strong>(2)</strong> Quando o aluno tenta abrir o chat sem ter se identificado, aparece um aviso explícito com atalho direto para o cadastro — reforça que <strong>identificação é pré-requisito obrigatório</strong> para usar o canal com o professor, independente do assunto.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v8.7</span>
                 <h4 class="changelog-titulo">💬 Canal aluno ↔ professor</h4>
-                <p class="changelog-descricao">Agora o aluno pode <strong>falar com o professor sem sair de casa</strong>. Botão <strong>💬 Falar com o professor</strong> na tela inicial abre um canal privado por aluno. Cada conversa começa com uma <strong>categoria escolhida</strong> — 🔓 bloqueio de aparelho, ✏️ correção de nome, 🐛 problema técnico ou 💬 outro assunto — e o sistema anexa automaticamente nome, turma, aparelho e versão. A categoria de bloqueio <strong>só aparece quando o aluno está de fato bloqueado</strong>, e vem pré-selecionada. Se o aluno já estiver bloqueado ao tentar registrar, o sistema oferece abrir o chat direto. No painel, o professor vê todas as conversas com badge de não lidas, responde no mesmo thread e pode <strong>🔓 Liberar o acesso</strong> do aluno direto do painel — o que remove o vínculo e envia resposta automática. Rate limit de <strong>5 minutos</strong> entre mensagens do aluno, máximo de 500 caracteres, dark mode e reduced motion respeitados.</p>
+                <p class="changelog-descricao">Agora o aluno pode <strong>falar com o professor sem sair de casa</strong>. Botão <strong>💬 Falar com o professor</strong> na tela inicial abre um canal privado por aluno. Cada conversa começa com uma <strong>categoria escolhida</strong> — 🔓 bloqueio de aparelho, ✏️ correção de nome, 🐛 problema técnico ou 💬 outro assunto — e o sistema anexa automaticamente nome, turma, aparelho e versão. A categoria de bloqueio <strong>só aparece quando o aluno está de fato bloqueado</strong>, e vem pré-selecionada. No painel, o professor vê todas as conversas com badge de não lidas, responde no mesmo thread e pode <strong>🔓 Liberar o acesso</strong> do aluno direto do painel. Rate limit de <strong>5 minutos</strong> entre mensagens do aluno, máximo de 500 caracteres.</p>
             </div>
             <div class="changelog-item">
                 <span class="changelog-versao">v8.6</span>
@@ -2960,7 +2977,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "8.7";
+const APP_VERSION = "8.7.1";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -3234,6 +3251,10 @@ async function enviarMensagemAluno(categoria, texto, nomeCorretoExtra) {
     let categoriaFinal = null, categoriaLabel = null, categoriaIcone = null;
     if (!temMsg) {
         if (!cat) { notificar("Escolha uma categoria primeiro.", "aviso"); return; }
+        if (cat.soSeBloqueado && !msgEstado.bloqueadoInfo) {
+            notificar("Esta categoria só fica disponível quando o sistema detecta bloqueio.", "aviso", 5000);
+            return;
+        }
         categoriaFinal = cat.id;
         categoriaLabel = cat.label;
         categoriaIcone = cat.icone;
@@ -3269,7 +3290,6 @@ async function enviarMensagemAluno(categoria, texto, nomeCorretoExtra) {
         notificar("Mensagem enviada! O professor responde em breve. 💬", "sucesso", 4000);
         somNovoRecorde();
         msgEstado.categoriaSelecionada = null;
-        // A thread se atualiza pelo listener
     } catch(e) {
         console.warn(e);
         notificar("Não foi possível enviar. Tente novamente.", "erro");
@@ -3333,7 +3353,17 @@ async function abrirFalarComProfessor() {
     const nome = obterNomeSalvoAluno();
     const turma = obterTurmaSalvaAluno();
     if (!nome || !turma) {
-        notificar("Você precisa se identificar primeiro. Toque em 'Participar da Etapa Classificatória'.", "aviso", 5000);
+        notificar("Para falar com o professor, você precisa se identificar primeiro.", "aviso", 5000);
+        const querIr = confirm(
+            "📋 IDENTIFICAÇÃO OBRIGATÓRIA\n\n" +
+            "Para usar o canal com o professor, você precisa primeiro se identificar (nome completo + turma).\n\n" +
+            "Quer ir agora para o cadastro?"
+        );
+        if (querIr) {
+            const nomeInput = document.getElementById("nome-aluno");
+            if (nomeInput) setTimeout(() => nomeInput.focus(), 200);
+            mostrarTela("tela-single");
+        }
         return;
     }
     msgEstado.bloqueadoInfo = null;
@@ -3612,7 +3642,6 @@ async function toggleThreadPainel(chave) {
     if (!t) return;
     t._expandida = !t._expandida;
     if (t._expandida && t.naoLidas > 0) {
-        // Marca como lidas
         const updates = {};
         t.mensagens.forEach(m => {
             if (m.de === "aluno" && !m.lido) updates[`${chave}/${m._id}/lido`] = true;
@@ -3667,6 +3696,43 @@ async function liberarAcessoDeAluno(nome, turma) {
     } catch(e) {
         console.warn(e);
         notificar("Não foi possível liberar.", "erro");
+    }
+}
+
+async function liberarAcessoManual() {
+    if (!exigirProfessorAutenticado()) return;
+    const nomeRaw = (document.getElementById("liberar-nome")?.value || "").trim();
+    const turmaRaw = (document.getElementById("liberar-turma")?.value || "").trim();
+    const res = document.getElementById("liberar-resultado");
+
+    const vv = validarNomeCompleto(nomeRaw);
+    if (!vv.ok) {
+        if (res) res.innerHTML = `❌ <strong>${escaparHtml(vv.motivo)}</strong>`;
+        return;
+    }
+    const nome = vv.normalizado;
+    const turma = turmaRaw;
+    if (!turma) {
+        if (res) res.innerHTML = `❌ <strong>Informe a turma.</strong>`;
+        return;
+    }
+
+    if (res) res.innerHTML = "⏳ Verificando vínculo…";
+
+    try {
+        const v = await obterVinculo(nome, turma);
+        if (!v) {
+            if (res) res.innerHTML = `⚠️ Não há vínculo registrado para <strong>${escaparHtml(nome)}</strong> (turma ${escaparHtml(turma)}). O aluno ainda não jogou ou o vínculo já foi liberado.`;
+            return;
+        }
+        const idAnterior = String(v.dispositivoId || "").slice(0, 8);
+        await database.ref(`${CAMINHO_VINCULOS}/${chaveVinculo(nome, turma)}`).remove();
+        if (res) res.innerHTML = `✅ Vínculo de <strong>${escaparHtml(nome)}</strong> (turma ${escaparHtml(turma)}) liberado!<br><span style="color:#64748b;">Aparelho anterior: <code>${idAnterior}…</code>. O aluno já pode registrar em qualquer aparelho.</span>`;
+        notificar(`Acesso liberado: ${nome}`, "sucesso", 4000);
+        try { somNovoRecorde(); } catch(e) {}
+    } catch(e) {
+        console.warn("Erro ao liberar acesso manual:", e);
+        if (res) res.innerHTML = `❌ Erro ao liberar. Verifique a conexão e tente novamente.`;
     }
 }
 
