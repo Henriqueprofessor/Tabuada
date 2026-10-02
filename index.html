@@ -1276,6 +1276,234 @@
             .album-patente-pill { font-size: 10.5px; padding: 2px 8px; margin-left: 4px; }
         }
 
+        /* ==================== MENSAGENS ALUNO↔PROFESSOR — v8.7 ==================== */
+        .botao-mensagens { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); position: relative; }
+        .botao-mensagens:hover:not(:disabled) { background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); }
+        #msg-badge-aluno {
+            display: inline-block; min-width: 18px; height: 18px; line-height: 18px;
+            padding: 0 5px; border-radius: 9px; background: #dc3545; color: #fff;
+            font-size: 11px; font-weight: 800; margin-left: 6px; vertical-align: middle;
+            box-shadow: 0 0 0 2px #fff;
+        }
+        #msg-badge-aluno.hidden { display: none; }
+        #msg-painel-badge {
+            display: inline-block; min-width: 20px; height: 20px; line-height: 20px;
+            padding: 0 6px; border-radius: 10px; background: #dc3545; color: #fff;
+            font-size: 11px; font-weight: 800; margin-left: 6px; text-align: center;
+            vertical-align: middle;
+        }
+        #msg-painel-badge.hidden { display: none; }
+
+        .msg-modal-card {
+            max-width: 480px; padding: 0; overflow: hidden;
+            display: flex; flex-direction: column; max-height: 92vh;
+        }
+        .msg-modal-header {
+            padding: 16px 18px;
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            color: #fff; display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+        .msg-modal-header h3 { margin: 0; font-size: 16px; color: #fff; }
+        .msg-modal-header .modal-close { color: #fff; }
+        .msg-modal-header .modal-close:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+        .msg-contexto {
+            padding: 12px 18px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+            font-size: 12px; color: #475569; line-height: 1.5; flex-shrink: 0;
+        }
+        .msg-contexto strong { color: #102a43; }
+        .msg-contexto-linha { display: block; }
+
+        .msg-categorias {
+            padding: 12px 18px; display: flex; flex-direction: column; gap: 6px;
+            background: #fff; flex-shrink: 0;
+        }
+        .msg-categorias-titulo {
+            font-size: 11px; font-weight: 800; letter-spacing: 1px;
+            text-transform: uppercase; color: #94a3b8; margin-bottom: 4px;
+        }
+        .msg-categoria-btn {
+            width: 100%; margin: 0; padding: 12px 14px; text-align: left;
+            background: #fff; color: #102a43; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 13.5px; font-weight: 700; cursor: pointer;
+            transition: all .15s; display: flex; align-items: center; gap: 8px;
+            font-family: inherit;
+        }
+        .msg-categoria-btn:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; transform: none; }
+        .msg-categoria-btn.selecionada {
+            background: linear-gradient(135deg, #e9d5ff 0%, #ddd6fe 100%);
+            border-color: #a855f7; color: #5b21b6;
+            box-shadow: 0 2px 8px rgba(124,58,237,.2);
+        }
+
+        .msg-thread {
+            padding: 16px 18px; overflow-y: auto; flex: 1; min-height: 100px;
+            background: #f8fafc; display: flex; flex-direction: column; gap: 10px;
+        }
+        .msg-bolha {
+            padding: 10px 14px; border-radius: 12px; max-width: 88%;
+            font-size: 13.5px; line-height: 1.5; word-break: break-word;
+        }
+        .msg-bolha.aluno {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: #fff; border-bottom-right-radius: 4px;
+        }
+        .msg-bolha.professor {
+            align-self: flex-start; background: #fff; color: #102a43;
+            border: 1px solid #e2e8f0; border-bottom-left-radius: 4px;
+        }
+        .msg-bolha-meta {
+            font-size: 10.5px; opacity: .8; margin-bottom: 4px;
+            font-weight: 700; letter-spacing: .3px;
+        }
+        .msg-bolha-categoria {
+            display: inline-block; background: rgba(255,255,255,.2);
+            border-radius: 8px; padding: 2px 7px; font-size: 10.5px;
+            margin-bottom: 5px; font-weight: 700;
+        }
+        .msg-bolha.professor .msg-bolha-categoria { background: #ede9fe; color: #5b21b6; }
+
+        .msg-vazio {
+            text-align: center; color: #94a3b8; font-size: 13px;
+            padding: 30px 10px; line-height: 1.6;
+        }
+        .msg-vazio .emoji { font-size: 40px; display: block; margin-bottom: 8px; opacity: .6; }
+
+        .msg-form {
+            padding: 12px 18px 16px; background: #fff; border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        .msg-campo-nome { display: block; margin-bottom: 8px; }
+        .msg-campo-nome label {
+            display: block; font-size: 11px; font-weight: 700; color: #475569;
+            margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .msg-textarea {
+            width: 100%; min-height: 70px; resize: vertical; padding: 10px 12px;
+            border: 1px solid #cbd5e1; border-radius: 8px;
+            font-family: inherit; font-size: 13.5px; margin: 0;
+        }
+        .msg-textarea:focus { outline: 2px solid #7c3aed; border-color: #7c3aed; }
+        .msg-rodape {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; margin-top: 8px; flex-wrap: wrap;
+        }
+        .msg-contador { font-size: 11px; color: #94a3b8; }
+        .msg-contador.alerta { color: #dc3545; font-weight: 700; }
+        .msg-enviar {
+            width: auto; margin: 0; padding: 10px 20px;
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            border-radius: 8px; font-size: 13.5px;
+        }
+        .msg-enviar:hover:not(:disabled) { background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); }
+        .msg-enviar:disabled { opacity: .5; }
+
+        .msg-aviso-bloqueio {
+            background: #fef3c7; border-left: 4px solid #f59e0b;
+            padding: 10px 14px; border-radius: 8px; font-size: 12.5px;
+            color: #78350f; line-height: 1.55; margin-bottom: 10px;
+        }
+        .msg-rodape-aviso {
+            font-size: 11.5px; color: #dc3545; margin-top: 6px;
+            text-align: center; line-height: 1.5;
+        }
+
+        .msg-painel-lista { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .msg-painel-thread {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+            overflow: hidden; transition: box-shadow .2s;
+        }
+        .msg-painel-thread.nao-lida { border-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,.15); }
+        .msg-painel-thread-cabecalho {
+            padding: 12px 14px; cursor: pointer;
+            display: flex; justify-content: space-between;
+            align-items: center; gap: 10px; background: #fff;
+        }
+        .msg-painel-thread-cabecalho:hover { background: #f8fafc; }
+        .msg-painel-thread-info { flex: 1; min-width: 0; text-align: left; }
+        .msg-painel-thread-nome {
+            font-weight: 800; font-size: 13.5px; color: #102a43;
+            display: block; margin-bottom: 2px;
+        }
+        .msg-painel-thread-turma { font-size: 11px; color: #64748b; font-weight: 600; }
+        .msg-painel-thread-preview {
+            font-size: 12px; color: #64748b; margin-top: 4px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .msg-painel-thread-meta {
+            display: flex; flex-direction: column; align-items: flex-end;
+            gap: 4px; flex-shrink: 0;
+        }
+        .msg-painel-thread-data { font-size: 10.5px; color: #94a3b8; font-weight: 700; }
+        .msg-painel-thread-badge {
+            background: #dc3545; color: #fff; font-size: 10.5px; font-weight: 800;
+            padding: 2px 7px; border-radius: 10px; min-width: 18px; text-align: center;
+        }
+        .msg-painel-thread-corpo {
+            padding: 12px 14px; border-top: 1px solid #f1f5f9;
+            background: #f8fafc; display: none;
+        }
+        .msg-painel-thread.expandida .msg-painel-thread-corpo { display: block; }
+        .msg-painel-bolhas {
+            display: flex; flex-direction: column; gap: 8px;
+            max-height: 320px; overflow-y: auto; padding: 4px 0; margin-bottom: 12px;
+        }
+        .msg-painel-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .msg-painel-acoes button { margin: 0; padding: 9px 12px; font-size: 12.5px; }
+        .msg-painel-acoes.uma-coluna { grid-template-columns: 1fr; }
+        .msg-painel-acoes .btn-liberar { background: #198754; }
+        .msg-painel-acoes .btn-liberar:hover:not(:disabled) { background: #157347; }
+        .msg-painel-acoes .btn-excluir-conv { background: #dc3545; }
+        .msg-painel-acoes .btn-excluir-conv:hover:not(:disabled) { background: #b02a37; }
+        .msg-painel-vazio {
+            text-align: center; color: #94a3b8; font-size: 13px;
+            padding: 24px 12px; line-height: 1.6;
+            background: #f8fafc; border-radius: 10px; border: 1px dashed #cbd5e1;
+        }
+        .msg-painel-contexto-msg {
+            font-size: 10.5px; opacity: .8; margin-bottom: 4px;
+        }
+        .msg-painel-thread .msg-bolha.professor { background: #fff; }
+
+        @media (prefers-color-scheme: dark) {
+            #msg-badge-aluno { box-shadow: 0 0 0 2px #1e1e1e; }
+            #msg-painel-badge { box-shadow: 0 0 0 2px #1e1e1e; }
+            .msg-contexto { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+            .msg-contexto strong { color: #f0f0f0; }
+            .msg-categorias { background: #1e1e1e; }
+            .msg-categorias-titulo { color: #64748b; }
+            .msg-categoria-btn { background: #1e1e1e; color: #e8e8e8; border-color: #334155; }
+            .msg-categoria-btn:hover:not(:disabled) { background: #2a2a2a; border-color: #475569; }
+            .msg-categoria-btn.selecionada {
+                background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+                border-color: #a855f7; color: #e9d5ff;
+            }
+            .msg-thread { background: #0f172a; }
+            .msg-bolha.professor { background: #1e293b; color: #e8e8e8; border-color: #334155; }
+            .msg-bolha.professor .msg-bolha-categoria { background: #4c1d95; color: #ddd6fe; }
+            .msg-form { background: #1e1e1e; border-color: #334155; }
+            .msg-campo-nome label { color: #cbd5e1; }
+            .msg-textarea { background: #1e293b; color: #e8e8e8; border-color: #334155; }
+            .msg-textarea:focus { outline-color: #a855f7; }
+            .msg-vazio { color: #64748b; }
+            .msg-aviso-bloqueio { background: #422006; color: #fde047; border-left-color: #fbbf24; }
+            .msg-rodape-aviso { color: #fca5a5; }
+            .msg-painel-thread { background: #1e293b; border-color: #334155; }
+            .msg-painel-thread-cabecalho { background: #1e293b; }
+            .msg-painel-thread-cabecalho:hover { background: #334155; }
+            .msg-painel-thread-nome { color: #f0f0f0; }
+            .msg-painel-thread-corpo { background: #0f172a; border-color: #334155; }
+            .msg-painel-thread .msg-bolha.professor { background: #1e293b; }
+            .msg-painel-vazio { background: #1e293b; border-color: #334155; color: #64748b; }
+        }
+        @media (max-width: 520px) {
+            .msg-modal-card { max-width: 100%; border-radius: 12px; }
+            .msg-thread { max-height: 45vh; }
+            .msg-painel-acoes { grid-template-columns: 1fr; }
+        }
+
         /* ==================== META PESSOAL — v8.1 · Parte 1 (estrutura visual) ==================== */
         .meta-card {
             position: relative;
@@ -2067,10 +2295,11 @@
         <button onclick="abrirAlbum()" class="botao-album" aria-label="Abrir o Álbum de Conquistas">📖 Meu Álbum<span id="album-badge" class="hidden" role="status" aria-label="Você tem medalhas novas para ver"></span></button>
         <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">🏆 Classificação</button>
         <button onclick="abrirBuscarAluno()" class="botao-perfil">🔍 Buscar Aluno</button>
+        <button onclick="abrirFalarComProfessor()" class="botao-mensagens" aria-label="Falar com o professor">💬 Falar com o professor<span id="msg-badge-aluno" class="hidden" role="status" aria-label="Você tem mensagens novas"></span></button>
     </div>
     <div class="atalhos-iniciais">
         <button class="changelog-trigger" onclick="abrirComoFunciona()" title="Como funciona a Copa">📖 Como funciona</button>
-        <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.6</span> · histórico</button>
+        <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.7</span> · histórico</button>
     </div>
 </div>
 
@@ -2097,7 +2326,7 @@
     <div class="aviso-vinculo" style="margin-top:10px;">
         <span class="linha">📱 <strong>Jogue sempre no mesmo celular.</strong> Seu nome será vinculado a este aparelho.</span>
         <span class="linha">⏱️ Se você trocar de celular e ficar <strong>2 dias sem acessar o app</strong>, poderá continuar automaticamente em outro aparelho.</span>
-        <span class="linha">🔓 Para liberar antes disso, peça ajuda ao professor.</span>
+        <span class="linha">💬 Bloqueado ou com problema? Use o botão <strong>Falar com o professor</strong> na tela inicial.</span>
     </div>
     <label for="turma-aluno">Turma</label>
     <select id="turma-aluno">
@@ -2355,6 +2584,12 @@
             </div>
         </div>
         <div class="senha-container" style="margin-bottom:16px;">
+            <h4 style="margin-top:0;">💬 Mensagens dos alunos <span id="msg-painel-badge" class="hidden">0</span></h4>
+            <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Canal de suporte. Alunos enviam mensagens categorizadas; você responde e pode <strong>liberar acessos direto daqui</strong> quando o problema for bloqueio de aparelho.</p>
+            <button onclick="carregarMensagensPainel()" class="botao-secundario" style="margin:0 0 4px;">🔄 Recarregar</button>
+            <div id="msg-painel-lista" class="msg-painel-lista"><div class="desempenho-loading">⏳ Carregando mensagens…</div></div>
+        </div>
+        <div class="senha-container" style="margin-bottom:16px;">
             <h4 style="margin-top:0;">📈 Alunos em destaque</h4>
             <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Insight pedagógico — quem evoluiu mais, quem tem melhor precisão e quem mais jogou desde o início da etapa. Considera alunos com <strong>mínimo de 3 partidas</strong>.</p>
             <label for="destaque-filtro-turma" style="display:block;font-weight:600;font-size:12.5px;margin-bottom:4px;">Turma</label>
@@ -2375,7 +2610,7 @@
             <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking</button>
             <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
         </div>
-        <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 1-10</option><option value="todas">📚 TODAS</option></select><label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label><p style="font-size:11px;color:#856404;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.<br>O reset também apaga as <strong>medalhas, estrelas e seções completas do Álbum</strong> do aluno.</p><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
+        <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 1-10</option><option value="todas">📚 TODAS</option></select><label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label><p style="font-size:11px;color:#856404;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.<br>O reset também apaga as <strong>medalhas, estrelas, seções completas e mensagens</strong> do aluno.</p><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
         <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
     </div>
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -2529,6 +2764,20 @@
                 </div>
             </div>
             <div class="info-secao">
+                <span class="info-icone">💬</span>
+                <div class="info-conteudo">
+                    <h4 class="info-titulo">Fale com o professor</h4>
+                    <p class="info-texto">Precisou de ajuda e não consegue encontrar o professor na escola? Use o botão <strong>💬 Falar com o professor</strong> na tela inicial. Você escolhe uma categoria (bloqueio, corrigir nome, problema técnico, outro assunto) e o sistema já envia seus dados de identificação automaticamente.</p>
+                    <ul class="info-lista">
+                        <li><strong>🔓 Estou bloqueado</strong> — resolva em 1 clique se o professor liberar</li>
+                        <li><strong>✏️ Corrigir meu nome</strong> — para arrumar o nome cadastrado</li>
+                        <li><strong>🐛 Problema técnico</strong> — bugs e travamentos</li>
+                        <li><strong>💬 Outro assunto</strong> — qualquer outra coisa</li>
+                    </ul>
+                    <div class="info-destaque azul">⏱️ Você pode enviar uma mensagem a cada <strong>5 minutos</strong>. O professor responde e você vê a resposta na mesma conversa.</div>
+                </div>
+            </div>
+            <div class="info-secao">
                 <span class="info-icone">💡</span>
                 <div class="info-conteudo">
                     <h4 class="info-titulo">Dicas rápidas</h4>
@@ -2548,7 +2797,12 @@
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual">v8.6 · atual</span>
+                <span class="changelog-versao atual">v8.7 · atual</span>
+                <h4 class="changelog-titulo">💬 Canal aluno ↔ professor</h4>
+                <p class="changelog-descricao">Agora o aluno pode <strong>falar com o professor sem sair de casa</strong>. Botão <strong>💬 Falar com o professor</strong> na tela inicial abre um canal privado por aluno. Cada conversa começa com uma <strong>categoria escolhida</strong> — 🔓 bloqueio de aparelho, ✏️ correção de nome, 🐛 problema técnico ou 💬 outro assunto — e o sistema anexa automaticamente nome, turma, aparelho e versão. A categoria de bloqueio <strong>só aparece quando o aluno está de fato bloqueado</strong>, e vem pré-selecionada. Se o aluno já estiver bloqueado ao tentar registrar, o sistema oferece abrir o chat direto. No painel, o professor vê todas as conversas com badge de não lidas, responde no mesmo thread e pode <strong>🔓 Liberar o acesso</strong> do aluno direto do painel — o que remove o vínculo e envia resposta automática. Rate limit de <strong>5 minutos</strong> entre mensagens do aluno, máximo de 500 caracteres, dark mode e reduced motion respeitados.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v8.6</span>
                 <h4 class="changelog-titulo">⚽ Patentes de Copa</h4>
                 <p class="changelog-descricao">Suas estrelas do Álbum agora viram uma <strong>patente temática de Copa</strong>: <strong>🥾 Reserva → ⚽ Titular → ⭐ Destaque → 🌟 Craque → 👑 Ídolo → 🏆 Imortal</strong>. A patente aparece como <strong>pill colorida</strong> na capa do Álbum e no cabeçalho, e quando você cruza um novo patamar, um <strong>banner dourado</strong> celebra a conquista ao abrir o Álbum. É puramente decorativa — mas ninguém fica em Reserva pra sempre.</p>
             </div>
@@ -2690,10 +2944,23 @@
     </div>
 </div>
 
+<div id="modal-falar-professor" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="msg-modal-titulo" onclick="fecharFalarComProfessor(event)">
+    <div class="modal-card msg-modal-card" onclick="event.stopPropagation()">
+        <div class="msg-modal-header">
+            <h3 id="msg-modal-titulo">💬 Falar com o professor</h3>
+            <button class="modal-close" onclick="fecharFalarComProfessor()" aria-label="Fechar">✕</button>
+        </div>
+        <div id="msg-contexto-container"></div>
+        <div id="msg-categorias-container"></div>
+        <div id="msg-thread-container" class="msg-thread"></div>
+        <div id="msg-form-container" class="msg-form"></div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
-const APP_VERSION = "8.6";
+const APP_VERSION = "8.7";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -2725,6 +2992,7 @@ const CAMINHO_VOTACAO = "votacao";
 const CAMINHO_CONFIG = "config";
 const CAMINHO_MAPA_TABUADAS = "copaV2/mapaTabuadas";
 const CAMINHO_ULTIMAS_CORES = "copaV2/ultimasCores";
+const CAMINHO_MENSAGENS = "mensagens";
 const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
 const PREFIXO_LOCAL_CORES = "copaV2_cores_";
 const PREFIXO_LEGADO_CORES = "ceib_cores_";
@@ -2747,6 +3015,9 @@ const VOTACAO_DURACAO_MS = 4 * 24 * 60 * 60 * 1000;
 const VOTACAO_MIN_PARTIDAS = 10;
 const VOTACAO_MIN_VERDES = 20;
 const CONFIG_DEFAULT = { percentualMapa: 30, minPartidas: 10 };
+const MSG_RATE_LIMIT_MS = 5 * 60 * 1000;
+const MSG_MAX_CHARS = 500;
+
 const MODALIDADES = {
     "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
     "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
@@ -2831,8 +3102,6 @@ const MEDALS = [
 const MEDALS_POR_ID = Object.fromEntries(MEDALS.map(m => [m.id, m]));
 
 // ==================== PATENTES (NÍVEL DE ESTRELAS) — v8.6 ====================
-// Sistema de patente temático de Copa, derivado do total de estrelas do Álbum.
-// Nomes propositalmente DIFERENTES dos nomes das medalhas, para não confundir.
 const PATENTES = [
     { id: "reserva",  nome: "Reserva",  icone: "🥾", minEstrelas: 0,   frase: "Você entrou no time!" },
     { id: "titular",  nome: "Titular",  icone: "⚽", minEstrelas: 15,  frase: "Está em campo!" },
@@ -2881,6 +3150,583 @@ function fecharBannerPatente() {
     const c = document.getElementById("album-patente-banner-container");
     if (c) c.innerHTML = "";
     if (albumEstado) albumEstado.novaPatente = null;
+}
+
+// ==================== MENSAGENS ALUNO↔PROFESSOR — v8.7 ====================
+const CATEGORIAS_MENSAGEM = [
+    { id: "bloqueio", icone: "🔓", label: "Estou bloqueado em outro aparelho", textoObrigatorio: false, soSeBloqueado: true },
+    { id: "nome",     icone: "✏️", label: "Preciso corrigir meu nome",         textoObrigatorio: true,  campoNomeCorreto: true },
+    { id: "bug",      icone: "🐛", label: "Encontrei um problema técnico",     textoObrigatorio: true },
+    { id: "outro",    icone: "💬", label: "Outro assunto",                     textoObrigatorio: true }
+];
+
+let msgEstado = {
+    aberto: false,
+    categoriaSelecionada: null,
+    bloqueadoInfo: null,
+    thread: [],
+    unsubAluno: null
+};
+let msgPainelThreads = [];
+let msgPainelUnsub = null;
+
+function chaveMsgThread(nome, turma) { return chaveVinculo(nome, turma); }
+
+async function verificarVinculoLeitura(nome, turma) {
+    const id = obterIdDispositivo();
+    const v = await obterVinculo(nome, turma);
+    if (!v) return { permitido: true };
+    if (v.dispositivoId === id) return { permitido: true };
+    const ultimoAcesso = v.ultimoAcesso || v.criadoEm || 0;
+    const tempoParado = Date.now() - ultimoAcesso;
+    if (tempoParado >= JANELA_COOLDOWN_MS) return { permitido: true };
+    const horasRestantes = Math.ceil((JANELA_COOLDOWN_MS - tempoParado) / (60 * 60 * 1000));
+    return { permitido: false, horasRestantes };
+}
+
+async function carregarThreadAluno(nome, turma) {
+    try {
+        const snap = await database.ref(`${CAMINHO_MENSAGENS}/${chaveMsgThread(nome, turma)}`).once("value");
+        const dados = snap.val() || {};
+        return Object.entries(dados)
+            .map(([id, m]) => ({ ...m, _id: id }))
+            .sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+    } catch(e) {
+        console.warn("Falha ao ler mensagens:", e);
+        return [];
+    }
+}
+
+function podeEnviarMensagem(thread) {
+    const ultima = [...thread].reverse().find(m => m.de === "aluno");
+    if (!ultima) return { ok: true };
+    const diff = Date.now() - new Date(ultima.data).getTime();
+    if (diff < MSG_RATE_LIMIT_MS) {
+        const seg = Math.ceil((MSG_RATE_LIMIT_MS - diff) / 1000);
+        return { ok: false, segundosRestantes: seg };
+    }
+    return { ok: true };
+}
+
+function montarContextoMsg(nome, turma, categoria) {
+    const ctx = { nome, turma };
+    if (categoria === "bug") {
+        ctx.versao = APP_VERSION;
+        ctx.navegador = (navigator.userAgent || "").slice(0, 120);
+        ctx.idioma = navigator.language || "pt-BR";
+    }
+    if (categoria === "bloqueio" && msgEstado.bloqueadoInfo) {
+        ctx.horasRestantes = msgEstado.bloqueadoInfo.horasRestantes || 0;
+        ctx.temVinculoOutro = true;
+    }
+    return ctx;
+}
+
+async function enviarMensagemAluno(categoria, texto, nomeCorretoExtra) {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
+
+    const threadAtual = await carregarThreadAluno(nome, turma);
+    const temMsg = threadAtual.length > 0;
+    const cat = CATEGORIAS_MENSAGEM.find(c => c.id === categoria);
+
+    let categoriaFinal = null, categoriaLabel = null, categoriaIcone = null;
+    if (!temMsg) {
+        if (!cat) { notificar("Escolha uma categoria primeiro.", "aviso"); return; }
+        categoriaFinal = cat.id;
+        categoriaLabel = cat.label;
+        categoriaIcone = cat.icone;
+    }
+
+    let textoFinal = (texto || "").trim();
+    if (!temMsg && cat.id === "nome") {
+        const vv = validarNomeCompleto(nomeCorretoExtra);
+        if (!vv.ok) { notificar("Nome correto inválido: " + vv.motivo, "aviso", 5000); return; }
+        textoFinal = `Nome correto: ${vv.normalizado}` + (textoFinal ? `. ${textoFinal}` : "");
+    } else if (!temMsg && cat.textoObrigatorio) {
+        if (!textoFinal) { notificar("Escreva sua mensagem.", "aviso"); return; }
+    }
+    if (textoFinal.length > MSG_MAX_CHARS) { notificar(`Máximo ${MSG_MAX_CHARS} caracteres.`, "aviso"); return; }
+    if (!textoFinal) textoFinal = "(sem texto adicional)";
+
+    const rate = podeEnviarMensagem(threadAtual);
+    if (!rate.ok) { notificar(`Aguarde ${rate.segundosRestantes}s antes de enviar outra mensagem.`, "aviso", 4000); return; }
+
+    const id = `msg_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+    const msg = {
+        de: "aluno",
+        nome, turma,
+        categoria: categoriaFinal,
+        categoriaLabel, categoriaIcone,
+        texto: textoFinal,
+        contexto: temMsg ? null : montarContextoMsg(nome, turma, categoriaFinal),
+        data: new Date().toISOString(),
+        lido: false
+    };
+    try {
+        await database.ref(`${CAMINHO_MENSAGENS}/${chaveMsgThread(nome, turma)}/${id}`).set(msg);
+        notificar("Mensagem enviada! O professor responde em breve. 💬", "sucesso", 4000);
+        somNovoRecorde();
+        msgEstado.categoriaSelecionada = null;
+        // A thread se atualiza pelo listener
+    } catch(e) {
+        console.warn(e);
+        notificar("Não foi possível enviar. Tente novamente.", "erro");
+    }
+}
+
+async function marcarThreadAlunoLida(nome, turma) {
+    const updates = {};
+    msgEstado.thread.forEach(m => {
+        if (m.de === "professor" && !m.lido) {
+            updates[`${chaveMsgThread(nome, turma)}/${m._id}/lido`] = true;
+        }
+    });
+    if (Object.keys(updates).length) {
+        try { await database.ref(CAMINHO_MENSAGENS).update(updates); } catch(e) {}
+    }
+}
+
+function iniciarListenerMsgAluno() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) return;
+    if (msgEstado.unsubAluno) { try { msgEstado.unsubAluno.off(); } catch(e) {} }
+    msgEstado.unsubAluno = database.ref(`${CAMINHO_MENSAGENS}/${chaveMsgThread(nome, turma)}`);
+    msgEstado.unsubAluno.on("value", (snap) => {
+        const dados = snap.val() || {};
+        const lista = Object.entries(dados)
+            .map(([id, m]) => ({ ...m, _id: id }))
+            .sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+        const qtdProfAnterior = msgEstado.thread.filter(m => m.de === "professor").length;
+        const qtdProfNova = lista.filter(m => m.de === "professor").length;
+        msgEstado.thread = lista;
+        atualizarBadgeAluno();
+        if (qtdProfNova > qtdProfAnterior && !msgEstado.aberto) {
+            const novas = lista.filter(m => m.de === "professor").slice(-(qtdProfNova - qtdProfAnterior));
+            novas.forEach(m => {
+                notificar(`💬 Professor: ${(m.texto || "").slice(0, 90)}`, "info", 7000);
+            });
+            try { somNovoRecorde(); } catch(e) {}
+        }
+        if (msgEstado.aberto) {
+            renderizarThreadAluno();
+            renderizarFormAluno();
+        }
+    }, (err) => { console.warn("Listener msgs aluno:", err); });
+}
+
+function atualizarBadgeAluno() {
+    const badge = document.getElementById("msg-badge-aluno");
+    if (!badge) return;
+    const naoLidas = msgEstado.thread.filter(m => m.de === "professor" && !m.lido).length;
+    if (naoLidas > 0) {
+        badge.textContent = naoLidas > 9 ? "9+" : String(naoLidas);
+        badge.classList.remove("hidden");
+    } else {
+        badge.classList.add("hidden");
+    }
+}
+
+async function abrirFalarComProfessor() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) {
+        notificar("Você precisa se identificar primeiro. Toque em 'Participar da Etapa Classificatória'.", "aviso", 5000);
+        return;
+    }
+    msgEstado.bloqueadoInfo = null;
+    try {
+        const r = await verificarVinculoLeitura(nome, turma);
+        if (r && !r.permitido) msgEstado.bloqueadoInfo = r;
+    } catch(e) {}
+    msgEstado.aberto = true;
+    msgEstado.categoriaSelecionada = msgEstado.bloqueadoInfo ? "bloqueio" : null;
+    msgEstado.thread = await carregarThreadAluno(nome, turma);
+    document.getElementById("modal-falar-professor").classList.remove("hidden");
+    renderizarModalAluno();
+    await marcarThreadAlunoLida(nome, turma);
+    atualizarBadgeAluno();
+}
+
+function fecharFalarComProfessor(e) {
+    if (e && e.target && e.target.closest(".msg-modal-card")) return;
+    const m = document.getElementById("modal-falar-professor");
+    if (m) m.classList.add("hidden");
+    msgEstado.aberto = false;
+}
+
+function renderizarModalAluno() {
+    renderizarContextoMsg();
+    renderizarCategoriasMsg();
+    renderizarThreadAluno();
+    renderizarFormAluno();
+}
+
+function renderizarContextoMsg() {
+    const c = document.getElementById("msg-contexto-container");
+    if (!c) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { c.innerHTML = ""; return; }
+    let html = `<div class="msg-contexto">`;
+    html += `<span class="msg-contexto-linha">👤 <strong>${escaparHtml(nome)}</strong> · Turma <strong>${turma}</strong></span>`;
+    if (msgEstado.bloqueadoInfo) {
+        html += `<span class="msg-contexto-linha" style="color:#991b1b;font-weight:700;">🔒 Nome vinculado a outro celular (${msgEstado.bloqueadoInfo.horasRestantes}h restantes)</span>`;
+    } else {
+        html += `<span class="msg-contexto-linha" style="color:#6c757d;">📱 Este aparelho é o seu atual</span>`;
+    }
+    html += `</div>`;
+    c.innerHTML = html;
+}
+
+function renderizarCategoriasMsg() {
+    const c = document.getElementById("msg-categorias-container");
+    if (!c) return;
+    const temMsg = msgEstado.thread.some(m => m.de === "aluno");
+    if (temMsg) { c.innerHTML = ""; return; }
+
+    let html = `<div class="msg-categorias">`;
+    html += `<div class="msg-categorias-titulo">Sobre o que é?</div>`;
+    CATEGORIAS_MENSAGEM.forEach(cat => {
+        if (cat.soSeBloqueado && !msgEstado.bloqueadoInfo) return;
+        const sel = msgEstado.categoriaSelecionada === cat.id ? " selecionada" : "";
+        html += `<button class="msg-categoria-btn${sel}" onclick="selecionarCategoriaMsg('${cat.id}')">${cat.icone} ${cat.label}</button>`;
+    });
+    html += `</div>`;
+    c.innerHTML = html;
+}
+
+function selecionarCategoriaMsg(id) {
+    msgEstado.categoriaSelecionada = id;
+    renderizarCategoriasMsg();
+    renderizarFormAluno();
+}
+
+function renderizarThreadAluno() {
+    const c = document.getElementById("msg-thread-container");
+    if (!c) return;
+    if (!msgEstado.thread.length) {
+        c.innerHTML = `<div class="msg-vazio"><span class="emoji">💬</span>Sua conversa com o professor aparece aqui.<br>Escolha uma categoria abaixo para começar.</div>`;
+        return;
+    }
+    let html = "";
+    msgEstado.thread.forEach(m => {
+        const hora = formatarHoraRelativa(m.data);
+        const ehAluno = m.de === "aluno";
+        const cls = ehAluno ? "aluno" : "professor";
+        html += `<div class="msg-bolha ${cls}">`;
+        if (ehAluno && m.categoriaLabel) {
+            html += `<span class="msg-bolha-categoria">${m.categoriaIcone} ${escaparHtml(m.categoriaLabel)}</span>`;
+        }
+        html += `<div class="msg-bolha-meta">${ehAluno ? "Você" : "Professor"} · ${hora}</div>`;
+        html += `<div>${escaparHtml(m.texto || "").replace(/\n/g, "<br>")}</div>`;
+        html += `</div>`;
+    });
+    c.innerHTML = html;
+    c.scrollTop = c.scrollHeight;
+}
+
+function renderizarFormAluno() {
+    const c = document.getElementById("msg-form-container");
+    if (!c) return;
+    const temMsg = msgEstado.thread.some(m => m.de === "aluno");
+    const cat = CATEGORIAS_MENSAGEM.find(x => x.id === msgEstado.categoriaSelecionada);
+    const rate = podeEnviarMensagem(msgEstado.thread);
+    const bloqueado = !rate.ok;
+    const botaoDesabilitado = bloqueado || (!temMsg && !msgEstado.categoriaSelecionada);
+
+    let html = "";
+
+    if (msgEstado.bloqueadoInfo && !temMsg) {
+        html += `<div class="msg-aviso-bloqueio">🔒 Você está bloqueado porque tentou entrar em outro aparelho. Envie a mensagem — o professor libera direto do painel.</div>`;
+    }
+
+    if (!temMsg && cat?.campoNomeCorreto) {
+        html += `<div class="msg-campo-nome"><label for="msg-nome-correto">Nome completo correto</label><input type="text" id="msg-nome-correto" placeholder="Ex: João Pedro Souza" maxlength="80" autocomplete="name"></div>`;
+    }
+
+    const placeholder = (cat && !cat.textoObrigatorio) || temMsg
+        ? "Escreva mais alguma coisa (opcional)"
+        : "Escreva sua mensagem…";
+
+    html += `<textarea id="msg-textarea" class="msg-textarea" placeholder="${placeholder}" maxlength="${MSG_MAX_CHARS}"></textarea>`;
+
+    html += `<div class="msg-rodape">`;
+    html += `<span class="msg-contador" id="msg-contador">0 / ${MSG_MAX_CHARS}</span>`;
+    const labelBtn = temMsg ? "📨 Enviar" : "📨 Enviar mensagem";
+    html += `<button class="msg-enviar" id="msg-btn-enviar" onclick="enviarMensagemAlunoClique()" ${botaoDesabilitado ? "disabled" : ""}>${labelBtn}</button>`;
+    html += `</div>`;
+
+    if (bloqueado) {
+        html += `<div class="msg-rodape-aviso">⏱️ Aguarde ${rate.segundosRestantes}s para enviar outra mensagem.</div>`;
+    } else if (!temMsg && !msgEstado.categoriaSelecionada) {
+        html += `<div class="msg-rodape-aviso" style="color:#6c757d;">Escolha uma categoria acima para liberar o envio.</div>`;
+    }
+
+    c.innerHTML = html;
+
+    const ta = document.getElementById("msg-textarea");
+    if (ta) {
+        ta.addEventListener("input", () => {
+            const cont = document.getElementById("msg-contador");
+            if (cont) {
+                cont.textContent = `${ta.value.length} / ${MSG_MAX_CHARS}`;
+                cont.classList.toggle("alerta", ta.value.length > MSG_MAX_CHARS * 0.9);
+            }
+        });
+    }
+}
+
+async function enviarMensagemAlunoClique() {
+    const temMsg = msgEstado.thread.some(m => m.de === "aluno");
+    const catId = msgEstado.categoriaSelecionada;
+    if (!temMsg && !catId) { notificar("Escolha uma categoria primeiro.", "aviso"); return; }
+    const ta = document.getElementById("msg-textarea");
+    const texto = ta ? ta.value.trim() : "";
+    const nomeCorreto = document.getElementById("msg-nome-correto")?.value || "";
+    await enviarMensagemAluno(catId || "outro", texto, nomeCorreto);
+}
+
+// ---------- Professor (painel) ----------
+async function carregarMensagensPainel() {
+    const container = document.getElementById("msg-painel-lista");
+    if (!container) return;
+    container.innerHTML = `<div class="desempenho-loading">⏳ Carregando mensagens…</div>`;
+    try {
+        const snap = await database.ref(CAMINHO_MENSAGENS).once("value");
+        const dados = snap.val() || {};
+        const threads = Object.entries(dados).map(([chave, msgs]) => {
+            const lista = Object.entries(msgs).map(([id, m]) => ({ ...m, _id: id }));
+            lista.sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+            const primeiraAluno = lista.find(m => m.de === "aluno");
+            const ultima = lista[lista.length - 1];
+            const naoLidas = lista.filter(m => m.de === "aluno" && !m.lido).length;
+            const nome = primeiraAluno?.nome || primeiraAluno?.contexto?.nome || "—";
+            const turma = primeiraAluno?.turma || primeiraAluno?.contexto?.turma || "—";
+            const temBloqueio = lista.some(m => m.categoria === "bloqueio");
+            return { chave, mensagens: lista, nome, turma, ultima, naoLidas, temBloqueio, _expandida: naoLidas > 0 };
+        }).filter(t => t.mensagens.length > 0);
+
+        threads.sort((a, b) => {
+            if ((b.naoLidas > 0) !== (a.naoLidas > 0)) return (b.naoLidas > 0 ? 1 : -1);
+            return new Date(b.ultima.data || 0) - new Date(a.ultima.data || 0);
+        });
+
+        msgPainelThreads = threads;
+        renderizarPainelMensagens();
+        atualizarBadgeMsgPainel();
+    } catch(e) {
+        console.warn("Falha ao carregar mensagens painel:", e);
+        container.innerHTML = `<div class="msg-painel-vazio">Não foi possível carregar as mensagens.</div>`;
+    }
+}
+
+async function atualizarBadgeMsgPainel() {
+    const badge = document.getElementById("msg-painel-badge");
+    if (!badge) return;
+    try {
+        const snap = await database.ref(CAMINHO_MENSAGENS).once("value");
+        const dados = snap.val() || {};
+        let total = 0;
+        Object.values(dados).forEach(thread => {
+            Object.values(thread || {}).forEach(m => {
+                if (m.de === "aluno" && !m.lido) total++;
+            });
+        });
+        if (total > 0) {
+            badge.textContent = total > 99 ? "99+" : String(total);
+            badge.classList.remove("hidden");
+        } else {
+            badge.classList.add("hidden");
+        }
+    } catch(e) {
+        badge.classList.add("hidden");
+    }
+}
+
+function renderizarPainelMensagens() {
+    const container = document.getElementById("msg-painel-lista");
+    if (!container) return;
+    if (!msgPainelThreads.length) {
+        container.innerHTML = `<div class="msg-painel-vazio">📭 Nenhuma mensagem ainda.<br>Quando um aluno escrever, aparece aqui.</div>`;
+        return;
+    }
+    let html = "";
+    msgPainelThreads.forEach(t => {
+        const expandida = t._expandida;
+        const dataUltima = formatarDataHoraMsg(t.ultima?.data);
+        const preview = ((t.ultima?.texto || "").slice(0, 80)) + ((t.ultima?.texto || "").length > 80 ? "…" : "");
+        html += `<div class="msg-painel-thread ${t.naoLidas > 0 ? "nao-lida" : ""} ${expandida ? "expandida" : ""}" data-chave="${t.chave}">`;
+        html += `<div class="msg-painel-thread-cabecalho" onclick="toggleThreadPainel('${t.chave}')">`;
+        html += `<div class="msg-painel-thread-info">`;
+        html += `<span class="msg-painel-thread-nome">${escaparHtml(t.nome)}</span>`;
+        html += `<span class="msg-painel-thread-turma">Turma ${escaparHtml(t.turma)}</span>`;
+        html += `<div class="msg-painel-thread-preview">${escaparHtml(preview)}</div>`;
+        html += `</div>`;
+        html += `<div class="msg-painel-thread-meta">`;
+        html += `<span class="msg-painel-thread-data">${dataUltima}</span>`;
+        if (t.naoLidas > 0) html += `<span class="msg-painel-thread-badge">${t.naoLidas}</span>`;
+        html += `</div></div>`;
+
+        if (expandida) {
+            html += `<div class="msg-painel-thread-corpo">`;
+            html += `<div class="msg-painel-bolhas">`;
+            t.mensagens.forEach(m => {
+                const ehAluno = m.de === "aluno";
+                const cls = ehAluno ? "aluno" : "professor";
+                html += `<div class="msg-bolha ${cls}">`;
+                if (ehAluno && m.categoriaLabel) html += `<span class="msg-bolha-categoria">${m.categoriaIcone} ${escaparHtml(m.categoriaLabel)}</span>`;
+                html += `<div class="msg-bolha-meta">${ehAluno ? escaparHtml(m.nome || t.nome) : "Você"} · ${formatarHoraRelativa(m.data)}</div>`;
+                if (ehAluno && m.contexto) {
+                    const ctxItens = [];
+                    if (m.contexto.horasRestantes) ctxItens.push(`🔒 Bloqueado há ${m.contexto.horasRestantes}h`);
+                    if (m.contexto.versao) ctxItens.push(`v${m.contexto.versao}`);
+                    if (m.contexto.navegador) ctxItens.push(`🌐 ${String(m.contexto.navegador).slice(0, 55)}`);
+                    if (ctxItens.length) html += `<div class="msg-painel-contexto-msg">${ctxItens.join(" · ")}</div>`;
+                }
+                html += `<div>${escaparHtml(m.texto || "").replace(/\n/g, "<br>")}</div>`;
+                html += `</div>`;
+            });
+            html += `</div>`;
+            html += `<textarea id="msg-painel-resposta-${t.chave}" class="msg-textarea" placeholder="Responder…" maxlength="${MSG_MAX_CHARS}"></textarea>`;
+            html += `<div class="msg-painel-acoes">`;
+            html += `<button class="msg-enviar" onclick="responderThreadPainel('${escaparHtml(t.nome)}','${escaparHtml(t.turma)}')">📨 Enviar resposta</button>`;
+            html += `<button class="btn-excluir-conv" onclick="excluirConversa('${escaparHtml(t.nome)}','${escaparHtml(t.turma)}')">🗑️ Excluir</button>`;
+            html += `</div>`;
+            if (t.temBloqueio) {
+                html += `<div class="msg-painel-acoes uma-coluna" style="margin-top:6px;">`;
+                html += `<button class="btn-liberar" onclick="liberarAcessoDeAluno('${escaparHtml(t.nome)}','${escaparHtml(t.turma)}')">🔓 Liberar acesso deste aluno</button>`;
+                html += `</div>`;
+            }
+            html += `</div>`;
+        }
+        html += `</div>`;
+    });
+    container.innerHTML = html;
+}
+
+async function toggleThreadPainel(chave) {
+    const t = msgPainelThreads.find(x => x.chave === chave);
+    if (!t) return;
+    t._expandida = !t._expandida;
+    if (t._expandida && t.naoLidas > 0) {
+        // Marca como lidas
+        const updates = {};
+        t.mensagens.forEach(m => {
+            if (m.de === "aluno" && !m.lido) updates[`${chave}/${m._id}/lido`] = true;
+        });
+        try { await database.ref(CAMINHO_MENSAGENS).update(updates); } catch(e) {}
+        t.naoLidas = 0;
+    }
+    renderizarPainelMensagens();
+    atualizarBadgeMsgPainel();
+}
+
+async function responderThreadPainel(nome, turma) {
+    if (!exigirProfessorAutenticado()) return;
+    const chave = chaveMsgThread(nome, turma);
+    const ta = document.getElementById(`msg-painel-resposta-${chave}`);
+    const texto = (ta?.value || "").trim();
+    if (!texto) { notificar("Escreva uma resposta.", "aviso"); return; }
+    if (texto.length > MSG_MAX_CHARS) { notificar(`Máximo ${MSG_MAX_CHARS} caracteres.`, "aviso"); return; }
+    const id = `msg_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+    try {
+        await database.ref(`${CAMINHO_MENSAGENS}/${chave}/${id}`).set({
+            de: "professor",
+            texto,
+            data: new Date().toISOString(),
+            lido: false
+        });
+        if (ta) ta.value = "";
+        notificar("Resposta enviada!", "sucesso");
+        await carregarMensagensPainel();
+    } catch(e) {
+        console.warn(e);
+        notificar("Não foi possível enviar.", "erro");
+    }
+}
+
+async function liberarAcessoDeAluno(nome, turma) {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm(`Liberar o acesso de ${nome} (Turma ${turma})?\n\nIsso permite o próximo login em qualquer aparelho.`)) return;
+    const chave = chaveVinculo(nome, turma);
+    try {
+        await database.ref(`${CAMINHO_VINCULOS}/${chave}`).remove();
+        const id = `msg_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+        await database.ref(`${CAMINHO_MENSAGENS}/${chaveMsgThread(nome, turma)}/${id}`).set({
+            de: "professor",
+            texto: "✅ Acesso liberado! Você já pode jogar em qualquer aparelho. Boa sorte! 🏆",
+            data: new Date().toISOString(),
+            lido: false,
+            automatica: true
+        });
+        notificar(`Acesso de ${nome} liberado!`, "sucesso", 4000);
+        await carregarMensagensPainel();
+    } catch(e) {
+        console.warn(e);
+        notificar("Não foi possível liberar.", "erro");
+    }
+}
+
+async function excluirConversa(nome, turma) {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm(`Excluir toda a conversa com ${nome} (Turma ${turma})?\n\nIsso não pode ser desfeito.`)) return;
+    try {
+        await database.ref(`${CAMINHO_MENSAGENS}/${chaveMsgThread(nome, turma)}`).remove();
+        notificar("Conversa excluída.", "sucesso");
+        await carregarMensagensPainel();
+    } catch(e) {
+        console.warn(e);
+        notificar("Não foi possível excluir.", "erro");
+    }
+}
+
+function formatarHoraRelativa(iso) {
+    if (!iso) return "--";
+    const d = new Date(iso);
+    const diff = Date.now() - d.getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return "agora";
+    if (min < 60) return `há ${min}min`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return `há ${h}h`;
+    const dias = Math.floor(h / 24);
+    if (dias < 7) return `há ${dias}d`;
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+function formatarDataHoraMsg(iso) {
+    if (!iso) return "--";
+    const d = new Date(iso);
+    const agora = new Date();
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    const alvo = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDias = Math.round((hoje - alvo) / (1000 * 60 * 60 * 24));
+    const hora = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    if (diffDias === 0) return `hoje ${hora}`;
+    if (diffDias === 1) return `ontem ${hora}`;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd}/${mm} ${hora}`;
+}
+
+async function limparMensagensPorFiltro(turma) {
+    if (turma === "todas") {
+        try { await database.ref(CAMINHO_MENSAGENS).remove(); } catch(e) {}
+        return;
+    }
+    try {
+        const snap = await database.ref(CAMINHO_MENSAGENS).once("value");
+        const dados = snap.val() || {};
+        const sufixo = `|${turma}`;
+        for (const chave of Object.keys(dados)) {
+            if (chave.endsWith(sufixo)) {
+                await database.ref(`${CAMINHO_MENSAGENS}/${chave}`).remove();
+            }
+        }
+    } catch(e) {}
 }
 
 function chaveAlbum(nome, turma) { return chaveVinculo(nome, turma); }
@@ -3407,8 +4253,6 @@ async function abrirAlbum() {
         await migrarConquistasAntigas(nome, turma);
         const resultado = await sincronizarMedalhas(nome, turma);
         const { persistidas, novas, dados, novasSecoes, estrelas, secoesCompletas } = resultado;
-
-        // v8.6 — Detecção de subida de patente
         const patenteAtual = calcularPatente(estrelas);
         const patenteVistaId = obterPatenteVista();
         let novaPatente = null;
@@ -3419,7 +4263,6 @@ async function abrirAlbum() {
             }
         }
         salvarPatenteVista(patenteAtual.id);
-
         albumEstado = { nome, turma, persistidas, dados, estrelas, pronta: true, novasMedalhas: novas || [], novasSecoes: novasSecoes || [], secoesCompletas: secoesCompletas || {}, novaPatente };
         renderizarCapa();
         const totalColadas = Object.keys(persistidas).length;
@@ -5197,8 +6040,6 @@ function gerarDistratoresInteligentes(fA, fB, resposta, total, baseMod = modalid
     fatores.forEach(t => { for (let n = 1; n <= 10; n++) { const p = t * n; if (Math.abs(p - resposta) <= 18) adicionarDistrator(cands, p, "prod", 2); } });
     if (resposta === 1) [2, 10, 11].forEach(v => adicionarDistrator(cands, v, "um", 1));
 
-    // v8.5 — Ordem crescente mantida, mas posição da correta distribuída ~25% por posição.
-    // O controle é feito pela escolha dos distratores (quantos menores/maiores que R).
     const filtrados = cands.filter(c => c.valor !== resposta);
     const menores = filtrados.filter(c => c.valor < resposta)
         .sort((a, b) => a.prioridade - b.prioridade || Math.abs(a.valor - resposta) - Math.abs(b.valor - resposta));
@@ -5206,10 +6047,10 @@ function gerarDistratoresInteligentes(fA, fB, resposta, total, baseMod = modalid
         .sort((a, b) => a.prioridade - b.prioridade || Math.abs(a.valor - resposta) - Math.abs(b.valor - resposta));
 
     const alvos = [
-        { menores: 0, maiores: 3 }, // R cai em 1ª posição
-        { menores: 1, maiores: 2 }, // R cai em 2ª posição
-        { menores: 2, maiores: 1 }, // R cai em 3ª posição
-        { menores: 3, maiores: 0 }  // R cai em 4ª posição
+        { menores: 0, maiores: 3 },
+        { menores: 1, maiores: 2 },
+        { menores: 2, maiores: 1 },
+        { menores: 3, maiores: 0 }
     ];
     const alvo = alvos[Math.floor(Math.random() * alvos.length)];
 
@@ -5255,9 +6096,9 @@ function mostrarTela(id) {
         document.getElementById(t)?.classList.add("hidden");
     });
     document.getElementById(id)?.classList.remove("hidden");
-    if (id === "tela-inicial") renderizarMetaPessoal();
+    if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); }
     if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
-    if (id === "tela-painel") { renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); }
+    if (id === "tela-painel") { renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); }
     if (id !== "tela-resultado") {
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
         document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -5276,9 +6117,18 @@ async function registrarAluno(treino) {
     modoTreino = treino;
     salvarTurmaENomeAluno(turma, nome);
     treinoFocoOperacoes = null;
+    iniciarListenerMsgAluno();
     if (!modoTreino) {
         const r = await verificarVinculo(nome, turma);
-        if (!r.permitido) { notificar(r.mensagem, "aviso", 8000); return; }
+        if (!r.permitido) {
+            notificar(r.mensagem, "aviso", 8000);
+            const querAjuda = confirm(`${r.mensagem}\n\nQuer mandar uma mensagem para o professor agora?`);
+            if (querAjuda) {
+                msgEstado.bloqueadoInfo = r;
+                abrirFalarComProfessor();
+            }
+            return;
+        }
         if (r.status === "novo") notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
         else if (r.status === "revinculado") notificar(`Bem-vindo de volta! Como você ficou mais de 2 dias sem acessar o app, liberamos este aparelho automaticamente.`, "info", 8000);
         const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
@@ -6468,6 +7318,7 @@ async function autenticarProfessor() {
         await renderizarPainelVotacao();
         await renderizarPainelConfig();
         await renderizarDestaquesPainel();
+        await carregarMensagensPainel();
     } catch(e) { notificar("Não foi possível validar a senha.", "erro", 5000); }
 }
 function abrirResetTurma() { if (!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
@@ -6488,6 +7339,7 @@ async function confirmarReset() {
     await limparCopaV2PorFiltro(turma, mod);
     limparLocalStorageCopaV2(turma, mod);
     await limparAlbumPorFiltro(turma);
+    await limparMensagensPorFiltro(turma);
     if (limparVinculos) {
         try { await database.ref(CAMINHO_VINCULOS).remove(); notificar("Todos os vínculos de dispositivo foram removidos.", "info", 4000); }
         catch(e) { console.warn("Erro ao limpar vínculos:", e); notificar("Aviso: não foi possível limpar os vínculos agora.", "aviso", 4000); }
@@ -6497,6 +7349,7 @@ async function confirmarReset() {
     notificar("Reset concluído!", "sucesso");
     renderizarRanking();
     renderizarDestaquesPainel();
+    carregarMensagensPainel();
     document.getElementById("painel-reset").classList.add("hidden");
     const cb = document.getElementById("reset-limpar-vinculos");
     if (cb) cb.checked = false;
@@ -6645,6 +7498,8 @@ document.addEventListener("keydown", (e) => {
         if (mf && !mf.classList.contains("hidden")) fecharComoFunciona();
         const ms = document.getElementById("modal-secao-completa");
         if (ms && !ms.classList.contains("hidden")) fecharModalSecaoCompleta();
+        const mp = document.getElementById("modal-falar-professor");
+        if (mp && !mp.classList.contains("hidden")) fecharFalarComProfessor();
     }
 });
 let cliquesTitulo = 0, tempoResetClique = null;
@@ -6665,8 +7520,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     inicializarAudio();
     atualizarAcessoSeConhecido();
     try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
+    try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
     const elV = document.getElementById("changelog-versao-atual");
     if (elV) elV.textContent = APP_VERSION;
+    iniciarListenerMsgAluno();
     await renderizarCardVotacao();
     if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
     votacaoTimerInterval = setInterval(async () => {
