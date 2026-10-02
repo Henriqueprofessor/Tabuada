@@ -5044,7 +5044,9 @@ function gerarDistratoresInteligentes(fA, fB, resposta, total, baseMod = modalid
         const v = Math.max(1, Math.min(100, resposta + r));
         if (v !== resposta && !ops.includes(v)) ops.push(v);
     }
-    return ops.sort((a, b) => a - b);
+    // v8.4 — Embaralha as opções para distribuir a resposta correta
+    // uniformemente entre as 4 posições (~25% cada, ao longo das sessões).
+    return embaralharLista(ops);
 }
 function calcularPontosResposta(t) {
     const base = 300;
