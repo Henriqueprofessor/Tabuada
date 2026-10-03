@@ -2842,13 +2842,23 @@ async function migrarConquistasAntigas(nome, turma) {
     const melhor = partidas.reduce((a, b) => (Number(a.pontos) > Number(b.pontos) ? a : b));
     const ordenadas = [...partidas].sort((a,b) => new Date(a.data||0) - new Date(b.data||0));
     const mapaNomes = {
-        "Mestre da Tabuada": "mestre_tabuada", "Domínio Total": "dominio_total",
-        "Velocidade Relâmpago": "velocidade_relampago", "Sequência Perfeita": "sequencia_perfeita",
-        "Treinador Dedicado": "dedicado", "Veterano": "veterano",
-        "Tartaruga Ninja": "tartaruga_ninja", "Rei do Chute": "rei_chute",
-        "Sorte de Principiante": "sorte_principiante", "Em Chamas": "em_chamas",
-        "Boa Sequência": "boa_sequencia", "Primeira Vitória": "primeira_vitoria",
-        "Lenda da Tabuada": "lenda_tabuada", "Colecionador": "colecionador"
+        // ❌ REMOVIDOS por incompatibilidade de critério com a medalha nova:
+        // "Mestre da Tabuada": "mestre_tabuada",   // antigo: 17.000 pts | novo: 20/20 em ≤1.0s
+        // "Colecionador": "colecionador",          // antigo: 5 conquistas | novo: 10 medalhas
+        // "Primeira Vitória": "primeira_vitoria",  // antigo: exatamente 1 partida | novo: ≥1 partida
+
+        // ✅ Mantidos — critérios equivalentes (migração segura):
+        "Domínio Total": "dominio_total",
+        "Velocidade Relâmpago": "velocidade_relampago",
+        "Sequência Perfeita": "sequencia_perfeita",
+        "Treinador Dedicado": "dedicado",
+        "Veterano": "veterano",
+        "Tartaruga Ninja": "tartaruga_ninja",
+        "Rei do Chute": "rei_chute",
+        "Sorte de Principiante": "sorte_principiante",
+        "Em Chamas": "em_chamas",
+        "Boa Sequência": "boa_sequencia",
+        "Lenda da Tabuada": "lenda_tabuada"
     };
     const antigas = CONQUISTAS.filter(c => c.nome !== "Colecionador" && c.criterio(melhor, partidas, []));
     const col = CONQUISTAS.find(c => c.nome === "Colecionador");
