@@ -106,8 +106,7 @@
         .btn-encerrar-discreto { background: transparent; color: #adb5bd; border: 1px solid #dee2e6; padding: 6px 12px; font-size: 12px; width: auto; margin: 0; cursor: pointer; border-radius: 6px; font-weight: normal; }
         .btn-encerrar-discreto:hover { background: #fff5f5; color: #dc3545; border-color: #dc3545; }
         .rodape-jogo .rodape-info .seq-destaque { color: #fd7e14; font-weight: bold; }
-
-        /* [02.06] Resultado */
+        /* ─── [02.06] Tela de resultado ─────────────────────────────── */
         .resumo-resultado { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin: 16px 0; text-align: left; }
         .resumo-resultado div { background: #f8f9fa; border-radius: 6px; padding: 10px; word-break: break-word; }
         .feedback-ranking { background: #e7f5ff; border-radius: 12px; padding: 16px; margin: 16px 0; text-align: center; border-left: 4px solid #0066cc; }
@@ -141,9 +140,58 @@
         .card-classificacao .mensagem-rodape { font-size: 13px; margin-top: 12px; line-height: 1.5; color: inherit; }
         .acoes-resultado { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
         .acoes-resultado.duas-colunas { grid-template-columns: 1fr 1fr; }
-        .btn-share { background: #495057; } .btn-share:hover { background: #343a40; }
+        .btn-share { background: #495057; }
+        .btn-share:hover { background: #343a40; }
+        .novas-conquistas {
+            background: linear-gradient(135deg, #e7f5ff 0%, #d0e8ff 100%);
+            border: 1px solid #b8daff;
+            border-left: 4px solid #0066cc;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin: 16px 0;
+            text-align: left;
+            color: #084298;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .novas-conquistas strong {
+            display: block;
+            color: #0066cc;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: .5px;
+            margin-bottom: 10px;
+        }
+        .novas-conquistas .conquistas-grid { margin: 0; }
+        .novas-conquistas .conquista-card {
+            background: #fff;
+            color: #102a43;
+            border: 1px solid #b8daff;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: help;
+        }
+        .novas-conquistas .conquista-card.desbloqueada {
+            background: linear-gradient(135deg, #ffc107 0%, #fbbf24 100%);
+            color: #422006;
+            border-color: #b45309;
+            box-shadow: 0 1px 4px rgba(180,83,9,.25);
+        }
+        @media (prefers-color-scheme: dark) {
+            .novas-conquistas {
+                background: linear-gradient(135deg, #1e3a5a 0%, #14304d 100%);
+                border-color: #2a4a6a;
+                border-left-color: #4a9eff;
+                color: #cbd5e1;
+            }
+            .novas-conquistas strong { color: #7dd3fc; }
+            .novas-conquistas .conquista-card { background: #1e293b; color: #e8e8e8; border-color: #334155; }
+            .novas-conquistas .conquista-card.desbloqueada { background: linear-gradient(135deg, #ffc107 0%, #fbbf24 100%); color: #422006; border-color: #b45309; }
+        }
 
-        /* [02.07] Votação */
+                /* [02.07] Votação */
         .card-votacao { position: relative; overflow: hidden; background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 55%, #7c3aed 100%); color: #fff; text-align: left; padding: 22px 24px; margin: 20px auto 0; border-radius: 18px; max-width: 1000px; box-shadow: 0 10px 24px rgba(76,29,149,.28); }
         .card-votacao::after { content: "🗳️"; position: absolute; right: 18px; top: 8px; font-size: 72px; opacity: .12; }
         .votacao-kicker { font-size: 11px; font-weight: 800; letter-spacing: .14em; color: #ddd6fe; margin-bottom: 6px; }
@@ -1229,7 +1277,7 @@
         </div>
     </div>
 
-    <!-- [03.06] Resultado -->
+        <!-- ▼▼▼ INÍCIO DO BLOCO SUBSTITUÍVEL [03.06] — Tela de Resultado ▼▼▼ -->
     <div id="tela-resultado" class="card hidden">
         <h2 id="resultado-titulo">Resultado</h2>
         <p id="feedback-pontos"></p>
@@ -1247,7 +1295,7 @@
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
         <div id="feedback-ranking-container" class="feedback-ranking"></div>
-        <div id="novas-conquistas" style="background:#e7f5ff;border-radius:12px;padding:12px;margin:16px 0;"></div>
+        <div id="novas-conquistas" class="novas-conquistas"></div>
         <div id="album-cta-resultado" class="hidden" aria-live="polite"></div>
         <div id="mapa-tabuadas-container"></div>
         <div id="acoes-resultado-container" class="acoes-resultado duas-colunas">
@@ -1256,7 +1304,7 @@
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
     </div>
-
+    <!-- ▲▲▲ FIM DO BLOCO SUBSTITUÍVEL [03.06] ▲▲▲ -->
     <!-- [03.07] Ranking -->
     <div id="tela-ranking" class="card hidden">
         <h2>Classificação</h2>
