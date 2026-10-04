@@ -3,8 +3,8 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      📑 ÍNDICE — Ctrl+F pelo código para pular direto
      [01] HEAD  · [02] CSS · [03] HTML telas · [04] HTML modais
-     [05] a [18] JavaScript — ver Partes 2 e 3.
-     Versão: 8.8.5 — Ciclo de Vida da Etapa + Polimento Final
+     [05] a [19] JavaScript — ver Partes 2 e 3.
+     Versão: 8.9.0 — Tema E-Sports Dark na Home
      ═══════════════════════════════════════════════════════════════════════ -->
 <head>
     <meta charset="UTF-8">
@@ -39,10 +39,10 @@
         .botao-album:hover:not(:disabled) { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
         .botao-mensagens { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); position: relative; }
         .botao-mensagens:hover:not(:disabled) { background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); }
-        .botao-som { position: fixed; top: 20px; right: 20px; width: auto; background: rgba(0,0,0,0.6); border-radius: 50px; padding: 8px 16px; z-index: 1000; font-size: 20px; cursor: pointer; color: #fff; }
+        .botao-som { position: static !important; width: auto !important; background: rgba(0,0,0,0.6); border-radius: 50px; padding: 8px 16px; z-index: 1000; font-size: 20px; cursor: pointer; color: #fff; margin: 0; }
         .botao-som:hover { background: rgba(0,0,0,0.8); }
-        @media (max-width: 700px) { .botao-som { top: 10px; right: 10px; padding: 6px 12px; font-size: 15px; } }
-        @media (max-width: 500px) { .botao-som { font-size: 0; padding: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 50%; } .botao-som::before { content: "🔊"; font-size: 20px; } .botao-som.mudo::before { content: "🔇"; } }
+        @media (max-width: 700px) { .botao-som { padding: 6px 12px; font-size: 15px; } }
+        @media (max-width: 500px) { .botao-som { font-size: 0; padding: 0; width: 42px !important; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 50%; } .botao-som::before { content: "🔊"; font-size: 20px; } .botao-som.mudo::before { content: "🔇"; } }
 
         /* [02.03] Avisos */
         .aviso-vinculo { background: #e7f5ff; border: 1px solid #b8daff; border-left: 4px solid #0d6efd; border-radius: 10px; padding: 12px 14px; margin: 12px 0 4px; text-align: left; font-size: 13px; line-height: 1.55; color: #084298; }
@@ -1579,19 +1579,410 @@
             .nota-etapa-prazo.encerrada strong { color: #a8c8e8; }
         }
         /* ▲▲▲ FIM DO BLOCO v8.8.4 ▲▲▲ */
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           [02.27] REDESIGN v8.9 · Tema E-Sports Dark (Tela Inicial)
+           ═══════════════════════════════════════════════════════════════════════ */
+
+        :root {
+            --bg-deep: #0a1628;
+            --bg-mid: #0f2340;
+            --bg-card: #132a47;
+            --bg-card-soft: #1a3355;
+            --border-neon: rgba(56, 189, 248, 0.25);
+            --border-gold: rgba(250, 204, 21, 0.35);
+            --neon-cyan: #22d3ee;
+            --neon-green: #10b981;
+            --neon-gold: #fbbf24;
+            --neon-blue: #3b82f6;
+            --neon-purple: #a855f7;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
+            --shadow-green: 0 0 24px rgba(16, 185, 129, 0.45);
+            --shadow-cyan: 0 0 24px rgba(34, 211, 238, 0.35);
+            --shadow-gold: 0 0 24px rgba(251, 191, 36, 0.35);
+        }
+
+        body {
+            background: radial-gradient(ellipse at top, #0f2340 0%, #0a1628 60%, #050b16 100%) !important;
+            color: var(--text-primary) !important;
+            font-family: 'Segoe UI', 'Nunito', 'Poppins', system-ui, sans-serif !important;
+            padding: 12px !important;
+        }
+
+        #tela-inicial.card,
+        .card {
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            max-width: 1000px !important;
+        }
+
+        #tela-inicial h1, #tela-inicial h2, #tela-inicial h3 { color: var(--text-primary) !important; }
+
+        .esports-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #0f2340 0%, #132a47 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .esports-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+            color: var(--neon-gold);
+            cursor: default;
+            user-select: none;
+            text-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
+        }
+        .esports-logo .emoji-logo { font-size: 26px; filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)); }
+        .esports-escola { font-size: 11px; color: var(--text-secondary); line-height: 1.3; text-align: left; flex: 1; min-width: 140px; }
+        .esports-escola strong { color: var(--text-primary); font-weight: 700; display: block; font-size: 12px; }
+        .esports-acoes-header { display: flex; gap: 8px; align-items: center; }
+        .esports-perfil-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(34, 211, 238, 0.08);
+            border: 1px solid var(--border-neon);
+            border-radius: 999px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .esports-perfil-pill strong { color: var(--text-primary); display: block; font-size: 12px; }
+        .esports-perfil-pill .avatar { font-size: 20px; }
+        .esports-icon-btn {
+            width: 38px;
+            height: 38px;
+            background: rgba(34, 211, 238, 0.08);
+            border: 1px solid var(--border-neon);
+            border-radius: 10px;
+            color: var(--neon-cyan);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            transition: all 0.2s ease;
+        }
+        .esports-icon-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.18); border-color: var(--neon-cyan); transform: translateY(-1px); }
+
+        .hero-esports {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0d2a4d 0%, #174a73 55%, #1e3a8a 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 18px;
+            padding: 22px 20px 20px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-card), inset 0 0 60px rgba(34, 211, 238, 0.06);
+        }
+        .hero-esports::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 15% 30%, rgba(34, 211, 238, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(251, 191, 36, 0.12) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .hero-esports-conteudo { position: relative; z-index: 1; }
+        .hero-esports-saudacao { font-size: clamp(22px, 4.5vw, 30px); font-weight: 900; color: #fff; margin: 0 0 8px; line-height: 1.1; letter-spacing: -0.5px; }
+        .hero-esports-saudacao .nome-destaque { color: var(--neon-gold); text-shadow: 0 2px 12px rgba(251, 191, 36, 0.5); }
+        .hero-esports-sub { font-size: 14px; color: #cbd5e1; line-height: 1.5; margin: 0 0 16px; max-width: 560px; }
+        .hero-esports-sub .posicao-num { color: var(--neon-cyan); font-weight: 900; font-size: 16px; }
+        .hero-esports-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+        .hero-stat-card { background: rgba(10, 22, 40, 0.65); border: 1px solid var(--border-neon); border-radius: 12px; padding: 10px 12px; text-align: left; backdrop-filter: blur(8px); }
+        .hero-stat-rotulo { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .hero-stat-valor { font-size: clamp(18px, 3.5vw, 22px); font-weight: 900; color: var(--neon-gold); line-height: 1; letter-spacing: -0.5px; }
+        .hero-stat-valor .unidade { font-size: 11px; color: var(--text-secondary); font-weight: 700; margin-left: 2px; }
+        .hero-stat-valor.cyan { color: var(--neon-cyan); }
+        .hero-stat-valor.verde { color: var(--neon-green); }
+
+        .grid-acoes-principais { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 14px; }
+        .acao-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            padding: 18px 14px 16px;
+            text-align: center;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.18s ease, box-shadow 0.22s ease;
+            box-shadow: var(--shadow-card);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-height: 130px;
+        }
+        .acao-card:hover:not(:disabled) { transform: translateY(-3px); }
+        .acao-card:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+        .acao-card .acao-icone { font-size: 40px; line-height: 1; margin-bottom: 4px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35)); }
+        .acao-card .acao-titulo { font-size: 15px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.1; }
+        .acao-card .acao-desc { font-size: 11px; line-height: 1.35; opacity: 0.9; font-weight: 500; }
+        .acao-card .acao-seta {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+        }
+        .acao-card.jogar        { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); }
+        .acao-card.desempenho   { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35); }
+        .acao-card.classificacao{ background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35); }
+        .acao-card.album        { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35); }
+
+        .mais-opcoes { background: rgba(19, 42, 71, 0.6); border: 1px solid var(--border-neon); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+        .mais-opcoes-titulo { font-size: 12px; font-weight: 800; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; text-align: left; }
+        .mais-opcoes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
+        .mais-opcoes-btn {
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid var(--border-neon);
+            border-radius: 10px;
+            padding: 10px 6px;
+            color: var(--text-secondary);
+            font-size: 10.5px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin: 0;
+            position: relative;
+            transition: all 0.18s ease;
+            min-height: 74px;
+        }
+        .mais-opcoes-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.12); border-color: var(--neon-cyan); color: var(--text-primary); transform: translateY(-2px); }
+        .mais-opcoes-btn .icone { font-size: 22px; line-height: 1; }
+        .mais-opcoes-btn .badge-notif {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            background: #dc3545;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 800;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 2px var(--bg-deep);
+        }
+
+        .grid-info-triplo { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+        @media (max-width: 780px) {
+            .grid-info-triplo { grid-template-columns: 1fr; }
+            .hero-esports-stats { grid-template-columns: 1fr; }
+            .grid-acoes-principais { grid-template-columns: repeat(2, 1fr); }
+            .esports-escola { display: none; }
+        }
+        .info-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: var(--shadow-card);
+        }
+        .info-card-titulo { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.3px; text-transform: uppercase; }
+        .info-card-titulo .icone { font-size: 18px; }
+        .badge-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; }
+        .badge-status.andamento { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .badge-status.aguardando { background: rgba(251, 191, 36, 0.18); color: #fde68a; border: 1px solid rgba(251, 191, 36, 0.4); }
+        .badge-status.encerrada { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); }
+
+        .info-etapa-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .info-etapa-stat { background: rgba(10, 22, 40, 0.55); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 9px; padding: 8px 6px; text-align: center; }
+        .info-etapa-stat .num { display: block; font-size: 18px; font-weight: 900; color: var(--neon-gold); line-height: 1; margin-bottom: 3px; }
+        .info-etapa-stat .lbl { display: block; font-size: 9px; color: var(--text-muted); font-weight: 700; line-height: 1.2; }
+
+        .anel-progresso-wrap { display: flex; align-items: center; gap: 14px; justify-content: center; padding: 6px 0; }
+        .anel-progresso { position: relative; width: 90px; height: 90px; flex-shrink: 0; }
+        .anel-progresso svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .anel-progresso .trilha { fill: none; stroke: rgba(56, 189, 248, 0.15); stroke-width: 8; }
+        .anel-progresso .fill   { fill: none; stroke: var(--neon-green); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1); filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.6)); }
+        .anel-progresso .centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--text-secondary); line-height: 1.1; text-align: center; font-weight: 700; }
+        .anel-progresso .centro .grande { font-size: 18px; font-weight: 900; color: var(--text-primary); }
+        .progresso-mini-stats { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; }
+        .progresso-mini-linha { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+        .progresso-mini-linha .valor { color: var(--text-primary); margin-left: auto; font-weight: 900; }
+        .progresso-mini-linha .icone { font-size: 13px; }
+
+        .mini-ranking-posicao { display: flex; flex-direction: column; gap: 5px; }
+        .mini-ranking-linha {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            background: rgba(10, 22, 40, 0.4);
+            border: 1px solid transparent;
+        }
+        .mini-ranking-linha.voce {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06));
+            border-color: rgba(16, 185, 129, 0.5);
+            font-weight: 800;
+        }
+        .mini-ranking-pos {
+            width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 900;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--neon-cyan);
+            flex-shrink: 0;
+        }
+        .mini-ranking-linha:nth-child(1) .mini-ranking-pos { background: linear-gradient(135deg, #fbbf24, #d97706); color: #422006; box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
+        .mini-ranking-linha:nth-child(2) .mini-ranking-pos { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: #1e293b; }
+        .mini-ranking-linha:nth-child(3) .mini-ranking-pos { background: linear-gradient(135deg, #b45309, #78350f); color: #fef3c7; }
+        .mini-ranking-nome { flex: 1; color: var(--text-primary); }
+        .mini-ranking-pontos { color: var(--neon-gold); font-weight: 800; font-size: 11.5px; }
+
+        .aviso-classificado {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0.08) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 11.5px;
+            color: #6ee7b7;
+            font-weight: 700;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .aviso-classificado .emoji { font-size: 18px; }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(15, 35, 64, 0.98) 0%, rgba(10, 22, 40, 0.98) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 16px;
+            padding: 10px 6px;
+            margin-top: 14px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35), 0 0 24px rgba(34, 211, 238, 0.08);
+            backdrop-filter: blur(12px);
+        }
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            padding: 6px 8px; background: transparent; border: none;
+            color: var(--text-muted); font-size: 10.5px; font-weight: 700;
+            font-family: inherit; cursor: pointer; border-radius: 10px;
+            transition: all 0.18s ease; margin: 0; width: auto; flex: 1; min-width: 0;
+        }
+        .bottom-nav-item:hover:not(:disabled) { color: var(--text-primary); background: rgba(34, 211, 238, 0.06); }
+        .bottom-nav-item .icone-nav { font-size: 22px; line-height: 1; filter: grayscale(0.6) opacity(0.7); transition: filter 0.18s ease; }
+        .bottom-nav-item.ativo { color: var(--neon-gold); }
+        .bottom-nav-item.ativo .icone-nav { filter: none; }
+        .bottom-nav-item.ativo::after {
+            content: ""; width: 18px; height: 3px;
+            background: var(--neon-gold); border-radius: 2px;
+            margin-top: 2px; box-shadow: 0 0 8px rgba(251, 191, 36, 0.7);
+        }
+
+        .banner-final {
+            background: linear-gradient(135deg, #102a43 0%, #174a73 55%, #0d7a61 100%);
+            border: 1px solid var(--border-gold);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-top: 14px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; box-shadow: var(--shadow-gold); flex-wrap: wrap;
+        }
+        .banner-final-texto { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.4; text-align: left; }
+        .banner-final-texto strong { color: var(--neon-gold); display: block; font-size: 14px; margin-bottom: 2px; }
+        .banner-final-emoji { font-size: 34px; filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5)); }
+
+        #tela-inicial .nota-provisoria, #tela-inicial .nota-espontanea {
+            background: rgba(19, 42, 71, 0.6) !important;
+            border: 1px solid var(--border-neon) !important;
+            color: var(--text-secondary) !important;
+            font-size: 12px !important;
+        }
+        #tela-inicial .nota-provisoria strong, #tela-inicial .nota-espontanea strong { color: var(--neon-cyan) !important; }
+
+        @media (max-width: 520px) {
+            .esports-header { padding: 10px 12px; }
+            .esports-logo { font-size: 15px; }
+            .esports-logo .emoji-logo { font-size: 22px; }
+            .grid-acoes-principais { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .acao-card { min-height: 118px; padding: 14px 10px 12px; }
+            .acao-card .acao-icone { font-size: 32px; }
+            .acao-card .acao-titulo { font-size: 13px; }
+            .acao-card .acao-desc { font-size: 10px; }
+            .info-etapa-stats { grid-template-columns: repeat(3, 1fr); }
+            .bottom-nav-item { font-size: 9.5px; padding: 5px 4px; }
+            .bottom-nav-item .icone-nav { font-size: 19px; }
+        }
+        /* ▲▲▲ FIM DO BLOCO v8.9 ▲▲▲ */
     </style>
 </head>
 <body>
     <div id="toast-container" class="toast-container"></div>
     <div id="toast-pontuacao"></div>
-    <button id="btn-som" class="botao-som">🔊 SOM LIGADO</button>
 
-    <!-- [03.01] Tela inicial -->
+    <!-- [03.01] Tela inicial — REDESIGN v8.9 -->
     <div id="tela-inicial" class="card">
-        <h1 id="titulo-secreto" style="margin-bottom:6px; cursor: default; user-select: none; -webkit-user-select: none;">Copa da Tabuada CEIB 2026</h1>
-        <p class="subtitulo">Colégio Estadual Ismael Branco<br>Professor Henrique · Matemática</p>
+        <!-- ─── HEADER E-SPORTS ─── -->
+        <header class="esports-header">
+            <div class="esports-logo" id="titulo-secreto" title="Clique 5x para acesso do professor">
+                <span class="emoji-logo">🏆</span>
+                <span>Copa da Tabuada</span>
+            </div>
+            <div class="esports-escola">
+                <strong>Colégio Estadual Ismael Branco</strong>
+                Professor Henrique · Matemática
+            </div>
+            <div class="esports-acoes-header">
+                <div class="esports-perfil-pill" id="perfil-pill-aluno">
+                    <span class="avatar">👤</span>
+                    <span>
+                        <strong id="perfil-pill-nome">Meu Perfil</strong>
+                        Turma <span id="perfil-pill-turma">--</span>
+                    </span>
+                </div>
+                <button class="esports-icon-btn" id="btn-som" title="Ligar/desligar som">🔊</button>
+            </div>
+        </header>
 
-        <!-- ▼▼▼ v8.8.4 · Bloco dinâmico (countdown OU hero normal) ▼▼▼ -->
+        <!-- ─── HERO: COUNTDOWN OU SAUDAÇÃO ─── -->
         <section id="hero-pre-evento" class="hero-pre-evento hidden" aria-labelledby="titulo-pre-evento">
             <div class="hero-pre-evento-kicker">🚀 A COPA VAI COMEÇAR</div>
             <h2 id="titulo-pre-evento">Prepare-se! A Copa começa em:</h2>
@@ -1604,34 +1995,188 @@
             </div>
         </section>
 
-        <section id="hero-classificatoria-normal" class="hero-classificatoria" aria-labelledby="titulo-classificatoria">
-            <div class="hero-kicker">ETAPA 1 · CLASSIFICAÇÃO</div>
-            <h2 id="titulo-classificatoria">Seu desafio começa agora.</h2>
-            <p>Participe da etapa classificatória, supere seu próprio recorde e conquiste uma vaga para representar sua turma na Copa da Tabuada CEIB 2026.</p>
-            <div class="vagas-grid" aria-label="Vagas por turma e modalidade">
-                <div class="vaga-card"><span class="vaga-numero">4</span><span class="vaga-label">melhores participantes por turma</span></div>
-                <div class="vaga-card"><span class="vaga-numero">20</span><span class="vaga-label">questões por partida</span></div>
-                <div class="vaga-card"><span class="vaga-numero">10s</span><span class="vaga-label">por questão</span></div>
+        <!-- Hero normal (etapa ativa / encerrada) -->
+        <section id="hero-classificatoria-normal" class="hero-esports" aria-labelledby="titulo-classificatoria">
+            <div class="hero-esports-conteudo">
+                <h2 class="hero-esports-saudacao" id="titulo-classificatoria">
+                    Olá, <span class="nome-destaque" id="hero-nome-destaque">Aluno</span>!
+                </h2>
+                <p class="hero-esports-sub" id="hero-sub-dinamica">
+                    Sua dedicação faz a diferença!<br>
+                    Você está na <span class="posicao-num" id="hero-posicao-num">--ª</span> posição na sua turma.
+                    Continue treinando e mostre todo o seu potencial na Copa da Tabuada CEIB 2026!
+                </p>
+                <div class="hero-esports-stats">
+                    <div class="hero-stat-card">
+                        <div class="hero-stat-rotulo"><span>⭐</span> Melhor pontuação</div>
+                        <div class="hero-stat-valor" id="hero-melhor-pontos">— <span class="unidade">pts</span></div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <div class="hero-stat-rotulo"><span>🏅</span> Melhor posição</div>
+                        <div class="hero-stat-valor cyan" id="hero-melhor-posicao">—</div>
+                    </div>
+                    <div class="hero-stat-card">
+                        <div class="hero-stat-rotulo"><span>📅</span> Etapa atual</div>
+                        <div class="hero-stat-valor verde" id="hero-etapa-atual" style="font-size: 14px;">Classificatória</div>
+                    </div>
+                </div>
             </div>
         </section>
-        <!-- ▲▲▲ FIM DO BLOCO v8.8.4 ▲▲▲ -->
 
-        <div id="etapa-info-prazo"></div>
-        <div id="meta-pessoal-container"></div>
+        <!-- ─── AÇÃO PRINCIPAL (dinâmica) ─── -->
         <div id="acao-principal-container"></div>
-        <p class="nota-provisoria">📌 Os <strong>4 melhores participantes</strong> de cada turma, em cada modalidade, serão convidados para a Copa. A classificação é provisória até o encerramento da etapa.</p>
-        <p class="nota-espontanea">🤝 <strong>Sua participação é espontânea.</strong> Você joga quando quiser, quantas vezes quiser. Não há obrigação — é uma escolha livre, e a Copa é para quem tem vontade de competir e se divertir.</p>
-        <div class="acoes-secundarias" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
-            <button onclick="abrirMeuDesempenho()" class="botao-desempenho">📊 Meu Desempenho</button>
-            <button onclick="abrirAlbum()" class="botao-album" aria-label="Abrir o Álbum de Conquistas">📖 Meu Álbum<span id="album-badge" class="hidden" role="status" aria-label="Você tem medalhas novas para ver"></span></button>
-            <button onclick="mostrarTela('tela-ranking')" class="botao-secundario">🏆 Classificação</button>
-            <button onclick="abrirBuscarAluno()" class="botao-perfil">🔍 Buscar Aluno</button>
-            <button onclick="abrirFalarComProfessor()" class="botao-mensagens" aria-label="Falar com o professor">💬 Falar com o professor<span id="msg-badge-aluno" class="hidden" role="status" aria-label="Você tem mensagens novas"></span></button>
+
+        <!-- ─── GRID DE AÇÕES PRINCIPAIS ─── -->
+        <div class="grid-acoes-principais">
+            <button class="acao-card jogar" onclick="mostrarTela('tela-single')" aria-label="Jogar a etapa classificatória">
+                <span class="acao-icone">🎮</span>
+                <span class="acao-titulo">Jogar</span>
+                <span class="acao-desc">Participe da etapa classificatória</span>
+                <span class="acao-seta">›</span>
+            </button>
+            <button class="acao-card desempenho" onclick="abrirMeuDesempenho()" aria-label="Ver meu desempenho">
+                <span class="acao-icone">📊</span>
+                <span class="acao-titulo">Meu Desempenho</span>
+                <span class="acao-desc">Acompanhe sua evolução</span>
+                <span class="acao-seta">›</span>
+            </button>
+            <button class="acao-card classificacao" onclick="mostrarTela('tela-ranking')" aria-label="Ver classificação">
+                <span class="acao-icone">🏆</span>
+                <span class="acao-titulo">Classificação</span>
+                <span class="acao-desc">Veja seu ranking e medalhas</span>
+                <span class="acao-seta">›</span>
+            </button>
+            <button class="acao-card album" onclick="abrirAlbum()" aria-label="Abrir meu álbum">
+                <span class="acao-icone">📖</span>
+                <span class="acao-titulo">Meu Álbum</span>
+                <span class="acao-desc">Conquistas e patentes</span>
+                <span class="acao-seta">›</span>
+            </button>
         </div>
-        <div class="atalhos-iniciais">
-            <button class="changelog-trigger" onclick="abrirComoFunciona()" title="Como funciona a Copa">📖 Como funciona</button>
-            <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.8.5</span> · histórico</button>
+
+        <!-- ─── MAIS OPÇÕES ─── -->
+        <div class="mais-opcoes">
+            <div class="mais-opcoes-titulo">⚡ Mais opções</div>
+            <div class="mais-opcoes-grid">
+                <button class="mais-opcoes-btn" onclick="iniciarTreinoAnonimo()" title="Treinar livremente">
+                    <span class="icone">🧠</span>
+                    <span>Treino</span>
+                </button>
+                <button class="mais-opcoes-btn" onclick="abrirBuscarAluno()" title="Buscar aluno">
+                    <span class="icone">🔍</span>
+                    <span>Buscar</span>
+                </button>
+                <button class="mais-opcoes-btn" onclick="abrirFalarComProfessor()" title="Falar com o professor">
+                    <span class="icone">💬</span>
+                    <span>Professor</span>
+                    <span id="msg-badge-aluno" class="badge-notif hidden">0</span>
+                </button>
+                <button class="mais-opcoes-btn" onclick="abrirComoFunciona()" title="Como funciona">
+                    <span class="icone">ℹ️</span>
+                    <span>Como funciona</span>
+                </button>
+                <button class="mais-opcoes-btn" onclick="abrirChangelog()" title="Histórico de versões">
+                    <span class="icone">⚙️</span>
+                    <span>v<span id="changelog-versao-atual">8.9.0</span></span>
+                </button>
+            </div>
         </div>
+
+        <!-- ─── INFO PRAZO (dinâmica) ─── -->
+        <div id="etapa-info-prazo"></div>
+
+        <!-- ─── GRID INFERIOR: ETAPA | PROGRESSO | POSIÇÃO ─── -->
+        <div class="grid-info-triplo">
+            <div class="info-card">
+                <div class="info-card-titulo">
+                    <span class="icone">📅</span> Etapa Classificatória
+                    <span id="badge-status-etapa" class="badge-status andamento" style="margin-left:auto;">Em andamento</span>
+                </div>
+                <div id="info-etapa-texto" style="font-size:12.5px;color:var(--text-secondary);line-height:1.5;">
+                    Sua turma está na disputa! Participe e conquiste pontos para classificar sua turma.
+                </div>
+                <div class="info-etapa-stats">
+                    <div class="info-etapa-stat"><span class="num">4</span><span class="lbl">melhores por turma</span></div>
+                    <div class="info-etapa-stat"><span class="num">20</span><span class="lbl">questões por partida</span></div>
+                    <div class="info-etapa-stat"><span class="num">10s</span><span class="lbl">por questão</span></div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-titulo">
+                    <span class="icone">📊</span> Seu progresso
+                </div>
+                <div class="anel-progresso-wrap">
+                    <div class="anel-progresso">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="trilha" cx="50" cy="50" r="42"></circle>
+                            <circle class="fill" id="anel-fill" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+                        </svg>
+                        <div class="centro">
+                            <span class="grande" id="anel-acertos">0/20</span>
+                            <span>questões</span>
+                        </div>
+                    </div>
+                    <div class="progresso-mini-stats">
+                        <div class="progresso-mini-linha"><span class="icone">✅</span> Acertos <span class="valor" id="mini-acertos">0</span></div>
+                        <div class="progresso-mini-linha"><span class="icone">❌</span> Erros <span class="valor" id="mini-erros">0</span></div>
+                        <div class="progresso-mini-linha"><span class="icone">⏱️</span> Tempo médio <span class="valor" id="mini-tempo">--s</span></div>
+                    </div>
+                </div>
+                <div class="aviso-classificado" id="aviso-zona-classificado">
+                    <span class="emoji">🏆</span>
+                    <span><strong>Você está na zona de classificação!</strong><br>Continue assim para garantir sua vaga.</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-titulo">
+                    <span class="icone">🏆</span> Sua posição
+                    <span style="margin-left:auto;font-size:10px;color:var(--text-muted);font-weight:700;" id="posicao-turma-label">Turma --</span>
+                </div>
+                <div class="mini-ranking-posicao" id="mini-ranking-home">
+                    <div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">—</span><span class="mini-ranking-pontos">—</span></div>
+                    <div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">—</span><span class="mini-ranking-pontos">—</span></div>
+                    <div class="mini-ranking-linha voce"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">Você</span><span class="mini-ranking-pontos">—</span></div>
+                    <div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">—</span><span class="mini-ranking-pontos">—</span></div>
+                </div>
+                <button class="mais-opcoes-btn" onclick="mostrarTela('tela-ranking')" style="min-height:auto;flex-direction:row;justify-content:center;gap:6px;padding:9px 12px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:#93c5fd;font-size:11.5px;">
+                    Ver ranking completo <span style="font-weight:900;">›</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── META PESSOAL ─── -->
+        <div id="meta-pessoal-container"></div>
+
+        <!-- ─── BANNER FINAL ─── -->
+        <div class="banner-final">
+            <div class="banner-final-emoji">🏆</div>
+            <div class="banner-final-texto">
+                <strong>COPA DA TABUADA CEIB 2026</strong>
+                Mais que um jogo, um desafio de verdade!
+            </div>
+            <div class="banner-final-emoji">🚀</div>
+        </div>
+
+        <!-- ─── BOTTOM NAV ─── -->
+        <nav class="bottom-nav">
+            <button class="bottom-nav-item ativo" onclick="mostrarTela('tela-inicial')">
+                <span class="icone-nav">🏠</span> Início
+            </button>
+            <button class="bottom-nav-item" onclick="mostrarTela('tela-ranking')">
+                <span class="icone-nav">🏆</span> Classificação
+            </button>
+            <button class="bottom-nav-item" onclick="abrirMeuDesempenho()">
+                <span class="icone-nav">📊</span> Desempenho
+            </button>
+            <button class="bottom-nav-item" onclick="abrirAlbum()">
+                <span class="icone-nav">📖</span> Álbum
+            </button>
+            <button class="bottom-nav-item" onclick="document.querySelector('.mais-opcoes')?.scrollIntoView({behavior:'smooth'})">
+                <span class="icone-nav">⋯</span> Mais
+            </button>
+        </nav>
     </div>
 
     <!-- [03.02] Votação -->
@@ -2019,84 +2564,59 @@
             <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
             <div class="changelog-lista">
     <div class="changelog-item">
-        <span class="changelog-versao atual">v8.8.5 · atual</span>
+        <span class="changelog-versao atual">v8.9.0 · atual</span>
+        <h4 class="changelog-titulo">🎨 Redesign E-Sports da Home</h4>
+        <p class="changelog-descricao">A tela inicial ganhou um visual dark premium com tema e-sports: header com logo e perfil, hero personalizado com nome do aluno em dourado, 4 cards coloridos de ação (Jogar, Desempenho, Classificação, Álbum), bloco de "Mais opções" compacto, grid de três cards (Etapa, Progresso com anel SVG animado, Posição com mini-ranking), banner final e bottom navigation fixo. Todos os IDs e funções originais foram preservados — o app continua 100% funcional.</p>
+    </div>
+    <div class="changelog-item">
+        <span class="changelog-versao">v8.8.5</span>
         <h4 class="changelog-titulo">✨ Polimento final — ciclo completo e rótulos precisos</h4>
-        <p class="changelog-descricao"><strong>(1) Encerramento automático da etapa</strong> quando o prazo vence — o ciclo agora fecha sozinho, sem depender de alguém olhar a tela. <strong>(2) Guard contra partida fora do prazo:</strong> se o tempo acabar durante a partida, o resultado vai para o histórico, mas não conta para a classificação oficial. <strong>(3) Fechamento automático da votação corrigido</strong> (bug crítico — a votação agora fecha de verdade no 4º dia). <strong>(4) Motivo do congelamento registrado</strong> no painel e no Firebase. <strong>(5) Rótulos unificados:</strong> toda métrica de tempo passa a se chamar <em>"tempo médio dos acertos"</em> (deixa claro que só acertos entram na média). <strong>(6) Cancelar no prompt de congelamento agora aborta a ação.</strong></p>
+        <p class="changelog-descricao"><strong>(1) Encerramento automático da etapa</strong> quando o prazo vence. <strong>(2) Guard contra partida fora do prazo.</strong> <strong>(3) Fechamento automático da votação corrigido.</strong> <strong>(4) Motivo do congelamento registrado.</strong> <strong>(5) Rótulos unificados.</strong> <strong>(6) Cancelar no prompt de congelamento agora aborta a ação.</strong></p>
     </div>
     <div class="changelog-item">
         <span class="changelog-versao">v8.8.4</span>
         <h4 class="changelog-titulo">📅 Ciclo de Vida da Etapa + Modo Teste</h4>
-                    <p class="changelog-descricao">Nova arquitetura com 4 fases: <strong>Pré-evento</strong> (countdown + treino livre), <strong>Etapa + Votação</strong> (prazo provisório de 7 dias), <strong>Etapa Definida</strong> (prazo oficial de 7 ou 14 dias) e <strong>Encerrada</strong> (ranking congelado). Professor ganha cockpit completo: agendar início, congelar para correções, encerrar após prazo (ou em modo teste) e resetar ciclo. Votação abre automaticamente quando a etapa inicia.</p>
+                    <p class="changelog-descricao">Nova arquitetura com 4 fases: <strong>Pré-evento</strong>, <strong>Etapa + Votação</strong>, <strong>Etapa Definida</strong> e <strong>Encerrada</strong>. Professor ganha cockpit completo.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.8.3</span>
-                    <h4 class="changelog-titulo">🏅 Álbum Didático — requisitos visíveis + "Como conseguir" + onboarding</h4>
-                    <p class="changelog-descricao">O Álbum ficou mais didático. <strong>(1) Requisito sempre visível:</strong> cada medalha mostra o critério exato (ex: "Jogar 5 partidas completas") em vez de uma dica vaga. <strong>(2) Barra de progresso numérica:</strong> medalhas bloqueadas mostram "3 / 5 partidas" com barra colorida (verde quando está a 90%). <strong>(3) Modal "Como conseguir":</strong> toque em qualquer medalha para ver requisito, progresso, dica e raridade. <strong>(4) Onboarding de 4 passos:</strong> na 1ª abertura do álbum, um guia rápido explica o que são medalhas, estrelas e patentes. <strong>(5) Vocabulário unificado:</strong> "medalha" substitui "figurinha" em toda a interface.</p>
+                    <h4 class="changelog-titulo">🏅 Álbum Didático</h4>
+                    <p class="changelog-descricao">Requisitos visíveis, barra de progresso numérica, modal "Como conseguir", onboarding de 4 passos.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.8.2</span>
-                    <h4 class="changelog-titulo">🏎️ Corrida ao Mestre — escada de velocidade até o topo</h4>
-                    <p class="changelog-descricao">7 novas medalhas criam uma escada progressiva até o topo absoluto: <strong>🚶 Marcha Ligeira</strong> (19/20 em 2.0s), <strong>🏃 Corredor</strong> (1.8s), <strong>⚡ Velocista</strong> (1.6s), <strong>🌩️ Trovão</strong> (20/20 em 1.4s), <strong>🌀 Furacão</strong> (1.2s), <strong>☄️ Meteoro</strong> (1.1s) e <strong>🏆 Mestre da Tabuada</strong> (20/20 em 1.0s). A seção completa rende <strong>+20 ⭐</strong> e a badge <strong>🏁 Linha de Chegada</strong>.</p>
+                    <h4 class="changelog-titulo">🏎️ Corrida ao Mestre</h4>
+                    <p class="changelog-descricao">7 novas medalhas criam uma escada progressiva até o topo absoluto.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.8.1</span>
                     <h4 class="changelog-titulo">⭐ Estrelas visíveis nas medalhas</h4>
-                    <p class="changelog-descricao">Cada figurinha do Álbum mostra <strong>quantas estrelas vale</strong> (selo dourado ⭐N). A regra de ganho de estrelas foi detalhada no "Como funciona", com destaque para o bônus de completar uma seção e o total máximo.</p>
+                    <p class="changelog-descricao">Cada figurinha do Álbum mostra quantas estrelas vale.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.8</span>
-                    <h4 class="changelog-titulo">🗺️ Maestria do Mapa + 🎓 Certificado de Maestria</h4>
-                    <p class="changelog-descricao">Nova escada de reconhecimento para quem domina o mapa de tabuadas. <strong>(1) Marcos progressivos:</strong> medalhas Base Sólida, Mestre dos Desafios e Mestre do Mapa. <strong>(2) Selos visuais no mapa:</strong> fundo dourado + células com brilho pulsante. <strong>(3) Certificado de Maestria:</strong> diploma imprimível. <strong>(4) Guardião da Precisão</strong> e <strong>Lenda do Mapa</strong>. <strong>(5) Painel do Professor</strong> ganha bloco "Mestres da Tabuada".</p>
+                    <h4 class="changelog-titulo">🗺️ Maestria do Mapa + 🎓 Certificado</h4>
+                    <p class="changelog-descricao">Nova escada de reconhecimento para quem domina o mapa.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.7.2</span>
-                    <h4 class="changelog-titulo">🧮 Calculadora permitida + 🤝 Participação espontânea</h4>
-                    <p class="changelog-descricao">Avisos sobre calculadora permitida e participação espontânea agora aparecem em locais-chave do app.</p>
+                    <h4 class="changelog-titulo">🧮 Calculadora permitida</h4>
+                    <p class="changelog-descricao">Avisos sobre calculadora e participação espontânea em locais-chave.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.7.1</span>
-                    <h4 class="changelog-titulo">🔓 Liberação manual de acesso + identificação no chat</h4>
-                    <p class="changelog-descricao">Painel do professor ganhou um bloco para liberar acesso manualmente. Aluno sem identificação vê aviso explícito no chat.</p>
+                    <h4 class="changelog-titulo">🔓 Liberação manual de acesso</h4>
+                    <p class="changelog-descricao">Painel do professor ganhou bloco de liberação manual.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.7</span>
                     <h4 class="changelog-titulo">💬 Canal aluno ↔ professor</h4>
-                    <p class="changelog-descricao">Aluno pode falar com o professor sem sair de casa. Cada conversa começa com uma categoria escolhida.</p>
+                    <p class="changelog-descricao">Aluno pode falar com o professor sem sair de casa.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v8.6</span>
                     <h4 class="changelog-titulo">⚽ Patentes de Copa</h4>
-                    <p class="changelog-descricao">Suas estrelas do Álbum viram patente temática de Copa: Reserva → Titular → Destaque → Craque → Ídolo → Imortal.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.5</span>
-                    <h4 class="changelog-titulo">⚖️ Opções em ordem crescente com posição equilibrada</h4>
-                    <p class="changelog-descricao">As 4 alternativas aparecem em ordem crescente, com posição correta distribuída uniformemente.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.4</span>
-                    <h4 class="changelog-titulo">⚖️ Opções balanceadas</h4>
-                    <p class="changelog-descricao">Alternativas embaralhadas antes de aparecer.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.3</span>
-                    <h4 class="changelog-titulo">🏅 Alunos em destaque + Seu destaque</h4>
-                    <p class="changelog-descricao">Blocos de reconhecimento no painel e na tela de desempenho.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.2</span>
-                    <h4 class="changelog-titulo">📋 Histórico completo de partidas</h4>
-                    <p class="changelog-descricao">Lista completa das partidas do aluno.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.1</span>
-                    <h4 class="changelog-titulo">🎯 Meta Pessoal</h4>
-                    <p class="changelog-descricao">Card de incentivo na tela inicial com a próxima meta do aluno.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.0</span>
-                    <h4 class="changelog-titulo">📖 Álbum de Conquistas</h4>
-                    <p class="changelog-descricao">Tela dedicada para colecionar medalhas como figurinhas.</p>
+                    <p class="changelog-descricao">Suas estrelas do Álbum viram patente temática de Copa.</p>
                 </div>
             </div>
         </div>
@@ -2201,12 +2721,12 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-    <script>        // ═══════════════════════════════════════════════════════════════════════
+    <script>
+// ═══════════════════════════════════════════════════════════════════════
 // [05] JS-CFG · Constantes e configuração global
 // ═══════════════════════════════════════════════════════════════════════
 
-// ─── [05.01] Versão e chaves de storage ────────────────────────────────
-const APP_VERSION = "8.8.5";
+const APP_VERSION = "8.9.0";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -2220,7 +2740,6 @@ function verificarVersao() {
 }
 verificarVersao();
 
-// ─── [05.02] Firebase e caminhos ───────────────────────────────────────
 const firebaseConfig = {
     apiKey: "AIzaSyCSs7aCPTYSebSG6UHSSCMA76p-ZGit9Xc",
     authDomain: "copa-tabuada-ceib.firebaseapp.com",
@@ -2253,12 +2772,10 @@ const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
 const PREFIXO_LOCAL_CORES = "copaV2_cores_";
 const PREFIXO_LEGADO_CORES = "ceib_cores_";
 
-// ─── [05.03] Senhas e segurança ────────────────────────────────────────
 const SENHA_PROFESSOR_HASH = "68accac682c485d39a223b9c57ae8423271ec0e1129f5298cc5455656d23c3e7";
 const SENHA_PROFESSOR_HASH_FALLBACK = "1ojwkhau4c9";
 const PROFESSOR_SESSION_MS = 30 * 60 * 1000;
 
-// ─── [05.04] Chaves de localStorage e limites ──────────────────────────
 const STORAGE_RANKING = "rankingCEIB";
 const STORAGE_PARTIDAS = "partidasCEIB";
 const STORAGE_LAST_SYNC = "lastSyncTime";
@@ -2283,17 +2800,13 @@ const STORAGE_ALBUM_VISTAS = "copa_album_vistas_count";
 const STORAGE_ALBUM_FILTROS = "copa_album_filtros";
 const STORAGE_META_PREFIXO = "copa_meta_";
 
-// ─── [05.05] Modalidades ───────────────────────────────────────────────
 const MODALIDADES = {
     "2-5": { nome: "Tabuadas do 2 ao 5", fatores: [2,3,4,5] },
     "6-9": { nome: "Tabuadas do 6 ao 9", fatores: [6,7,8,9] },
     "0-10": { nome: "Completa - Tabuadas do 1 ao 10", fatores: [1,2,3,4,5,6,7,8,9,10] }
 };
 
-// ─── [05.06] Conquistas antigas (compatibilidade com sistema legado) ───
 const CONQUISTAS = [
-    // ✅ RENOMEADO: "Mestre da Tabuada" → "Rei da Pontuação" para evitar conflito com a medalha nova
-    //    que exige 20/20 em tempo médio ≤1.0s. Aqui o critério é puramente de pontuação (17.000+).
     { icone: "💎", nome: "Rei da Pontuação", descricao: "17.000+ pontos", criterio: (r) => r.pontos >= 17000 },
     { icone: "📚", nome: "Domínio Total", descricao: "20/20 acertos", criterio: (r) => r.acertos === 20 },
     { icone: "🚀", nome: "Velocidade Relâmpago", descricao: "Tempo < 1.2s e acertos 20/20", criterio: (r) => r.acertos === 20 && r.tempoMedio < 1.2 },
@@ -2310,7 +2823,6 @@ const CONQUISTAS = [
     { icone: "🏅", nome: "Colecionador", descricao: "5 conquistas", criterio: (r, h, c) => c.length >= 5 }
 ];
 
-// ─── [05.07] Raridades ─────────────────────────────────────────────────
 const RARIDADES = {
     comum:    { nome: "Comum",    emoji: "⚪", cor: "#94a3b8" },
     incomum:  { nome: "Incomum",  emoji: "🟢", cor: "#22c55e" },
@@ -2319,7 +2831,6 @@ const RARIDADES = {
     lendario: { nome: "Lendário", emoji: "🟡", cor: "#f59e0b" }
 };
 
-// ─── [05.08] Seções do álbum ───────────────────────────────────────────
 const SECOES = [
     { id: "primeiros_passos", nome: "Primeiros Passos", icone: "📚", descricao: "Suas primeiras conquistas na Copa.",  recompensaCompleta: { estrelas: 5,  badge: "🌱 Iniciado"    } },
     { id: "velocidade",       nome: "Velocidade",       icone: "⚡", descricao: "Mostre que você é rápido!",           recompensaCompleta: { estrelas: 5,  badge: "💨 Relâmpago"   } },
@@ -2330,10 +2841,6 @@ const SECOES = [
     { id: "corrida_mestre",   nome: "Corrida ao Mestre",icone: "🏁", descricao: "A escada da maestria: cada degrau exige mais velocidade.", recompensaCompleta: { estrelas: 20, badge: "🏁 Linha de Chegada" } },
     { id: "rumo_final",       nome: "Rumo à Final",     icone: "🏁", descricao: "Metas rumo à classificação.",         recompensaCompleta: { estrelas: 10, badge: "🏆 Classificado" } }
 ];
-
-// ═══════════════════════════════════════════════════════════════════════
-// [05.09] MEDALS · Lista de todas as medalhas (v8.8.4)
-// ═══════════════════════════════════════════════════════════════════════
 
 const MEDALS = [
     { id: "primeira_vitoria",   nome: "Primeira Vitória",     icone: "🆕", secao: "primeiros_passos", raridade: "comum",   recompensaEstrelas: 1, requisito: "Jogar 1 partida completa (oficial ou treino).", descricao: "Você deu o primeiro passo!", dica: "É só jogar uma vez — sem pressão.", condicao: d => d.totalPartidas >= 1 },
@@ -2383,7 +2890,6 @@ const MEDALS = [
 
 const MEDALS_POR_ID = Object.fromEntries(MEDALS.map(m => [m.id, m]));
 
-// ─── [05.10] Patentes ──────────────────────────────────────────────────
 const PATENTES = [
     { id: "reserva",  nome: "Reserva",  icone: "🥾", minEstrelas: 0,   frase: "Você entrou no time!" },
     { id: "titular",  nome: "Titular",  icone: "⚽", minEstrelas: 15,  frase: "Está em campo!" },
@@ -2393,17 +2899,12 @@ const PATENTES = [
     { id: "imortal",  nome: "Imortal",  icone: "🏆", minEstrelas: 105, frase: "Entrou pra história da Copa!" }
 ];
 
-// ─── [05.11] Categorias de mensagem ────────────────────────────────────
 const CATEGORIAS_MENSAGEM = [
     { id: "bloqueio", icone: "🔓", label: "Estou bloqueado em outro aparelho", textoObrigatorio: false, soSeBloqueado: true },
     { id: "nome",     icone: "✏️", label: "Preciso corrigir meu nome",         textoObrigatorio: true,  campoNomeCorreto: true },
     { id: "bug",      icone: "🐛", label: "Encontrei um problema técnico",     textoObrigatorio: true },
     { id: "outro",    icone: "💬", label: "Outro assunto",                     textoObrigatorio: true }
 ];
-
-// ═══════════════════════════════════════════════════════════════════════
-// [06] JS-FB · Estado global da aplicação
-// ═══════════════════════════════════════════════════════════════════════
 
 // ─── [06.01] Estado do jogo ────────────────────────────────────────────
 let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
@@ -2427,28 +2928,20 @@ let votacaoTimerInterval = null;
 let countdownTimerInterval = null;
 let etapaEstadoCache = null;
 
-// ─── [06.02] Estado do desempenho ──────────────────────────────────────
 let desempenhoPartidasCache = [];
 let desempenhoPartidasFiltradas = [];
 let desempenhoPartidasGrafico = [];
 let desempenhoModalidadeAtual = "todas";
 let comparativoTurmaCache = null;
 
-// ─── [06.03] Estado do álbum ───────────────────────────────────────────
 let albumEstado = { nome: null, turma: null, persistidas: {}, dados: null, estrelas: 0, pronta: false };
 
-// ─── [06.04] Estado das mensagens ──────────────────────────────────────
 let msgEstado = { aberto: false, categoriaSelecionada: null, bloqueadoInfo: null, thread: [], unsubAluno: null };
 let msgPainelThreads = [];
 let msgPainelUnsub = null;
 
-// ─── [06.05] Estado dos filtros do álbum ───────────────────────────────
 const FILTROS_DEFAULT = { status: "todas", raridade: "todas", secao: "todas", ordem: "padrao" };
 let albumFiltros = { ...FILTROS_DEFAULT };
-
-// ═══════════════════════════════════════════════════════════════════════
-// [07] JS-UTIL · Áudio, notificações, utilidades
-// ═══════════════════════════════════════════════════════════════════════
 
 // ─── [07.01] Áudio ─────────────────────────────────────────────────────
 let audioContext = null;
@@ -2505,12 +2998,11 @@ function somColarFigurinha() {
 function toggleSom() {
     somAtivo = !somAtivo;
     const btn = document.getElementById("btn-som");
-    btn.innerText = somAtivo ? "🔊 SOM LIGADO" : "🔇 SOM DESLIGADO";
+    btn.innerText = somAtivo ? "🔊" : "🔇";
     btn.classList.toggle("mudo", !somAtivo);
     if (somAtivo) { desbloquearAudio(); setTimeout(() => somAcerto(), 100); }
 }
 
-// ─── [07.02] Notificações e toasts ─────────────────────────────────────
 function notificar(mensagem, tipo = "info", duracao = 3500) {
     let c = document.getElementById("toast-container");
     if (!c) { c = document.createElement("div"); c.id = "toast-container"; c.className = "toast-container"; document.body.appendChild(c); }
@@ -2546,7 +3038,6 @@ function dispararConfetes() {
     confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 }, colors: ['#198754','#ffc107','#0066cc','#fd7e14'] });
 }
 
-// ─── [07.03] Utilidades de texto e validação ───────────────────────────
 function sortearItem(a) { return a[Math.floor(Math.random()*a.length)]; }
 function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
 function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
@@ -2569,7 +3060,6 @@ function validarNomeCompleto(nomeBruto) {
     return { ok: true, normalizado };
 }
 
-// ─── [07.04] Formatação de datas e números ─────────────────────────────
 function formatarDataHora(ts) {
     if (!ts) return "--";
     return new Date(ts).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" });
@@ -2617,7 +3107,6 @@ function chaveDataDia(ts) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
-// ─── [07.05] Hash e autenticação do professor ──────────────────────────
 async function gerarHashSenha(v) {
     if (!window.crypto?.subtle) return gerarHashSenhaFallback(v);
     const b = new TextEncoder().encode(v);
@@ -2639,19 +3128,6 @@ function exigirProfessorAutenticado() {
     document.getElementById("senha-professor").focus();
     return false;
 }
-
-// ─── [07.06] Ciclo de vida da etapa ────────────────────────────────────
-// Estrutura no Firebase (CAMINHO_ETAPA):
-// {
-//   inicioEm: number | null          → timestamp de início da etapa
-//   modoTeste: boolean               → se true, permite encerrar a qualquer momento
-//   status: "agendada" | "ativa" | "congelada" | "encerrada"
-//   congeladoEm: number | null
-//   encerradoEm: number | null
-//   votacaoFechadaEm: number | null  → timestamp de quando a votação fechou
-//   duracaoEscolhida: 7 | 14 | null
-//   fimPrevistoEm: number | null     → data prevista de fim (calculada após votação)
-// }
 
 const ETAPA_FASES = {
     sem_agendamento: "sem_agendamento",
@@ -2687,26 +3163,10 @@ function calcularFaseEtapa(d) {
     if (d.status === "congelada") return ETAPA_FASES.congelada;
     const agora = Date.now();
     if (agora < d.inicioEm) return ETAPA_FASES.pre_evento;
-    // Etapa iniciada
     if (!d.votacaoFechadaEm) return ETAPA_FASES.etapa_votacao;
-    // Votação fechada → prazo definido
     if (d.fimPrevistoEm && agora > d.fimPrevistoEm) return ETAPA_FASES.encerrada;
     return ETAPA_FASES.etapa_definida;
 }
-// ─── POLÍTICA DE PRAZO: CALENDÁRIO ─────────────────────────────────────
-// A duração "7 dias" ou "14 dias" é interpretada como PRAZO DE CALENDÁRIO.
-//
-// Contagem: o prazo é contado a partir do início da etapa e termina às
-// 23h59:59 da data final exibida pelo sistema. Não importa a hora exata
-// em que a etapa começou — o que vale é a data final, sempre às 23h59.
-//
-// Ex.: início segunda 08h + 7 dias → encerra segunda seguinte às 23h59.
-//      início segunda 22h + 7 dias → encerra segunda seguinte às 23h59
-//      (o horário do início não desloca a data final).
-//
-// Isso é intencional: para alunos e professores, "até o fim do dia X"
-// é mais intuitivo do que "N horas exatas a partir do instante Y".
-// A UI sempre exibe a DATA FINAL, nunca só "7 dias".
 function calcularFimPrevisto(inicioEm, duracao) {
     if (!inicioEm) return null;
     const d = new Date(inicioEm + duracao * 24 * 60 * 60 * 1000);
@@ -2717,21 +3177,11 @@ function etapaPermiteClassificatoria(fase) {
     return fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida;
 }
 function etapaPermiteTreinoLivre(fase) {
-    // Treino livre está disponível nas fases onde a etapa classificatória
-    // não está rolando: pré-evento, congelada e encerrada.
-    return fase === ETAPA_FASES.pre_evento
-        || fase === ETAPA_FASES.congelada
-        || fase === ETAPA_FASES.encerrada
-        || fase === ETAPA_FASES.sem_agendamento;
+    return fase === ETAPA_FASES.pre_evento || fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada || fase === ETAPA_FASES.sem_agendamento;
 }
-function etapaEstaEncerrada(fase) {
-    return fase === ETAPA_FASES.encerrada;
-}
-function estaNoTop4Congelado(fase) {
-    return fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada;
-}
+function etapaEstaEncerrada(fase) { return fase === ETAPA_FASES.encerrada; }
+function estaNoTop4Congelado(fase) { return fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada; }
 
-// ─── [07.07] Countdown ─────────────────────────────────────────────────
 function formatarContagemDeTempo(ms) {
     if (ms <= 0) return { dias: "00", horas: "00", min: "00", seg: "00" };
     const s = Math.floor(ms / 1000);
@@ -2750,14 +3200,9 @@ function atualizarCountdownVisual(inicioEm) {
     if (!elD || !elH || !elM || !elS) return;
     const restante = Math.max(0, inicioEm - Date.now());
     const t = formatarContagemDeTempo(restante);
-    elD.textContent = t.dias;
-    elH.textContent = t.horas;
-    elM.textContent = t.min;
-    elS.textContent = t.seg;
+    elD.textContent = t.dias; elH.textContent = t.horas; elM.textContent = t.min; elS.textContent = t.seg;
 }
-function pararCountdown() {
-    if (countdownTimerInterval) { clearInterval(countdownTimerInterval); countdownTimerInterval = null; }
-}
+function pararCountdown() { if (countdownTimerInterval) { clearInterval(countdownTimerInterval); countdownTimerInterval = null; } }
 function iniciarCountdown(inicioEm) {
     pararCountdown();
     atualizarCountdownVisual(inicioEm);
@@ -2765,23 +3210,20 @@ function iniciarCountdown(inicioEm) {
         atualizarCountdownVisual(inicioEm);
         if (Date.now() >= inicioEm) {
             pararCountdown();
-            // Chegou a hora! Verifica se a etapa precisa iniciar
             verificarEIniciarEtapaSeNecessario().then(async () => {
                 await atualizarTelaInicialComEtapa();
-                await renderizarCardVotacao();  // ← NOVO: mostra o card de votação imediatamente
+                await renderizarCardVotacao();
             });
         }
     }, 1000);
 }
 
-// ─── [07.08] Tela inicial dinâmica ─────────────────────────────────────
 async function atualizarTelaInicialComEtapa() {
     const fase = await resolverFaseAtual();
     const heroPre = document.getElementById("hero-pre-evento");
     const heroNorm = document.getElementById("hero-classificatoria-normal");
     const acaoCtn = document.getElementById("acao-principal-container");
     const prazoCtn = document.getElementById("etapa-info-prazo");
-    const metaCtn = document.getElementById("meta-pessoal-container");
     if (!heroPre || !heroNorm || !acaoCtn) return;
 
     pararCountdown();
@@ -2789,42 +3231,38 @@ async function atualizarTelaInicialComEtapa() {
     prazoCtn.innerHTML = "";
 
     if (fase.tipo === ETAPA_FASES.sem_agendamento) {
-        heroPre.classList.add("hidden");
-        heroNorm.classList.remove("hidden");
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;">🎯 Modo Treino Livre</button>`;
+        heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo encerrada">ℹ️ <strong>A Copa ainda não foi agendada.</strong> Aguarde o professor definir a data de início. Enquanto isso, use o <strong>Modo Treino Livre</strong>.</p>`;
         return;
     }
 
     if (fase.tipo === ETAPA_FASES.pre_evento) {
-        heroPre.classList.remove("hidden");
-        heroNorm.classList.add("hidden");
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;">🎯 Modo Treino Livre</button>`;
+        heroPre.classList.remove("hidden"); heroNorm.classList.add("hidden");
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏳ <strong>A etapa ainda não começou.</strong> Início em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>. A duração será definida pelos alunos em votação.</p>`;
         iniciarCountdown(fase.dados.inicioEm);
         return;
     }
 
-    // Etapa ativa (votação ou definida)
-    heroPre.classList.add("hidden");
-    heroNorm.classList.remove("hidden");
+    heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
 
     if (fase.tipo === ETAPA_FASES.etapa_votacao) {
-        acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
-            <div style="margin-top:10px;"><button onclick="iniciarTreinoAnonimo()" class="botao-treino">🎯 Modo Treino Livre</button></div>`;
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">🗳️ <strong>Duração provisória: 7 dias.</strong> A votação está aberta — os alunos elegíveis decidem se a etapa termina em 7 dias ou se estende para 14. A duração oficial só será definida quando a votação fechar.</p>`;
+        acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;margin-bottom:10px;">🏆 Participar da Etapa Classificatória</button>
+            <div><button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="width:100%;">🎯 Modo Treino Livre</button></div>`;
+        prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">🗳️ <strong>Duração provisória: 7 dias.</strong> A votação está aberta — os alunos elegíveis decidem se a etapa termina em 7 dias ou se estende para 14.</p>`;
     } else if (fase.tipo === ETAPA_FASES.etapa_definida) {
-    acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
-        <div style="margin-top:10px;"><button onclick="iniciarTreinoAnonimo()" class="botao-treino">🎯 Modo Treino Livre</button></div>`;
+    acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;margin-bottom:10px;">🏆 Participar da Etapa Classificatória</button>
+        <div><button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="width:100%;">🎯 Modo Treino Livre</button></div>`;
     const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
     const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
-    prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> O prazo é contado a partir do início da etapa e termina às 23h59 da data final: <strong>${fim}</strong>. A partir daí, apenas treino livre.</p>`;
+    prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> O prazo termina às 23h59 da data final: <strong>${fim}</strong>. A partir daí, apenas treino livre.</p>`;
 } else if (fase.tipo === ETAPA_FASES.congelada) {
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;">🎯 Modo Treino Livre</button>`;
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏸️ <strong>Etapa pausada temporariamente.</strong> O professor está fazendo ajustes. O ranking está congelado — volte em breve!</p>`;
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>`;
+        prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏸️ <strong>Etapa pausada temporariamente.</strong> O professor está fazendo ajustes. Volte em breve!</p>`;
     } else if (fase.tipo === ETAPA_FASES.encerrada) {
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;">🎯 Modo Treino Livre</button>
-            <div style="margin-top:10px;"><button onclick="mostrarTela('tela-ranking')" class="botao-secundario">🏆 Ver classificação final</button></div>`;
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>
+            <div><button onclick="mostrarTela('tela-ranking')" class="botao-secundario" style="width:100%;">🏆 Ver classificação final</button></div>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo encerrada">🏁 <strong>Etapa encerrada!</strong> A classificação final está disponível. Obrigado por participar!</p>`;
     }
 }
@@ -2833,14 +3271,12 @@ async function resolverFaseAtual() {
     return { tipo: calcularFaseEtapa(dados), dados };
 }
 
-// ─── [07.09] Auto-início da etapa ──────────────────────────────────────
 async function verificarEIniciarEtapaSeNecessario() {
     const d = await obterDadosEtapa(true);
     if (!d.inicioEm) return;
     if (d.status === "encerrada" || d.status === "congelada") return;
     const agora = Date.now();
     if (agora < d.inicioEm) return;
-    // Etapa já passou do horário e ainda não iniciou → inicia
     if (!d.votacaoFechadaEm && !d.iniciadaEm) {
         try {
             await salvarDadosEtapa({ iniciadaEm: agora, status: "ativa" });
@@ -2851,18 +3287,17 @@ async function verificarEIniciarEtapaSeNecessario() {
 async function abrirVotacaoAutomatica(inicioEm) {
     try {
         const snap = await database.ref(CAMINHO_VOTACAO).once("value");
-        if (snap.exists() && snap.val()?.inicio) return; // votação já aberta
+        if (snap.exists() && snap.val()?.inicio) return;
         await database.ref(CAMINHO_VOTACAO).set({ inicio: inicioEm || Date.now() });
     } catch(e) { console.warn("Falha ao abrir votação automática:", e); }
 }
 async function verificarEFecharVotacaoSeNecessario() {
-    // Já fechada? Nada a fazer.
     let etapaAtual;
     try {
         etapaAtual = await obterDadosEtapa(true);
-        if (etapaAtual.votacaoFechadaEm) return;        // ← CORREÇÃO: era "!d.votacaoFechadaEm"
+        if (etapaAtual.votacaoFechadaEm) return;
         if (etapaAtual.status === "encerrada") return;
-        if (etapaAtual.status === "congelada") return;  // respeita pausa do professor
+        if (etapaAtual.status === "congelada") return;
     } catch(e) { return; }
 
     const vot = await obterDadosVotacao();
@@ -2871,7 +3306,6 @@ async function verificarEFecharVotacaoSeNecessario() {
     const fechamento = calcularFechamentoVotacao(vot.inicio);
     if (Date.now() < fechamento) return;
 
-    // Conta votos e decide a duração
     const votos = vot.votos ? Object.values(vot.votos) : [];
     const v7  = votos.filter(v => String(v.opcao) === "7").length;
     const v14 = votos.filter(v => String(v.opcao) === "14").length;
@@ -2888,31 +3322,17 @@ async function verificarEFecharVotacaoSeNecessario() {
 }
 
 async function verificarEEncerrarEtapaSeNecessario() {
-    // Só encerra se houver prazo definido e ainda não tiver sido encerrada.
     let d;
+    try { d = await obterDadosEtapa(true); } catch(e) { return; }
+    if (!d.fimPrevistoEm) return;
+    if (d.status === "encerrada") return;
+    if (d.status === "congelada") return;
+    if (Date.now() < d.fimPrevistoEm) return;
     try {
-        d = await obterDadosEtapa(true);
-    } catch(e) { return; }
-
-    if (!d.fimPrevistoEm) return;                    // sem prazo → nada a fazer
-    if (d.status === "encerrada") return;            // já encerrada
-    if (d.status === "congelada") return;            // respeita pausa do professor
-    if (Date.now() < d.fimPrevistoEm) return;        // ainda dentro do prazo
-
-    try {
-        await salvarDadosEtapa({
-            status: "encerrada",
-            encerradoEm: Date.now()
-        });
+        await salvarDadosEtapa({ status: "encerrada", encerradoEm: Date.now() });
         notificar("🏁 Etapa encerrada automaticamente.", "info", 6000);
-    } catch(e) {
-        console.warn("Falha ao encerrar etapa automaticamente:", e);
-    }
+    } catch(e) { console.warn("Falha ao encerrar etapa automaticamente:", e); }
 }
-
-// ═══════════════════════════════════════════════════════════════════════
-// [08] JS-VINC · Vínculos de dispositivo
-// ═══════════════════════════════════════════════════════════════════════
 
 function obterIdDispositivo() {
     let id = localStorage.getItem('dispositivoId');
@@ -3003,11 +3423,6 @@ async function migrarCopaV2Aluno(nomeAntigo, nomeNovo, turma) {
     } catch(e) { console.warn("Erro ao migrar chave copaV2:", e); }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// [09] JS-ALB · Álbum de conquistas
-// ═══════════════════════════════════════════════════════════════════════
-
-// ─── [09.01] Persistência no Firebase ──────────────────────────────────
 async function obterMedalsFirebase(nome, turma) {
     try { const snap = await database.ref(`${CAMINHO_MEDALS}/${chaveAlbum(nome, turma)}`).once("value"); return snap.val() || {}; }
     catch(e) { console.warn("Falha ao ler medalhas:", e); return {}; }
@@ -3043,7 +3458,6 @@ async function contarDiasNoTop4(nome, turma) {
     catch(e) { return 0; }
 }
 
-// ─── [09.02] Compilação de dados do aluno ──────────────────────────────
 async function compilarDadosAluno(nome, turma) {
     const partidas = await obterHistoricoAluno(nome, turma);
     const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
@@ -3190,12 +3604,6 @@ async function migrarConquistasAntigas(nome, turma) {
     const melhor = partidas.reduce((a, b) => (Number(a.pontos) > Number(b.pontos) ? a : b));
     const ordenadas = [...partidas].sort((a,b) => new Date(a.data||0) - new Date(b.data||0));
     const mapaNomes = {
-        // ❌ REMOVIDOS por incompatibilidade de critério com a medalha nova:
-        // "Mestre da Tabuada": "mestre_tabuada",   // antigo: 17.000 pts | novo: 20/20 em ≤1.0s
-        // "Colecionador": "colecionador",          // antigo: 5 conquistas | novo: 10 medalhas
-        // "Primeira Vitória": "primeira_vitoria",  // antigo: exatamente 1 partida | novo: ≥1 partida
-
-        // ✅ Mantidos — critérios equivalentes (migração segura):
         "Domínio Total": "dominio_total",
         "Velocidade Relâmpago": "velocidade_relampago",
         "Sequência Perfeita": "sequencia_perfeita",
@@ -3221,7 +3629,6 @@ async function migrarConquistasAntigas(nome, turma) {
     if (alterou) await salvarMedalsFirebase(nome, turma, persistidas);
 }
 
-// ─── [09.03] Sincronização e cálculo de progresso ──────────────────────
 async function sincronizarMedalhas(nome, turma) {
     const dados = await compilarDadosAluno(nome, turma);
     const { desbloqueadas } = calcularMedalhasDesbloqueadas(dados);
@@ -3236,7 +3643,6 @@ async function sincronizarMedalhas(nome, turma) {
     return { persistidas, novas, dados, novasSecoes: secoes.novasSecoes, estrelas: secoes.estrelas, secoesCompletas: secoes.reg };
 }
 
-// ─── [09.03.1] METAS_MEDAL · Progresso rastreável ──────────────────────
 const METAS_MEDAL = {
     primeira_vitoria:    { campo: "totalPartidas",            alvo: 1,     unidade: "partidas" },
     iniciante:           { campo: "melhorPontuacao",          alvo: 500,   unidade: "pontos" },
@@ -3312,7 +3718,6 @@ function formatarValorMeta(valor, casa) {
     return String(Math.round(valor * 100) / 100);
 }
 
-// ─── [09.04] Seções completas e estrelas ───────────────────────────────
 async function obterSecoesCompletas(nome, turma) {
     try { const snap = await database.ref(`${CAMINHO_SECOES_COMPLETAS}/${chaveAlbum(nome, turma)}`).once("value"); return snap.val() || {}; }
     catch(e) { console.warn("Falha ao ler seções completas:", e); return {}; }
@@ -3352,7 +3757,6 @@ async function verificarSecoesCompletas(nome, turma, persistidas) {
     return { novasSecoes, estrelas, reg, primeiroAcesso };
 }
 
-// ─── [09.05] Patentes ──────────────────────────────────────────────────
 function calcularPatente(estrelas) {
     const n = Number(estrelas) || 0;
     let atual = PATENTES[0];
@@ -3375,7 +3779,6 @@ function fecharBannerPatente() {
     if (albumEstado) albumEstado.novaPatente = null;
 }
 
-// ─── [09.06] Popups de celebração ──────────────────────────────────────
 function mostrarPopupSecaoCompleta(secoes, estrelasTotal) {
     const lista = document.getElementById("album-modal-secao-lista");
     const modal = document.getElementById("modal-secao-completa");
@@ -3408,7 +3811,6 @@ function mostrarPopupMarco(m) {
     modal.classList.remove("hidden");
 }
 
-// ─── [09.07] Badge do álbum ────────────────────────────────────────────
 async function verificarBadgeAlbum() {
     const badge = document.getElementById("album-badge");
     if (!badge) return;
@@ -3455,7 +3857,6 @@ function injetarCTAAlbumResultado(idsNovas) {
     setTimeout(() => { somColarFigurinha(); dispararConfetes(); }, 300);
 }
 
-// ─── [09.08] Renderização do álbum ─────────────────────────────────────
 function renderizarCapa() {
     const { nome, turma, persistidas, estrelas } = albumEstado;
     const total = MEDALS.length;
@@ -3581,13 +3982,9 @@ async function abrirAlbum() {
     }
     if (info) info.style.opacity = "1";
     if (botao) botao.disabled = false;
-
-    if (deveMostrarOnboardingAlbum()) {
-        setTimeout(() => mostrarOnboardingAlbum(), 320);
-    }
+    if (deveMostrarOnboardingAlbum()) setTimeout(() => mostrarOnboardingAlbum(), 320);
 }
 
-// ─── [09.09] Filtros e grid de medalhas ────────────────────────────────
 function carregarFiltrosAlbum() {
     try {
         const raw = localStorage.getItem(STORAGE_ALBUM_FILTROS);
@@ -3779,10 +4176,6 @@ function renderizarFigurinhaAlbum(medalha, persistida) {
     </article>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// [09.10] Modal "Como conseguir" + Onboarding do Álbum
-// ═══════════════════════════════════════════════════════════════════════
-
 const STORAGE_ALBUM_ONBOARDING = "copa_album_onboarding_visto";
 
 function abrirDetalheMedalha(id) {
@@ -3854,10 +4247,6 @@ function fecharOnboardingAlbum(e) {
     document.getElementById("modal-album-onboarding")?.classList.add("hidden");
     marcarOnboardingAlbumVisto();
 }
-
-// ═══════════════════════════════════════════════════════════════════════
-// [10] JS-MSG · Mensagens aluno ↔ professor
-// ═══════════════════════════════════════════════════════════════════════
 
 async function carregarThreadAluno(nome, turma) {
     try {
@@ -4191,9 +4580,7 @@ async function excluirConversa(nome, turma) {
         notificar("Conversa excluída.", "sucesso");
         await carregarMensagensPainel();
     } catch(e) { console.warn(e); notificar("Não foi possível excluir.", "erro"); }
-}// ═══════════════════════════════════════════════════════════════════════
-// [11] JS-MAPA · Mapa de tabuadas (copaV2)
-// ═══════════════════════════════════════════════════════════════════════
+}
 
 async function obterMapaFirebase(nome, turma, mod) {
     try {
@@ -4535,10 +4922,6 @@ function treinarComVariacoes(operacoesBase) {
         notificar(`🔀 ${operacoesBase.length} ${pluralBase} base + ${qVar} ${pluralVar}`, "info", 4000);
     }
 }
-
-// ═══════════════════════════════════════════════════════════════════════
-// [12] JS-RANK · Ranking e perfil
-// ═══════════════════════════════════════════════════════════════════════
 
 async function obterRanking() {
     try {
@@ -4946,10 +5329,6 @@ function abrirBuscarAlunoComMeusDados() {
     carregarPerfil();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// [13] JS-JOGO · Geração de perguntas, partida e resultado
-// ═══════════════════════════════════════════════════════════════════════
-
 function calcularConquistas(r, h) {
     const d = CONQUISTAS.filter(c => c.nome !== "Colecionador" && c.criterio(r, h, []));
     const col = CONQUISTAS.find(c => c.nome === "Colecionador");
@@ -5115,11 +5494,19 @@ function dicaMultiplicacao(fA, fB) {
 function mostrarTela(id) {
     ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
     document.getElementById(id)?.classList.remove("hidden");
-    if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); atualizarTelaInicialComEtapa(); }
-    if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
+    if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); atualizarTelaInicialComEtapa(); preencherHomeEsports(); atualizarBottomNav(id); }
+    if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); atualizarBottomNav(id); }
+    if (id === "tela-desempenho") atualizarBottomNav(id);
+    if (id === "tela-album") atualizarBottomNav(id);
     if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); }
     if (id !== "tela-resultado") { document.getElementById("btn-treinar-novamente")?.classList.add("hidden"); document.getElementById("btn-compartilhar")?.classList.add("hidden"); }
 }
+function atualizarBottomNav(idAtivo) {
+    const mapa = { "tela-inicial": 0, "tela-ranking": 1, "tela-desempenho": 2, "tela-album": 3 };
+    const idx = mapa[idAtivo];
+    document.querySelectorAll(".bottom-nav-item").forEach((b, i) => b.classList.toggle("ativo", i === idx));
+}
+
 async function registrarAluno(treino) {
     const nomeBruto = document.getElementById("nome-aluno").value;
     const turma = document.getElementById("turma-aluno").value;
@@ -5129,7 +5516,6 @@ async function registrarAluno(treino) {
     document.getElementById("nome-aluno").value = nome;
     if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
 
-    // Verifica se a etapa permite classificatória
     if (!treino) {
         const fase = await resolverFaseAtual();
         if (!etapaPermiteClassificatoria(fase.tipo)) {
@@ -5175,12 +5561,11 @@ async function registrarAluno(treino) {
     }
 }
 function iniciarTreinoAnonimo() {
-    // Treino livre sem identificação — nada é salvo
     treinoAnonimo = true;
     modoTreino = true;
     alunoAtual = "Visitante";
     turmaAtual = "—";
-    modalidadeAtual = "0-10"; // modalidade completa por padrão
+    modalidadeAtual = "0-10";
     treinoFocoOperacoes = null;
     focoTreinoTabuadas = [];
     dificuldadesHistoricas = {};
@@ -5379,7 +5764,6 @@ async function finalizarCircuito() {
     clearInterval(timerInterval); clearTimeout(timerTimeout);
     const tempoMedio = temposCorretas.length ? temposCorretas.reduce((a, b) => a + b, 0) / temposCorretas.length : 10;
 
-    // Treino anônimo: não salva nada
     if (treinoAnonimo) {
         document.getElementById("resultado-titulo").innerHTML = "🎯 Treino Livre concluído!";
         document.getElementById("feedback-pontos").innerHTML = `Você acertou <strong>${acertos}/20</strong>.<br><small style="color:#6c757d;">Tempo médio dos acertos: <strong>${tempoMedio.toFixed(2)}s</strong>.</small>`;
@@ -5448,7 +5832,6 @@ async function finalizarCircuito() {
         return;
     }
 
-    // ─── GUARD 3a: Verifica se a partida terminou dentro do prazo oficial ──
     let foraDoPrazo = false;
     try {
         const etapaAtual = await obterDadosEtapa(true);
@@ -5465,7 +5848,7 @@ async function finalizarCircuito() {
     }
 
     try {
-        await salvarPartida(resultado);   // sempre salva no histórico
+        await salvarPartida(resultado);
 
         if (foraDoPrazo) {
             await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
@@ -5609,9 +5992,6 @@ async function preencherResultadoForaDoPrazo(tent) {
     document.getElementById("album-cta-resultado")?.classList.add("hidden");
     document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
     document.getElementById("btn-compartilhar")?.classList.add("hidden");
-
-    // Patch D: mesmo fora do prazo, o mapa foi atualizado — vale checar
-    // medalhas de maestria e exibir o CTA dourado do álbum.
     try { verificarAlbumPosPartida(tent.nome, tent.turma); } catch(e) {}
     try { verificarMaestriaAbsoluta(tent.nome, tent.turma); } catch(e) {}
 }
@@ -5650,10 +6030,6 @@ async function compartilharResultado() {
     if (navigator.share) { try { await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: t, url: window.location.href }); } catch(e) {} }
     else { try { await navigator.clipboard.writeText(t + '\n' + window.location.href); notificar("Copiado!", "sucesso"); } catch(e) { notificar("Não foi possível compartilhar.", "aviso"); } }
 }
-
-// ═══════════════════════════════════════════════════════════════════════
-// [14] JS-META · Meta pessoal
-// ═══════════════════════════════════════════════════════════════════════
 
 const MARCOS_PONTOS = [
     { pts: 3000,  nome: "Aprendiz",   icone: "🎓" },
@@ -5808,10 +6184,6 @@ function animarBarraMetaPessoal(container, pct) {
     fill.style.width = "0%";
     requestAnimationFrame(() => { requestAnimationFrame(() => { fill.style.width = pct + "%"; }); });
 }
-
-// ═══════════════════════════════════════════════════════════════════════
-// [15] JS-DESP · Meu Desempenho
-// ═══════════════════════════════════════════════════════════════════════
 
 function formatarDataHoraHistorico(dataISO) {
     if (!dataISO) return { data: "--", hora: "" };
@@ -6311,10 +6683,6 @@ function renderizarDesempenho() {
     renderizarBotaoCertificado();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// [16] JS-CERT · Certificado de Maestria
-// ═══════════════════════════════════════════════════════════════════════
-
 function gerarNumeroCertificado(nome, turma, dataISO) {
     const str = `${normalizarNome(nome)}|${turma}|${dataISO.slice(0,10)}`;
     let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
@@ -6411,10 +6779,6 @@ function renderizarBotaoCertificado() {
     })();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// [17] JS-PROF · Painel do professor
-// ═══════════════════════════════════════════════════════════════════════
-
 async function autenticarProfessor() {
     const i = document.getElementById("senha-professor");
     const s = i.value;
@@ -6433,7 +6797,6 @@ async function autenticarProfessor() {
     } catch(e) { notificar("Não foi possível validar a senha.", "erro", 5000); }
 }
 
-// ─── [17.01] Cockpit da Etapa ──────────────────────────────────────────
 async function renderizarPainelEtapa() {
     const container = document.getElementById("painel-etapa-conteudo");
     if (!container) return;
@@ -6463,7 +6826,6 @@ if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="paine
     if (d.modoTeste) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Modo</span><span class="painel-etapa-valor" style="color:#b45309;">🧪 TESTE (encerramento liberado)</span></div>`;
     html += `<div class="painel-etapa-rotulo" style="margin-top:14px;font-weight:700;color:#102a43;">Ações</div>`;
     html += `<div class="painel-etapa-acoes">`;
-    // Ações dinâmicas conforme a fase
     if (fase === ETAPA_FASES.sem_agendamento) {
         html += `<button onclick="agendarInicioEtapa()" class="botao-verde">📅 Agendar início</button>`;
     } else if (fase === ETAPA_FASES.pre_evento) {
@@ -6526,7 +6888,7 @@ async function congelarEtapa() {
     if (!exigirProfessorAutenticado()) return;
     if (!confirm("⏸️ Congelar a etapa?\n\n• Alunos não poderão jogar a classificatória (apenas treino livre).\n• O ranking fica visível mas não muda.\n• ⚠️ A pausa INTERROMPE TEMPORARIAMENTE o ciclo automático — a votação não avança e o encerramento automático fica suspenso enquanto a etapa estiver congelada.\n• Ao descongelar, o ciclo volta a correr normalmente.\n\nDeseja continuar?")) return;
     const motivo = prompt("📝 Motivo do congelamento (opcional, ficará registrado no painel):");
-if (motivo === null) return;  // professor cancelou — aborta sem congelar
+if (motivo === null) return;
     try {
         await salvarDadosEtapa({
             status: "congelada",
@@ -6553,7 +6915,6 @@ async function encerrarEtapa() {
     const d = await obterDadosEtapa(true);
     const agora = Date.now();
     const fase = calcularFaseEtapa(d);
-    // Modo oficial: só permite encerrar se passou do prazo
     if (!d.modoTeste && fase !== ETAPA_FASES.congelada) {
         if (d.fimPrevistoEm && agora < d.fimPrevistoEm) {
             notificar("A etapa ainda não pode ser encerrada — o prazo ainda não venceu. Ative o modo teste para encerrar antes.", "aviso", 6000);
@@ -6600,7 +6961,6 @@ async function desativarModoTeste() {
     } catch(e) { notificar("Não foi possível desativar.", "erro"); }
 }
 
-// ─── [17.02] Configurações e votação ───────────────────────────────────
 async function obterConfiguracao() {
     try {
         const snap = await database.ref(CAMINHO_CONFIG).once("value");
@@ -6703,7 +7063,6 @@ async function renderizarCardVotacao() {
     const timerContainer = document.getElementById("votacao-timer-container");
     const corpo = document.getElementById("votacao-corpo");
     if (!card || !corpo) return;
-    // Só mostra se a etapa estiver em andamento
     const etapa = await obterDadosEtapa();
     const fase = calcularFaseEtapa(etapa);
     const dados = await obterDadosVotacao();
@@ -6778,7 +7137,6 @@ async function resetarVotacao() {
     if (!confirm("⚠️ Resetar votação? Todos os votos serão apagados e a votação voltará ao estado inicial (fechada).\n\nObs: NÃO apaga o histórico de partidas nem o ranking.")) return;
     try {
         await database.ref(CAMINHO_VOTACAO).remove();
-        // Também limpa os campos derivados da etapa
         await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null });
         notificar("Votação resetada.", "sucesso");
         await renderizarPainelVotacao();
@@ -6814,7 +7172,6 @@ async function renderizarPainelVotacao() {
     container.innerHTML = html;
 }
 
-// ─── [17.03] Destaques ─────────────────────────────────────────────────
 function calcularDestaques(partidas, filtroTurma) {
     const porAluno = new Map();
     partidas.forEach(p => {
@@ -6888,7 +7245,6 @@ async function renderizarDestaquesPainel() {
     }
 }
 
-// ─── [17.04] Limpeza e reset ───────────────────────────────────────────
 async function limparAlbumPorFiltro(turma) {
     const caminhos = [CAMINHO_MEDALS, CAMINHO_ESTRELAS, CAMINHO_SECOES_COMPLETAS, CAMINHO_POSICAO_BASELINE, CAMINHO_SNAPSHOT_DIARIO];
     if (turma === "todas") {
@@ -7084,8 +7440,133 @@ function fecharChangelog(e) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// [18] JS-BOOT · Inicialização e listeners globais
+// [19] JS-HOME · Preenchimento dinâmico da Home E-Sports (v8.9)
 // ═══════════════════════════════════════════════════════════════════════
+
+async function preencherHomeEsports() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+
+    const pillNome = document.getElementById("perfil-pill-nome");
+    const pillTurma = document.getElementById("perfil-pill-turma");
+    if (pillNome) pillNome.textContent = nome || "Meu Perfil";
+    if (pillTurma) pillTurma.textContent = turma || "--";
+
+    const heroNome = document.getElementById("hero-nome-destaque");
+    if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
+
+    if (!nome || !turma) {
+        atualizarHomeValores(null);
+        return;
+    }
+
+    try {
+        const partidas = await obterHistoricoAluno(nome, turma);
+        if (!partidas.length) {
+            atualizarHomeValores(null);
+            return;
+        }
+
+        const melhorPartida = partidas.reduce((a, b) =>
+            (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a
+        );
+        const melhorPontos = Math.max(...partidas.map(p => Number(p.pontos) || 0));
+
+        const ranking = await obterRankingPorPontos(melhorPartida.modalidade, turma);
+        const idx = ranking.findIndex(r =>
+            normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
+        );
+        const posicao = idx === -1 ? null : idx + 1;
+
+        atualizarHomeValores({
+            melhorPontos,
+            posicao,
+            melhorPartida,
+            ranking,
+            nome,
+            turma
+        });
+    } catch (e) {
+        console.warn("Falha ao preencher home esports:", e);
+        atualizarHomeValores(null);
+    }
+}
+
+function atualizarHomeValores(dados) {
+    const elPontos = document.getElementById("hero-melhor-pontos");
+    const elPosicao = document.getElementById("hero-melhor-posicao");
+    const elPosNum = document.getElementById("hero-posicao-num");
+    const elAviso = document.getElementById("aviso-zona-classificado");
+    const elMini = document.getElementById("mini-ranking-home");
+    const elTurmaLbl = document.getElementById("posicao-turma-label");
+
+    if (!dados) {
+        if (elPontos) elPontos.innerHTML = `— <span class="unidade">pts</span>`;
+        if (elPosicao) elPosicao.textContent = "—";
+        if (elPosNum) elPosNum.textContent = "--ª";
+        if (elMini) elMini.innerHTML = `<div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome" style="color:var(--text-muted);">Jogue para ver o ranking</span><span class="mini-ranking-pontos">—</span></div>`;
+        if (elAviso) elAviso.style.display = "none";
+        return;
+    }
+
+    const { melhorPontos, posicao, melhorPartida, ranking, nome, turma } = dados;
+
+    if (elPontos) elPontos.innerHTML = `${melhorPontos.toLocaleString("pt-BR")} <span class="unidade">pts</span>`;
+    if (elPosicao) elPosicao.textContent = posicao ? `${posicao}º` : "—";
+    if (elPosNum) elPosNum.textContent = posicao ? `${posicao}ª` : "--ª";
+    if (elTurmaLbl) elTurmaLbl.textContent = `Turma ${turma}`;
+
+    if (elAviso) {
+        if (posicao && posicao <= 4) {
+            elAviso.style.display = "flex";
+            elAviso.innerHTML = `<span class="emoji">🏆</span><span><strong>Você está na zona de classificação!</strong><br>Continue assim para garantir sua vaga.</span>`;
+        } else if (posicao && posicao <= 6) {
+            elAviso.style.display = "flex";
+            elAviso.innerHTML = `<span class="emoji">💪</span><span><strong>Você está na zona de reserva!</strong><br>Falta pouco para entrar no Top 4.</span>`;
+        } else {
+            elAviso.style.display = "none";
+        }
+    }
+
+    if (elMini) {
+        const top4 = ranking.slice(0, 4);
+        elMini.innerHTML = top4.map((r, i) => {
+            const vc = normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma;
+            const nomeExibir = vc ? "Você" : r.nome.split(" ").slice(0, 2).join(" ");
+            return `<div class="mini-ranking-linha ${vc ? "voce" : ""}">
+                <span class="mini-ranking-pos">${i + 1}</span>
+                <span class="mini-ranking-nome">${escaparHtml(nomeExibir)}</span>
+                <span class="mini-ranking-pontos">${(Number(r.pontos) || 0).toLocaleString("pt-BR")}</span>
+            </div>`;
+        }).join("");
+    }
+
+    if (melhorPartida) {
+        const acertos = Number(melhorPartida.acertos) || 0;
+        const erros = Number(melhorPartida.erros) || 0;
+        const tempo = Number(melhorPartida.tempoMedio) || 0;
+        const pct = Math.min(1, acertos / 20);
+
+        const elAcertos = document.getElementById("anel-acertos");
+        const elMiniAcertos = document.getElementById("mini-acertos");
+        const elMiniErros = document.getElementById("mini-erros");
+        const elMiniTempo = document.getElementById("mini-tempo");
+        const elAnelFill = document.getElementById("anel-fill");
+
+        if (elAcertos) elAcertos.textContent = `${acertos}/20`;
+        if (elMiniAcertos) elMiniAcertos.textContent = acertos;
+        if (elMiniErros) elMiniErros.textContent = erros;
+        if (elMiniTempo) elMiniTempo.textContent = `${tempo.toFixed(2)}s`;
+
+        if (elAnelFill) {
+            const perimetro = 2 * Math.PI * 42;
+            const offset = perimetro * (1 - pct);
+            elAnelFill.style.strokeDashoffset = offset;
+        }
+    }
+}
+
+// ─── [20] JS-BOOT · Inicialização e listeners globais ──────────────────
 
 document.getElementById("btn-som")?.addEventListener("click", toggleSom);
 document.getElementById("btn-comecar-partida")?.addEventListener("click", () => {
@@ -7147,26 +7628,26 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (elV) elV.textContent = APP_VERSION;
     iniciarListenerMsgAluno();
 
-    // ─── Ciclo de vida da etapa ────────────────────────────────────────
     try {
         await verificarEIniciarEtapaSeNecessario();
         await verificarEFecharVotacaoSeNecessario();
-        await verificarEEncerrarEtapaSeNecessario();     // ← NOVO
+        await verificarEEncerrarEtapaSeNecessario();
     } catch(e) { console.warn("Falha ao processar ciclo da etapa:", e); }
     try { await atualizarTelaInicialComEtapa(); } catch(e) { console.warn("Falha ao atualizar tela inicial com etapa:", e); }
     try { await renderizarCardVotacao(); } catch(e) { console.warn("Falha ao renderizar card de votação:", e); }
+    try { await preencherHomeEsports(); } catch(e) { console.warn("Falha ao preencher home:", e); }
 
-    // Timer de atualização do card de votação + verificação do ciclo
     if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
     votacaoTimerInterval = setInterval(async () => {
         try {
             await verificarEFecharVotacaoSeNecessario();
-            await verificarEEncerrarEtapaSeNecessario();  // ← NOVO
+            await verificarEEncerrarEtapaSeNecessario();
             const card = document.getElementById("card-votacao");
             if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
             await atualizarTelaInicialComEtapa();
         } catch(e) { console.warn("Timer votação/etapa:", e); }
     }, 60000);
-});    </script>
+});
+    </script>
 </body>
 </html>
