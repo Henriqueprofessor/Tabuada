@@ -1728,9 +1728,9 @@
             <div><strong>Modalidade:</strong> <span id="resumo-modalidade"></span></div>
             <div><strong>Acertos desta tentativa:</strong> <span id="resumo-acertos"></span></div>
             <div><strong>Erros:</strong> <span id="resumo-erros"></span></div>
-            <div><strong>Seu tempo médio:</strong> <span id="resumo-tempo"></span></div>
-            <div><strong>Sua melhor média:</strong> <span id="resumo-melhor-media">-- s</span></div>
-            <div><strong>Média da Turma:</strong> <span id="resumo-media-turma">-- s</span></div>
+            <div><strong>Seu tempo médio (respostas corretas):</strong> <span id="resumo-tempo"></span></div>
+            <div><strong>Seu melhor tempo médio (acertos):</strong> <span id="resumo-melhor-media">-- s</span></div>
+<div><strong>Tempo médio da turma (acertos):</strong> <span id="resumo-media-turma">-- s</span></div>
             <div><strong>Maior sequência:</strong> <span id="resumo-sequencia"></span></div>
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
@@ -1769,7 +1769,7 @@
             ℹ️ <strong>Escolha sua turma no filtro abaixo</strong> para ver sua classificação. Depois de jogar, o sistema lembrará da sua turma automaticamente.
         </div>
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
-        <div class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.</div>
+        <div class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.<br>ℹ️ O <strong>tempo médio</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()">
             <option value="2-5">Tabuadas 2-5</option>
             <option value="6-9">Tabuadas 6-9</option>
@@ -4753,7 +4753,7 @@ async function renderizarRanking() {
         rank = await obterRankingPorPontos(mod, turma);
         tit = `🏆 Minha Turma — ${turma} · ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th><th>Jogos</th><th>Status</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th><th>Jogos</th><th>Status</th>`;
         if (!rank.length) { tb.innerHTML = `<tr><td colspan="8"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`; document.getElementById("medias-turmas-container").classList.add("hidden"); document.getElementById("banner-posicao-global").classList.add("hidden"); return; }
         let h = "";
         for (let i = 0; i < rank.length; i++) {
@@ -4776,14 +4776,14 @@ async function renderizarRanking() {
         rank = rc.slice(0, 100);
         tit = `🌍 Desafio entre turmas — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
         await renderizarBannerPosicaoGlobal(rc, mod);
         await renderizarMediasTurmas(mod);
     } else if (tipoRankingAtual === "precisao-global") {
         rank = await obterRankingPorPrecisao(mod, null);
         tit = `🎯 Precisão Global — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo médio</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else if (tipoRankingAtual === "precisao-turma") {
@@ -4792,14 +4792,14 @@ async function renderizarRanking() {
         rank = await obterRankingPorPrecisao(mod, turma);
         tit = `🎯 Precisão — Turma ${turma} · ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo médio</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else if (tipoRankingAtual === "velocidade-global") {
         rank = await obterRankingPorVelocidade(mod, null);
         tit = `⚡ Velocidade Global (100%) — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else if (tipoRankingAtual === "velocidade-turma") {
@@ -4808,14 +4808,14 @@ async function renderizarRanking() {
         rank = await obterRankingPorVelocidade(mod, turma);
         tit = `⚡ Velocidade — Turma ${turma} (100%) · ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else {
         rank = await obterRankingPorPontos(mod, turma);
         tit = `Ranking — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     }
@@ -5396,6 +5396,7 @@ async function finalizarCircuito() {
         temposRapidos, acertouPrimeira,
         treinoFocado: treinoFocoOperacoes ? treinoFocoOperacoes.map(o => ({ fA: o.fA, fB: o.fB })) : null
     };
+
     if (modoTreino) {
         let t = "🎯 Resultado do Treino";
         if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 Treino focado — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
@@ -5427,14 +5428,35 @@ async function finalizarCircuito() {
         mostrarTela("tela-resultado");
         return;
     }
+
+    // ─── GUARD 3a: Verifica se a partida terminou dentro do prazo oficial ──
+    let foraDoPrazo = false;
+    try {
+        const etapaAtual = await obterDadosEtapa(true);
+        if (etapaAtual.fimPrevistoEm && Date.now() > etapaAtual.fimPrevistoEm) foraDoPrazo = true;
+    } catch(e) { console.warn("Falha ao validar prazo da etapa:", e); }
+
     let posicaoAntes = null;
+    if (!foraDoPrazo) {
+        try {
+            const ra = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
+            const i = ra.findIndex(x => normalizarNome(x.nome) === normalizarNome(resultado.nome) && x.turma === resultado.turma);
+            posicaoAntes = i === -1 ? null : i + 1;
+        } catch(e) {}
+    }
+
     try {
-        const ra = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
-        const i = ra.findIndex(x => normalizarNome(x.nome) === normalizarNome(resultado.nome) && x.turma === resultado.turma);
-        posicaoAntes = i === -1 ? null : i + 1;
-    } catch(e) {}
-    try {
-        await salvarPartida(resultado);
+        await salvarPartida(resultado);   // sempre salva no histórico
+
+        if (foraDoPrazo) {
+            await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
+            notificar("⏱️ O prazo da etapa encerrou durante sua partida. O resultado ficou no histórico, mas não conta para a classificação oficial.", "aviso", 9000);
+            await preencherResultadoForaDoPrazo(resultado);
+            somConclusao();
+            mostrarTela("tela-resultado");
+            return;
+        }
+
         const melhor = await salvarResultado(resultado);
         await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
         const novo = melhor.data === resultado.data;
@@ -5445,10 +5467,17 @@ async function finalizarCircuito() {
         notificar("Erro ao salvar. Tentando fallback local.", "aviso", 5000);
         try {
             await salvarPartida(resultado);
-            const melhor = await salvarResultado(resultado);
-            await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
-            await preencherResultado(melhor, resultado, posicaoAntes);
-        } catch(e2) { await preencherResultado(resultado, resultado, posicaoAntes); }
+            if (foraDoPrazo) {
+                await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
+                await preencherResultadoForaDoPrazo(resultado);
+            } else {
+                const melhor = await salvarResultado(resultado);
+                await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
+                await preencherResultado(melhor, resultado, posicaoAntes);
+            }
+        } catch(e2) {
+            await preencherResultado(resultado, resultado, posicaoAntes);
+        }
         somConclusao();
         mostrarTela("tela-resultado");
     }
@@ -5535,6 +5564,38 @@ async function preencherResultado(melhor, tent, posAntes) {
     verificarMaestriaAbsoluta(tent.nome, tent.turma);
     await renderizarCardVotacao();
 }
+async function preencherResultadoForaDoPrazo(tent) {
+    document.getElementById("resultado-titulo").innerHTML = "⏱️ Partida fora do prazo";
+    document.getElementById("feedback-pontos").innerHTML = `<strong>${escaparHtml(tent.nome)}</strong>, sua partida terminou após o encerramento da etapa.`;
+    document.getElementById("cards-comparacao-resultado").innerHTML = "";
+    document.getElementById("card-classificacao-container").innerHTML = `
+        <div class="card-classificacao fora-zona">
+            <h3>⏱️ Fora do prazo</h3>
+            <div class="posicao-destaque" style="font-size:34px;">🏁</div>
+            <p class="mensagem-corte">O prazo da etapa encerrou enquanto você jogava. Este resultado <strong>não conta</strong> para a classificação oficial, mas ficou registrado no seu histórico.</p>
+            <p class="mensagem-rodape">💡 Continue treinando! O <strong>Modo Treino</strong> está sempre disponível.</p>
+        </div>`;
+    document.getElementById("resumo-turma").innerText = tent.turma;
+    document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[tent.modalidade]?.nome || tent.modalidade;
+    document.getElementById("resumo-acertos").innerText = `${tent.acertos}/20`;
+    document.getElementById("resumo-erros").innerText = tent.erros;
+    document.getElementById("resumo-tempo").innerText = `${tent.tempoMedio.toFixed(2)}s`;
+    document.getElementById("resumo-sequencia").innerText = tent.maiorSequencia;
+    document.getElementById("resumo-melhor-media").innerText = "--";
+    document.getElementById("resumo-media-turma").innerText = "--";
+    document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Fora do prazo</span>`;
+    document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>⏱️ Partida fora do prazo</strong><br>Não contou para a classificação oficial. Ficou no seu histórico para acompanhamento.</div>`;
+    document.getElementById("novas-conquistas").innerHTML = "";
+    document.getElementById("mapa-tabuadas-container").innerHTML = "";
+    document.getElementById("album-cta-resultado")?.classList.add("hidden");
+    document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
+    document.getElementById("btn-compartilhar")?.classList.add("hidden");
+
+    // Patch D: mesmo fora do prazo, o mapa foi atualizado — vale checar
+    // medalhas de maestria e exibir o CTA dourado do álbum.
+    try { verificarAlbumPosPartida(tent.nome, tent.turma); } catch(e) {}
+    try { verificarMaestriaAbsoluta(tent.nome, tent.turma); } catch(e) {}
+}
 function mostrarBannerPromocao(promocoes) {
     const container = document.getElementById("mapa-tabuadas-container");
     if (!container || !promocoes.length) return;
@@ -5564,7 +5625,7 @@ async function compartilharResultado() {
     if (pos !== null && tot > 0) { t += `\n🏅 ${pos}º lugar entre ${tot} ${tot > 1 ? "alunos" : "aluno"}\n`; if (badge) t += `${badge}\n`; }
     t += `\n📊 ${ultimoMelhorOficial.pontos.toLocaleString('pt-BR')} pontos\n`;
     t += `✅ ${ultimoMelhorOficial.acertos}/20 acertos\n`;
-    t += `⏱️ Tempo médio: ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n`;
+    t += `⏱️ Tempo médio (só acertos): ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n`;
     t += `🎯 ${MODALIDADES[ultimoMelhorOficial.modalidade]?.nome || ultimoMelhorOficial.modalidade}\n`;
     t += `\n⚠️ Classificação provisória`;
     if (navigator.share) { try { await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: t, url: window.location.href }); } catch(e) {} }
@@ -5792,7 +5853,7 @@ function renderizarEstatisticasDesempenho() {
         { icone: "🏆", valor: melhor.toLocaleString("pt-BR"), rotulo: "Melhor pontuação", classe: "destaque" },
         { icone: "📊", valor: Math.round(media).toLocaleString("pt-BR"), rotulo: "Média geral" },
         { icone: "🎯", valor: `${precisao.toFixed(0)}%`, rotulo: "Precisão média" },
-        { icone: "⚡", valor: velocidade ? `${velocidade.toFixed(2)}s` : "—", rotulo: "Velocidade média" },
+        { icone: "⚡", valor: velocidade ? `${velocidade.toFixed(2)}s` : "—", rotulo: "Tempo médio (acertos)" },
         { icone: "🎮", valor: n.toLocaleString("pt-BR"), rotulo: n === 1 ? "Partida jogada" : "Partidas jogadas" },
         { icone: "✅", valor: totalAcertos.toLocaleString("pt-BR"), rotulo: "Total de acertos" },
         { icone: "❌", valor: totalErros.toLocaleString("pt-BR"), rotulo: "Total de erros" }
@@ -6000,8 +6061,12 @@ function renderizarComparativoComDados(dados, nomeAluno, turma) {
         const validos = dados.velocidade.filter(v => v.valor < 900);
         const media = calcularMediaMetrica(validos);
         const diff = media > 0 ? ((media - mVelocidade.valor) / media) * 100 : 0;
-        const sub = diff >= 1 ? `Você é <strong>${diff.toFixed(0)}% mais rápido</strong> que a média da turma` : diff <= -1 ? `Você é <strong>${Math.abs(diff).toFixed(0)}% mais lento</strong> que a média da turma` : `Sua velocidade está <strong>na média</strong> da turma`;
-        html += linhaMetrica({ icone: "⚡", label: "Velocidade média", pos: mVelocidade.pos, sub });
+        const sub = diff >= 1
+            ? `Seu tempo médio (só acertos) é <strong>${diff.toFixed(0)}% menor</strong> que a média da turma`
+            : diff <= -1
+                ? `Seu tempo médio (só acertos) é <strong>${Math.abs(diff).toFixed(0)}% maior</strong> que a média da turma`
+                : `Seu tempo médio está <strong>na média</strong> da turma`;
+        html += linhaMetrica({ icone: "⚡", label: "Tempo médio (acertos)", pos: mVelocidade.pos, sub });
     }
     if (mPartidas) {
         const qtdAbaixo = dados.partidas.filter(i => i.valor < mPartidas.valor).length;
@@ -6102,7 +6167,7 @@ function renderizarHistoricoPartidas() {
     }).join("");
     const total = ordenadas.length;
     const pluralPartida = total === 1 ? "partida" : "partidas";
-    container.innerHTML = `<div class="desempenho-historico-cabecalho"><div class="desempenho-historico-cabecalho-esq"><span class="desempenho-historico-cabecalho-emoji">📋</span><span class="desempenho-historico-cabecalho-txt">Suas <strong>${total} ${pluralPartida}</strong> registradas</span></div><span class="desempenho-historico-contagem">${total} ${pluralPartida}</span></div><div class="desempenho-historico-scroll"><table class="desempenho-historico-tabela"><thead><tr><th>Data</th><th>Modalidade</th><th class="col-num">Pontos</th><th class="col-num">Acertos</th><th class="col-num">Tempo</th><th class="col-num">Sequência</th></tr></thead><tbody>${linhas}</tbody></table></div><p class="desempenho-historico-nota">🏆 Marca seu <strong>recorde pessoal</strong> nesta modalidade. ${desempenhoModalidadeAtual !== "todas" ? `Mostrando só partidas de <strong>${MODALIDADES[desempenhoModalidadeAtual]?.nome}</strong>. ` : ""} A lista é atualizada a cada nova partida oficial.</p>`;
+    container.innerHTML = `<div class="desempenho-historico-cabecalho"><div class="desempenho-historico-cabecalho-esq"><span class="desempenho-historico-cabecalho-emoji">📋</span><span class="desempenho-historico-cabecalho-txt">Suas <strong>${total} ${pluralPartida}</strong> registradas</span></div><span class="desempenho-historico-contagem">${total} ${pluralPartida}</span></div><div class="desempenho-historico-scroll"><table class="desempenho-historico-tabela"><thead><tr><th>Data</th><th>Modalidade</th><th class="col-num">Pontos</th><th class="col-num">Acertos</th><th class="col-num">Tempo (só acertos)</th><th class="col-num">Sequência</th></tr></thead><tbody>${linhas}</tbody></table></div><p class="desempenho-historico-nota">🏆 Marca seu <strong>recorde pessoal</strong> nesta modalidade. ${desempenhoModalidadeAtual !== "todas" ? `Mostrando só partidas de <strong>${MODALIDADES[desempenhoModalidadeAtual]?.nome}</strong>. ` : ""} A lista é atualizada a cada nova partida oficial.</p>`;
 }
 function calcularMeuDestaque(nome, turma, partidas) {
     if (!partidas || partidas.length < 2) return null;
@@ -6374,6 +6439,7 @@ async function renderizarPainelEtapa() {
     if (d.duracaoEscolhida) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Duração escolhida</span><span class="painel-etapa-valor">${d.duracaoEscolhida} dias</span></div>`;
     if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerramento previsto</span><span class="painel-etapa-valor">${fmtDataHora(d.fimPrevistoEm)}</span></div>`;
     if (d.congeladoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Congelada em</span><span class="painel-etapa-valor">${fmtDataHora(d.congeladoEm)}</span></div>`;
+    if (d.motivoCongelamento) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Motivo</span><span class="painel-etapa-valor">${escaparHtml(d.motivoCongelamento)}</span></div>`;
     if (d.encerradoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerrada em</span><span class="painel-etapa-valor">${fmtDataHora(d.encerradoEm)}</span></div>`;
     if (d.modoTeste) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Modo</span><span class="painel-etapa-valor" style="color:#b45309;">🧪 TESTE (encerramento liberado)</span></div>`;
     html += `<div class="painel-etapa-rotulo" style="margin-top:14px;font-weight:700;color:#102a43;">Ações</div>`;
@@ -6418,7 +6484,7 @@ async function agendarInicioEtapa() {
     if (!Number.isFinite(ts)) { notificar("Data inválida.", "erro"); return; }
     if (ts <= Date.now() - 60000) { notificar("A data precisa estar no futuro.", "aviso"); return; }
     try {
-        await salvarDadosEtapa({ inicioEm: ts, status: "agendada", iniciadaEm: null, votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, congeladoEm: null, encerradoEm: null });
+        await salvarDadosEtapa({ inicioEm: ts, status: "agendada", iniciadaEm: null, votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, congeladoEm: null, motivoCongelamento: null, encerradoEm: null });
         notificar(`Etapa agendada para ${formatarDataHoraCurta(ts)}.`, "sucesso", 5000);
         await renderizarPainelEtapa();
         await atualizarTelaInicialComEtapa();
@@ -6440,8 +6506,14 @@ async function iniciarEtapaAgora() {
 async function congelarEtapa() {
     if (!exigirProfessorAutenticado()) return;
     if (!confirm("⏸️ Congelar a etapa?\n\nAlunos não poderão jogar a classificatória (apenas treino livre). O ranking ficará visível mas não mudará. Você pode descongelar depois para corrigir algo.")) return;
+    const motivo = prompt("📝 Motivo do congelamento (opcional, ficará registrado no painel):");
+if (motivo === null) return;  // professor cancelou — aborta sem congelar
     try {
-        await salvarDadosEtapa({ status: "congelada", congeladoEm: Date.now() });
+        await salvarDadosEtapa({
+            status: "congelada",
+            congeladoEm: Date.now(),
+            motivoCongelamento: motivo.trim() || "não informado"
+        });
         notificar("Etapa congelada.", "aviso", 5000);
         await renderizarPainelEtapa();
         await atualizarTelaInicialComEtapa();
@@ -6451,7 +6523,7 @@ async function descongelarEtapa() {
     if (!exigirProfessorAutenticado()) return;
     if (!confirm("▶️ Descongelar a etapa? Alunos poderão voltar a jogar a classificatória.")) return;
     try {
-        await salvarDadosEtapa({ status: "ativa", congeladoEm: null });
+        await salvarDadosEtapa({ status: "ativa", congeladoEm: null, motivoCongelamento: null });
         notificar("Etapa descongelada.", "sucesso");
         await renderizarPainelEtapa();
         await atualizarTelaInicialComEtapa();
