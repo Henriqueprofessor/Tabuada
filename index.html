@@ -2837,27 +2837,58 @@ async function abrirVotacaoAutomatica(inicioEm) {
     } catch(e) { console.warn("Falha ao abrir votação automática:", e); }
 }
 async function verificarEFecharVotacaoSeNecessario() {
+    // Já fechada? Nada a fazer.
+    let etapaAtual;
     try {
-        const d = await obterDadosEtapa(true);
-        if (!d.votacaoFechadaEm) return;
-        if (d.status !== "ativa") return;
-    } catch(e) {}
+        etapaAtual = await obterDadosEtapa(true);
+        if (etapaAtual.votacaoFechadaEm) return;        // ← CORREÇÃO: era "!d.votacaoFechadaEm"
+        if (etapaAtual.status === "encerrada") return;
+        if (etapaAtual.status === "congelada") return;  // respeita pausa do professor
+    } catch(e) { return; }
+
     const vot = await obterDadosVotacao();
     if (!vot.inicio) return;
+
     const fechamento = calcularFechamentoVotacao(vot.inicio);
     if (Date.now() < fechamento) return;
-    // Se a etapa já tem fimPrevistoEm, nada a fazer aqui (já fechou)
-    const etapa = await obterDadosEtapa(true);
-    if (etapa.votacaoFechadaEm && etapa.fimPrevistoEm) return;
-    // Fecha a votação
+
+    // Conta votos e decide a duração
     const votos = vot.votos ? Object.values(vot.votos) : [];
-    const v7 = votos.filter(v => String(v.opcao) === "7").length;
+    const v7  = votos.filter(v => String(v.opcao) === "7").length;
     const v14 = votos.filter(v => String(v.opcao) === "14").length;
     const dur = v14 > v7 ? 14 : 7;
-    const fim = calcularFimPrevisto(etapa.inicioEm || Date.now(), dur);
+
+    const fim = calcularFimPrevisto(etapaAtual.inicioEm || Date.now(), dur);
     try {
-        await salvarDadosEtapa({ votacaoFechadaEm: Date.now(), duracaoEscolhida: dur, fimPrevistoEm: fim });
+        await salvarDadosEtapa({
+            votacaoFechadaEm: Date.now(),
+            duracaoEscolhida: dur,
+            fimPrevistoEm: fim
+        });
     } catch(e) { console.warn("Falha ao fechar votação:", e); }
+}
+
+async function verificarEEncerrarEtapaSeNecessario() {
+    // Só encerra se houver prazo definido e ainda não tiver sido encerrada.
+    let d;
+    try {
+        d = await obterDadosEtapa(true);
+    } catch(e) { return; }
+
+    if (!d.fimPrevistoEm) return;                    // sem prazo → nada a fazer
+    if (d.status === "encerrada") return;            // já encerrada
+    if (d.status === "congelada") return;            // respeita pausa do professor
+    if (Date.now() < d.fimPrevistoEm) return;        // ainda dentro do prazo
+
+    try {
+        await salvarDadosEtapa({
+            status: "encerrada",
+            encerradoEm: Date.now()
+        });
+        notificar("🏁 Etapa encerrada automaticamente.", "info", 6000);
+    } catch(e) {
+        console.warn("Falha ao encerrar etapa automaticamente:", e);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -7029,6 +7060,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     try {
         await verificarEIniciarEtapaSeNecessario();
         await verificarEFecharVotacaoSeNecessario();
+        await verificarEEncerrarEtapaSeNecessario();     // ← NOVO
     } catch(e) { console.warn("Falha ao processar ciclo da etapa:", e); }
     try { await atualizarTelaInicialComEtapa(); } catch(e) { console.warn("Falha ao atualizar tela inicial com etapa:", e); }
     try { await renderizarCardVotacao(); } catch(e) { console.warn("Falha ao renderizar card de votação:", e); }
@@ -7038,12 +7070,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     votacaoTimerInterval = setInterval(async () => {
         try {
             await verificarEFecharVotacaoSeNecessario();
+            await verificarEEncerrarEtapaSeNecessario();  // ← NOVO
             const card = document.getElementById("card-votacao");
             if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
             await atualizarTelaInicialComEtapa();
         } catch(e) { console.warn("Timer votação/etapa:", e); }
     }, 60000);
-});
-    </script>
+});    </script>
 </body>
 </html>
