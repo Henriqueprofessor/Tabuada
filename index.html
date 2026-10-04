@@ -1803,7 +1803,7 @@
         </select>
         <button onclick="carregarPerfil()" class="botao-verde">🔍 Buscar</button>
         <div id="perfil-conteudo" class="hidden">
-            <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
+            <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo médio dos acertos:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
             <h3>🏅 Conquistas</h3><div id="perfil-conquistas" class="conquistas-grid"></div>
             <h3>🗺️ Mapa de Tabuadas</h3><div id="perfil-mapa"></div>
         </div>
@@ -2694,13 +2694,18 @@ function calcularFaseEtapa(d) {
     return ETAPA_FASES.etapa_definida;
 }
 // ─── POLÍTICA DE PRAZO: CALENDÁRIO ─────────────────────────────────────
-// A duração "7 dias" ou "14 dias" é interpretada como PRAZO DE CALENDÁRIO:
-//   • Dia 1 = dia do início da etapa (mesmo que comece 22h).
-//   • O prazo se encerra sempre às 23:59:59.999 do último dia.
-//   • Ex.: início segunda 08h + 7 dias → encerra segunda seguinte 23:59.
+// A duração "7 dias" ou "14 dias" é interpretada como PRAZO DE CALENDÁRIO.
 //
-// Isso é intencional: para alunos e professores, "até o fim do sétimo dia"
-// é mais intuitivo do que "168 horas exatas a partir do instante X".
+// Contagem: o prazo é contado a partir do início da etapa e termina às
+// 23h59:59 da data final exibida pelo sistema. Não importa a hora exata
+// em que a etapa começou — o que vale é a data final, sempre às 23h59.
+//
+// Ex.: início segunda 08h + 7 dias → encerra segunda seguinte às 23h59.
+//      início segunda 22h + 7 dias → encerra segunda seguinte às 23h59
+//      (o horário do início não desloca a data final).
+//
+// Isso é intencional: para alunos e professores, "até o fim do dia X"
+// é mais intuitivo do que "N horas exatas a partir do instante Y".
 // A UI sempre exibe a DATA FINAL, nunca só "7 dias".
 function calcularFimPrevisto(inicioEm, duracao) {
     if (!inicioEm) return null;
@@ -2813,7 +2818,7 @@ async function atualizarTelaInicialComEtapa() {
         <div style="margin-top:10px;"><button onclick="iniciarTreinoAnonimo()" class="botao-treino">🎯 Modo Treino Livre</button></div>`;
     const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
     const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
-    prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> 🏁 <strong>A etapa encerra em ${fim} (às 23h59).</strong> A partir daí, apenas treino livre.</p>`;
+    prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> O prazo é contado a partir do início da etapa e termina às 23h59 da data final: <strong>${fim}</strong>. A partir daí, apenas treino livre.</p>`;
 } else if (fase.tipo === ETAPA_FASES.congelada) {
         acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;">🎯 Modo Treino Livre</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏸️ <strong>Etapa pausada temporariamente.</strong> O professor está fazendo ajustes. O ranking está congelado — volte em breve!</p>`;
@@ -4767,7 +4772,7 @@ async function renderizarRanking() {
         rank = await obterRankingPorPontos(mod, turma);
         tit = `🏆 Minha Turma — ${turma} · ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th><th>Jogos</th><th>Status</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th><th>Jogos</th><th>Status</th>`;
         if (!rank.length) { tb.innerHTML = `<tr><td colspan="8"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`; document.getElementById("medias-turmas-container").classList.add("hidden"); document.getElementById("banner-posicao-global").classList.add("hidden"); return; }
         let h = "";
         for (let i = 0; i < rank.length; i++) {
@@ -4790,14 +4795,14 @@ async function renderizarRanking() {
         rank = rc.slice(0, 100);
         tit = `🌍 Desafio entre turmas — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
         await renderizarBannerPosicaoGlobal(rc, mod);
         await renderizarMediasTurmas(mod);
     } else if (tipoRankingAtual === "precisao-global") {
         rank = await obterRankingPorPrecisao(mod, null);
         tit = `🎯 Precisão Global — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo médio</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo médio dos acertos</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else if (tipoRankingAtual === "precisao-turma") {
@@ -4806,14 +4811,14 @@ async function renderizarRanking() {
         rank = await obterRankingPorPrecisao(mod, turma);
         tit = `🎯 Precisão — Turma ${turma} · ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo médio</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo médio dos acertos</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else if (tipoRankingAtual === "velocidade-global") {
         rank = await obterRankingPorVelocidade(mod, null);
         tit = `⚡ Velocidade Global (100%) — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else if (tipoRankingAtual === "velocidade-turma") {
@@ -4822,14 +4827,14 @@ async function renderizarRanking() {
         rank = await obterRankingPorVelocidade(mod, turma);
         tit = `⚡ Velocidade — Turma ${turma} (100%) · ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     } else {
         rank = await obterRankingPorPontos(mod, turma);
         tit = `Ranking — ${MODALIDADES[mod]?.nome}`;
         ti.innerText = tit;
-        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`;
+        th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
         document.getElementById("banner-posicao-global").classList.add("hidden");
         document.getElementById("medias-turmas-container").classList.add("hidden");
     }
@@ -5006,7 +5011,7 @@ function gerarPlanoTreinoResultado() {
     const linhas = itens.map(i => {
         const pct = Math.round(i.precisao * 100);
         const motivo = pct < 70 ? "reforçar precisão" : i.tempoMedio > 3 ? "ganhar velocidade" : "manter no aquecimento";
-        return `<li>Tabuada do ${i.tab}: ${pct}% de acerto, média ${i.tempoMedio.toFixed(2)}s - ${motivo}</li>`;
+        return `<li>Tabuada do ${i.tab}: ${pct}% de acerto · tempo médio dos acertos ${i.tempoMedio.toFixed(2)}s — ${motivo}</li>`;
     }).join("");
     return `<div class="feedback-ranking"><strong>Plano de treino recomendado</strong><ul style="text-align:left;margin:8px 0 0;">${linhas}</ul></div>`;
 }
@@ -5161,7 +5166,7 @@ async function registrarAluno(treino) {
             else if (mediaTurma && melhorMediaAluno > mediaTurma) msg = "💪 Você está abaixo da média — com treino vai superar!";
             else msg = "🏆 Chance de bater seu próprio recorde!";
         } else msg = "🎯 Primeira partida! Vamos criar sua melhor média!";
-        div.innerHTML = `<div class="preparacao-grid"><div class="prep-card"><span class="prep-rotulo">👤 Aluno</span><span class="prep-valor">${escaparHtml(nome)}</span></div><div class="prep-card"><span class="prep-rotulo">🏫 Turma</span><span class="prep-valor">${turma}</span></div><div class="prep-card"><span class="prep-rotulo">📚 Modalidade</span><span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span></div><div class="prep-card"><span class="prep-rotulo">⏱️ Formato</span><span class="prep-valor">20 questões · 10s cada</span></div></div><div class="prep-bloco"><h4>📋 Como funciona?</h4><ul><li><strong>20 perguntas</strong> de multiplicação.</li><li>Até <strong>10 segundos</strong> por questão.</li><li>Respostas rápidas valem <strong>mais pontos</strong>.</li><li>Apenas o seu <strong>melhor resultado</strong> entra na classificação.</li></ul></div><div class="prep-bloco"><h4>📊 Suas referências</h4><div class="prep-referencias-linha"><div><span class="prep-rotulo">Sua melhor média</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div><div><span class="prep-rotulo">Média da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div></div></div>${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado</strong><br>${descreverFocoTreino()}</div>` : ""}<div class="prep-motivacao" style="margin-top:14px;">${msg}</div><div style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffc107;border-radius:10px;padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;color:#6d4c41;margin-top:14px;">⚠️ <strong>Lembrete:</strong> seu nome cadastrado é <strong>${escaparHtml(nome)}</strong>. Se você se classificar e o nome não conferir com a chamada oficial, poderá ser <strong>desclassificado</strong>. Qualquer correção, procure o professor <em>antes</em> do fim da etapa.</div>`;
+        div.innerHTML = `<div class="preparacao-grid"><div class="prep-card"><span class="prep-rotulo">👤 Aluno</span><span class="prep-valor">${escaparHtml(nome)}</span></div><div class="prep-card"><span class="prep-rotulo">🏫 Turma</span><span class="prep-valor">${turma}</span></div><div class="prep-card"><span class="prep-rotulo">📚 Modalidade</span><span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span></div><div class="prep-card"><span class="prep-rotulo">⏱️ Formato</span><span class="prep-valor">20 questões · 10s cada</span></div></div><div class="prep-bloco"><h4>📋 Como funciona?</h4><ul><li><strong>20 perguntas</strong> de multiplicação.</li><li>Até <strong>10 segundos</strong> por questão.</li><li>Respostas rápidas valem <strong>mais pontos</strong>.</li><li>Apenas o seu <strong>melhor resultado</strong> entra na classificação.</li></ul></div><div class="prep-bloco"><h4>📊 Suas referências</h4><div class="prep-referencias-linha"><div><span class="prep-rotulo">Seu melhor tempo médio dos acertos</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div><div><span class="prep-rotulo">Tempo médio dos acertos da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div></div></div>${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado</strong><br>${descreverFocoTreino()}</div>` : ""}<div class="prep-motivacao" style="margin-top:14px;">${msg}</div><div style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffc107;border-radius:10px;padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;color:#6d4c41;margin-top:14px;">⚠️ <strong>Lembrete:</strong> seu nome cadastrado é <strong>${escaparHtml(nome)}</strong>. Se você se classificar e o nome não conferir com a chamada oficial, poderá ser <strong>desclassificado</strong>. Qualquer correção, procure o professor <em>antes</em> do fim da etapa.</div>`;
         mostrarTela("tela-preparacao");
         window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
     } else {
@@ -5377,7 +5382,7 @@ async function finalizarCircuito() {
     // Treino anônimo: não salva nada
     if (treinoAnonimo) {
         document.getElementById("resultado-titulo").innerHTML = "🎯 Treino Livre concluído!";
-        document.getElementById("feedback-pontos").innerHTML = `Você acertou <strong>${acertos}/20</strong> em <strong>${tempoMedio.toFixed(2)}s</strong> de tempo médio.`;
+        document.getElementById("feedback-pontos").innerHTML = `Você acertou <strong>${acertos}/20</strong>.<br><small style="color:#6c757d;">Tempo médio dos acertos: <strong>${tempoMedio.toFixed(2)}s</strong>.</small>`;
         document.getElementById("cards-comparacao-resultado").innerHTML = "";
         document.getElementById("card-classificacao-container").innerHTML = "";
         document.getElementById("resumo-turma").innerText = "—";
