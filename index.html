@@ -4,7 +4,7 @@
      📑 ÍNDICE — Ctrl+F pelo código para pular direto
      [01] HEAD  · [02] CSS · [03] HTML telas · [04] HTML modais
      [05] a [18] JavaScript — ver Partes 2 e 3.
-     Versão: 8.8.4 — Ciclo de Vida da Etapa
+     Versão: 8.8.5 — Ciclo de Vida da Etapa + Polimento Final
      ═══════════════════════════════════════════════════════════════════════ -->
 <head>
     <meta charset="UTF-8">
@@ -1630,7 +1630,7 @@
         </div>
         <div class="atalhos-iniciais">
             <button class="changelog-trigger" onclick="abrirComoFunciona()" title="Como funciona a Copa">📖 Como funciona</button>
-            <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.8.4</span> · histórico</button>
+            <button class="changelog-trigger" onclick="abrirChangelog()" title="Ver histórico de versões">⚙️ v<span id="changelog-versao-atual">8.8.5</span> · histórico</button>
         </div>
     </div>
 
@@ -1728,9 +1728,9 @@
             <div><strong>Modalidade:</strong> <span id="resumo-modalidade"></span></div>
             <div><strong>Acertos desta tentativa:</strong> <span id="resumo-acertos"></span></div>
             <div><strong>Erros:</strong> <span id="resumo-erros"></span></div>
-            <div><strong>Seu tempo médio (respostas corretas):</strong> <span id="resumo-tempo"></span></div>
-            <div><strong>Seu melhor tempo médio (acertos):</strong> <span id="resumo-melhor-media">-- s</span></div>
-<div><strong>Tempo médio da turma (acertos):</strong> <span id="resumo-media-turma">-- s</span></div>
+            <div><strong>Tempo médio dos acertos:</strong> <span id="resumo-tempo"></span></div>
+<div><strong>Seu melhor tempo médio dos acertos:</strong> <span id="resumo-melhor-media">-- s</span></div>
+<div><strong>Tempo médio dos acertos da turma:</strong> <span id="resumo-media-turma">-- s</span></div>
             <div><strong>Maior sequência:</strong> <span id="resumo-sequencia"></span></div>
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
@@ -1769,7 +1769,7 @@
             ℹ️ <strong>Escolha sua turma no filtro abaixo</strong> para ver sua classificação. Depois de jogar, o sistema lembrará da sua turma automaticamente.
         </div>
         <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
-        <div class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.<br>ℹ️ O <strong>tempo médio</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</div>
+        <div class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.<br>ℹ️ O <strong>tempo médio dos acertos</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</div>
         <select id="filtro-modalidade" onchange="renderizarRanking()">
             <option value="2-5">Tabuadas 2-5</option>
             <option value="6-9">Tabuadas 6-9</option>
@@ -2018,9 +2018,14 @@
         <div class="modal-card changelog-modal-card" onclick="event.stopPropagation()">
             <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
             <div class="changelog-lista">
-                <div class="changelog-item">
-                    <span class="changelog-versao atual">v8.8.4 · atual</span>
-                    <h4 class="changelog-titulo">📅 Ciclo de Vida da Etapa + Modo Teste</h4>
+    <div class="changelog-item">
+        <span class="changelog-versao atual">v8.8.5 · atual</span>
+        <h4 class="changelog-titulo">✨ Polimento final — ciclo completo e rótulos precisos</h4>
+        <p class="changelog-descricao"><strong>(1) Encerramento automático da etapa</strong> quando o prazo vence — o ciclo agora fecha sozinho, sem depender de alguém olhar a tela. <strong>(2) Guard contra partida fora do prazo:</strong> se o tempo acabar durante a partida, o resultado vai para o histórico, mas não conta para a classificação oficial. <strong>(3) Fechamento automático da votação corrigido</strong> (bug crítico — a votação agora fecha de verdade no 4º dia). <strong>(4) Motivo do congelamento registrado</strong> no painel e no Firebase. <strong>(5) Rótulos unificados:</strong> toda métrica de tempo passa a se chamar <em>"tempo médio dos acertos"</em> (deixa claro que só acertos entram na média). <strong>(6) Cancelar no prompt de congelamento agora aborta a ação.</strong></p>
+    </div>
+    <div class="changelog-item">
+        <span class="changelog-versao">v8.8.4</span>
+        <h4 class="changelog-titulo">📅 Ciclo de Vida da Etapa + Modo Teste</h4>
                     <p class="changelog-descricao">Nova arquitetura com 4 fases: <strong>Pré-evento</strong> (countdown + treino livre), <strong>Etapa + Votação</strong> (prazo provisório de 7 dias), <strong>Etapa Definida</strong> (prazo oficial de 7 ou 14 dias) e <strong>Encerrada</strong> (ranking congelado). Professor ganha cockpit completo: agendar início, congelar para correções, encerrar após prazo (ou em modo teste) e resetar ciclo. Votação abre automaticamente quando a etapa inicia.</p>
                 </div>
                 <div class="changelog-item">
@@ -2201,7 +2206,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 // ─── [05.01] Versão e chaves de storage ────────────────────────────────
-const APP_VERSION = "8.8.4";
+const APP_VERSION = "8.8.5";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -2688,6 +2693,15 @@ function calcularFaseEtapa(d) {
     if (d.fimPrevistoEm && agora > d.fimPrevistoEm) return ETAPA_FASES.encerrada;
     return ETAPA_FASES.etapa_definida;
 }
+// ─── POLÍTICA DE PRAZO: CALENDÁRIO ─────────────────────────────────────
+// A duração "7 dias" ou "14 dias" é interpretada como PRAZO DE CALENDÁRIO:
+//   • Dia 1 = dia do início da etapa (mesmo que comece 22h).
+//   • O prazo se encerra sempre às 23:59:59.999 do último dia.
+//   • Ex.: início segunda 08h + 7 dias → encerra segunda seguinte 23:59.
+//
+// Isso é intencional: para alunos e professores, "até o fim do sétimo dia"
+// é mais intuitivo do que "168 horas exatas a partir do instante X".
+// A UI sempre exibe a DATA FINAL, nunca só "7 dias".
 function calcularFimPrevisto(inicioEm, duracao) {
     if (!inicioEm) return null;
     const d = new Date(inicioEm + duracao * 24 * 60 * 60 * 1000);
@@ -2795,12 +2809,12 @@ async function atualizarTelaInicialComEtapa() {
             <div style="margin-top:10px;"><button onclick="iniciarTreinoAnonimo()" class="botao-treino">🎯 Modo Treino Livre</button></div>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">🗳️ <strong>Duração provisória: 7 dias.</strong> A votação está aberta — os alunos elegíveis decidem se a etapa termina em 7 dias ou se estende para 14. A duração oficial só será definida quando a votação fechar.</p>`;
     } else if (fase.tipo === ETAPA_FASES.etapa_definida) {
-        acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
-            <div style="margin-top:10px;"><button onclick="iniciarTreinoAnonimo()" class="botao-treino">🎯 Modo Treino Livre</button></div>`;
-        const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
-        const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> A etapa será encerrada em <strong>${fim}</strong>.</p>`;
-    } else if (fase.tipo === ETAPA_FASES.congelada) {
+    acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria">🏆 Participar da Etapa Classificatória</button>
+        <div style="margin-top:10px;"><button onclick="iniciarTreinoAnonimo()" class="botao-treino">🎯 Modo Treino Livre</button></div>`;
+    const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
+    const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
+    prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> 🏁 <strong>A etapa encerra em ${fim} (às 23h59).</strong> A partir daí, apenas treino livre.</p>`;
+} else if (fase.tipo === ETAPA_FASES.congelada) {
         acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;">🎯 Modo Treino Livre</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏸️ <strong>Etapa pausada temporariamente.</strong> O professor está fazendo ajustes. O ranking está congelado — volte em breve!</p>`;
     } else if (fase.tipo === ETAPA_FASES.encerrada) {
@@ -5625,7 +5639,7 @@ async function compartilharResultado() {
     if (pos !== null && tot > 0) { t += `\n🏅 ${pos}º lugar entre ${tot} ${tot > 1 ? "alunos" : "aluno"}\n`; if (badge) t += `${badge}\n`; }
     t += `\n📊 ${ultimoMelhorOficial.pontos.toLocaleString('pt-BR')} pontos\n`;
     t += `✅ ${ultimoMelhorOficial.acertos}/20 acertos\n`;
-    t += `⏱️ Tempo médio (só acertos): ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n`;
+    t += `⏱️ Tempo médio dos acertos: ${ultimoMelhorOficial.tempoMedio.toFixed(2)}s\n`;
     t += `🎯 ${MODALIDADES[ultimoMelhorOficial.modalidade]?.nome || ultimoMelhorOficial.modalidade}\n`;
     t += `\n⚠️ Classificação provisória`;
     if (navigator.share) { try { await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: t, url: window.location.href }); } catch(e) {} }
@@ -5853,7 +5867,7 @@ function renderizarEstatisticasDesempenho() {
         { icone: "🏆", valor: melhor.toLocaleString("pt-BR"), rotulo: "Melhor pontuação", classe: "destaque" },
         { icone: "📊", valor: Math.round(media).toLocaleString("pt-BR"), rotulo: "Média geral" },
         { icone: "🎯", valor: `${precisao.toFixed(0)}%`, rotulo: "Precisão média" },
-        { icone: "⚡", valor: velocidade ? `${velocidade.toFixed(2)}s` : "—", rotulo: "Tempo médio (acertos)" },
+        { icone: "⚡", valor: velocidade ? `${velocidade.toFixed(2)}s` : "—", rotulo: "Tempo médio dos acertos" },
         { icone: "🎮", valor: n.toLocaleString("pt-BR"), rotulo: n === 1 ? "Partida jogada" : "Partidas jogadas" },
         { icone: "✅", valor: totalAcertos.toLocaleString("pt-BR"), rotulo: "Total de acertos" },
         { icone: "❌", valor: totalErros.toLocaleString("pt-BR"), rotulo: "Total de erros" }
@@ -6066,7 +6080,7 @@ function renderizarComparativoComDados(dados, nomeAluno, turma) {
             : diff <= -1
                 ? `Seu tempo médio (só acertos) é <strong>${Math.abs(diff).toFixed(0)}% maior</strong> que a média da turma`
                 : `Seu tempo médio está <strong>na média</strong> da turma`;
-        html += linhaMetrica({ icone: "⚡", label: "Tempo médio (acertos)", pos: mVelocidade.pos, sub });
+        html += linhaMetrica({ icone: "⚡", label: "Tempo médio dos acertos", pos: mVelocidade.pos, sub });
     }
     if (mPartidas) {
         const qtdAbaixo = dados.partidas.filter(i => i.valor < mPartidas.valor).length;
@@ -6167,7 +6181,7 @@ function renderizarHistoricoPartidas() {
     }).join("");
     const total = ordenadas.length;
     const pluralPartida = total === 1 ? "partida" : "partidas";
-    container.innerHTML = `<div class="desempenho-historico-cabecalho"><div class="desempenho-historico-cabecalho-esq"><span class="desempenho-historico-cabecalho-emoji">📋</span><span class="desempenho-historico-cabecalho-txt">Suas <strong>${total} ${pluralPartida}</strong> registradas</span></div><span class="desempenho-historico-contagem">${total} ${pluralPartida}</span></div><div class="desempenho-historico-scroll"><table class="desempenho-historico-tabela"><thead><tr><th>Data</th><th>Modalidade</th><th class="col-num">Pontos</th><th class="col-num">Acertos</th><th class="col-num">Tempo (só acertos)</th><th class="col-num">Sequência</th></tr></thead><tbody>${linhas}</tbody></table></div><p class="desempenho-historico-nota">🏆 Marca seu <strong>recorde pessoal</strong> nesta modalidade. ${desempenhoModalidadeAtual !== "todas" ? `Mostrando só partidas de <strong>${MODALIDADES[desempenhoModalidadeAtual]?.nome}</strong>. ` : ""} A lista é atualizada a cada nova partida oficial.</p>`;
+    container.innerHTML = `<div class="desempenho-historico-cabecalho"><div class="desempenho-historico-cabecalho-esq"><span class="desempenho-historico-cabecalho-emoji">📋</span><span class="desempenho-historico-cabecalho-txt">Suas <strong>${total} ${pluralPartida}</strong> registradas</span></div><span class="desempenho-historico-contagem">${total} ${pluralPartida}</span></div><div class="desempenho-historico-scroll"><table class="desempenho-historico-tabela"><thead><tr><th>Data</th><th>Modalidade</th><th class="col-num">Pontos</th><th class="col-num">Acertos</th><th class="col-num">Tempo médio dos acertos</th><th class="col-num">Sequência</th></tr></thead><tbody>${linhas}</tbody></table></div><p class="desempenho-historico-nota">🏆 Marca seu <strong>recorde pessoal</strong> nesta modalidade. ${desempenhoModalidadeAtual !== "todas" ? `Mostrando só partidas de <strong>${MODALIDADES[desempenhoModalidadeAtual]?.nome}</strong>. ` : ""} A lista é atualizada a cada nova partida oficial.</p>`;
 }
 function calcularMeuDestaque(nome, turma, partidas) {
     if (!partidas || partidas.length < 2) return null;
@@ -6436,8 +6450,8 @@ async function renderizarPainelEtapa() {
     html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início agendado</span><span class="painel-etapa-valor">${fmtDataHora(d.inicioEm)}</span></div>`;
     if (d.iniciadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início efetivo</span><span class="painel-etapa-valor">${fmtDataHora(d.iniciadaEm)}</span></div>`;
     if (d.votacaoFechadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Votação fechada em</span><span class="painel-etapa-valor">${fmtDataHora(d.votacaoFechadaEm)}</span></div>`;
-    if (d.duracaoEscolhida) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Duração escolhida</span><span class="painel-etapa-valor">${d.duracaoEscolhida} dias</span></div>`;
-    if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerramento previsto</span><span class="painel-etapa-valor">${fmtDataHora(d.fimPrevistoEm)}</span></div>`;
+    if (d.duracaoEscolhida) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Duração escolhida</span><span class="painel-etapa-valor">${d.duracaoEscolhida} dias (prazo de calendário)</span></div>`;
+if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerramento previsto</span><span class="painel-etapa-valor">${fmtDataHora(d.fimPrevistoEm)} — 23h59</span></div>`;
     if (d.congeladoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Congelada em</span><span class="painel-etapa-valor">${fmtDataHora(d.congeladoEm)}</span></div>`;
     if (d.motivoCongelamento) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Motivo</span><span class="painel-etapa-valor">${escaparHtml(d.motivoCongelamento)}</span></div>`;
     if (d.encerradoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerrada em</span><span class="painel-etapa-valor">${fmtDataHora(d.encerradoEm)}</span></div>`;
@@ -6505,7 +6519,7 @@ async function iniciarEtapaAgora() {
 }
 async function congelarEtapa() {
     if (!exigirProfessorAutenticado()) return;
-    if (!confirm("⏸️ Congelar a etapa?\n\nAlunos não poderão jogar a classificatória (apenas treino livre). O ranking ficará visível mas não mudará. Você pode descongelar depois para corrigir algo.")) return;
+    if (!confirm("⏸️ Congelar a etapa?\n\n• Alunos não poderão jogar a classificatória (apenas treino livre).\n• O ranking fica visível mas não muda.\n• ⚠️ A pausa INTERROMPE TEMPORARIAMENTE o ciclo automático — a votação não avança e o encerramento automático fica suspenso enquanto a etapa estiver congelada.\n• Ao descongelar, o ciclo volta a correr normalmente.\n\nDeseja continuar?")) return;
     const motivo = prompt("📝 Motivo do congelamento (opcional, ficará registrado no painel):");
 if (motivo === null) return;  // professor cancelou — aborta sem congelar
     try {
@@ -6714,12 +6728,12 @@ async function renderizarCardVotacao() {
         let motivo, veredito;
         if (ganhador === 14) {
             motivo = "A maioria votou por <strong>estender</strong> a etapa por mais uma semana.";
-            veredito = "A etapa classificatória durará <strong>14 dias</strong>.";
+            veredito = "A etapa classificatória durará <strong>14 dias</strong> (prazo de calendário).";
         } else {
             motivo = "A maioria votou por <strong>encerrar em 7 dias</strong>.";
-            veredito = "A etapa classificatória durará <strong>7 dias</strong>.";
+            veredito = "A etapa classificatória durará <strong>7 dias</strong> (prazo de calendário).";
         }
-        const fimLinha = fim ? `<div style="font-size:13px;color:#fde68a;text-align:center;margin-top:8px;font-weight:800;">🗓️ Encerramento previsto: ${fim} às 23h59</div>` : "";
+        const fimLinha = fim ? `<div style="font-size:13px;color:#fde68a;text-align:center;margin-top:8px;font-weight:800;">🗓️ Prazo de calendário — encerra em ${fim} às 23h59</div>` : "";
         timerContainer.innerHTML = `<span class="votacao-status-timer">🔒 Votação encerrada</span>`;
         corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador"><strong>Duração oficial: ${ganhador} dias</strong>${veredito}</div>${fimLinha}<div class="detalhe-final">${motivo} · ${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos)}`;
         return;
