@@ -2745,7 +2745,10 @@ function iniciarCountdown(inicioEm) {
         if (Date.now() >= inicioEm) {
             pararCountdown();
             // Chegou a hora! Verifica se a etapa precisa iniciar
-            verificarEIniciarEtapaSeNecessario().then(() => atualizarTelaInicialComEtapa());
+            verificarEIniciarEtapaSeNecessario().then(async () => {
+                await atualizarTelaInicialComEtapa();
+                await renderizarCardVotacao();  // ← NOVO: mostra o card de votação imediatamente
+            });
         }
     }, 1000);
 }
