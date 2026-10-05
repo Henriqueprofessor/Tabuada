@@ -1473,6 +1473,60 @@
         }
         /* ▲▲▲ FIM [02.27] */
 
+        /* ▼▼▼ [02.28] Votação — Modal ─────────────────────── */
+        .votacao-modal-card {
+            position: relative;
+            max-width: 560px;
+            padding: 0 !important;
+            overflow: hidden;
+            background: transparent !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55) !important;
+            border-radius: 16px;
+            animation: modalSlideUp 0.22s ease;
+        }
+        .votacao-modal-card .card-votacao {
+            margin: 0 !important;
+            max-width: none !important;
+            padding: 24px 22px 22px !important;
+            border-radius: 16px !important;
+            box-shadow: none !important;
+        }
+        .votacao-modal-card .votacao-kicker {
+            padding-right: 40px;
+        }
+        .votacao-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 10;
+            width: 34px;
+            height: 34px;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: rgba(0, 0, 0, 0.25);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 900;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: none !important;
+        }
+        .votacao-modal-close:hover {
+            background: rgba(220, 53, 69, 0.95);
+            border-color: #dc3545;
+            transform: scale(1.1);
+        }
+        .votacao-modal-close:focus-visible {
+            outline: 3px solid #fbbf24;
+            outline-offset: 2px;
+        }
+        /* ▲▲▲ FIM [02.28] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -1590,6 +1644,11 @@
                     <span>Professor</span>
                     <span id="msg-badge-aluno" class="badge-notif hidden">0</span>
                 </button>
+                <button class="mais-opcoes-btn" onclick="abrirVotacao()" id="btn-votacao-menu" title="Votar na duração da etapa" style="display:none;">
+                    <span class="icone">🗳️</span>
+                    <span>Votação</span>
+                    <span id="votacao-badge-menu" class="badge-notif hidden">!</span>
+                </button>
                 <button class="mais-opcoes-btn" onclick="abrirComoFunciona()" title="Como funciona">
                     <span class="icone">ℹ️</span>
                     <span>Como funciona</span>
@@ -1699,14 +1758,19 @@
     </div>
     <!-- ▲▲▲ FIM [03.01] -->
 
-    <!-- ▼▼▼ [03.02] VOTAÇÃO ───────────────────────────────────── -->
-    <div id="card-votacao" class="card-votacao hidden">
-        <div class="votacao-kicker">🗳️ CONSULTA AOS ALUNOS</div>
-        <h3>Quanto tempo deve durar a etapa classificatória?</h3>
-        <p class="votacao-descricao">A duração da etapa será <strong>decidida pelos alunos</strong> que atingiram o critério de participação. Você escolhe entre <strong>7 dias</strong> (encerrando ao final da primeira semana) ou <strong>14 dias</strong> (estendendo por mais uma semana). A votação fecha automaticamente e a maioria define o prazo oficial.</p>
-        <p class="votacao-descricao" style="background:rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;border:1px solid rgba(255,255,255,.22);font-size:12.5px;">📌 <strong>Todas as partidas realizadas desde o início da etapa continuarão válidas</strong>, independentemente do resultado da votação.</p>
-        <div id="votacao-timer-container"></div>
-        <div id="votacao-corpo"></div>
+    <!-- ▼▼▼ [03.02] VOTAÇÃO (modal de acesso) ─────────────────── -->
+    <div id="modal-votacao" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="votacao-titulo" onclick="fecharModalVotacao(event)">
+        <div class="modal-card votacao-modal-card" onclick="event.stopPropagation()">
+            <button class="votacao-modal-close" onclick="fecharModalVotacao()" aria-label="Fechar">✕</button>
+            <div id="card-votacao" class="card-votacao">
+                <div class="votacao-kicker">🗳️ CONSULTA AOS ALUNOS</div>
+                <h3 id="votacao-titulo">Quanto tempo deve durar a etapa classificatória?</h3>
+                <p class="votacao-descricao">A duração da etapa será <strong>decidida pelos alunos</strong> que atingiram o critério de participação. Você escolhe entre <strong>7 dias</strong> (encerrando ao final da primeira semana) ou <strong>14 dias</strong> (estendendo por mais uma semana). A votação fecha automaticamente e a maioria define o prazo oficial.</p>
+                <p class="votacao-descricao" style="background:rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;border:1px solid rgba(255,255,255,.22);font-size:12.5px;">📌 <strong>Todas as partidas realizadas desde o início da etapa continuarão válidas</strong>, independentemente do resultado da votação.</p>
+                <div id="votacao-timer-container"></div>
+                <div id="votacao-corpo"></div>
+            </div>
+        </div>
     </div>
     <!-- ▲▲▲ FIM [03.02] -->
 
@@ -6822,16 +6886,21 @@ function renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos) {
     return `<div class="votacao-grafico"><div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div><div class="barra-voto"><div class="rotulo-barra"><span>🗓️ 7 dias (encerrar na 1ª semana)</span><span class="num">${pct7}% · ${votos7} ${votos7 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento set" style="width:${pct7}%"></div></div></div><div class="barra-voto"><div class="rotulo-barra"><span>📆 14 dias (estender +1 semana)</span><span class="num">${pct14}% · ${votos14} ${votos14 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento qua" style="width:${pct14}%"></div></div></div><div style="text-align:center;color:#ede9fe;font-size:11.5px;margin-top:8px;">${totalVotos} ${totalVotos === 1 ? "voto computado" : "votos computados"} até agora</div></div>`;
 }
 async function renderizarCardVotacao() {
-    const card = document.getElementById("card-votacao");
+        const card = document.getElementById("card-votacao");
     const timerContainer = document.getElementById("votacao-timer-container");
     const corpo = document.getElementById("votacao-corpo");
+    const btnMenu = document.getElementById("btn-votacao-menu");
+    const badgeMenu = document.getElementById("votacao-badge-menu");
     if (!card || !corpo) return;
     const etapa = await obterDadosEtapa();
     const fase = calcularFaseEtapa(etapa);
     const dados = await obterDadosVotacao();
-    if (!dados.inicio || !etapa.inicioEm) { card.classList.add("hidden"); return; }
-    if (fase !== ETAPA_FASES.etapa_votacao && fase !== ETAPA_FASES.etapa_definida) { card.classList.add("hidden"); return; }
-    card.classList.remove("hidden");
+    const votacaoRelevante = !!etapa.inicioEm && (fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida);
+    if (btnMenu) btnMenu.style.display = votacaoRelevante ? "" : "none";
+    if (!dados.inicio || !etapa.inicioEm || !votacaoRelevante) {
+        if (badgeMenu) badgeMenu.classList.add("hidden");
+        return;
+    }
     const fechamento = calcularFechamentoVotacao(dados.inicio);
     const agora = Date.now();
     const encerrada = agora > fechamento || !!etapa.votacaoFechadaEm;
@@ -6849,6 +6918,13 @@ async function renderizarCardVotacao() {
         : await obterConfiguracao().then(cfg => ({ totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes: calcularMinVerdes(cfg.percentualMapa), percentualMapa: cfg.percentualMapa, elegivel: false }));
     const chave = (nome && turma) ? chaveVinculo(nome, turma) : null;
     const meuVoto = chave && dados.votos && dados.votos[chave] ? String(dados.votos[chave].opcao) : null;
+    if (badgeMenu) {
+        if (!encerrada && eleg.elegivel && !meuVoto) {
+            badgeMenu.classList.remove("hidden");
+        } else {
+            badgeMenu.classList.add("hidden");
+        }
+    }
     if (encerrada) {
         const ganhador = etapa.duracaoEscolhida || (votos14 > votos7 ? 14 : 7);
         const fim = etapa.fimPrevistoEm ? formatarDataHoraCurta(etapa.fimPrevistoEm) : null;
@@ -6909,6 +6985,21 @@ async function resetarVotacao() {
         await atualizarTelaInicialComEtapa();
     } catch(e) { notificar("Não foi possível resetar.", "erro"); console.warn(e); }
 }
+// ─── [17.04.bis] Modal de votação — abrir/fechar ─────────────────────
+async function abrirVotacao() {
+    const modal = document.getElementById("modal-votacao");
+    if (!modal) return;
+    await renderizarCardVotacao();
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+        document.querySelector("#modal-votacao .votacao-modal-close")?.focus();
+    }, 80);
+}
+function fecharModalVotacao(e) {
+    if (e && e.target && e.target.closest(".votacao-modal-card")) return;
+    document.getElementById("modal-votacao")?.classList.add("hidden");
+}
+
 async function renderizarPainelVotacao() {
     const container = document.getElementById("painel-votacao-conteudo");
     if (!container) return;
@@ -7380,6 +7471,8 @@ document.addEventListener("keydown", (e) => {
         if (md && !md.classList.contains("hidden")) fecharDetalheMedalha();
         const mo = document.getElementById("modal-album-onboarding");
         if (mo && !mo.classList.contains("hidden")) fecharOnboardingAlbum();
+        const mv = document.getElementById("modal-votacao");
+        if (mv && !mv.classList.contains("hidden")) fecharModalVotacao();
     }
 });
 document.addEventListener("keydown", (e) => {
