@@ -2058,10 +2058,7 @@
         <div class="mais-opcoes">
             <div class="mais-opcoes-titulo">⚡ Mais opções</div>
             <div class="mais-opcoes-grid">
-                <button class="mais-opcoes-btn" onclick="iniciarTreinoAnonimo()" title="Treinar livremente">
-                    <span class="icone">🧠</span>
-                    <span>Treino</span>
-                </button>
+                
                 <button class="mais-opcoes-btn" onclick="abrirBuscarAluno()" title="Buscar aluno">
                     <span class="icone">🔍</span>
                     <span>Buscar</span>
@@ -2943,6 +2940,10 @@ let msgPainelUnsub = null;
 const FILTROS_DEFAULT = { status: "todas", raridade: "todas", secao: "todas", ordem: "padrao" };
 let albumFiltros = { ...FILTROS_DEFAULT };
 
+// ═══════════════════════════════════════════════════════════════════════
+// [07] JS-UTIL · Áudio, notificações, utilidades
+// ═══════════════════════════════════════════════════════════════════════
+
 // ─── [07.01] Áudio ─────────────────────────────────────────────────────
 let audioContext = null;
 function inicializarAudio() {
@@ -3003,6 +3004,7 @@ function toggleSom() {
     if (somAtivo) { desbloquearAudio(); setTimeout(() => somAcerto(), 100); }
 }
 
+// ─── [07.02] Notificações e toasts ─────────────────────────────────────
 function notificar(mensagem, tipo = "info", duracao = 3500) {
     let c = document.getElementById("toast-container");
     if (!c) { c = document.createElement("div"); c.id = "toast-container"; c.className = "toast-container"; document.body.appendChild(c); }
@@ -3038,6 +3040,7 @@ function dispararConfetes() {
     confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 }, colors: ['#198754','#ffc107','#0066cc','#fd7e14'] });
 }
 
+// ─── [07.03] Utilidades de texto e validação ───────────────────────────
 function sortearItem(a) { return a[Math.floor(Math.random()*a.length)]; }
 function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
 function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
@@ -3060,6 +3063,7 @@ function validarNomeCompleto(nomeBruto) {
     return { ok: true, normalizado };
 }
 
+// ─── [07.04] Formatação de datas e números ─────────────────────────────
 function formatarDataHora(ts) {
     if (!ts) return "--";
     return new Date(ts).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" });
@@ -3107,6 +3111,7 @@ function chaveDataDia(ts) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
+// ─── [07.05] Hash e autenticação do professor ──────────────────────────
 async function gerarHashSenha(v) {
     if (!window.crypto?.subtle) return gerarHashSenhaFallback(v);
     const b = new TextEncoder().encode(v);
@@ -3128,6 +3133,19 @@ function exigirProfessorAutenticado() {
     document.getElementById("senha-professor").focus();
     return false;
 }
+
+// ─── [07.06] Ciclo de vida da etapa ────────────────────────────────────
+// Estrutura no Firebase (CAMINHO_ETAPA):
+// {
+//   inicioEm: number | null          → timestamp de início da etapa
+//   modoTeste: boolean               → se true, permite encerrar a qualquer momento
+//   status: "agendada" | "ativa" | "congelada" | "encerrada"
+//   congeladoEm: number | null
+//   encerradoEm: number | null
+//   votacaoFechadaEm: number | null  → timestamp de quando a votação fechou
+//   duracaoEscolhida: 7 | 14 | null
+//   fimPrevistoEm: number | null     → data prevista de fim (calculada após votação)
+// }
 
 const ETAPA_FASES = {
     sem_agendamento: "sem_agendamento",
@@ -3163,10 +3181,26 @@ function calcularFaseEtapa(d) {
     if (d.status === "congelada") return ETAPA_FASES.congelada;
     const agora = Date.now();
     if (agora < d.inicioEm) return ETAPA_FASES.pre_evento;
+    // Etapa iniciada
     if (!d.votacaoFechadaEm) return ETAPA_FASES.etapa_votacao;
+    // Votação fechada → prazo definido
     if (d.fimPrevistoEm && agora > d.fimPrevistoEm) return ETAPA_FASES.encerrada;
     return ETAPA_FASES.etapa_definida;
 }
+// ─── POLÍTICA DE PRAZO: CALENDÁRIO ─────────────────────────────────────
+// A duração "7 dias" ou "14 dias" é interpretada como PRAZO DE CALENDÁRIO.
+//
+// Contagem: o prazo é contado a partir do início da etapa e termina às
+// 23h59:59 da data final exibida pelo sistema. Não importa a hora exata
+// em que a etapa começou — o que vale é a data final, sempre às 23h59.
+//
+// Ex.: início segunda 08h + 7 dias → encerra segunda seguinte às 23h59.
+//      início segunda 22h + 7 dias → encerra segunda seguinte às 23h59
+//      (o horário do início não desloca a data final).
+//
+// Isso é intencional: para alunos e professores, "até o fim do dia X"
+// é mais intuitivo do que "N horas exatas a partir do instante Y".
+// A UI sempre exibe a DATA FINAL, nunca só "7 dias".
 function calcularFimPrevisto(inicioEm, duracao) {
     if (!inicioEm) return null;
     const d = new Date(inicioEm + duracao * 24 * 60 * 60 * 1000);
@@ -3177,11 +3211,21 @@ function etapaPermiteClassificatoria(fase) {
     return fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida;
 }
 function etapaPermiteTreinoLivre(fase) {
-    return fase === ETAPA_FASES.pre_evento || fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada || fase === ETAPA_FASES.sem_agendamento;
+    // Treino livre está disponível nas fases onde a etapa classificatória
+    // não está rolando: pré-evento, congelada e encerrada.
+    return fase === ETAPA_FASES.pre_evento
+        || fase === ETAPA_FASES.congelada
+        || fase === ETAPA_FASES.encerrada
+        || fase === ETAPA_FASES.sem_agendamento;
 }
-function etapaEstaEncerrada(fase) { return fase === ETAPA_FASES.encerrada; }
-function estaNoTop4Congelado(fase) { return fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada; }
+function etapaEstaEncerrada(fase) {
+    return fase === ETAPA_FASES.encerrada;
+}
+function estaNoTop4Congelado(fase) {
+    return fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada;
+}
 
+// ─── [07.07] Countdown ─────────────────────────────────────────────────
 function formatarContagemDeTempo(ms) {
     if (ms <= 0) return { dias: "00", horas: "00", min: "00", seg: "00" };
     const s = Math.floor(ms / 1000);
@@ -3200,9 +3244,14 @@ function atualizarCountdownVisual(inicioEm) {
     if (!elD || !elH || !elM || !elS) return;
     const restante = Math.max(0, inicioEm - Date.now());
     const t = formatarContagemDeTempo(restante);
-    elD.textContent = t.dias; elH.textContent = t.horas; elM.textContent = t.min; elS.textContent = t.seg;
+    elD.textContent = t.dias;
+    elH.textContent = t.horas;
+    elM.textContent = t.min;
+    elS.textContent = t.seg;
 }
-function pararCountdown() { if (countdownTimerInterval) { clearInterval(countdownTimerInterval); countdownTimerInterval = null; } }
+function pararCountdown() {
+    if (countdownTimerInterval) { clearInterval(countdownTimerInterval); countdownTimerInterval = null; }
+}
 function iniciarCountdown(inicioEm) {
     pararCountdown();
     atualizarCountdownVisual(inicioEm);
@@ -3210,14 +3259,16 @@ function iniciarCountdown(inicioEm) {
         atualizarCountdownVisual(inicioEm);
         if (Date.now() >= inicioEm) {
             pararCountdown();
+            // Chegou a hora! Verifica se a etapa precisa iniciar
             verificarEIniciarEtapaSeNecessario().then(async () => {
                 await atualizarTelaInicialComEtapa();
-                await renderizarCardVotacao();
+                await renderizarCardVotacao();  // ← NOVO: mostra o card de votação imediatamente
             });
         }
     }, 1000);
 }
 
+// ─── [07.08] Tela inicial dinâmica ─────────────────────────────────────
 async function atualizarTelaInicialComEtapa() {
     const fase = await resolverFaseAtual();
     const heroPre = document.getElementById("hero-pre-evento");
@@ -3232,37 +3283,36 @@ async function atualizarTelaInicialComEtapa() {
 
     if (fase.tipo === ETAPA_FASES.sem_agendamento) {
         heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>`;
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo encerrada">ℹ️ <strong>A Copa ainda não foi agendada.</strong> Aguarde o professor definir a data de início. Enquanto isso, use o <strong>Modo Treino Livre</strong>.</p>`;
         return;
     }
 
     if (fase.tipo === ETAPA_FASES.pre_evento) {
         heroPre.classList.remove("hidden"); heroNorm.classList.add("hidden");
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>`;
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏳ <strong>A etapa ainda não começou.</strong> Início em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>. A duração será definida pelos alunos em votação.</p>`;
         iniciarCountdown(fase.dados.inicioEm);
         return;
     }
 
+    // Etapa ativa (votação ou definida)
     heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
 
     if (fase.tipo === ETAPA_FASES.etapa_votacao) {
-        acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;margin-bottom:10px;">🏆 Participar da Etapa Classificatória</button>
-            <div><button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="width:100%;">🎯 Modo Treino Livre</button></div>`;
+        acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;">🏆 Participar da Etapa Classificatória</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">🗳️ <strong>Duração provisória: 7 dias.</strong> A votação está aberta — os alunos elegíveis decidem se a etapa termina em 7 dias ou se estende para 14.</p>`;
     } else if (fase.tipo === ETAPA_FASES.etapa_definida) {
-    acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;margin-bottom:10px;">🏆 Participar da Etapa Classificatória</button>
-        <div><button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="width:100%;">🎯 Modo Treino Livre</button></div>`;
-    const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
-    const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
-    prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> O prazo termina às 23h59 da data final: <strong>${fim}</strong>. A partir daí, apenas treino livre.</p>`;
-} else if (fase.tipo === ETAPA_FASES.congelada) {
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>`;
+        acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;">🏆 Participar da Etapa Classificatória</button>`;
+        const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
+        const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
+        prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> O prazo termina às 23h59 da data final: <strong>${fim}</strong>. A partir daí, apenas treino livre.</p>`;
+    } else if (fase.tipo === ETAPA_FASES.congelada) {
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏸️ <strong>Etapa pausada temporariamente.</strong> O professor está fazendo ajustes. Volte em breve!</p>`;
     } else if (fase.tipo === ETAPA_FASES.encerrada) {
-        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="botao-treino" style="font-size:17px;padding:15px;width:100%;margin-bottom:10px;">🎯 Modo Treino Livre</button>
-            <div><button onclick="mostrarTela('tela-ranking')" class="botao-secundario" style="width:100%;">🏆 Ver classificação final</button></div>`;
+        acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>
+            <div style="margin-top:10px;"><button onclick="mostrarTela('tela-ranking')" class="botao-secundario" style="width:100%;">🏆 Ver classificação final</button></div>`;
         prazoCtn.innerHTML = `<p class="nota-etapa-prazo encerrada">🏁 <strong>Etapa encerrada!</strong> A classificação final está disponível. Obrigado por participar!</p>`;
     }
 }
@@ -3271,12 +3321,14 @@ async function resolverFaseAtual() {
     return { tipo: calcularFaseEtapa(dados), dados };
 }
 
+// ─── [07.09] Auto-início da etapa ──────────────────────────────────────
 async function verificarEIniciarEtapaSeNecessario() {
     const d = await obterDadosEtapa(true);
     if (!d.inicioEm) return;
     if (d.status === "encerrada" || d.status === "congelada") return;
     const agora = Date.now();
     if (agora < d.inicioEm) return;
+    // Etapa já passou do horário e ainda não iniciou → inicia
     if (!d.votacaoFechadaEm && !d.iniciadaEm) {
         try {
             await salvarDadosEtapa({ iniciadaEm: agora, status: "ativa" });
@@ -3287,17 +3339,18 @@ async function verificarEIniciarEtapaSeNecessario() {
 async function abrirVotacaoAutomatica(inicioEm) {
     try {
         const snap = await database.ref(CAMINHO_VOTACAO).once("value");
-        if (snap.exists() && snap.val()?.inicio) return;
+        if (snap.exists() && snap.val()?.inicio) return; // votação já aberta
         await database.ref(CAMINHO_VOTACAO).set({ inicio: inicioEm || Date.now() });
     } catch(e) { console.warn("Falha ao abrir votação automática:", e); }
 }
 async function verificarEFecharVotacaoSeNecessario() {
+    // Já fechada? Nada a fazer.
     let etapaAtual;
     try {
         etapaAtual = await obterDadosEtapa(true);
-        if (etapaAtual.votacaoFechadaEm) return;
+        if (etapaAtual.votacaoFechadaEm) return;        // ← CORREÇÃO: era "!d.votacaoFechadaEm"
         if (etapaAtual.status === "encerrada") return;
-        if (etapaAtual.status === "congelada") return;
+        if (etapaAtual.status === "congelada") return;  // respeita pausa do professor
     } catch(e) { return; }
 
     const vot = await obterDadosVotacao();
@@ -3306,6 +3359,7 @@ async function verificarEFecharVotacaoSeNecessario() {
     const fechamento = calcularFechamentoVotacao(vot.inicio);
     if (Date.now() < fechamento) return;
 
+    // Conta votos e decide a duração
     const votos = vot.votos ? Object.values(vot.votos) : [];
     const v7  = votos.filter(v => String(v.opcao) === "7").length;
     const v14 = votos.filter(v => String(v.opcao) === "14").length;
@@ -3322,16 +3376,26 @@ async function verificarEFecharVotacaoSeNecessario() {
 }
 
 async function verificarEEncerrarEtapaSeNecessario() {
+    // Só encerra se houver prazo definido e ainda não tiver sido encerrada.
     let d;
-    try { d = await obterDadosEtapa(true); } catch(e) { return; }
-    if (!d.fimPrevistoEm) return;
-    if (d.status === "encerrada") return;
-    if (d.status === "congelada") return;
-    if (Date.now() < d.fimPrevistoEm) return;
     try {
-        await salvarDadosEtapa({ status: "encerrada", encerradoEm: Date.now() });
+        d = await obterDadosEtapa(true);
+    } catch(e) { return; }
+
+    if (!d.fimPrevistoEm) return;                    // sem prazo → nada a fazer
+    if (d.status === "encerrada") return;            // já encerrada
+    if (d.status === "congelada") return;            // respeita pausa do professor
+    if (Date.now() < d.fimPrevistoEm) return;        // ainda dentro do prazo
+
+    try {
+        await salvarDadosEtapa({
+            status: "encerrada",
+            encerradoEm: Date.now()
+        });
         notificar("🏁 Etapa encerrada automaticamente.", "info", 6000);
-    } catch(e) { console.warn("Falha ao encerrar etapa automaticamente:", e); }
+    } catch(e) {
+        console.warn("Falha ao encerrar etapa automaticamente:", e);
+    }
 }
 
 function obterIdDispositivo() {
