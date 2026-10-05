@@ -5769,3 +5769,1718 @@ async function compartilharResultado() {
     else { try { await navigator.clipboard.writeText(t + '\n' + window.location.href); notificar("Copiado!", "sucesso"); } catch(e) { notificar("Não foi possível compartilhar.", "aviso"); } }
 }
 // ▲▲▲ FIM [13.10]
+
+// ═══════════════════════════════════════════════════════════════════════
+// [14] JS-META · Meta pessoal
+// ═══════════════════════════════════════════════════════════════════════
+
+// ▼▼▼ [14.01] Constantes e chaves da meta ─────────────────────────────
+const MARCOS_PONTOS = [
+    { pts: 3000,  nome: "Aprendiz",   icone: "🎓" },
+    { pts: 6000,  nome: "Praticante", icone: "📘" },
+    { pts: 9000,  nome: "Estudioso",  icone: "📚" },
+    { pts: 12000, nome: "Avançado",   icone: "🎯" },
+    { pts: 14000, nome: "Fera",       icone: "🔥" },
+    { pts: 15500, nome: "Elite",      icone: "⭐" },
+    { pts: 16500, nome: "Imbatível",  icone: "💪" },
+    { pts: 17000, nome: "Mestre",     icone: "👑" }
+];
+function chaveMetaEstado(nome, turma, mod) {
+    return `${STORAGE_META_PREFIXO}${chaveVinculo(nome, turma)}_${mod}`;
+}
+function obterEstadoMeta(nome, turma, mod) {
+    try {
+        const raw = localStorage.getItem(chaveMetaEstado(nome, turma, mod));
+        return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+}
+function salvarEstadoMeta(nome, turma, mod, estado) {
+    try { localStorage.setItem(chaveMetaEstado(nome, turma, mod), JSON.stringify(estado)); } catch(e) {}
+}
+// ▲▲▲ FIM [14.01]
+
+// ▼▼▼ [14.02] Cálculo e classes ────────────────────────────────────────
+function calcularPctProgressoMeta(atual, alvo) {
+    if (!alvo || alvo <= 0) return 0;
+    return Math.max(0, Math.min(100, (atual / alvo) * 100));
+}
+function classeProgressoMeta(pct) {
+    if (pct >= 100) return "meta-p-100";
+    if (pct >= 67)  return "meta-p-66";
+    if (pct >= 34)  return "meta-p-33";
+    return "meta-p-0";
+}
+function motivacaoPorPct(pct) {
+    if (pct >= 100) return "🎉 Meta conquistada! Estabeleça uma nova!";
+    if (pct >= 67)  return "💪 Você está muito perto! Jogue mais uma vez!";
+    if (pct >= 34)  return "🔥 Você está no caminho certo!";
+    return "💪 Continue firme! Cada partida é uma chance!";
+}
+function formatarPtsMeta(n) {
+    return Math.round(n).toLocaleString("pt-BR");
+}
+function obterModalidadeMetaAtual() {
+    const sel = document.getElementById("modalidade-tabuada");
+    return sel && sel.value ? sel.value : "0-10";
+}
+// ▲▲▲ FIM [14.02]
+
+// ▼▼▼ [14.03] Cálculo da meta ──────────────────────────────────────────
+async function calcularMetaPessoal(nome, turma, mod) {
+    const partidas = await obterHistoricoAluno(nome, turma, mod);
+    const ranking = await obterRankingPorPontos(mod, turma);
+    const totalPartidas = partidas.length;
+    const melhorPontuacao = totalPartidas ? Math.max(...partidas.map(p => Number(p.pontos) || 0)) : 0;
+    const idx = ranking.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+    const posicao = idx === -1 ? null : idx + 1;
+    const estado = obterEstadoMeta(nome, turma, mod);
+    const posicaoAnterior = estado.ultimaPosicao || null;
+    if (totalPartidas === 0) {
+        return { tipo: "primeira_partida", icone: "🎯", mensagem: "🎯 Jogue sua primeira partida para começar!", valorAtual: 0, valorMeta: 0, mostrarComparacao: false, progressoPct: 0, motivacao: "💪 Cada jornada tem um começo!", conquistada: false };
+    }
+    if (posicao === 1) {
+        return { tipo: "lider", icone: "👑", mensagem: "👑 Você é o líder da turma! Defenda sua posição!", valorAtual: melhorPontuacao, valorMeta: melhorPontuacao, mostrarComparacao: false, progressoPct: 100, motivacao: "🎯 Mantenha o ritmo — cada partida conta!", conquistada: false };
+    }
+    if (melhorPontuacao >= 17000) {
+        return { tipo: "mestre", icone: "🌟", mensagem: "🌟 Você é MESTRE! 17.000+ pontos alcançados!", valorAtual: melhorPontuacao, valorMeta: 17000, mostrarComparacao: true, progressoPct: 100, motivacao: "🎉 Meta máxima conquistada! Agora é manter o título!", conquistada: true };
+    }
+    if (posicaoAnterior && posicao && posicao > posicaoAnterior + 1) {
+        const caiu = posicao - posicaoAnterior;
+        const proximo = ranking[posicao - 2];
+        const alvoValor = proximo ? proximo.pontos + 1 : melhorPontuacao + 100;
+        const falta = Math.max(0, alvoValor - melhorPontuacao);
+        return { tipo: "recuperar", icone: "📈", mensagem: `📈 Você caiu ${caiu} ${caiu === 1 ? "posição" : "posições"}. Recupere!`, valorAtual: melhorPontuacao, valorMeta: alvoValor, mostrarComparacao: true, progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor), motivacao: `🎯 Faltam ${formatarPtsMeta(falta)} pts para recuperar`, conquistada: false };
+    }
+    if (posicao && posicao <= 4) {
+        const proximo = ranking[posicao - 2];
+        const alvoValor = proximo ? proximo.pontos + 1 : melhorPontuacao + 100;
+        return { tipo: "classificado", icone: "🎟️", mensagem: `🎟️ Você está CLASSIFICADO! ${posicao}º lugar — não escorregue!`, valorAtual: melhorPontuacao, valorMeta: alvoValor, mostrarComparacao: true, progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor), motivacao: posicao === 1 ? "👑 Você é o líder!" : `🎯 Suba mais ${posicao - 1} ${posicao - 1 === 1 ? "posição" : "posições"} para o 1º lugar`, conquistada: false };
+    }
+    if (posicao && posicao <= 6) {
+        const q4 = ranking[3];
+        const alvoValor = q4 ? q4.pontos + 1 : melhorPontuacao + 50;
+        const falta = Math.max(0, alvoValor - melhorPontuacao);
+        return { tipo: "quase_top4", icone: "💪", mensagem: `💪 Faltam ${formatarPtsMeta(falta)} pts para voltar ao Top 4!`, valorAtual: melhorPontuacao, valorMeta: alvoValor, mostrarComparacao: true, progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor), motivacao: "🔥 Você está na zona de reserva — quase lá!", conquistada: false };
+    }
+    if (posicao && posicao > 6) {
+        const q6 = ranking[5];
+        const alvoValor = q6 ? q6.pontos + 1 : melhorPontuacao + 100;
+        const falta = Math.max(0, alvoValor - melhorPontuacao);
+        return { tipo: "top6", icone: "🎯", mensagem: `🎯 Faltam ${formatarPtsMeta(falta)} pts para entrar no Top 6!`, valorAtual: melhorPontuacao, valorMeta: alvoValor, mostrarComparacao: true, progressoPct: calcularPctProgressoMeta(melhorPontuacao, alvoValor), motivacao: "💪 Cada partida te aproxima da classificação!", conquistada: false };
+    }
+    for (const marco of MARCOS_PONTOS) {
+        if (melhorPontuacao < marco.pts) {
+            const pct = calcularPctProgressoMeta(melhorPontuacao, marco.pts);
+            return { tipo: "marco_pontos", icone: marco.icone, mensagem: `${marco.icone} Alcance ${formatarPtsMeta(marco.pts)} pontos (${marco.nome})!`, valorAtual: melhorPontuacao, valorMeta: marco.pts, mostrarComparacao: true, progressoPct: pct, motivacao: motivacaoPorPct(pct), conquistada: false };
+        }
+    }
+    const meta = Math.round(melhorPontuacao * 1.03) + 50;
+    return { tipo: "recorde_pessoal", icone: "🏆", mensagem: `🏆 Bata seu recorde de ${formatarPtsMeta(melhorPontuacao)} pontos!`, valorAtual: melhorPontuacao, valorMeta: meta, mostrarComparacao: true, progressoPct: 97, motivacao: "💪 Você está muito perto! Jogue mais uma vez!", conquistada: false };
+}
+// ▲▲▲ FIM [14.03]
+
+// ▼▼▼ [14.04] Renderização e celebração ───────────────────────────────
+async function verificarCelebracaoMeta(nome, turma, mod, meta) {
+    const estado = obterEstadoMeta(nome, turma, mod);
+    const chaveMetaAtual = `${meta.tipo}|${meta.valorMeta}`;
+    const jaCelebrou = estado.metaCelebrada === chaveMetaAtual;
+    if (meta.conquistada && !jaCelebrou) {
+        setTimeout(() => { if (somAtivo) somNovoRecorde(); dispararConfetes(); }, 500);
+        estado.metaCelebrada = chaveMetaAtual;
+    }
+    try {
+        const ranking = await obterRankingPorPontos(mod, turma);
+        const idx = ranking.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+        const posicaoAtual = idx === -1 ? null : idx + 1;
+        if (posicaoAtual !== null) estado.ultimaPosicao = posicaoAtual;
+    } catch(e) {}
+    salvarEstadoMeta(nome, turma, mod, estado);
+}
+async function renderizarMetaPessoal() {
+    const container = document.getElementById("meta-pessoal-container");
+    if (!container) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    const mod = obterModalidadeMetaAtual();
+    if (!nome || !turma) {
+        container.innerHTML = `<div class="meta-card meta-vazio"><div class="meta-kicker">🎯 Sua próxima meta</div><p class="meta-mensagem">🎯 Jogue sua primeira partida para começar!</p><div class="meta-motivacao">💪 Cada jornada tem um começo!</div></div>`;
+        return;
+    }
+    let meta;
+    try { meta = await calcularMetaPessoal(nome, turma, mod); }
+    catch(e) { console.warn("Falha ao calcular meta pessoal:", e); container.innerHTML = ""; return; }
+    const classes = ["meta-card"];
+    if (meta.conquistada) classes.push("meta-conquistada");
+    if (!meta.mostrarComparacao) classes.push("meta-vazio");
+    let html = `<div class="${classes.join(" ")}"><div class="meta-kicker">🎯 Sua próxima meta</div>`;
+    if (meta.conquistada) html += `<div class="meta-selo">🎉 Meta conquistada!</div>`;
+    html += `<p class="meta-mensagem">${escaparHtml(meta.mensagem)}</p>`;
+    if (meta.mostrarComparacao) {
+        html += `<div class="meta-comparacao"><div class="meta-comp-item"><span class="meta-comp-rotulo">📊 Seu melhor</span><span class="meta-comp-valor">${formatarPtsMeta(meta.valorAtual)}<span class="unidade">pts</span></span></div><div class="meta-comp-item"><span class="meta-comp-rotulo">🎯 Sua meta</span><span class="meta-comp-valor">${formatarPtsMeta(meta.valorMeta)}<span class="unidade">pts</span></span></div></div>`;
+    }
+    const pct = Math.max(0, Math.min(100, meta.progressoPct || 0));
+    html += `<div class="meta-progresso-wrap"><div class="meta-progresso-cabecalho"><span>Progresso</span><span class="pct">${Math.round(pct)}%</span></div><div class="meta-progresso-trilha"><div class="meta-progresso-fill ${classeProgressoMeta(pct)}" style="width: 0%"></div></div></div>`;
+    html += `<div class="meta-motivacao">${escaparHtml(meta.motivacao)}</div></div>`;
+    const jaRenderizado = container.querySelector(".meta-card");
+    if (jaRenderizado) {
+        container.classList.add("meta-trocando");
+        setTimeout(() => { container.innerHTML = html; container.classList.remove("meta-trocando"); animarBarraMetaPessoal(container, pct); }, 200);
+    } else {
+        container.innerHTML = html;
+        animarBarraMetaPessoal(container, pct);
+    }
+    await verificarCelebracaoMeta(nome, turma, mod, meta);
+}
+function animarBarraMetaPessoal(container, pct) {
+    const fill = container.querySelector(".meta-progresso-fill");
+    if (!fill) return;
+    fill.style.width = "0%";
+    requestAnimationFrame(() => { requestAnimationFrame(() => { fill.style.width = pct + "%"; }); });
+}
+// ▲▲▲ FIM [14.04]
+
+// ═══════════════════════════════════════════════════════════════════════
+// [15] JS-DESP · Meu Desempenho
+// ═══════════════════════════════════════════════════════════════════════
+
+// ▼▼▼ [15.01] Formatação e skeletons ──────────────────────────────────
+function formatarDataHoraHistorico(dataISO) {
+    if (!dataISO) return { data: "--", hora: "" };
+    const d = new Date(dataISO);
+    if (isNaN(d.getTime())) return { data: "--", hora: "" };
+    const agora = new Date();
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    const alvo = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDias = Math.round((hoje - alvo) / (1000 * 60 * 60 * 24));
+    const hora = `${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`;
+    if (diffDias === 0) return { data: "hoje", hora };
+    if (diffDias === 1) return { data: "ontem", hora };
+    if (d.getFullYear() === agora.getFullYear()) {
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        return { data: `${dd}/${mm}`, hora };
+    }
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const aa = String(d.getFullYear()).slice(-2);
+    return { data: `${dd}/${mm}/${aa}`, hora };
+}
+function abreviarModalidade(mod) {
+    if (mod === "2-5")  return "2-5";
+    if (mod === "6-9")  return "6-9";
+    if (mod === "0-10") return "1-10";
+    return mod || "—";
+}
+function skeletonStatsCards(qtd = 7) {
+    return Array.from({ length: qtd }, () => `<div class="desempenho-skeleton-card"></div>`).join("");
+}
+function skeletonTexto(linhas = 3) {
+    const classes = ["media", "longa", "curta", "media", "longa"];
+    return `<div class="desempenho-skeleton">${Array.from({ length: linhas }, (_, i) => `<div class="desempenho-skeleton-linha ${classes[i % classes.length]}"></div>`).join("")}</div>`;
+}
+// ▲▲▲ FIM [15.01]
+
+// ▼▼▼ [15.02] Estatísticas e gráfico ──────────────────────────────────
+function renderizarEstatisticasDesempenho() {
+    const container = document.getElementById("desempenho-stats");
+    if (!container) return;
+    const modal = desempenhoModalidadeAtual;
+    const partidas = (modal === "todas") ? desempenhoPartidasCache : desempenhoPartidasCache.filter(p => p.modalidade === modal);
+    desempenhoPartidasFiltradas = partidas;
+    if (!partidas.length) {
+        const nomeModal = modal === "todas" ? "" : `em <strong>${MODALIDADES[modal]?.nome || modal}</strong>`;
+        container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não jogou nenhuma partida ${nomeModal}.<br>Escolha a modalidade e comece a jogar para ver suas estatísticas aqui.</div>`;
+        return;
+    }
+    const n = partidas.length;
+    const pontos = partidas.map(p => Number(p.pontos) || 0);
+    const melhor = Math.max(...pontos);
+    const media = pontos.reduce((a, b) => a + b, 0) / n;
+    const totalAcertos = partidas.reduce((s, p) => s + (Number(p.acertos) || 0), 0);
+    const totalErros = partidas.reduce((s, p) => s + (Number(p.erros) || 0), 0);
+    const totalPerguntas = totalAcertos + totalErros;
+    const precisao = totalPerguntas ? (totalAcertos / totalPerguntas) * 100 : 0;
+    const tempos = partidas.map(p => Number(p.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
+    const velocidade = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : 0;
+    const cards = [
+        { icone: "🏆", valor: melhor.toLocaleString("pt-BR"), rotulo: "Melhor pontuação", classe: "destaque" },
+        { icone: "📊", valor: Math.round(media).toLocaleString("pt-BR"), rotulo: "Média geral" },
+        { icone: "🎯", valor: `${precisao.toFixed(0)}%`, rotulo: "Precisão média" },
+        { icone: "⚡", valor: velocidade ? `${velocidade.toFixed(2)}s` : "—", rotulo: "Tempo médio dos acertos" },
+        { icone: "🎮", valor: n.toLocaleString("pt-BR"), rotulo: n === 1 ? "Partida jogada" : "Partidas jogadas" },
+        { icone: "✅", valor: totalAcertos.toLocaleString("pt-BR"), rotulo: "Total de acertos" },
+        { icone: "❌", valor: totalErros.toLocaleString("pt-BR"), rotulo: "Total de erros" }
+    ];
+    container.innerHTML = cards.map(c => `<div class="desempenho-card ${c.classe || ""}"><span class="desempenho-icone">${c.icone}</span><span class="desempenho-valor">${c.valor}</span><span class="desempenho-rotulo">${c.rotulo}</span></div>`).join("");
+}
+function formatarNumeroEixo(v, yMax) {
+    if (v === 0) return "0";
+    if (yMax <= 5000) return Math.round(v).toLocaleString("pt-BR");
+    return (v / 1000).toFixed((v % 1000 === 0) ? 0 : 1).replace(".", ",") + "k";
+}
+function renderizarGraficoDesempenho() {
+    const container = document.getElementById("desempenho-chart");
+    const tooltip = document.getElementById("desempenho-tooltip");
+    if (!container) return;
+    if (tooltip) tooltip.classList.remove("visivel");
+    const ordenadas = [...desempenhoPartidasFiltradas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+    const MAX_PONTOS = 25;
+    const partidasVisiveis = ordenadas.length > MAX_PONTOS ? ordenadas.slice(-MAX_PONTOS) : ordenadas;
+    desempenhoPartidasGrafico = partidasVisiveis;
+    const n = partidasVisiveis.length;
+    if (n === 0) { container.innerHTML = `<div class="desempenho-empty-msg">Nenhuma partida nesta modalidade ainda.</div>`; return; }
+    if (n === 1) { container.innerHTML = `<div class="desempenho-empty-msg">🎯 Você tem apenas <strong>1 partida</strong> registrada. Jogue mais para desenhar sua linha de evolução!</div>`; return; }
+    const VBW = 360, VBH = 280;
+    const padL = 42, padR = 14, padT = 26, padB = 38;
+    const cW = VBW - padL - padR;
+    const cH = VBH - padT - padB;
+    const valores = partidasVisiveis.map(p => Number(p.pontos) || 0);
+    const maxScore = Math.max(...valores);
+    const yMax = Math.max(1000, Math.ceil((maxScore * 1.12) / 500) * 500);
+    const xFor = i => padL + (i / (n - 1)) * cW;
+    const yFor = v => padT + cH - (v / yMax) * cH;
+    const coords = valores.map((v, i) => ({ x: xFor(i), y: yFor(v), valor: v, idx: i }));
+    const media = valores.reduce((a, b) => a + b, 0) / n;
+    const yMedia = Math.max(padT + 2, Math.min(padT + cH - 2, yFor(media)));
+    const idxRecorde = valores.indexOf(maxScore);
+    let svg = `<svg viewBox="0 0 ${VBW} ${VBH}" class="desempenho-svg" preserveAspectRatio="xMidYMid meet" aria-label="Gráfico de evolução da pontuação" role="img">`;
+    svg += `<defs><linearGradient id="gradArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.25"/><stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/></linearGradient><linearGradient id="gradLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#0ea5e9"/></linearGradient></defs>`;
+    const ticks = 4;
+    for (let i = 0; i <= ticks; i++) {
+        const y = padT + (cH * i / ticks);
+        const val = yMax * (1 - i / ticks);
+        svg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + cW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(148,163,184,0.18)" stroke-width="1" />`;
+        svg += `<text x="${padL - 6}" y="${(y + 3.5).toFixed(1)}" text-anchor="end" class="desempenho-axis-label">${formatarNumeroEixo(val, yMax)}</text>`;
+    }
+    svg += `<line x1="${padL}" y1="${(padT + cH).toFixed(1)}" x2="${(padL + cW).toFixed(1)}" y2="${(padT + cH).toFixed(1)}" stroke="rgba(148,163,184,0.35)" stroke-width="1" />`;
+    svg += `<line x1="${padL}" y1="${yMedia.toFixed(1)}" x2="${(padL + cW).toFixed(1)}" y2="${yMedia.toFixed(1)}" stroke="#f59e0b" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.85" />`;
+    svg += `<text x="${(padL + cW - 3).toFixed(1)}" y="${(yMedia - 4).toFixed(1)}" text-anchor="end" class="desempenho-avg-label">média ${formatarNumeroEixo(media, yMax)}</text>`;
+    let pathD = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
+    for (let i = 1; i < coords.length; i++) pathD += ` L ${coords[i].x.toFixed(1)} ${coords[i].y.toFixed(1)}`;
+    const areaD = pathD + ` L ${coords[coords.length - 1].x.toFixed(1)} ${(padT + cH).toFixed(1)} L ${coords[0].x.toFixed(1)} ${(padT + cH).toFixed(1)} Z`;
+    svg += `<path d="${areaD}" class="desempenho-area" fill="url(#gradArea)" />`;
+    svg += `<path d="${pathD}" class="desempenho-linha" fill="none" stroke="url(#gradLine)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+    coords.forEach((c, i) => {
+        const isRecord = i === idxRecorde;
+        const delay = 0.25 + (i * (0.85 / n));
+        const cls = isRecord ? "desempenho-ponto recorde" : "desempenho-ponto";
+        const r = isRecord ? 5.5 : 3.5;
+        const delayAttr = isRecord ? `${delay}s, ${delay + 0.4}s` : `${delay}s`;
+        svg += `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${r}" class="${cls}" data-idx="${i}" style="animation-delay: ${delayAttr}" />`;
+    });
+    const rec = coords[idxRecorde];
+    if (rec) {
+        const delayCoroa = 0.45 + (idxRecorde * (0.85 / n));
+        svg += `<text x="${rec.x.toFixed(1)}" y="${Math.max(14, rec.y - 9).toFixed(1)}" text-anchor="middle" class="desempenho-recorde-icone" style="animation-delay: ${delayCoroa}s">🏆</text>`;
+    }
+    const step = Math.max(1, Math.ceil(n / 8));
+    const indices = [];
+    for (let i = 0; i < n; i += step) indices.push(i);
+    if (indices[indices.length - 1] !== n - 1) indices.push(n - 1);
+    indices.forEach(i => { svg += `<text x="${coords[i].x.toFixed(1)}" y="${(padT + cH + 14).toFixed(1)}" text-anchor="middle" class="desempenho-axis-label">${i + 1}</text>`; });
+    svg += `<text x="${(padL + cW / 2).toFixed(1)}" y="${VBH - 5}" text-anchor="middle" class="desempenho-axis-title">Número da partida</text>`;
+    svg += `</svg>`;
+    container.innerHTML = svg;
+    requestAnimationFrame(() => {
+        const linha = container.querySelector(".desempenho-linha");
+        if (!linha) return;
+        try {
+            const len = linha.getTotalLength();
+            linha.style.strokeDasharray = len;
+            linha.style.strokeDashoffset = len;
+            void linha.getBoundingClientRect();
+            linha.style.transition = "stroke-dashoffset 1.2s cubic-bezier(0.65, 0, 0.35, 1)";
+            linha.style.strokeDashoffset = "0";
+        } catch(e) {}
+    });
+    configurarTooltipsGrafico();
+}
+function configurarTooltipsGrafico() {
+    const wrap = document.querySelector(".desempenho-chart-wrap");
+    const chart = document.getElementById("desempenho-chart");
+    const tooltip = document.getElementById("desempenho-tooltip");
+    if (!wrap || !chart || !tooltip) return;
+    const svgEl = chart.querySelector("svg");
+    if (!svgEl) return;
+    const VBW = 360, VBH = 280;
+    const mostrar = (idx) => {
+        const partida = desempenhoPartidasGrafico[idx];
+        const circle = chart.querySelector(`.desempenho-ponto[data-idx="${idx}"]`);
+        if (!partida || !circle) return;
+        const svgRect = svgEl.getBoundingClientRect();
+        const wrapRect = wrap.getBoundingClientRect();
+        const cx = parseFloat(circle.getAttribute("cx"));
+        const cy = parseFloat(circle.getAttribute("cy"));
+        const px = svgRect.left + (cx / VBW) * svgRect.width;
+        const py = svgRect.top + (cy / VBH) * svgRect.height;
+        tooltip.innerHTML = `<div class="desempenho-tooltip-titulo">🎯 Partida ${idx + 1}</div><div class="desempenho-tooltip-linha"><span>Pontos</span><span class="val">${(Number(partida.pontos) || 0).toLocaleString("pt-BR")}</span></div><div class="desempenho-tooltip-linha"><span>Acertos</span><span class="val">${partida.acertos || 0}/20</span></div><div class="desempenho-tooltip-linha"><span>Tempo</span><span class="val">${(Number(partida.tempoMedio) || 0).toFixed(2)}s</span></div><div class="desempenho-tooltip-linha"><span>Data</span><span class="val">${formatarDataCurta(partida.data)}</span></div>`;
+        tooltip.style.left = (px - wrapRect.left) + "px";
+        tooltip.style.top = (py - wrapRect.top) + "px";
+        tooltip.classList.add("visivel");
+    };
+    const esconder = () => tooltip.classList.remove("visivel");
+    chart.querySelectorAll(".desempenho-ponto").forEach(circle => {
+        const idx = parseInt(circle.dataset.idx, 10);
+        circle.addEventListener("mouseenter", () => mostrar(idx));
+        circle.addEventListener("mouseleave", esconder);
+        circle.addEventListener("touchstart", (e) => { e.preventDefault(); mostrar(idx); }, { passive: false });
+        circle.addEventListener("touchend", () => { setTimeout(esconder, 1600); });
+    });
+}
+// ▲▲▲ FIM [15.02]
+
+// ▼▼▼ [15.03] Comparativo com a turma ─────────────────────────────────
+async function renderizarComparativoTurma() {
+    const container = document.getElementById("desempenho-turma");
+    if (!container) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { container.innerHTML = ""; return; }
+    const modal = desempenhoModalidadeAtual;
+    if (comparativoTurmaCache && comparativoTurmaCache.turma === turma && comparativoTurmaCache.modalidade === modal) {
+        renderizarComparativoComDados(comparativoTurmaCache.dados, nome, turma);
+        return;
+    }
+    container.innerHTML = skeletonTexto(3);
+    let dados;
+    try { dados = await calcularMetricasTurma(turma, modal); }
+    catch(e) { console.warn("Falha ao calcular comparativo:", e); container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível calcular o comparativo com a turma agora.</div>`; return; }
+    comparativoTurmaCache = { turma, modalidade: modal, dados };
+    renderizarComparativoComDados(dados, nome, turma);
+}
+async function calcularMetricasTurma(turma, modalFiltro) {
+    const todasPartidas = await obterPartidas();
+    const partidasTurma = todasPartidas.filter(p => p.turma === turma && (modalFiltro === "todas" || p.modalidade === modalFiltro));
+    const porAluno = new Map();
+    partidasTurma.forEach(p => {
+        const k = normalizarNome(p.nome);
+        if (!porAluno.has(k)) porAluno.set(k, { nome: p.nome, partidas: [] });
+        porAluno.get(k).partidas.push(p);
+    });
+    const metricas = { pontos: [], precisao: [], velocidade: [], partidas: [] };
+    porAluno.forEach(({ nome, partidas }) => {
+        const pontos = partidas.map(p => Number(p.pontos) || 0);
+        const melhorPonto = Math.max(...pontos, 0);
+        const acertos = partidas.map(p => Number(p.acertos) || 0);
+        const melhorAcertos = Math.max(...acertos, 0);
+        const precisao = (melhorAcertos / 20) * 100;
+        const tempos = partidas.map(p => Number(p.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
+        const vel = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : 999;
+        metricas.pontos.push({ nome, valor: melhorPonto });
+        metricas.precisao.push({ nome, valor: precisao });
+        metricas.velocidade.push({ nome, valor: vel });
+        metricas.partidas.push({ nome, valor: partidas.length });
+    });
+    return metricas;
+}
+function calcularPosicaoMetrica(lista, nomeAluno, ordem = "desc") {
+    const nomeNorm = normalizarNome(nomeAluno);
+    const alunoItem = lista.find(i => normalizarNome(i.nome) === nomeNorm);
+    if (!alunoItem) return null;
+    const valorAluno = alunoItem.valor;
+    const sorted = [...lista].sort((a, b) => ordem === "desc" ? b.valor - a.valor : a.valor - b.valor);
+    const idx = sorted.findIndex(i => normalizarNome(i.nome) === nomeNorm);
+    let pos = 1;
+    for (let i = 0; i < idx; i++) { if (ordem === "desc" ? sorted[i].valor > valorAluno : sorted[i].valor < valorAluno) pos++; }
+    return { pos, total: sorted.length, valor: valorAluno };
+}
+function calcularMediaMetrica(lista) {
+    if (!lista.length) return 0;
+    return lista.reduce((s, i) => s + i.valor, 0) / lista.length;
+}
+function renderizarComparativoComDados(dados, nomeAluno, turma) {
+    const container = document.getElementById("desempenho-turma");
+    if (!container) return;
+    const mPontos     = calcularPosicaoMetrica(dados.pontos,     nomeAluno, "desc");
+    const mPrecisao   = calcularPosicaoMetrica(dados.precisao,   nomeAluno, "desc");
+    const mVelocidade = calcularPosicaoMetrica(dados.velocidade, nomeAluno, "asc");
+    const mPartidas   = calcularPosicaoMetrica(dados.partidas,   nomeAluno, "desc");
+    if (!mPontos && !mPrecisao && !mVelocidade && !mPartidas) { container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não jogou nesta modalidade.</div>`; return; }
+    const total = mPontos?.total || 0;
+    if (total < 2) { container.innerHTML = `<div class="desempenho-empty-msg">🎯 Ainda há poucos colegas com partidas nesta modalidade. Jogue mais para comparar!</div>`; return; }
+    const fillFor = (pos, tot) => tot <= 1 ? 100 : Math.max(8, ((tot - pos) / (tot - 1)) * 100);
+    let html = `<div class="desempenho-turma-cabecalho"><span class="desempenho-turma-cabecalho-emoji">👥</span><span class="desempenho-turma-cabecalho-txt">Comparando com <strong>${total}</strong> ${total === 1 ? "colega" : "colegas"} da turma <strong>${turma}</strong></span></div>`;
+    const linhaMetrica = ({ icone, label, pos, sub }) => `<div class="desempenho-turma-metrica"><div class="desempenho-turma-metrica-topo"><span class="desempenho-turma-metrica-label">${icone} ${label}</span><span class="desempenho-turma-metrica-valor">${pos}º de ${total}</span></div><div class="desempenho-turma-barra"><div class="desempenho-turma-barra-fill" style="width: ${fillFor(pos, total).toFixed(1)}%"></div></div><div class="desempenho-turma-metrica-sub">${sub}</div></div>`;
+    if (mPontos) {
+        const media = calcularMediaMetrica(dados.pontos);
+        const diff = media > 0 ? ((mPontos.valor - media) / media) * 100 : 0;
+        const sub = diff >= 1 ? `Sua melhor pontuação está <strong>${diff.toFixed(0)}% acima</strong> da média da turma` : diff <= -1 ? `Sua melhor pontuação está <strong>${Math.abs(diff).toFixed(0)}% abaixo</strong> da média da turma` : `Sua melhor pontuação está <strong>na média</strong> da turma`;
+        html += linhaMetrica({ icone: "🏆", label: "Melhor pontuação", pos: mPontos.pos, sub });
+    }
+    if (mPrecisao) {
+        const media = calcularMediaMetrica(dados.precisao);
+        const diff = mPrecisao.valor - media;
+        const sub = diff >= 1 ? `Sua melhor precisão está <strong>${diff.toFixed(1)} pontos acima</strong> da média` : diff <= -1 ? `Sua melhor precisão está <strong>${Math.abs(diff).toFixed(1)} pontos abaixo</strong> da média` : `Sua precisão está <strong>na média</strong> da turma`;
+        html += linhaMetrica({ icone: "🎯", label: "Precisão (melhor partida)", pos: mPrecisao.pos, sub });
+    }
+    if (mVelocidade && mVelocidade.valor < 900) {
+        const validos = dados.velocidade.filter(v => v.valor < 900);
+        const media = calcularMediaMetrica(validos);
+        const diff = media > 0 ? ((media - mVelocidade.valor) / media) * 100 : 0;
+        const sub = diff >= 1
+            ? `Seu tempo médio (só acertos) é <strong>${diff.toFixed(0)}% menor</strong> que a média da turma`
+            : diff <= -1
+                ? `Seu tempo médio (só acertos) é <strong>${Math.abs(diff).toFixed(0)}% maior</strong> que a média da turma`
+                : `Seu tempo médio está <strong>na média</strong> da turma`;
+        html += linhaMetrica({ icone: "⚡", label: "Tempo médio dos acertos", pos: mVelocidade.pos, sub });
+    }
+    if (mPartidas) {
+        const qtdAbaixo = dados.partidas.filter(i => i.valor < mPartidas.valor).length;
+        const pctAcima = total > 1 ? (qtdAbaixo / (total - 1)) * 100 : 0;
+        const sub = pctAcima >= 80 ? `Você jogou mais que <strong>${pctAcima.toFixed(0)}%</strong> da turma 💪` : pctAcima >= 40 ? `Você jogou mais que <strong>${pctAcima.toFixed(0)}%</strong> da turma` : `Você jogou mais que <strong>${pctAcima.toFixed(0)}%</strong> da turma — bora jogar mais!`;
+        html += linhaMetrica({ icone: "🎮", label: "Partidas jogadas", pos: mPartidas.pos, sub });
+    }
+    container.innerHTML = html;
+}
+// ▲▲▲ FIM [15.03]
+
+// ▼▼▼ [15.04] Evolução no ranking ─────────────────────────────────────
+async function renderizarEvolucaoRanking() {
+    const container = document.getElementById("desempenho-evolucao");
+    if (!container) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { container.innerHTML = ""; return; }
+    const modal = desempenhoModalidadeAtual;
+    const minhas = (modal === "todas") ? desempenhoPartidasCache : desempenhoPartidasCache.filter(p => p.modalidade === modal);
+    if (!minhas.length) { container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não tem partidas nesta modalidade.</div>`; return; }
+    const minhasOrdenadas = [...minhas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+    const total = minhasOrdenadas.length;
+    if (total < 2) { container.innerHTML = `<div class="desempenho-empty-msg">🎯 Jogue pelo menos <strong>2 partidas</strong> nesta modalidade para ver sua evolução no ranking da turma.</div>`; return; }
+    const cps = new Set([1]);
+    [5, 10, 15, 20].forEach(k => { if (k < total) cps.add(k); });
+    cps.add(total);
+    const checkpoints = Array.from(cps).sort((a, b) => a - b);
+    const todas = await obterPartidas();
+    const daTurma = todas.filter(p => p.turma === turma && (modal === "todas" || p.modalidade === modal));
+    const minhaChave = normalizarNome(nome);
+    const resultados = [];
+    for (const cp of checkpoints) {
+        const partidaRef = minhasOrdenadas[cp - 1];
+        const tsLimite = new Date(partidaRef.data || 0).getTime();
+        const melhorPorAluno = new Map();
+        daTurma.forEach(p => {
+            const ts = new Date(p.data || 0).getTime();
+            if (ts > tsLimite) return;
+            const k = normalizarNome(p.nome);
+            const pts = Number(p.pontos) || 0;
+            if (!melhorPorAluno.has(k) || pts > melhorPorAluno.get(k)) melhorPorAluno.set(k, pts);
+        });
+        if (!melhorPorAluno.has(minhaChave)) continue;
+        const lista = Array.from(melhorPorAluno.entries()).map(([k, v]) => ({ chave: k, pontos: v })).sort((a, b) => b.pontos - a.pontos);
+        const idx = lista.findIndex(i => i.chave === minhaChave);
+        if (idx === -1) continue;
+        resultados.push({ cp, pos: idx + 1, totalAlunos: lista.length });
+    }
+    if (resultados.length < 2) { container.innerHTML = `<div class="desempenho-empty-msg">Ainda não há colegas suficientes no ranking para comparar sua evolução. Continue jogando!</div>`; return; }
+    let html = `<div class="desempenho-evolucao-cabecalho"><span class="desempenho-evolucao-cabecalho-emoji">📉</span><span>Sua trajetória no ranking da turma <strong>${turma}</strong></span></div>`;
+    resultados.forEach((r, i) => {
+        const anterior = i > 0 ? resultados[i - 1] : null;
+        const delta = anterior ? anterior.pos - r.pos : 0;
+        const isAtual = i === resultados.length - 1;
+        let badge;
+        if (!anterior) badge = `<span class="evolucao-badge neutro">início</span>`;
+        else if (delta > 0) badge = `<span class="evolucao-badge subiu">▲ ${delta}</span>`;
+        else if (delta < 0) badge = `<span class="evolucao-badge caiu">▼ ${Math.abs(delta)}</span>`;
+        else badge = `<span class="evolucao-badge neutro">▬</span>`;
+        const label = r.cp === 1 ? "Primeira partida" : (isAtual ? `Após ${r.cp} partidas <em style="opacity:.7;font-style:normal;">(agora)</em>` : `Após ${r.cp} partidas`);
+        html += `<div class="evolucao-linha ${isAtual ? "atual" : ""}"><span class="evolucao-momento">${label}</span><span class="evolucao-posicao">${r.pos}º <small>de ${r.totalAlunos}</small></span>${badge}</div>`;
+    });
+    const primeira = resultados[0].pos;
+    const ultima = resultados[resultados.length - 1].pos;
+    const ganho = primeira - ultima;
+    let fechamento;
+    if (ganho > 0) fechamento = `🚀 Você subiu <strong>${ganho} ${ganho === 1 ? "posição" : "posições"}</strong> desde o início da sua trajetória. Continue assim!`;
+    else if (ganho < 0) fechamento = `💪 Você caiu <strong>${Math.abs(ganho)} ${Math.abs(ganho) === 1 ? "posição" : "posições"}</strong>. Use o Modo Treino para recuperar o ritmo!`;
+    else fechamento = `🎯 Sua posição se manteve estável desde a primeira partida.`;
+    html += `<div class="desempenho-evolucao-fechamento">${fechamento}</div>`;
+    container.innerHTML = html;
+}
+// ▲▲▲ FIM [15.04]
+
+// ▼▼▼ [15.05] Histórico de partidas ────────────────────────────────────
+function renderizarHistoricoPartidas() {
+    const container = document.getElementById("desempenho-historico");
+    if (!container) return;
+    if (!container.querySelector(".desempenho-historico-tabela")) {
+        container.innerHTML = `<div class="desempenho-historico-skeleton"><div class="linha-sk"></div><div class="linha-sk"></div><div class="linha-sk"></div><div class="linha-sk"></div><div class="linha-sk"></div></div>`;
+    }
+    const partidas = desempenhoPartidasFiltradas || [];
+    if (!partidas.length) {
+        const mod = desempenhoModalidadeAtual;
+        const nomeMod = mod === "todas" ? "" : ` em <strong>${MODALIDADES[mod]?.nome || mod}</strong>`;
+        container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não jogou nenhuma partida${nomeMod}.<br>Escolha outra modalidade ou comece a jogar para ver seu histórico aqui.</div>`;
+        return;
+    }
+    const ordenadas = [...partidas].sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+    const melhorPontos = Math.max(...ordenadas.map(p => Number(p.pontos) || 0));
+    let recordeJaMarcado = false;
+    const linhas = ordenadas.map(p => {
+        const pontos = Number(p.pontos) || 0;
+        const acertos = Number(p.acertos) || 0;
+        const tempo = Number(p.tempoMedio) || 0;
+        const seq = Number(p.maiorSequencia) || 0;
+        const { data, hora } = formatarDataHoraHistorico(p.data);
+        const ehRecorde = pontos === melhorPontos && !recordeJaMarcado;
+        if (ehRecorde) recordeJaMarcado = true;
+        const clsAcertos = acertos >= 17 ? "alto" : (acertos <= 10 ? "baixo" : "");
+        const clsSeq = seq === 0 ? "zero" : "";
+        return `<tr class="${ehRecorde ? "linha-recorde" : ""}"><td class="col-data">${data}<span class="hora">· ${hora}</span></td><td><span class="col-modalidade">${abreviarModalidade(p.modalidade)}</span></td><td class="col-pontos">${pontos.toLocaleString("pt-BR")}${ehRecorde ? '<span class="trofeu">🏆</span>' : ""}</td><td class="col-acertos ${clsAcertos}">${acertos}<span class="denominador">/20</span></td><td class="col-tempo">${tempo.toFixed(2)}s</td><td class="col-sequencia ${clsSeq}">${seq > 0 ? `<span class="fogo">🔥</span>${seq}` : "—"}</td></tr>`;
+    }).join("");
+    const total = ordenadas.length;
+    const pluralPartida = total === 1 ? "partida" : "partidas";
+    container.innerHTML = `<div class="desempenho-historico-cabecalho"><div class="desempenho-historico-cabecalho-esq"><span class="desempenho-historico-cabecalho-emoji">📋</span><span class="desempenho-historico-cabecalho-txt">Suas <strong>${total} ${pluralPartida}</strong> registradas</span></div><span class="desempenho-historico-contagem">${total} ${pluralPartida}</span></div><div class="desempenho-historico-scroll"><table class="desempenho-historico-tabela"><thead><tr><th>Data</th><th>Modalidade</th><th class="col-num">Pontos</th><th class="col-num">Acertos</th><th class="col-num">Tempo médio dos acertos</th><th class="col-num">Sequência</th></tr></thead><tbody>${linhas}</tbody></table></div><p class="desempenho-historico-nota">🏆 Marca seu <strong>recorde pessoal</strong> nesta modalidade. ${desempenhoModalidadeAtual !== "todas" ? `Mostrando só partidas de <strong>${MODALIDADES[desempenhoModalidadeAtual]?.nome}</strong>. ` : ""} A lista é atualizada a cada nova partida oficial.</p>`;
+}
+// ▲▲▲ FIM [15.05]
+
+// ▼▼▼ [15.06] Destaque pessoal ─────────────────────────────────────────
+function calcularMeuDestaque(nome, turma, partidas) {
+    if (!partidas || partidas.length < 2) return null;
+    const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+    const qtdIni = Math.min(3, ordenadas.length);
+    const qtdFim = Math.min(3, ordenadas.length);
+    const primeiras = ordenadas.slice(0, qtdIni);
+    const ultimas = ordenadas.slice(-qtdFim);
+    const mediaIni = primeiras.reduce((s, p) => s + (Number(p.pontos) || 0), 0) / primeiras.length;
+    const mediaFim = ultimas.reduce((s, p) => s + (Number(p.pontos) || 0), 0) / ultimas.length;
+    const evolucaoPct = mediaIni > 0 ? ((mediaFim - mediaIni) / mediaIni) * 100 : 0;
+    const totalAcertos = partidas.reduce((s, p) => s + (Number(p.acertos) || 0), 0);
+    const totalErros = partidas.reduce((s, p) => s + (Number(p.erros) || 0), 0);
+    const totalPerguntas = totalAcertos + totalErros;
+    const precisao = totalPerguntas ? (totalAcertos / totalPerguntas) * 100 : 0;
+    return { mediaIni: Math.round(mediaIni), mediaFim: Math.round(mediaFim), evolucaoPct, totalPartidas: partidas.length, precisao, totalAcertos, totalErros, primeiraData: ordenadas[0]?.data, ultimaData: ordenadas[ordenadas.length - 1]?.data };
+}
+function renderizarMeuDestaque() {
+    const container = document.getElementById("desempenho-destaque");
+    if (!container) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma || !desempenhoPartidasCache || desempenhoPartidasCache.length === 0) {
+        container.innerHTML = `<div class="desempenho-destaque-titulo"><span class="em">🏅</span> Seu destaque</div><div class="desempenho-destaque-vazio">🎯 Jogue pelo menos <strong>2 partidas</strong> para ver seu destaque aqui.<br>Cada partida conta — vamos lá!</div>`;
+        return;
+    }
+    const d = calcularMeuDestaque(nome, turma, desempenhoPartidasCache);
+    if (!d) {
+        container.innerHTML = `<div class="desempenho-destaque-titulo"><span class="em">🏅</span> Seu destaque</div><div class="desempenho-destaque-vazio">🎯 Jogue pelo menos <strong>2 partidas</strong> para ver seu destaque aqui.</div>`;
+        return;
+    }
+    const evolucaoPctArred = Math.round(d.evolucaoPct);
+    const ehPositiva = evolucaoPctArred > 0;
+    const ehNegativa = evolucaoPctArred < 0;
+    const badgeCls = ehPositiva ? "subiu" : (ehNegativa ? "caiu" : "igual");
+    const badgeTxt = ehPositiva ? `▲ +${evolucaoPctArred}%` : (ehNegativa ? `▼ ${evolucaoPctArred}%` : "▬ 0%");
+    let fraseEvolucao;
+    if (ehPositiva) {
+        if (evolucaoPctArred >= 50) fraseEvolucao = `🚀 Que salto! Você está <strong>${evolucaoPctArred}%</strong> melhor que no início.`;
+        else if (evolucaoPctArred >= 20) fraseEvolucao = `📈 <strong>${evolucaoPctArred}%</strong> de evolução — continue assim!`;
+        else fraseEvolucao = `✨ Você melhorou <strong>${evolucaoPctArred}%</strong> desde o início.`;
+    } else if (ehNegativa) {
+        fraseEvolucao = `💪 Foco! Sua média caiu <strong>${Math.abs(evolucaoPctArred)}%</strong>. Recupere com treino.`;
+    } else {
+        fraseEvolucao = `🎯 Sua pontuação está estável desde o início.`;
+    }
+    let fraseVolume;
+    if (d.totalPartidas >= 20) fraseVolume = `🏆 Impressionante! <strong>${d.totalPartidas} partidas</strong> desde o início.`;
+    else if (d.totalPartidas >= 10) fraseVolume = `💪 <strong>${d.totalPartidas} partidas</strong> — dedicação de campeão.`;
+    else if (d.totalPartidas >= 5) fraseVolume = `🔥 <strong>${d.totalPartidas} partidas</strong> — o ritmo está bom!`;
+    else fraseVolume = `🌱 <strong>${d.totalPartidas} partidas</strong> — continue jogando!`;
+    let frasePrecisao;
+    if (d.precisao >= 90) frasePrecisao = `🎯 <strong>${d.precisao.toFixed(0)}%</strong> de acertos — precisão de mestre!`;
+    else if (d.precisao >= 75) frasePrecisao = `✅ <strong>${d.precisao.toFixed(0)}%</strong> de acertos — muito bom!`;
+    else if (d.precisao >= 60) frasePrecisao = `📊 <strong>${d.precisao.toFixed(0)}%</strong> de acertos — sólido.`;
+    else frasePrecisao = `💡 <strong>${d.precisao.toFixed(0)}%</strong> de acertos — o treino vai elevar!`;
+    container.innerHTML = `<div class="desempenho-destaque-titulo"><span class="em">🏅</span> Seu destaque</div><div class="desempenho-destaque-grid"><div class="desempenho-destaque-card evolucao"><span class="desempenho-destaque-icone">🚀</span><div class="desempenho-destaque-valor">${ehPositiva ? "+" : ""}${evolucaoPctArred}<span class="pequeno">%</span><span class="desempenho-destaque-badge ${badgeCls}">${badgeTxt}</span></div><span class="desempenho-destaque-rotulo">Evolução de pontuação</span><p class="desempenho-destaque-frase">${fraseEvolucao}</p></div><div class="desempenho-destaque-card volume"><span class="desempenho-destaque-icone">🎮</span><div class="desempenho-destaque-valor">${d.totalPartidas}<span class="pequeno">partidas</span></div><span class="desempenho-destaque-rotulo">Volume jogado</span><p class="desempenho-destaque-frase">${fraseVolume}</p></div><div class="desempenho-destaque-card precisao"><span class="desempenho-destaque-icone">🎯</span><div class="desempenho-destaque-valor">${d.precisao.toFixed(0)}<span class="pequeno">%</span></div><span class="desempenho-destaque-rotulo">Precisão geral</span><p class="desempenho-destaque-frase">${frasePrecisao}</p></div></div>`;
+}
+// ▲▲▲ FIM [15.06]
+
+// ▼▼▼ [15.07] Fluxo principal do desempenho ──────────────────────────
+function abrirMeuDesempenho() {
+    mostrarTela("tela-desempenho");
+    comparativoTurmaCache = null;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) {
+        document.getElementById("desempenho-identificacao").classList.remove("hidden");
+        document.getElementById("desempenho-conteudo").classList.add("hidden");
+        document.getElementById("desempenho-vazio").classList.add("hidden");
+        return;
+    }
+    document.getElementById("desempenho-identificacao").classList.add("hidden");
+    carregarMeuDesempenho(nome, turma);
+}
+async function carregarMeuDesempenho(nomeForcado, turmaForcada) {
+    let nome = nomeForcado;
+    let turma = turmaForcada;
+    if (!nome || !turma) {
+        const vv = validarNomeCompleto(document.getElementById("desempenho-nome").value);
+        if (!vv.ok) { notificar(vv.motivo, "aviso", 5000); return; }
+        nome = vv.normalizado;
+        turma = document.getElementById("desempenho-turma").value;
+        if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
+        document.getElementById("desempenho-nome").value = nome;
+    }
+    document.getElementById("desempenho-identificacao").classList.add("hidden");
+    document.getElementById("desempenho-vazio").classList.add("hidden");
+    document.getElementById("desempenho-conteudo").classList.remove("hidden");
+    document.getElementById("desempenho-nome-curr").textContent = nome;
+    document.getElementById("desempenho-turma-curr").textContent = turma;
+    document.getElementById("desempenho-stats").innerHTML = skeletonStatsCards(7);
+    document.getElementById("desempenho-chart").innerHTML = skeletonTexto(2);
+    document.getElementById("desempenho-turma").innerHTML = skeletonTexto(3);
+    document.getElementById("desempenho-evolucao").innerHTML = skeletonTexto(3);
+    document.getElementById("desempenho-historico").innerHTML = `<div class="desempenho-historico-skeleton"><div class="linha-sk"></div><div class="linha-sk"></div><div class="linha-sk"></div></div>`;
+    let partidas = [];
+    try { partidas = await obterHistoricoAluno(nome, turma); }
+    catch(e) { console.warn("Falha ao carregar histórico para desempenho:", e); }
+    if (!partidas.length) {
+        document.getElementById("desempenho-conteudo").classList.add("hidden");
+        document.getElementById("desempenho-vazio").classList.remove("hidden");
+        desempenhoPartidasCache = [];
+        desempenhoPartidasFiltradas = [];
+        desempenhoPartidasGrafico = [];
+        return;
+    }
+    desempenhoPartidasCache = partidas;
+    desempenhoModalidadeAtual = "todas";
+    document.querySelectorAll(".desempenho-filtro-btn").forEach(b => { b.classList.toggle("ativa", b.dataset.mod === "todas"); });
+    renderizarDesempenho();
+}
+function mudarModalidadeDesempenho(mod) {
+    desempenhoModalidadeAtual = mod;
+    document.querySelectorAll(".desempenho-filtro-btn").forEach(b => { b.classList.toggle("ativa", b.dataset.mod === mod); });
+    renderizarDesempenho();
+}
+function renderizarDesempenho() {
+    renderizarMeuDestaque();
+    renderizarEstatisticasDesempenho();
+    renderizarGraficoDesempenho();
+    renderizarComparativoTurma();
+    renderizarEvolucaoRanking();
+    renderizarHistoricoPartidas();
+    renderizarBotaoCertificado();
+}
+// ▲▲▲ FIM [15.07]
+
+// ═══════════════════════════════════════════════════════════════════════
+// [16] JS-CERT · Certificado de Maestria
+// ═══════════════════════════════════════════════════════════════════════
+
+// ▼▼▼ [16.01] Geração do HTML do certificado ─────────────────────────
+function gerarNumeroCertificado(nome, turma, dataISO) {
+    const str = `${normalizarNome(nome)}|${turma}|${dataISO.slice(0,10)}`;
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ c, 2654435761);
+        h2 = Math.imul(h2 ^ c, 1597334677);
+    }
+    const n = (Math.abs(h1) ^ Math.abs(h2)) >>> 0;
+    return `CEIB-${n.toString(36).toUpperCase().padStart(8, "0").slice(0, 8)}`;
+}
+function montarHTMLCertificado(nome, turma, dados) {
+    const numero = gerarNumeroCertificado(nome, turma, dados.dataConquista || new Date().toISOString());
+    const dataFmt = formatarDataCurta(dados.dataConquista || Date.now());
+    const nomeSeguro = escaparHtml(nome);
+    const turmaSegura = escaparHtml(turma);
+    return `<div class="cert-brasao" aria-hidden="true">🏛️</div><div class="cert-escola">Colégio Estadual Ismael Branco</div><div class="cert-linha-decorativa" aria-hidden="true">❦ ❦ ❦</div><h1 class="cert-titulo">CERTIFICADO</h1><p class="cert-subtitulo">de Maestria em Tabuadas</p><p class="cert-texto-intro">Certificamos que</p><div class="cert-nome">${nomeSeguro}</div><p class="cert-texto">da turma <strong>${turmaSegura}</strong></p><p class="cert-texto-corpo">demonstrou <strong>domínio total</strong> das tabuadas de multiplicação de <strong>1 a 10</strong>, dominando <strong>100%</strong> do mapa de operações com precisão igual ou superior a <strong>90%</strong> em cada uma.</p><div class="cert-medalhas" aria-hidden="true"><span>🏆</span><span>🧠</span><span>⭐</span></div><div class="cert-stats"><span>📚 <strong>${dados.operacoesDominadas || 100}</strong> operações dominadas</span><span>🎖️ <strong>Medalha Lendária</strong></span><span>📅 <strong>${dataFmt}</strong></span></div><div class="cert-assinatura"><div class="cert-linha-assinatura"></div><div class="cert-assinatura-nome">Prof. Henrique</div><div class="cert-assinatura-cargo">Matemática · CEIB</div></div><div class="cert-rodape"><span>Copa da Tabuada CEIB 2026</span><span class="cert-numero">Nº ${numero}</span></div>`;
+}
+// ▲▲▲ FIM [16.01]
+
+// ▼▼▼ [16.02] Abrir, fechar e marcar visto ────────────────────────────
+async function abrirCertificado(nome, turma) {
+    const container = document.getElementById("certificado-conteudo");
+    const modal = document.getElementById("modal-certificado");
+    if (!container || !modal) return;
+    let dados = null;
+    try {
+        const mapa = await obterDesempenhoOperacoesGlobal(nome, turma);
+        let dominadas = 0;
+        FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
+            const d = mapa[`${a}x${b}`];
+            if (d && d.tentativas > 0 && (d.acertos / d.tentativas) >= 0.9) dominadas++;
+        }));
+        const persistidas = await obterMedalsFirebase(nome, turma);
+        const dataConquista = persistidas.mestre_mapa?.data || new Date().toISOString();
+        dados = { operacoesDominadas: dominadas, dataConquista };
+    } catch(e) {
+        console.warn("Falha ao montar certificado:", e);
+        dados = { operacoesDominadas: 100, dataConquista: new Date().toISOString() };
+    }
+    container.innerHTML = montarHTMLCertificado(nome, turma, dados);
+    modal.classList.remove("hidden");
+    marcarCertificadoVisto(nome, turma);
+    try { somConclusao(); } catch(e) {}
+}
+function fecharCertificado(e) {
+    if (e && e.target && e.target.closest(".cert-modal-card")) return;
+    document.getElementById("modal-certificado")?.classList.add("hidden");
+}
+function imprimirCertificado() { window.print(); }
+function chaveCertVisto(nome, turma) { return STORAGE_CERT_VISTO + chaveVinculo(nome, turma); }
+function marcarCertificadoVisto(nome, turma) { try { localStorage.setItem(chaveCertVisto(nome, turma), "1"); } catch(e) {} }
+function jaViuCertificado(nome, turma) { try { return localStorage.getItem(chaveCertVisto(nome, turma)) === "1"; } catch(e) { return false; } }
+// ▲▲▲ FIM [16.02]
+
+// ▼▼▼ [16.03] Maestria absoluta ───────────────────────────────────────
+async function verificarMaestriaAbsoluta(nome, turma) {
+    if (!nome || !turma) return;
+    try {
+        const mapa = await obterDesempenhoOperacoesGlobal(nome, turma);
+        let dominadas = 0;
+        FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
+            const d = mapa[`${a}x${b}`];
+            if (d && d.tentativas > 0 && (d.acertos / d.tentativas) >= 0.9) dominadas++;
+        }));
+        if (dominadas < TOTAL_OPERACOES_MAPA) return;
+        if (jaViuCertificado(nome, turma)) return;
+        setTimeout(async () => { dispararConfetes(); try { somSecaoCompleta(); } catch(e) {} mostrarPopupMaestria(nome, turma); }, 700);
+    } catch(e) { console.warn("Falha ao verificar maestria:", e); }
+}
+function mostrarPopupMaestria(nome, turma) {
+    const modal = document.getElementById("modal-secao-completa");
+    const lista = document.getElementById("album-modal-secao-lista");
+    if (!modal || !lista) { abrirCertificado(nome, turma); return; }
+    const titulo = document.getElementById("album-modal-secao-titulo");
+    if (titulo) titulo.innerHTML = "🧠 MAESTRIA ABSOLUTA!";
+    lista.innerHTML = `<p class="album-modal-secao-intro">Você dominou <strong>100%</strong> do mapa de tabuadas!</p><div class="album-modal-secao-cards"><div class="album-modal-secao-card"><span class="album-modal-secao-icone">🧠</span><div class="album-modal-secao-info"><strong>Medalha Lendária desbloqueada</strong><div class="album-modal-secao-reward">+15 ⭐ de bônus</div><span class="album-modal-secao-badge">🗺️ Mestre do Mapa</span></div></div><div class="album-modal-secao-card"><span class="album-modal-secao-icone">🎓</span><div class="album-modal-secao-info"><strong>Certificado de Maestria liberado</strong><div class="album-modal-secao-reward">Imprimível em PDF</div><span class="album-modal-secao-badge">🏆 Diploma oficial</span></div></div></div><p class="album-modal-secao-total"><strong>Parabéns!</strong><small>Isso é o topo da Copa — pouquíssimos alunos chegam aqui.</small></p><div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;"><button class="album-modal-secao-botao" onclick="fecharModalSecaoCompleta(); abrirCertificado('${escaparHtml(nome).replace(/'/g,"\\'")}','${escaparHtml(turma)}');">🎓 Ver meu Certificado</button></div>`;
+    modal.classList.remove("hidden");
+    setTimeout(() => { document.querySelector("#modal-secao-completa .album-modal-secao-botao")?.focus(); }, 400);
+}
+function renderizarBotaoCertificado() {
+    const certCtn = document.getElementById("desempenho-cert-container");
+    if (!certCtn) return;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    certCtn.innerHTML = "";
+    if (!nome || !turma) return;
+    (async () => {
+        try {
+            const mapa = await obterDesempenhoOperacoesGlobal(nome, turma);
+            let dom = 0;
+            FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
+                const d = mapa[`${a}x${b}`];
+                if (d && d.tentativas > 0 && (d.acertos / d.tentativas) >= 0.9) dom++;
+            }));
+            if (dom >= TOTAL_OPERACOES_MAPA) {
+                certCtn.innerHTML = `<button class="album-capa-botao" style="width:100%;margin:14px 0 0;" onclick="abrirCertificado('${escaparHtml(nome).replace(/'/g,"\\'")}','${escaparHtml(turma)}')">🎓 Ver meu Certificado de Maestria</button>`;
+            }
+        } catch(e) {}
+    })();
+}
+// ▲▲▲ FIM [16.03]
+
+// ═══════════════════════════════════════════════════════════════════════
+// [17] JS-PROF · Painel do professor
+// ═══════════════════════════════════════════════════════════════════════
+
+// ▼▼▼ [17.01] Autenticação e cockpit da etapa ─────────────────────────
+async function autenticarProfessor() {
+    const i = document.getElementById("senha-professor");
+    const s = i.value;
+    try {
+        const h = await gerarHashSenha(s);
+        if (h !== SENHA_PROFESSOR_HASH && h !== SENHA_PROFESSOR_HASH_FALLBACK) { notificar("Senha incorreta", "erro"); return; }
+        sessionStorage.setItem("professorCEIBAuth", String(Date.now()));
+        i.value = "";
+        document.getElementById("painel-conteudo").classList.remove("hidden");
+        notificar("Acesso concedido!", "sucesso");
+        await renderizarPainelEtapa();
+        await renderizarPainelVotacao();
+        await renderizarPainelConfig();
+        await renderizarDestaquesPainel();
+        await carregarMensagensPainel();
+    } catch(e) { notificar("Não foi possível validar a senha.", "erro", 5000); }
+}
+async function renderizarPainelEtapa() {
+    const container = document.getElementById("painel-etapa-conteudo");
+    if (!container) return;
+    container.innerHTML = `<div class="desempenho-loading">⏳ Carregando…</div>`;
+    let d = {};
+    try { d = await obterDadosEtapa(true); } catch(e) { container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o ciclo da etapa agora.</div>`; return; }
+    const fase = calcularFaseEtapa(d);
+    const fmtDataHora = (ts) => ts ? formatarDataHoraCurta(ts) : "—";
+    const faseLabel = {
+        [ETAPA_FASES.sem_agendamento]: "⚪ Não agendada",
+        [ETAPA_FASES.pre_evento]: "🟣 Pré-evento (aguardando início)",
+        [ETAPA_FASES.etapa_votacao]: "🟠 Etapa ativa · Votação em andamento",
+        [ETAPA_FASES.etapa_definida]: "🟢 Etapa ativa · Prazo definido",
+        [ETAPA_FASES.congelada]: "⏸️ Pausada (congelada para correção)",
+        [ETAPA_FASES.encerrada]: "🏁 Encerrada"
+    }[fase];
+    let html = `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Status</span><span class="painel-etapa-valor">${faseLabel}</span></div>`;
+    html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início agendado</span><span class="painel-etapa-valor">${fmtDataHora(d.inicioEm)}</span></div>`;
+    if (d.iniciadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início efetivo</span><span class="painel-etapa-valor">${fmtDataHora(d.iniciadaEm)}</span></div>`;
+    if (d.votacaoFechadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Votação fechada em</span><span class="painel-etapa-valor">${fmtDataHora(d.votacaoFechadaEm)}</span></div>`;
+    if (d.duracaoEscolhida) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Duração escolhida</span><span class="painel-etapa-valor">${d.duracaoEscolhida} dias (prazo de calendário)</span></div>`;
+    if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerramento previsto</span><span class="painel-etapa-valor">${fmtDataHora(d.fimPrevistoEm)} — 23h59</span></div>`;
+    if (d.congeladoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Congelada em</span><span class="painel-etapa-valor">${fmtDataHora(d.congeladoEm)}</span></div>`;
+    if (d.motivoCongelamento) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Motivo</span><span class="painel-etapa-valor">${escaparHtml(d.motivoCongelamento)}</span></div>`;
+    if (d.encerradoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerrada em</span><span class="painel-etapa-valor">${fmtDataHora(d.encerradoEm)}</span></div>`;
+    if (d.modoTeste) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Modo</span><span class="painel-etapa-valor" style="color:#b45309;">🧪 TESTE (encerramento liberado)</span></div>`;
+    html += `<div class="painel-etapa-rotulo" style="margin-top:14px;font-weight:700;color:#102a43;">Ações</div>`;
+    html += `<div class="painel-etapa-acoes">`;
+    if (fase === ETAPA_FASES.sem_agendamento) {
+        html += `<button onclick="agendarInicioEtapa()" class="botao-verde">📅 Agendar início</button>`;
+    } else if (fase === ETAPA_FASES.pre_evento) {
+        html += `<button onclick="iniciarEtapaAgora()" class="botao-verde">▶️ Iniciar agora</button>`;
+        html += `<button onclick="agendarInicioEtapa()" class="botao-secundario">✏️ Reagendar</button>`;
+    } else if (fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida) {
+        html += `<button onclick="congelarEtapa()" class="botao-forcar">⏸️ Congelar etapa</button>`;
+        if (d.modoTeste) html += `<button onclick="encerrarEtapa()" class="botao-forcar">🏁 Encerrar agora (teste)</button>`;
+    } else if (fase === ETAPA_FASES.congelada) {
+        html += `<button onclick="descongelarEtapa()" class="botao-verde">▶️ Descongelar</button>`;
+        html += `<button onclick="encerrarEtapa()" class="botao-forcar">🏁 Encerrar etapa</button>`;
+    } else if (fase === ETAPA_FASES.encerrada) {
+        html += `<button onclick="resetarCicloEtapa()" class="botao-forcar">🗑️ Resetar ciclo da etapa</button>`;
+    }
+    html += `</div>`;
+    html += `<div class="painel-etapa-teste-aviso"><p>🧪 <strong>Modo Teste:</strong> quando ativo, o professor pode encerrar a etapa a qualquer momento (útil antes do evento oficial).</p>`;
+    if (d.modoTeste) html += `<button onclick="desativarModoTeste()" class="botao-secundario" style="margin:0;">🚫 Desativar modo teste</button>`;
+    else html += `<button onclick="ativarModoTeste()" class="botao-secundario" style="margin:0;">🧪 Ativar modo teste</button>`;
+    html += `</div>`;
+    container.innerHTML = html;
+}
+// ▲▲▲ FIM [17.01]
+
+// ▼▼▼ [17.02] Ações do ciclo da etapa ─────────────────────────────────
+async function agendarInicioEtapa() {
+    if (!exigirProfessorAutenticado()) return;
+    const d = await obterDadosEtapa(true);
+    let sug = "";
+    if (d.inicioEm) {
+        const dt = new Date(d.inicioEm);
+        sug = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}T${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+    } else {
+        const dt = new Date(Date.now() + 24*60*60*1000);
+        dt.setHours(8, 0, 0, 0);
+        sug = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}T${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+    }
+    const resp = prompt("📅 Data e hora de início da etapa (formato: AAAA-MM-DDTHH:MM):", sug);
+    if (!resp) return;
+    const ts = new Date(resp).getTime();
+    if (!Number.isFinite(ts)) { notificar("Data inválida.", "erro"); return; }
+    if (ts <= Date.now() - 60000) { notificar("A data precisa estar no futuro.", "aviso"); return; }
+    try {
+        await salvarDadosEtapa({ inicioEm: ts, status: "agendada", iniciadaEm: null, votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, congeladoEm: null, motivoCongelamento: null, encerradoEm: null });
+        notificar(`Etapa agendada para ${formatarDataHoraCurta(ts)}.`, "sucesso", 5000);
+        await renderizarPainelEtapa();
+        await atualizarTelaInicialComEtapa();
+    } catch(e) { notificar("Não foi possível agendar.", "erro"); }
+}
+async function iniciarEtapaAgora() {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm("Iniciar a etapa agora? A votação será aberta automaticamente.")) return;
+    const agora = Date.now();
+    try {
+        await salvarDadosEtapa({ inicioEm: agora, iniciadaEm: agora, status: "ativa", votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null });
+        await abrirVotacaoAutomatica(agora);
+        notificar("Etapa iniciada e votação aberta!", "sucesso", 5000);
+        await renderizarPainelEtapa();
+        await renderizarPainelVotacao();
+        await atualizarTelaInicialComEtapa();
+    } catch(e) { notificar("Não foi possível iniciar a etapa.", "erro"); }
+}
+async function congelarEtapa() {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm("⏸️ Congelar a etapa?\n\n• Alunos não poderão jogar a classificatória (apenas treino livre).\n• O ranking fica visível mas não muda.\n• ⚠️ A pausa INTERROMPE TEMPORARIAMENTE o ciclo automático — a votação não avança e o encerramento automático fica suspenso enquanto a etapa estiver congelada.\n• Ao descongelar, o ciclo volta a correr normalmente.\n\nDeseja continuar?")) return;
+    const motivo = prompt("📝 Motivo do congelamento (opcional, ficará registrado no painel):");
+    if (motivo === null) return;
+    try {
+        await salvarDadosEtapa({
+            status: "congelada",
+            congeladoEm: Date.now(),
+            motivoCongelamento: motivo.trim() || "não informado"
+        });
+        notificar("Etapa congelada.", "aviso", 5000);
+        await renderizarPainelEtapa();
+        await atualizarTelaInicialComEtapa();
+    } catch(e) { notificar("Não foi possível congelar.", "erro"); }
+}
+async function descongelarEtapa() {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm("▶️ Descongelar a etapa? Alunos poderão voltar a jogar a classificatória.")) return;
+    try {
+        await salvarDadosEtapa({ status: "ativa", congeladoEm: null, motivoCongelamento: null });
+        notificar("Etapa descongelada.", "sucesso");
+        await renderizarPainelEtapa();
+        await atualizarTelaInicialComEtapa();
+    } catch(e) { notificar("Não foi possível descongelar.", "erro"); }
+}
+async function encerrarEtapa() {
+    if (!exigirProfessorAutenticado()) return;
+    const d = await obterDadosEtapa(true);
+    const agora = Date.now();
+    const fase = calcularFaseEtapa(d);
+    if (!d.modoTeste && fase !== ETAPA_FASES.congelada) {
+        if (d.fimPrevistoEm && agora < d.fimPrevistoEm) {
+            notificar("A etapa ainda não pode ser encerrada — o prazo ainda não venceu. Ative o modo teste para encerrar antes.", "aviso", 6000);
+            return;
+        }
+        if (!d.fimPrevistoEm) {
+            notificar("Ainda não há prazo definido. Aguarde o fechamento da votação.", "aviso", 6000);
+            return;
+        }
+    }
+    if (!confirm("🏁 Encerrar a etapa?\n\nO ranking ficará congelado (só leitura). Esta ação pode ser resetada depois usando 'Resetar ciclo'.")) return;
+    try {
+        await salvarDadosEtapa({ status: "encerrada", encerradoEm: Date.now() });
+        notificar("Etapa encerrada! Ranking congelado.", "sucesso", 5000);
+        await renderizarPainelEtapa();
+        await atualizarTelaInicialComEtapa();
+    } catch(e) { notificar("Não foi possível encerrar.", "erro"); }
+}
+async function resetarCicloEtapa() {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm("🗑️ Resetar o ciclo da etapa?\n\n• Volta ao estado 'Não agendada'\n• NÃO apaga partidas nem ranking\n• NÃO fecha a votação atual (use o bloco de votação para resetar)\n\nContinuar?")) return;
+    try {
+        await database.ref(CAMINHO_ETAPA).remove();
+        etapaEstadoCache = null;
+        notificar("Ciclo resetado. Pronto para reagendar.", "sucesso");
+        await renderizarPainelEtapa();
+        await atualizarTelaInicialComEtapa();
+    } catch(e) { notificar("Não foi possível resetar.", "erro"); }
+}
+async function ativarModoTeste() {
+    if (!exigirProfessorAutenticado()) return;
+    try {
+        await salvarDadosEtapa({ modoTeste: true });
+        notificar("🧪 Modo teste ATIVADO. Agora você pode encerrar a etapa a qualquer momento.", "sucesso", 5000);
+        await renderizarPainelEtapa();
+    } catch(e) { notificar("Não foi possível ativar modo teste.", "erro"); }
+}
+async function desativarModoTeste() {
+    if (!exigirProfessorAutenticado()) return;
+    try {
+        await salvarDadosEtapa({ modoTeste: false });
+        notificar("Modo teste desativado.", "info");
+        await renderizarPainelEtapa();
+    } catch(e) { notificar("Não foi possível desativar.", "erro"); }
+}
+// ▲▲▲ FIM [17.02]
+
+// ▼▼▼ [17.03] Configuração e votação ──────────────────────────────────
+async function obterConfiguracao() {
+    try {
+        const snap = await database.ref(CAMINHO_CONFIG).once("value");
+        const d = snap.val() || {};
+        return { percentualMapa: Number.isFinite(Number(d.percentualMapa)) ? Number(d.percentualMapa) : CONFIG_DEFAULT.percentualMapa, minPartidas: Number.isFinite(Number(d.minPartidas)) ? Number(d.minPartidas) : CONFIG_DEFAULT.minPartidas };
+    } catch(e) { return { ...CONFIG_DEFAULT }; }
+}
+async function salvarConfiguracao(cfg) { await database.ref(CAMINHO_CONFIG).set({ percentualMapa: cfg.percentualMapa, minPartidas: cfg.minPartidas }); }
+function calcularMinVerdes(percentualMapa) { return Math.max(1, Math.ceil((percentualMapa / 100) * TOTAL_OPERACOES_MAPA)); }
+async function renderizarPainelConfig() {
+    const inp1 = document.getElementById("config-percentual-mapa");
+    const inp2 = document.getElementById("config-min-partidas");
+    if (!inp1 || !inp2) return;
+    const cfg = await obterConfiguracao();
+    inp1.value = cfg.percentualMapa;
+    inp2.value = cfg.minPartidas;
+}
+async function salvarConfiguracaoPainel() {
+    if (!exigirProfessorAutenticado()) return;
+    const pct = Number(document.getElementById("config-percentual-mapa").value);
+    const mp  = Number(document.getElementById("config-min-partidas").value);
+    if (!Number.isFinite(pct) || pct < 1 || pct > 100) { notificar("Percentual deve estar entre 1 e 100.", "aviso"); return; }
+    if (!Number.isFinite(mp) || mp < 1) { notificar("Número de partidas deve ser pelo menos 1.", "aviso"); return; }
+    try {
+        await salvarConfiguracao({ percentualMapa: pct, minPartidas: mp });
+        notificar("Configurações salvas!", "sucesso");
+        await renderizarCardVotacao();
+        await renderizarPainelVotacao();
+    } catch(e) { notificar("Não foi possível salvar as configurações.", "erro"); }
+}
+function calcularFechamentoVotacao(inicioTs) {
+    const d = new Date(inicioTs);
+    d.setHours(23, 59, 59, 999);
+    d.setDate(d.getDate() + 3);
+    return d.getTime();
+}
+async function obterDadosVotacao() {
+    try { const snap = await database.ref(CAMINHO_VOTACAO).once("value"); return snap.val() || {}; }
+    catch(e) { console.warn("Falha ao ler votação:", e); return {}; }
+}
+async function calcularElegibilidadeVoto(nome, turma) {
+    const cfg = await obterConfiguracao();
+    const minVerdes = calcularMinVerdes(cfg.percentualMapa);
+    try {
+        const partidas = await obterHistoricoAluno(nome, turma);
+        const totalPartidas = partidas.length;
+        const agregado = {};
+        partidas.forEach(p => {
+            if (!p.desempenhoOperacoes) return;
+            Object.entries(p.desempenhoOperacoes).forEach(([k, d]) => {
+                const [a, b] = k.split("x").map(Number);
+                if (!Number.isFinite(a) || !Number.isFinite(b)) return;
+                if (a < 1 || a > 10 || b < 1 || b > 10) return;
+                if (!agregado[k]) agregado[k] = { acertos: 0, tentativas: 0 };
+                agregado[k].acertos    += d.acertos    || 0;
+                agregado[k].tentativas += d.tentativas || 0;
+            });
+        });
+        let verdes = 0;
+        Object.values(agregado).forEach(d => { if (d.tentativas > 0 && d.acertos / d.tentativas >= 0.9) verdes++; });
+        return { totalPartidas, verdes, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: totalPartidas >= cfg.minPartidas && verdes >= minVerdes };
+    } catch(e) {
+        console.warn("Falha ao calcular elegibilidade:", e);
+        return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
+    }
+}
+// ▲▲▲ FIM [17.03]
+
+// ▼▼▼ [17.04] Votação — registro e card ───────────────────────────────
+async function registrarVoto(opcao) {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { notificar("Você precisa se identificar para votar.", "aviso"); return; }
+    const eleg = await calcularElegibilidadeVoto(nome, turma);
+    if (!eleg.elegivel) { notificar("Você ainda não atingiu o critério de participação.", "aviso"); return; }
+    const dados = await obterDadosVotacao();
+    if (!dados.inicio) { notificar("A votação ainda não foi aberta.", "aviso"); return; }
+    const fechamento = calcularFechamentoVotacao(dados.inicio);
+    if (Date.now() > fechamento) { notificar("A votação já foi encerrada.", "aviso"); return; }
+    const chave = chaveVinculo(nome, turma);
+    try {
+        await database.ref(`${CAMINHO_VOTACAO}/votos/${chave}`).set({ nome, turma, opcao: String(opcao), data: Date.now() });
+        notificar(`Voto registrado: ${opcao} dias! 🗳️`, "sucesso");
+        await renderizarCardVotacao();
+        await renderizarPainelVotacao();
+    } catch(e) { notificar("Não foi possível registrar seu voto. Tente novamente.", "erro"); console.warn(e); }
+}
+function tempoRestanteHumano(ms) {
+    if (ms <= 0) return "encerrada";
+    const dias = Math.floor(ms / (1000*60*60*24));
+    const horas = Math.floor((ms % (1000*60*60*24)) / (1000*60*60));
+    const minutos = Math.floor((ms % (1000*60*60)) / (1000*60));
+    if (dias > 0) return `${dias}d ${horas}h`;
+    if (horas > 0) return `${horas}h ${minutos}min`;
+    return `${minutos}min`;
+}
+function renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos) {
+    if (totalVotos === 0) return `<div class="votacao-grafico"><div style="text-align:center;color:#ede9fe;font-size:13px;padding:14px 0;">Nenhum voto ainda. Seja o primeiro!</div></div>`;
+    return `<div class="votacao-grafico"><div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div><div class="barra-voto"><div class="rotulo-barra"><span>🗓️ 7 dias (encerrar na 1ª semana)</span><span class="num">${pct7}% · ${votos7} ${votos7 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento set" style="width:${pct7}%"></div></div></div><div class="barra-voto"><div class="rotulo-barra"><span>📆 14 dias (estender +1 semana)</span><span class="num">${pct14}% · ${votos14} ${votos14 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento qua" style="width:${pct14}%"></div></div></div><div style="text-align:center;color:#ede9fe;font-size:11.5px;margin-top:8px;">${totalVotos} ${totalVotos === 1 ? "voto computado" : "votos computados"} até agora</div></div>`;
+}
+async function renderizarCardVotacao() {
+    const card = document.getElementById("card-votacao");
+    const timerContainer = document.getElementById("votacao-timer-container");
+    const corpo = document.getElementById("votacao-corpo");
+    if (!card || !corpo) return;
+    const etapa = await obterDadosEtapa();
+    const fase = calcularFaseEtapa(etapa);
+    const dados = await obterDadosVotacao();
+    if (!dados.inicio || !etapa.inicioEm) { card.classList.add("hidden"); return; }
+    if (fase !== ETAPA_FASES.etapa_votacao && fase !== ETAPA_FASES.etapa_definida) { card.classList.add("hidden"); return; }
+    card.classList.remove("hidden");
+    const fechamento = calcularFechamentoVotacao(dados.inicio);
+    const agora = Date.now();
+    const encerrada = agora > fechamento || !!etapa.votacaoFechadaEm;
+    const restanteMs = fechamento - agora;
+    const votos = dados.votos ? Object.values(dados.votos) : [];
+    const totalVotos = votos.length;
+    const votos7 = votos.filter(v => String(v.opcao) === "7").length;
+    const votos14 = votos.filter(v => String(v.opcao) === "14").length;
+    const pct7 = totalVotos ? Math.round((votos7 / totalVotos) * 100) : 0;
+    const pct14 = totalVotos ? Math.round((votos14 / totalVotos) * 100) : 0;
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    const eleg = (nome && turma)
+        ? await calcularElegibilidadeVoto(nome, turma)
+        : await obterConfiguracao().then(cfg => ({ totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes: calcularMinVerdes(cfg.percentualMapa), percentualMapa: cfg.percentualMapa, elegivel: false }));
+    const chave = (nome && turma) ? chaveVinculo(nome, turma) : null;
+    const meuVoto = chave && dados.votos && dados.votos[chave] ? String(dados.votos[chave].opcao) : null;
+    if (encerrada) {
+        const ganhador = etapa.duracaoEscolhida || (votos14 > votos7 ? 14 : 7);
+        const fim = etapa.fimPrevistoEm ? formatarDataHoraCurta(etapa.fimPrevistoEm) : null;
+        let motivo, veredito;
+        if (ganhador === 14) {
+            motivo = "A maioria votou por <strong>estender</strong> a etapa por mais uma semana.";
+            veredito = "A etapa classificatória durará <strong>14 dias</strong> (prazo de calendário).";
+        } else {
+            motivo = "A maioria votou por <strong>encerrar em 7 dias</strong>.";
+            veredito = "A etapa classificatória durará <strong>7 dias</strong> (prazo de calendário).";
+        }
+        const fimLinha = fim ? `<div style="font-size:13px;color:#fde68a;text-align:center;margin-top:8px;font-weight:800;">🗓️ Prazo de calendário — encerra em ${fim} às 23h59</div>` : "";
+        timerContainer.innerHTML = `<span class="votacao-status-timer">🔒 Votação encerrada</span>`;
+        corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador"><strong>Duração oficial: ${ganhador} dias</strong>${veredito}</div>${fimLinha}<div class="detalhe-final">${motivo} · ${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos)}`;
+        return;
+    }
+    timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)} · ${formatarDataCurta(fechamento)} às 23:59</span>`;
+    if (!eleg.elegivel) {
+        const faltaPartidas = Math.max(0, eleg.minPartidas - eleg.totalPartidas);
+        const faltaVerdes = Math.max(0, eleg.minVerdes - eleg.verdes);
+        corpo.innerHTML = `<div class="votacao-progresso"><div style="font-weight:800;color:#fff;margin-bottom:6px;">Para votar, você precisa cumprir o critério:</div><div class="linha-prog ${eleg.totalPartidas >= eleg.minPartidas ? 'completa' : ''}"><span class="rotulo">Partidas jogadas</span><span class="valor">${eleg.totalPartidas} / ${eleg.minPartidas}</span></div><div class="linha-prog ${eleg.verdes >= eleg.minVerdes ? 'completa' : ''}"><span class="rotulo">Operações dominadas (${eleg.percentualMapa}% do mapa)</span><span class="valor">${eleg.verdes} / ${eleg.minVerdes}</span></div><span class="falta">${faltaPartidas > 0 ? `Faltam ${faltaPartidas} ${faltaPartidas === 1 ? "partida" : "partidas"}. ` : ""}${faltaVerdes > 0 ? `Faltam ${faltaVerdes} ${faltaVerdes === 1 ? "operação" : "operações"} para dominar.` : ""} ${faltaPartidas === 0 && faltaVerdes === 0 ? "Recarregue para votar!" : ""}</span></div>`;
+        return;
+    }
+    if (meuVoto) {
+        const rotuloVoto = meuVoto === "14" ? "estender a etapa para 14 dias" : "encerrar em 7 dias";
+        corpo.innerHTML = `<div class="votacao-seu-voto">Você votou por <strong>${rotuloVoto}</strong>. Obrigado por participar!</div><div style="font-size:12.5px;color:#ede9fe;text-align:center;margin-top:8px;line-height:1.5;">A duração oficial só será definida quando a votação fechar.</div>${renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos)}`;
+        return;
+    }
+    corpo.innerHTML = `<div class="votacao-botoes"><button class="btn-voto" onclick="registrarVoto('7')"><strong>7</strong>dias<small>encerrar na 1ª semana</small></button><button class="btn-voto" onclick="registrarVoto('14')"><strong>14</strong>dias<small>estender +1 semana</small></button></div><div style="font-size:12px;color:#ede9fe;text-align:center;margin-top:10px;line-height:1.5;">Após votar, você verá o resultado parcial. Sua escolha não pode ser alterada.</div>`;
+}
+// ▲▲▲ FIM [17.04]
+
+// ▼▼▼ [17.05] Painel de votação ───────────────────────────────────────
+async function abrirVotacaoProfessor() {
+    if (!exigirProfessorAutenticado()) return;
+    const dados = await obterDadosVotacao();
+    if (dados.inicio) { notificar("A votação já foi aberta.", "aviso"); return; }
+    const etapa = await obterDadosEtapa(true);
+    if (!etapa.inicioEm) { notificar("Agende o início da etapa antes de abrir a votação.", "aviso", 5000); return; }
+    const fechamento = calcularFechamentoVotacao(etapa.inicioEm);
+    if (!confirm(`Abrir votação agora?\n\nEla será encerrada automaticamente em ${formatarDataCurta(fechamento)} às 23:59 (4º dia).`)) return;
+    try {
+        await database.ref(CAMINHO_VOTACAO).set({ inicio: etapa.inicioEm });
+        notificar("Votação aberta!", "sucesso");
+        await renderizarPainelVotacao();
+        await renderizarCardVotacao();
+    } catch(e) { notificar("Não foi possível abrir a votação.", "erro"); console.warn(e); }
+}
+async function resetarVotacao() {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm("⚠️ Resetar votação? Todos os votos serão apagados e a votação voltará ao estado inicial (fechada).\n\nObs: NÃO apaga o histórico de partidas nem o ranking.")) return;
+    try {
+        await database.ref(CAMINHO_VOTACAO).remove();
+        await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null });
+        notificar("Votação resetada.", "sucesso");
+        await renderizarPainelVotacao();
+        await renderizarCardVotacao();
+        await atualizarTelaInicialComEtapa();
+    } catch(e) { notificar("Não foi possível resetar.", "erro"); console.warn(e); }
+}
+async function renderizarPainelVotacao() {
+    const container = document.getElementById("painel-votacao-conteudo");
+    if (!container) return;
+    const etapa = await obterDadosEtapa(true);
+    const dados = await obterDadosVotacao();
+    if (!etapa.inicioEm) {
+        container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">Defina primeiro o <strong>início da etapa</strong> no bloco acima. A votação abre automaticamente quando o prazo chegar (ou pelo botão abaixo).</p>`;
+        return;
+    }
+    if (!dados.inicio) {
+        const fech = calcularFechamentoVotacao(etapa.inicioEm);
+        container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (até 23:59 do 4º dia).</p><button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação agora</button>`;
+        return;
+    }
+    const fechamento = calcularFechamentoVotacao(dados.inicio);
+    const encerrada = Date.now() > fechamento || !!etapa.votacaoFechadaEm;
+    const votos = dados.votos ? Object.values(dados.votos) : [];
+    const totalVotos = votos.length;
+    const votos7 = votos.filter(v => String(v.opcao) === "7").length;
+    const votos14 = votos.filter(v => String(v.opcao) === "14").length;
+    const estado = encerrada ? "🔒 Encerrada" : "🟢 Em andamento";
+    const ganhador = etapa.duracaoEscolhida ? `${etapa.duracaoEscolhida} dias` : (votos14 > votos7 ? "14 dias" : "7 dias");
+    let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;"><div><strong>Estado:</strong><br>${estado}</div><div><strong>Fecha em:</strong><br>${formatarDataCurta(fechamento)} às 23:59</div><div><strong>Votos "7 dias":</strong><br>${votos7}</div><div><strong>Votos "14 dias":</strong><br>${votos14}</div><div><strong>Total:</strong><br>${totalVotos}</div><div><strong>Resultado:</strong><br>${totalVotos ? ganhador : "—"}</div></div>`;
+    if (etapa.fimPrevistoEm) html += `<div style="background:#dcfce7;border-left:4px solid #22c55e;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#14532d;">✅ Prazo oficial definido. Encerramento previsto: <strong>${formatarDataHoraCurta(etapa.fimPrevistoEm)}</strong> às 23h59.</div>`;
+    html += `<button onclick="resetarVotacao()" class="botao-forcar" style="margin:0;">🗑️ Resetar votação</button>`;
+    container.innerHTML = html;
+}
+// ▲▲▲ FIM [17.05]
+
+// ▼▼▼ [17.06] Destaques do professor ──────────────────────────────────
+function calcularDestaques(partidas, filtroTurma) {
+    const porAluno = new Map();
+    partidas.forEach(p => {
+        if (filtroTurma && filtroTurma !== "todas" && p.turma !== filtroTurma) return;
+        const k = `${normalizarNome(p.nome)}|${p.turma}`;
+        if (!porAluno.has(k)) porAluno.set(k, { nome: p.nome, turma: p.turma, partidas: [] });
+        porAluno.get(k).partidas.push(p);
+    });
+    const MIN_PARTIDAS = 3;
+    const candidatos = [];
+    porAluno.forEach(({ nome, turma, partidas }) => {
+        if (partidas.length < MIN_PARTIDAS) return;
+        const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+        const primeiras = ordenadas.slice(0, 3);
+        const ultimas = ordenadas.slice(-3);
+        const mediaIni = primeiras.reduce((s, p) => s + (Number(p.pontos) || 0), 0) / primeiras.length;
+        const mediaFim = ultimas.reduce((s, p) => s + (Number(p.pontos) || 0), 0) / ultimas.length;
+        const totalAcertos = partidas.reduce((s, p) => s + (Number(p.acertos) || 0), 0);
+        const totalErros = partidas.reduce((s, p) => s + (Number(p.erros) || 0), 0);
+        const totalPerguntas = totalAcertos + totalErros;
+        const precisao = totalPerguntas ? (totalAcertos / totalPerguntas) * 100 : 0;
+        const evolucaoPct = mediaIni > 0 ? ((mediaFim - mediaIni) / mediaIni) * 100 : 0;
+        candidatos.push({ nome, turma, totalPartidas: partidas.length, mediaIni: Math.round(mediaIni), mediaFim: Math.round(mediaFim), evolucaoPct, precisao, totalAcertos, totalErros });
+    });
+    const evolucao = [...candidatos].filter(c => c.evolucaoPct > 0).sort((a, b) => b.evolucaoPct - a.evolucaoPct).slice(0, 3);
+    const precisao = [...candidatos].sort((a, b) => b.precisao - a.precisao || b.totalPartidas - a.totalPartidas).slice(0, 3);
+    const volume = [...candidatos].sort((a, b) => b.totalPartidas - a.totalPartidas || b.precisao - a.precisao).slice(0, 3);
+    return { evolucao, precisao, volume, totalConsiderados: candidatos.length };
+}
+async function renderizarDestaquesPainel() {
+    const container = document.getElementById("destaques-painel-conteudo");
+    if (!container) return;
+    container.innerHTML = `<div class="desempenho-loading">⏳ Calculando destaques…</div>`;
+    const sel = document.getElementById("destaque-filtro-turma");
+    const turma = sel ? sel.value : "todas";
+    try {
+        const partidas = await obterPartidas();
+        const d = calcularDestaques(partidas, turma);
+        let mestres = [];
+        try {
+            const alunosUnicos = new Map();
+            partidas.forEach(p => {
+                if (turma !== "todas" && p.turma !== turma) return;
+                const k = `${normalizarNome(p.nome)}|${p.turma}`;
+                if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: p.nome, turma: p.turma });
+            });
+            for (const a of alunosUnicos.values()) {
+                const mapa = await obterDesempenhoOperacoesGlobal(a.nome, a.turma);
+                let dom = 0;
+                FATORES_MAPA.forEach(x => FATORES_MAPA.forEach(y => {
+                    const dd = mapa[`${x}x${y}`];
+                    if (dd && dd.tentativas > 0 && (dd.acertos / dd.tentativas) >= 0.9) dom++;
+                }));
+                if (dom >= TOTAL_OPERACOES_MAPA) mestres.push(a);
+            }
+        } catch(e) { console.warn("Falha ao listar mestres:", e); }
+        const blocoHtml = (titulo, icone, classe, arr, renderLinha) => {
+            if (!arr.length) return `<div class="destaques-prof-bloco ${classe}"><div class="destaques-prof-cabecalho"><span class="icone">${icone}</span> ${titulo}</div><div class="destaques-prof-vazio">Nenhum aluno com mínimo de 3 partidas.</div></div>`;
+            return `<div class="destaques-prof-bloco ${classe}"><div class="destaques-prof-cabecalho"><span class="icone">${icone}</span> ${titulo}</div><ul class="destaques-prof-lista">${arr.map((item, i) => renderLinha(item, i)).join("")}</ul></div>`;
+        };
+        const htmlMestres = `<div class="destaques-prof-bloco" style="border-left:4px solid #fbbf24;"><div class="destaques-prof-cabecalho"><span class="icone">🧠</span> Mestres da Tabuada (100% do mapa)</div>${mestres.length === 0 ? `<div class="destaques-prof-vazio">Nenhum aluno atingiu 100% do mapa ainda.</div>` : `<ul class="destaques-prof-lista">${mestres.map((m, i) => `<li class="destaques-prof-item pos-1"><span class="destaques-prof-posicao">🎖️</span><span class="destaques-prof-info"><span class="destaques-prof-nome">${escaparHtml(m.nome)}</span><span class="destaques-prof-turma">${escaparHtml(m.turma)}</span></span><span class="destaques-prof-valor">🏆</span></li>`).join("")}</ul>`}</div>`;
+        const htmlEvolucao = blocoHtml("Quem mais evoluiu", "🚀", "ouro", d.evolucao, (item, i) => `<li class="destaques-prof-item ${i === 0 ? "pos-1" : ""}"><span class="destaques-prof-posicao">${i + 1}º</span><span class="destaques-prof-info"><span class="destaques-prof-nome">${escaparHtml(item.nome)}</span><span class="destaques-prof-turma">${escaparHtml(item.turma)}</span></span><span class="destaques-prof-valor">+${Math.round(item.evolucaoPct)}%</span></li>`);
+        const htmlPrecisao = blocoHtml("Melhor precisão", "🎯", "prata", d.precisao, (item, i) => `<li class="destaques-prof-item ${i === 0 ? "pos-1" : ""}"><span class="destaques-prof-posicao">${i + 1}º</span><span class="destaques-prof-info"><span class="destaques-prof-nome">${escaparHtml(item.nome)}</span><span class="destaques-prof-turma">${escaparHtml(item.turma)}</span></span><span class="destaques-prof-valor">${item.precisao.toFixed(1)}%</span></li>`);
+        const htmlVolume = blocoHtml("Quem mais jogou", "🎮", "bronze", d.volume, (item, i) => `<li class="destaques-prof-item ${i === 0 ? "pos-1" : ""}"><span class="destaques-prof-posicao">${i + 1}º</span><span class="destaques-prof-info"><span class="destaques-prof-nome">${escaparHtml(item.nome)}</span><span class="destaques-prof-turma">${escaparHtml(item.turma)}</span></span><span class="destaques-prof-valor">${item.totalPartidas} partidas</span></li>`);
+        const filtroTxt = turma === "todas" ? "todas as turmas" : `turma ${turma}`;
+        const nota = d.totalConsiderados > 0 ? `<p style="font-size:11px;color:#94a3b8;margin:8px 0 0;line-height:1.5;text-align:left;">📊 ${d.totalConsiderados} aluno${d.totalConsiderados === 1 ? "" : "s"} considerado${d.totalConsiderados === 1 ? "" : "s"} em ${filtroTxt} (mín. 3 partidas).</p>` : "";
+        container.innerHTML = `<div class="destaques-prof">${htmlMestres}${htmlEvolucao}${htmlPrecisao}${htmlVolume}</div>${nota}`;
+    } catch(e) {
+        console.warn("Falha ao calcular destaques do painel:", e);
+        container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível calcular os destaques agora.</div>`;
+    }
+}
+// ▲▲▲ FIM [17.06]
+
+// ▼▼▼ [17.07] Reset e limpeza ─────────────────────────────────────────
+async function limparAlbumPorFiltro(turma) {
+    const caminhos = [CAMINHO_MEDALS, CAMINHO_ESTRELAS, CAMINHO_SECOES_COMPLETAS, CAMINHO_POSICAO_BASELINE, CAMINHO_SNAPSHOT_DIARIO];
+    if (turma === "todas") {
+        for (const c of caminhos) { try { await database.ref(c).remove(); } catch(e) { console.warn(`Erro ao limpar ${c}:`, e); } }
+        try { localStorage.removeItem("copa_album_vistas_count"); } catch(e) {}
+        try { localStorage.removeItem(STORAGE_PATENTE_VISTA); } catch(e) {}
+        try { localStorage.removeItem(STORAGE_ALBUM_ONBOARDING); } catch(e) {}
+        return;
+    }
+    const sufixo = `|${turma}`;
+    for (const c of caminhos) {
+        try {
+            const snap = await database.ref(c).once("value");
+            const dados = snap.val() || {};
+            const alvos = Object.keys(dados).filter(k => k.endsWith(sufixo));
+            for (const chave of alvos) { await database.ref(`${c}/${chave}`).remove(); }
+        } catch(e) { console.warn(`Erro ao limpar ${c} da turma ${turma}:`, e); }
+    }
+}
+async function limparMensagensPorFiltro(turma) {
+    if (turma === "todas") { try { await database.ref(CAMINHO_MENSAGENS).remove(); } catch(e) {} return; }
+    try {
+        const snap = await database.ref(CAMINHO_MENSAGENS).once("value");
+        const dados = snap.val() || {};
+        const sufixo = `|${turma}`;
+        for (const chave of Object.keys(dados)) { if (chave.endsWith(sufixo)) { await database.ref(`${CAMINHO_MENSAGENS}/${chave}`).remove(); } }
+    } catch(e) {}
+}
+function abrirResetTurma() { if (!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
+async function confirmarReset() {
+    if (!exigirProfessorAutenticado()) return;
+    const turma = document.getElementById("reset-turma").value;
+    const mod = document.getElementById("reset-modalidade").value;
+    const limparVinculos = document.getElementById("reset-limpar-vinculos")?.checked || false;
+    let msg = `Resetar ${turma === "todas" ? "TODAS" : turma} - ${mod === "todas" ? "TODAS" : MODALIDADES[mod]?.nome}?`;
+    if (limparVinculos) msg += `\n\n⚠️ TAMBÉM irá apagar TODOS os vínculos de dispositivo.\nOs nomes ficarão livres para serem usados em qualquer aparelho.`;
+    if (!confirm(msg)) return;
+    const rank = await obterRanking();
+    const novos = rank.filter(r => !resultadoCombinaFiltro(r, turma, mod));
+    for (const item of rank) { if (!novos.includes(item)) { const c = criarChaveResultado(item); await database.ref(`${CAMINHO_RANKING}/${c}`).remove(); } }
+    const partidas = await obterPartidas();
+    const partidasN = partidas.filter(p => !resultadoCombinaFiltro(p, turma, mod));
+    for (const p of partidas) { if (!partidasN.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).remove(); }
+    await limparCopaV2PorFiltro(turma, mod);
+    limparLocalStorageCopaV2(turma, mod);
+    await limparAlbumPorFiltro(turma);
+    await limparMensagensPorFiltro(turma);
+    if (limparVinculos) {
+        try { await database.ref(CAMINHO_VINCULOS).remove(); notificar("Todos os vínculos de dispositivo foram removidos.", "info", 4000); }
+        catch(e) { console.warn("Erro ao limpar vínculos:", e); notificar("Aviso: não foi possível limpar os vínculos agora.", "aviso", 4000); }
+    }
+    localStorage.setItem(STORAGE_RANKING, JSON.stringify(novos));
+    localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasN));
+    notificar("Reset concluído!", "sucesso");
+    renderizarRanking();
+    renderizarDestaquesPainel();
+    carregarMensagensPainel();
+    document.getElementById("painel-reset").classList.add("hidden");
+    const cb = document.getElementById("reset-limpar-vinculos");
+    if (cb) cb.checked = false;
+}
+async function exportarCSV() {
+    if (!exigirProfessorAutenticado()) return;
+    const rank = await obterRanking();
+    const partidas = await obterPartidas();
+    let csv = "Tipo,Nome,Turma,Modalidade,Pontos,Acertos,Erros,Tempo,Sequencia,Data,IdPartida\n";
+    rank.forEach(r => { csv += `"recorde","${r.nome}",${r.turma},"${MODALIDADES[r.modalidade]?.nome}",${r.pontos},${r.acertos},${r.erros||0},${r.tempoMedio.toFixed(2)},${r.maiorSequencia||0},"${r.data}","${r.idPartida||""}"\n`; });
+    partidas.forEach(r => { csv += `"partida","${r.nome}",${r.turma},"${MODALIDADES[r.modalidade]?.nome}",${r.pontos},${r.acertos},${r.erros||0},${r.tempoMedio.toFixed(2)},${r.maiorSequencia||0},"${r.data}","${r.idPartida||""}"\n`; });
+    const b = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "copa_tabuada.csv"; a.click();
+    notificar("Download iniciado", "info");
+}
+// ▲▲▲ FIM [17.07]
+
+// ▼▼▼ [17.08] Gerenciar alunos ────────────────────────────────────────
+async function abrirGerenciarAlunos() { if (!exigirProfessorAutenticado()) return; document.getElementById("painel-alunos").classList.remove("hidden"); await carregarListaAlunos(); }
+function fecharGerenciarAlunos() { document.getElementById("painel-alunos").classList.add("hidden"); }
+async function carregarListaAlunos() { const r = await obterRanking(); alunosData = [...r]; filtrarAlunos(); }
+function filtrarAlunos() {
+    const fn = document.getElementById("filtro-alunos").value.toLowerCase();
+    const ft = document.getElementById("filtro-turma-alunos").value;
+    alunosFiltrados = alunosData.filter(a => (!fn || a.nome.toLowerCase().includes(fn)) && (!ft || a.turma === ft));
+    alunosFiltrados.sort((a, b) => a.turma.localeCompare(b.turma) || a.nome.localeCompare(b.nome));
+    renderizarListaAlunos();
+}
+function renderizarListaAlunos() {
+    const c = document.getElementById("lista-alunos-container"); if (!c) return;
+    if (!alunosFiltrados.length) { c.innerHTML = "<div style='padding:20px'>Nenhum aluno</div>"; return; }
+    let h = '<table class="alunos-table"><thead><tr><th>Nome</th><th>Turma</th><th>Modalidade</th><th>Pontos</th><th>Data</th><th>Vínculo</th><th>Ações</th></tr></thead><tbody>';
+    for (const a of alunosFiltrados) {
+        const cv = chaveVinculo(a.nome, a.turma);
+        h += `<tr id="row-${cv}"><td style="text-align:center"><input type="text" value="${escaparHtml(a.nome)}" class="editar-nome" data-chave="${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}" style="width:130px;"></td><td style="text-align:center">${a.turma}</td><td style="text-align:center">${MODALIDADES[a.modalidade]?.nome}</td><td style="text-align:center">${a.pontos}</td><td style="text-align:center">${new Date(a.data).toLocaleDateString()}</td><td style="text-align:center" id="vinculo-${cv}">🔍</td><td style="text-align:center"><button onclick="desvincularAluno('${escaparHtml(a.nome)}','${a.turma}')" class="btn-desvincular" title="Desvincular">🔓</button><button onclick="excluirRegistro('${a.modalidade}|${a.turma}|${normalizarNome(a.nome)}')" class="btn-excluir">🗑️</button></td></tr>`;
+    }
+    h += '</tbody></table><button onclick="salvarEdicoesNomes()" class="botao-verde" style="margin-top:10px;">💾 Salvar Edições</button>';
+    c.innerHTML = h;
+    setTimeout(async () => {
+        for (const a of alunosFiltrados) {
+            const k = chaveVinculo(a.nome, a.turma);
+            const cell = document.getElementById(`vinculo-${k}`);
+            if (cell) {
+                const v = await obterVinculo(a.nome, a.turma);
+                if (v) { cell.innerHTML = `🔒 ${v.dispositivoId.slice(0, 8)}...`; cell.title = `Dispositivo: ${v.dispositivoId}\nÚltimo acesso: ${formatarDataHora(v.ultimoAcesso || v.criadoEm)}`; }
+                else cell.innerHTML = `🔓 Não vinculado`;
+            }
+        }
+    }, 100);
+}
+async function excluirRegistro(chave) {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm("Excluir permanentemente?")) return;
+    const [mod, turma, nome] = chave.split("|");
+    const reg = alunosData.find(a => a.modalidade === mod && a.turma === turma && normalizarNome(a.nome) === nome);
+    if (reg) {
+        const fc = criarChaveResultado({ modalidade: mod, turma, nome });
+        await database.ref(`${CAMINHO_RANKING}/${fc}`).remove();
+        let l = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
+        localStorage.setItem(STORAGE_RANKING, JSON.stringify(l.filter(x => !(x.modalidade === mod && x.turma === turma && normalizarNome(x.nome) === normalizarNome(nome)))));
+        const ps = await obterPartidas();
+        const rest = ps.filter(p => !(p.modalidade === mod && p.turma === turma && normalizarNome(p.nome) === normalizarNome(nome)));
+        for (const p of ps) { if (!rest.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).remove(); }
+        localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(rest));
+        await removerCopaV2Aluno(reg.nome, reg.turma);
+        try {
+            localStorage.removeItem(chaveLocalMapa(reg.nome, reg.turma, mod));
+            localStorage.removeItem(chaveLocalCores(reg.nome, reg.turma, mod));
+        } catch(e) {}
+        await carregarListaAlunos();
+        renderizarRanking();
+        notificar("Registro excluído", "sucesso");
+    }
+}
+async function salvarEdicoesNomes() {
+    if (!exigirProfessorAutenticado()) return;
+    const inputs = document.querySelectorAll(".editar-nome");
+    for (const input of inputs) {
+        const ca = input.getAttribute("data-chave");
+        const [mod, turma, nomeAntigo] = ca.split("|");
+        const nomeNovoBruto = input.value.trim();
+        const vv = validarNomeCompleto(nomeNovoBruto);
+        if (!vv.ok) { notificar(`Nome inválido em "${nomeAntigo}": ${vv.motivo}`, "aviso", 5000); return; }
+        const nomeNovo = vv.normalizado;
+        input.value = nomeNovo;
+        if (normalizarNome(nomeAntigo) !== normalizarNome(nomeNovo) && nomeNovo) {
+            const regs = alunosData.filter(a => a.modalidade === mod && a.turma === turma && normalizarNome(a.nome) === normalizarNome(nomeAntigo));
+            for (const reg of regs) {
+                const fc = criarChaveResultado({ modalidade: mod, turma, nome: nomeAntigo });
+                await database.ref(`${CAMINHO_RANKING}/${fc}`).remove();
+                const nr = { ...reg, nome: nomeNovo };
+                const nc = criarChaveResultado(nr);
+                await database.ref(`${CAMINHO_RANKING}/${nc}`).set(nr);
+            }
+            let lr = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]").map(r => (r.modalidade === mod && r.turma === turma && normalizarNome(r.nome) === normalizarNome(nomeAntigo) ? { ...r, nome: nomeNovo } : r));
+            localStorage.setItem(STORAGE_RANKING, JSON.stringify(lr));
+            const ps = await obterPartidas();
+            for (const p of ps.filter(p => p.modalidade === mod && p.turma === turma && normalizarNome(p.nome) === normalizarNome(nomeAntigo))) {
+                p.nome = nomeNovo;
+                if (p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).set(p);
+            }
+            localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(ps));
+            await migrarCopaV2Aluno(nomeAntigo, nomeNovo, turma);
+            try {
+                for (const m of Object.keys(MODALIDADES)) {
+                    const vk = chaveLocalMapa(nomeAntigo, turma, m);
+                    const nk = chaveLocalMapa(nomeNovo, turma, m);
+                    const dados = localStorage.getItem(vk);
+                    if (dados) { localStorage.setItem(nk, dados); localStorage.removeItem(vk); }
+                    const vk2 = chaveLocalCores(nomeAntigo, turma, m);
+                    const nk2 = chaveLocalCores(nomeNovo, turma, m);
+                    const d2 = localStorage.getItem(vk2);
+                    if (d2) { localStorage.setItem(nk2, d2); localStorage.removeItem(vk2); }
+                }
+            } catch(e) {}
+        }
+    }
+    await carregarListaAlunos();
+    renderizarRanking();
+    notificar("Nomes atualizados", "sucesso");
+}
+async function desvincularAluno(nome, turma) {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm(`Desvincular ${nome} (Turma ${turma})? O próximo acesso vai liberar qualquer aparelho.`)) return;
+    const c = chaveVinculo(nome, turma);
+    await database.ref(`${CAMINHO_VINCULOS}/${c}`).remove();
+    notificar(`Vínculo de ${nome} removido.`, "sucesso");
+    await carregarListaAlunos();
+}
+// ▲▲▲ FIM [17.08]
+
+// ▼▼▼ [17.09] Modais de ajuda ─────────────────────────────────────────
+function abrirComoFunciona() { document.getElementById("modal-como-funciona").classList.remove("hidden"); }
+function fecharComoFunciona(e) {
+    if (e && e.target && e.target.closest(".modal-card")) return;
+    document.getElementById("modal-como-funciona").classList.add("hidden");
+}
+function abrirChangelog() { document.getElementById("modal-changelog").classList.remove("hidden"); }
+function fecharChangelog(e) {
+    if (e && e.target && e.target.closest(".modal-card")) return;
+    document.getElementById("modal-changelog").classList.add("hidden");
+}
+// ▲▲▲ FIM [17.09]
+
+// ═══════════════════════════════════════════════════════════════════════
+// [18] JS-HOME · Preenchimento dinâmico da Home E-Sports
+// ═══════════════════════════════════════════════════════════════════════
+
+// ▼▼▼ [18.01] Preenchimento do hero ──────────────────────────────────
+async function preencherHomeEsports() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+
+    const pillNome = document.getElementById("perfil-pill-nome");
+    const pillTurma = document.getElementById("perfil-pill-turma");
+    if (pillNome) pillNome.textContent = nome || "Meu Perfil";
+    if (pillTurma) pillTurma.textContent = turma || "--";
+
+    const heroNome = document.getElementById("hero-nome-destaque");
+    if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
+
+    if (!nome || !turma) {
+        atualizarHomeValores(null);
+        return;
+    }
+
+    try {
+        const partidas = await obterHistoricoAluno(nome, turma);
+        if (!partidas.length) {
+            atualizarHomeValores(null);
+            return;
+        }
+
+        const melhorPartida = partidas.reduce((a, b) =>
+            (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a
+        );
+        const melhorPontos = Math.max(...partidas.map(p => Number(p.pontos) || 0));
+
+        const ranking = await obterRankingPorPontos(melhorPartida.modalidade, turma);
+        const idx = ranking.findIndex(r =>
+            normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
+        );
+        const posicao = idx === -1 ? null : idx + 1;
+
+        atualizarHomeValores({
+            melhorPontos,
+            posicao,
+            melhorPartida,
+            ranking,
+            nome,
+            turma
+        });
+    } catch (e) {
+        console.warn("Falha ao preencher home esports:", e);
+        atualizarHomeValores(null);
+    }
+}
+// ▲▲▲ FIM [18.01]
+
+// ▼▼▼ [18.02] Atualização dos valores da home ────────────────────────
+function atualizarHomeValores(dados) {
+    const elPontos = document.getElementById("hero-melhor-pontos");
+    const elPosicao = document.getElementById("hero-melhor-posicao");
+    const elPosNum = document.getElementById("hero-posicao-num");
+    const elAviso = document.getElementById("aviso-zona-classificado");
+    const elMini = document.getElementById("mini-ranking-home");
+    const elTurmaLbl = document.getElementById("posicao-turma-label");
+
+    if (!dados) {
+        if (elPontos) elPontos.innerHTML = `— <span class="unidade">pts</span>`;
+        if (elPosicao) elPosicao.textContent = "—";
+        if (elPosNum) elPosNum.textContent = "--ª";
+        if (elMini) elMini.innerHTML = `<div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome" style="color:var(--text-muted);">Jogue para ver o ranking</span><span class="mini-ranking-pontos">—</span></div>`;
+        if (elAviso) elAviso.style.display = "none";
+        return;
+    }
+
+    const { melhorPontos, posicao, melhorPartida, ranking, nome, turma } = dados;
+
+    if (elPontos) elPontos.innerHTML = `${melhorPontos.toLocaleString("pt-BR")} <span class="unidade">pts</span>`;
+    if (elPosicao) elPosicao.textContent = posicao ? `${posicao}º` : "—";
+    if (elPosNum) elPosNum.textContent = posicao ? `${posicao}ª` : "--ª";
+    if (elTurmaLbl) elTurmaLbl.textContent = `Turma ${turma}`;
+
+    if (elAviso) {
+        if (posicao && posicao <= 4) {
+            elAviso.style.display = "flex";
+            elAviso.innerHTML = `<span class="emoji">🏆</span><span><strong>Você está na zona de classificação!</strong><br>Continue assim para garantir sua vaga.</span>`;
+        } else if (posicao && posicao <= 6) {
+            elAviso.style.display = "flex";
+            elAviso.innerHTML = `<span class="emoji">💪</span><span><strong>Você está na zona de reserva!</strong><br>Falta pouco para entrar no Top 4.</span>`;
+        } else {
+            elAviso.style.display = "none";
+        }
+    }
+
+    if (elMini) {
+        const top4 = ranking.slice(0, 4);
+        elMini.innerHTML = top4.map((r, i) => {
+            const vc = normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma;
+            const nomeExibir = vc ? "Você" : r.nome.split(" ").slice(0, 2).join(" ");
+            return `<div class="mini-ranking-linha ${vc ? "voce" : ""}">
+                <span class="mini-ranking-pos">${i + 1}</span>
+                <span class="mini-ranking-nome">${escaparHtml(nomeExibir)}</span>
+                <span class="mini-ranking-pontos">${(Number(r.pontos) || 0).toLocaleString("pt-BR")}</span>
+            </div>`;
+        }).join("");
+    }
+
+    if (melhorPartida) {
+        const acertos = Number(melhorPartida.acertos) || 0;
+        const erros = Number(melhorPartida.erros) || 0;
+        const tempo = Number(melhorPartida.tempoMedio) || 0;
+        const pct = Math.min(1, acertos / 20);
+
+        const elAcertos = document.getElementById("anel-acertos");
+        const elMiniAcertos = document.getElementById("mini-acertos");
+        const elMiniErros = document.getElementById("mini-erros");
+        const elMiniTempo = document.getElementById("mini-tempo");
+        const elAnelFill = document.getElementById("anel-fill");
+
+        if (elAcertos) elAcertos.textContent = `${acertos}/20`;
+        if (elMiniAcertos) elMiniAcertos.textContent = acertos;
+        if (elMiniErros) elMiniErros.textContent = erros;
+        if (elMiniTempo) elMiniTempo.textContent = `${tempo.toFixed(2)}s`;
+
+        if (elAnelFill) {
+            const perimetro = 2 * Math.PI * 42;
+            const offset = perimetro * (1 - pct);
+            elAnelFill.style.strokeDashoffset = offset;
+        }
+    }
+}
+// ▲▲▲ FIM [18.02]
+
+// ═══════════════════════════════════════════════════════════════════════
+// [19] JS-BOOT · Inicialização e listeners globais
+// ═══════════════════════════════════════════════════════════════════════
+
+// ▼▼▼ [19.01] Listeners globais ───────────────────────────────────────
+document.getElementById("btn-som")?.addEventListener("click", toggleSom);
+document.getElementById("btn-comecar-partida")?.addEventListener("click", () => {
+    if (window._pendingGame && !window._pendingGame.treino) iniciarPartidaClassificatoria();
+});
+document.addEventListener("click", desbloquearAudio, { passive: true });
+document.addEventListener("touchstart", desbloquearAudio, { passive: true });
+document.addEventListener("keydown", desbloquearAudio, { passive: true });
+document.addEventListener("click", (e) => {
+    const c = e.target.closest(".mapa-celula");
+    if (c && c.dataset.op) abrirDetalheOperacao(c.dataset.op);
+});
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        const m = document.getElementById("modal-operacao");
+        if (m && !m.classList.contains("hidden")) fecharModalOperacao();
+        const mc = document.getElementById("modal-changelog");
+        if (mc && !mc.classList.contains("hidden")) fecharChangelog();
+        const mf = document.getElementById("modal-como-funciona");
+        if (mf && !mf.classList.contains("hidden")) fecharComoFunciona();
+        const ms = document.getElementById("modal-secao-completa");
+        if (ms && !ms.classList.contains("hidden")) fecharModalSecaoCompleta();
+        const mp = document.getElementById("modal-falar-professor");
+        if (mp && !mp.classList.contains("hidden")) fecharFalarComProfessor();
+        const mcert = document.getElementById("modal-certificado");
+        if (mcert && !mcert.classList.contains("hidden")) fecharCertificado();
+        const md = document.getElementById("modal-medalha-detalhe");
+        if (md && !md.classList.contains("hidden")) fecharDetalheMedalha();
+        const mo = document.getElementById("modal-album-onboarding");
+        if (mo && !mo.classList.contains("hidden")) fecharOnboardingAlbum();
+    }
+});
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+        const c = e.target?.closest?.(".album-figurinha[role='button']");
+        if (c && c.dataset.medalha) { e.preventDefault(); abrirDetalheMedalha(c.dataset.medalha); }
+    }
+});
+// ▲▲▲ FIM [19.01]
+
+// ▼▼▼ [19.02] Toque secreto ───────────────────────────────────────────
+let cliquesTitulo = 0, tempoResetClique = null;
+function configurarToqueSecreto() {
+    const t = document.getElementById("titulo-secreto"); if (!t) return;
+    t.addEventListener("click", () => {
+        cliquesTitulo++;
+        if (tempoResetClique) clearTimeout(tempoResetClique);
+        if (cliquesTitulo >= 5) { cliquesTitulo = 0; mostrarTela("tela-painel"); notificar("Acesso administrativo liberado!", "info"); }
+        else tempoResetClique = setTimeout(() => { cliquesTitulo = 0; }, 1500);
+    });
+}
+// ▲▲▲ FIM [19.02]
+
+// ▼▼▼ [19.03] Boot do app ─────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", async () => {
+    mostrarTela("tela-inicial");
+    atualizarBotaoMinhaTurma();
+    mudarTipoRanking("turma");
+    configurarToqueSecreto();
+    inicializarAudio();
+    atualizarAcessoSeConhecido();
+    try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
+    try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
+    const elV = document.getElementById("changelog-versao-atual");
+    if (elV) elV.textContent = APP_VERSION;
+    iniciarListenerMsgAluno();
+
+    try {
+        await verificarEIniciarEtapaSeNecessario();
+        await verificarEFecharVotacaoSeNecessario();
+        await verificarEEncerrarEtapaSeNecessario();
+    } catch(e) { console.warn("Falha ao processar ciclo da etapa:", e); }
+    try { await atualizarTelaInicialComEtapa(); } catch(e) { console.warn("Falha ao atualizar tela inicial com etapa:", e); }
+    try { await renderizarCardVotacao(); } catch(e) { console.warn("Falha ao renderizar card de votação:", e); }
+    try { await preencherHomeEsports(); } catch(e) { console.warn("Falha ao preencher home:", e); }
+
+    if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
+    votacaoTimerInterval = setInterval(async () => {
+        try {
+            await verificarEFecharVotacaoSeNecessario();
+            await verificarEEncerrarEtapaSeNecessario();
+            const card = document.getElementById("card-votacao");
+            if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
+            await atualizarTelaInicialComEtapa();
+        } catch(e) { console.warn("Timer votação/etapa:", e); }
+    }, 60000);
+});
+// ▲▲▲ FIM [19.03]
+    </script>
+</body>
+</html>
+
+
+
+
+
