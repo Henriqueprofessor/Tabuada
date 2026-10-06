@@ -1440,14 +1440,8 @@
         .mini-ranking-pontos { color: var(--neon-gold); font-weight: 800; font-size: 11.5px; }
         .aviso-classificado { background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0.08) 100%); border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 10px; padding: 10px 12px; font-size: 11.5px; color: #6ee7b7; font-weight: 700; line-height: 1.4; display: flex; align-items: center; gap: 8px; }
         .aviso-classificado .emoji { font-size: 18px; }
-        .bottom-nav { display: flex; justify-content: space-around; align-items: center; background: linear-gradient(180deg, rgba(15, 35, 64, 0.98) 0%, rgba(10, 22, 40, 0.98) 100%); border: 1px solid var(--border-neon); border-radius: 16px; padding: 10px 6px; margin-top: 14px; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35), 0 0 24px rgba(34, 211, 238, 0.08); backdrop-filter: blur(12px); }
-        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 8px; background: transparent; border: none; color: var(--text-muted); font-size: 10.5px; font-weight: 700; font-family: inherit; cursor: pointer; border-radius: 10px; transition: all 0.18s ease; margin: 0; width: auto; flex: 1; min-width: 0; }
-        .bottom-nav-item:hover:not(:disabled) { color: var(--text-primary); background: rgba(34, 211, 238, 0.06); }
-        .bottom-nav-item .icone-nav { font-size: 22px; line-height: 1; filter: grayscale(0.6) opacity(0.7); transition: filter 0.18s ease; }
-        .bottom-nav-item.ativo { color: var(--neon-gold); }
-        .bottom-nav-item.ativo .icone-nav { filter: none; }
-        .bottom-nav-item.ativo::after { content: ""; width: 18px; height: 3px; background: var(--neon-gold); border-radius: 2px; margin-top: 2px; box-shadow: 0 0 8px rgba(251, 191, 36, 0.7); }
-        .banner-final { background: linear-gradient(135deg, #102a43 0%, #174a73 55%, #0d7a61 100%); border: 1px solid var(--border-gold); border-radius: 14px; padding: 14px 18px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: var(--shadow-gold); flex-wrap: wrap; }
+
+        .banner-final { background: linear-gradient(135deg, #102a43 0%, #174a73 55%, #0d7a61 100%); border: 1px solid var(--border-gold); border-radius: 14px; padding: 14px 18px; margin-top: 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: var(--shadow-gold); flex-wrap: wrap; }
         .banner-final-texto { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.4; text-align: left; }
         .banner-final-texto strong { color: var(--neon-gold); display: block; font-size: 14px; margin-bottom: 2px; }
         .banner-final-emoji { font-size: 34px; filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5)); }
@@ -1468,9 +1462,7 @@
             .acao-card .acao-titulo { font-size: 13px; }
             .acao-card .acao-desc { font-size: 10px; }
             .info-etapa-stats { grid-template-columns: repeat(3, 1fr); }
-            .bottom-nav-item { font-size: 9.5px; padding: 5px 4px; }
-            .bottom-nav-item .icone-nav { font-size: 19px; }
-        }
+            
         /* ▲▲▲ FIM [02.27] */
 
         /* ▼▼▼ [02.28] Votação — Modal ─────────────────────── */
@@ -1736,25 +1728,6 @@
             </div>
             <div class="banner-final-emoji">🚀</div>
         </div>
-
-        <!-- Bottom navigation -->
-        <nav class="bottom-nav">
-            <button class="bottom-nav-item ativo" onclick="mostrarTela('tela-inicial')">
-                <span class="icone-nav">🏠</span> Início
-            </button>
-            <button class="bottom-nav-item" onclick="mostrarTela('tela-ranking')">
-                <span class="icone-nav">🏆</span> Classificação
-            </button>
-            <button class="bottom-nav-item" onclick="abrirMeuDesempenho()">
-                <span class="icone-nav">📊</span> Desempenho
-            </button>
-            <button class="bottom-nav-item" onclick="abrirAlbum()">
-                <span class="icone-nav">📖</span> Álbum
-            </button>
-            <button class="bottom-nav-item" onclick="document.querySelector('.mais-opcoes')?.scrollIntoView({behavior:'smooth'})">
-                <span class="icone-nav">⋯</span> Mais
-            </button>
-        </nav>
     </div>
     <!-- ▲▲▲ FIM [03.01] -->
 
@@ -5246,18 +5219,12 @@ function dicaMultiplicacao(fA, fB) {
 function mostrarTela(id) {
     ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
     document.getElementById(id)?.classList.remove("hidden");
-    if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); atualizarTelaInicialComEtapa(); preencherHomeEsports(); atualizarBottomNav(id); }
-    if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); atualizarBottomNav(id); }
-    if (id === "tela-desempenho") atualizarBottomNav(id);
-    if (id === "tela-album") atualizarBottomNav(id);
+    if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); atualizarTelaInicialComEtapa(); preencherHomeEsports(); }
+    if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
     if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); }
     if (id !== "tela-resultado") { document.getElementById("btn-treinar-novamente")?.classList.add("hidden"); document.getElementById("btn-compartilhar")?.classList.add("hidden"); }
 }
-function atualizarBottomNav(idAtivo) {
-    const mapa = { "tela-inicial": 0, "tela-ranking": 1, "tela-desempenho": 2, "tela-album": 3 };
-    const idx = mapa[idAtivo];
-    document.querySelectorAll(".bottom-nav-item").forEach((b, i) => b.classList.toggle("ativo", i === idx));
-}
+
 // ▲▲▲ FIM [13.05]
 
 // ▼▼▼ [13.06] Cadastro e início ────────────────────────────────────────
