@@ -2089,9 +2089,8 @@
 
         <!-- Card: Minha Posição -->
         <div class="home-card">
-            <div class="home-card-titulo">
+        <div class="home-card-titulo">
                 <span>🏆 Minha posição — <span id="home-turma-titulo">Turma --</span></span>
-                <span id="selo-turma-ranking" class="selo-turma-ranking hidden"></span>
             </div>
             <div class="ranking-home-lista" id="ranking-home-lista">
                 <div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome">Jogue para ver</span><span class="ranking-home-pontos">—</span></div>
@@ -2105,7 +2104,6 @@
             <div id="home-melhor-resultado" class="home-melhor-resultado">
                 <div class="home-empty-msg">Jogue uma partida para ver seu melhor resultado.</div>
             </div>
-            <button class="home-btn-link" onclick="abrirMeuDesempenho()">Ver meu desempenho →</button>
         </div>
 
         <!-- Card: Status da Etapa -->
@@ -2114,8 +2112,6 @@
             <div id="home-status-etapa" class="home-status-etapa">
                 <div class="home-empty-msg">Carregando informações da etapa...</div>
             </div>
-            <button class="home-btn-link" onclick="abrirAlbum()">📖 Ver meu Álbum →</button>
-            <button class="home-btn-link" onclick="abrirDetalhesEtapa()" style="margin-top:8px;">ℹ️ Ver detalhes da etapa →</button>
         </div>
 
         <!-- Meta Pessoal Compacta -->
@@ -2154,6 +2150,10 @@
             <button onclick="iniciarTreinoAnonimo()" class="botao-treino">
                 <span class="icone">🎯</span>
                 <span>Treino Livre</span>
+            </button>
+            <button onclick="abrirDetalhesEtapa()" class="botao-secundario">
+                <span class="icone">📅</span>
+                <span>Detalhes da Etapa</span>
             </button>
             <button onclick="abrirFalarComProfessor()" class="botao-mensagens">
                 <span class="icone">💬</span>
@@ -7793,23 +7793,13 @@
             );
             const posicao = idx === -1 ? null : idx + 1;
 
-            let turmaRankingInfo = null;
-            try {
-                const mediasTurmas = await calcularMediasTop4Turmas(melhorPartida.modalidade);
-                const iTurma = mediasTurmas.findIndex(t => t.turma === turma);
-                if (iTurma !== -1) {
-                    turmaRankingInfo = { posicao: iTurma + 1, total: mediasTurmas.length };
-                }
-            } catch(e) { console.warn("Falha ao calcular ranking de turmas:", e); }
-
             atualizarHomeValores({
                 melhorPontos,
                 posicao,
                 melhorPartida,
                 ranking,
                 nome,
-                turma,
-                turmaRankingInfo
+                turma
             });
         } catch (e) {
             console.warn("Falha ao preencher home esports:", e);
