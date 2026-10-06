@@ -1843,7 +1843,7 @@
             <div id="home-status-etapa" class="home-status-etapa">
                 <div class="home-empty-msg">Carregando informações da etapa...</div>
             </div>
-            <button class="home-btn-link" onclick="abrirComoFunciona()">Ver detalhes da etapa →</button>
+            <button class="home-btn-link" onclick="abrirDetalhesEtapa()">Ver detalhes da etapa →</button>
         </div>
 
         <!-- Meta Pessoal Compacta -->
@@ -2487,6 +2487,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
     <script>
+<!-- ▼▼▼ [04.10] MODAL DETALHES DA ETAPA ───────────────────────── -->
+<div id="modal-detalhes-etapa" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="fecharDetalhesEtapa(event)">
+    <div class="modal-card info-modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>📅 Detalhes da Etapa</h3>
+            <button class="modal-close" onclick="fecharDetalhesEtapa()" aria-label="Fechar">✕</button>
+        </div>
+        <div id="detalhes-etapa-conteudo" class="info-lista-wrap"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.10] -->
     // ═══════════════════════════════════════════════════════════════════════
     // [05] JS-CFG · Constantes e configuração global
     // ═══════════════════════════════════════════════════════════════════════
@@ -7591,7 +7602,78 @@ function atualizarHomeValores(dados) {
     }
 }
 // ▲▲▲ FIM [18.02]
+// ▼▼▼ [18.03] Abrir e fechar detalhes da etapa ───────────────────────
+async function abrirDetalhesEtapa() {
+    const container = document.getElementById("detalhes-etapa-conteudo");
+    const modal = document.getElementById("modal-detalhes-etapa");
+    if (!container || !modal) return;
 
+    const etapa = await obterDadosEtapa();
+    const fase = calcularFaseEtapa(etapa);
+    
+    // Mapeamento do status
+    const faseLabel = {
+        [ETAPA_FASES.sem_agendamento]: "⚪ Não agendada",
+        [ETAPA_FASES.pre_evento]: "🟣 Pré-evento (aguardando início)",
+        [ETAPA_FASES.etapa_votacao]: "🟠 Etapa ativa · Votação em andamento",
+        [ETAPA_FASES.etapa_definida]: "🟢 Etapa ativa · Prazo definido",
+        [ETAPA_FASES.congelada]: "⏸️ Pausada (congelada)",
+        [ETAPA_FASES.encerrada]: "🏁 Encerrada"
+    }[fase];
+
+    let html = "";
+
+    // 1. Status
+    html += `<div class="info-secao"><span class="info-icone">📍</span><div class="info-conteudo"><h4 class="info-titulo">Status Atual</h4><p class="info-texto"><strong>${faseLabel}</strong></p></div></div>`;
+
+    // 2. Prazos
+    if (etapa.inicioEm) {
+        html += `<div class="info-secao"><span class="info-icone">📅</span><div class="info-conteudo"><h4 class="info-titulo">Data de Início</h4><p class="info-texto">${formatarDataHoraCurta(etapa.inicioEm)}</p></div></div>`;
+    }
+    if (etapa.fimPrevistoEm) {
+        html += `<div class="info-secao"><span class="info-icone">🏁</span><div class="info-conteudo"><h4 class="info-titulo">Encerramento Previsto</h4><p class="info-texto">${formatarDataHoraCurta(etapa.fimPrevistoEm)} às 23h59</p></div></div>`;
+    }
+
+    // 3. Regras fixas da etapa
+    html += `<div class="info-secao"><span class="info-icone">📋</span><div class="info-conteudo"><h4 class="info-titulo">Regras da Etapa</h4>
+        <ul class="info-lista">
+            <li><strong>20 questões</strong> de multiplicação</li>
+            <li>Até <strong>10 segundos</strong> por questão</li>
+            <li><strong>Calculadora permitida</strong> para conferência</li>
+            <li>Os <strong>4 melhores</strong> de cada turma/modalidade avançam para a Final</li>
+        </ul>
+    </div></div>`;
+
+    // 4. Detalhes da Votação (se estiver ativa)
+    if (fase === ETAPA_FASES.etapa_votacao) {
+        const dadosVot = await obterDadosVotacao();
+        const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio) : null;
+        const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
+        const v7 = votos.filter(v => String(v.opcao) === "7").length;
+        const v14 = votos.filter(v => String(v.opcao) === "14").length;
+
+        html += `<div class="info-secao"><span class="info-icone">🗳️</span><div class="info-conteudo"><h4 class="info-titulo">Votação em Andamento</h4>
+            <p class="info-texto">A duração da etapa está sendo decidida pelos alunos.</p>
+            <p class="info-texto">Placar parcial: <strong>7 dias</strong> (${v7} votos) vs <strong>14 dias</strong> (${v14} votos).</p>
+            ${fechamento ? `<p class="info-texto" style="font-size:12px;color:#6c757d;">A votação fecha em ${formatarDataCurta(fechamento)} às 23:59.</p>` : ""}
+        </div></div>`;
+    } else if (fase === ETAPA_FASES.etapa_definida && etapa.duracaoEscolhida) {
+        html += `<div class="info-secao"><span class="info-icone">✅</span><div class="info-conteudo"><h4 class="info-titulo">Votação Encerrada</h4><p class="info-texto">A duração oficial da etapa foi definida em <strong>${etapa.duracaoEscolhida} dias</strong>.</p></div></div>`;
+    }
+
+    // 5. Aviso Importante sobre o nome
+    html += `<div class="info-secao"><span class="info-icone">🚨</span><div class="info-conteudo"><div class="info-destaque vermelho" style="margin:0;">Lembre-se: seu nome deve estar completo e idêntico à chamada oficial. Nomes abreviados ou fora do padrão podem causar <strong>desclassificação</strong>.</div></div></div>`;
+
+    container.innerHTML = html;
+    modal.classList.remove("hidden");
+    setTimeout(() => document.querySelector("#modal-detalhes-etapa .modal-close")?.focus(), 80);
+}
+
+function fecharDetalhesEtapa(e) {
+    if (e && e.target && e.target.closest(".modal-card")) return;
+    document.getElementById("modal-detalhes-etapa")?.classList.add("hidden");
+}
+// ▲▲▲ FIM [18.03]
 // ═══════════════════════════════════════════════════════════════════════
 // [19] JS-BOOT · Inicialização e listeners globais
 // ═══════════════════════════════════════════════════════════════════════
