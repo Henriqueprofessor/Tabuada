@@ -1400,9 +1400,10 @@
         .mais-opcoes-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.12); border-color: var(--neon-cyan); color: var(--text-primary); transform: translateY(-2px); }
         .mais-opcoes-btn .icone { font-size: 22px; line-height: 1; }
         .mais-opcoes-btn .badge-notif { position: absolute; top: 4px; right: 6px; background: #dc3545; color: #fff; font-size: 9px; font-weight: 800; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--bg-deep); }
-        .grid-info-triplo { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+        .grid-info-duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+        .grid-info-duplo .info-card { min-height: 0; }
         @media (max-width: 780px) {
-            .grid-info-triplo { grid-template-columns: 1fr; }
+            .grid-info-duplo { grid-template-columns: 1fr; }
             .hero-esports-stats { grid-template-columns: 1fr; }
             .grid-acoes-principais { grid-template-columns: repeat(2, 1fr); }
             .esports-escola { display: none; }
@@ -1429,6 +1430,68 @@
         .progresso-mini-linha { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
         .progresso-mini-linha .valor { color: var(--text-primary); margin-left: auto; font-weight: 900; }
         .progresso-mini-linha .icone { font-size: 13px; }
+        /* Ranking Home — v8.9.3 */
+        .ranking-home-lista { display: flex; flex-direction: column; gap: 4px; }
+        .ranking-home-linha {
+            display: grid;
+            grid-template-columns: 28px 1fr auto;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            background: rgba(10, 22, 40, 0.4);
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            line-height: 1.25;
+        }
+        .ranking-home-linha.voce {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06));
+            border-color: rgba(16, 185, 129, 0.5);
+            font-weight: 800;
+        }
+        .ranking-home-pos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 900;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--neon-cyan);
+        }
+        .ranking-home-linha:nth-child(1) .ranking-home-pos { background: linear-gradient(135deg, #fbbf24, #d97706); color: #422006; box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
+        .ranking-home-linha:nth-child(2) .ranking-home-pos { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: #1e293b; }
+        .ranking-home-linha:nth-child(3) .ranking-home-pos { background: linear-gradient(135deg, #b45309, #78350f); color: #fef3c7; }
+        .ranking-home-linha.voce .ranking-home-pos { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+        .ranking-home-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ranking-home-pontos { color: var(--neon-gold); font-weight: 800; font-size: 11.5px; white-space: nowrap; }
+        .ranking-home-linha.voce .ranking-home-pontos { color: #6ee7b7; }
+        .ranking-home-divisor {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 2px 0;
+            letter-spacing: 4px;
+            line-height: 1;
+            font-weight: 700;
+        }
+        .selo-turma-ranking {
+            margin-left: auto;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: rgba(34, 211, 238, 0.12);
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            color: var(--neon-cyan);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        .selo-turma-ranking.hidden { display: none; }
+
         .mini-ranking-posicao { display: flex; flex-direction: column; gap: 5px; }
         .mini-ranking-linha { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font-size: 12px; background: rgba(10, 22, 40, 0.4); border: 1px solid transparent; }
         .mini-ranking-linha.voce { background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06)); border-color: rgba(16, 185, 129, 0.5); font-weight: 800; }
@@ -1564,31 +1627,14 @@
                 <div class="countdown-bloco"><span class="countdown-num" id="cd-seg">00</span><span class="countdown-label">seg</span></div>
             </div>
         </section>
-
         <section id="hero-classificatoria-normal" class="hero-esports" aria-labelledby="titulo-classificatoria">
             <div class="hero-esports-conteudo">
                 <h2 class="hero-esports-saudacao" id="titulo-classificatoria">
                     Olá, <span class="nome-destaque" id="hero-nome-destaque">Aluno</span>!
                 </h2>
                 <p class="hero-esports-sub" id="hero-sub-dinamica">
-                    Sua dedicação faz a diferença!<br>
-                    Você está na <span class="posicao-num" id="hero-posicao-num">--ª</span> posição na sua turma.
-                    Continue treinando e mostre todo o seu potencial na Copa da Tabuada CEIB 2026!
+                    Você está na <span class="posicao-num" id="hero-posicao-num">--ª</span> posição na turma <span id="hero-turma-atual">--</span>.
                 </p>
-                <div class="hero-esports-stats">
-                    <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo"><span>⭐</span> Melhor pontuação</div>
-                        <div class="hero-stat-valor" id="hero-melhor-pontos">— <span class="unidade">pts</span></div>
-                    </div>
-                    <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo"><span>🏅</span> Melhor posição</div>
-                        <div class="hero-stat-valor cyan" id="hero-melhor-posicao">—</div>
-                    </div>
-                    <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo"><span>📅</span> Etapa atual</div>
-                        <div class="hero-stat-valor verde" id="hero-etapa-atual" style="font-size: 14px;">Classificatória</div>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -1655,21 +1701,19 @@
         <!-- Info prazo (dinâmica) -->
         <div id="etapa-info-prazo"></div>
 
-        <!-- Grid inferior: Etapa | Progresso | Posição -->
-        <div class="grid-info-triplo">
+        <!-- Grid inferior: Ranking | Progresso -->
+        <div class="grid-info-duplo">
             <div class="info-card">
                 <div class="info-card-titulo">
-                    <span class="icone">📅</span> Etapa Classificatória
-                    <span id="badge-status-etapa" class="badge-status andamento" style="margin-left:auto;">Em andamento</span>
+                    <span class="icone">🏆</span> Sua posição
+                    <span id="selo-turma-ranking" class="selo-turma-ranking hidden"></span>
                 </div>
-                <div id="info-etapa-texto" style="font-size:12.5px;color:var(--text-secondary);line-height:1.5;">
-                    Sua turma está na disputa! Participe e conquiste pontos para classificar sua turma.
+                <div class="ranking-home-lista" id="ranking-home-lista">
+                    <div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome">Jogue para ver</span><span class="ranking-home-pontos">—</span></div>
                 </div>
-                <div class="info-etapa-stats">
-                    <div class="info-etapa-stat"><span class="num">4</span><span class="lbl">melhores por turma</span></div>
-                    <div class="info-etapa-stat"><span class="num">20</span><span class="lbl">questões por partida</span></div>
-                    <div class="info-etapa-stat"><span class="num">10s</span><span class="lbl">por questão</span></div>
-                </div>
+                <button class="mais-opcoes-btn" onclick="mostrarTela('tela-ranking')" style="min-height:auto;flex-direction:row;justify-content:center;gap:6px;padding:9px 12px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:#93c5fd;font-size:11.5px;margin-top:auto;">
+                    Ver ranking completo <span style="font-weight:900;">›</span>
+                </button>
             </div>
 
             <div class="info-card">
@@ -1697,22 +1741,6 @@
                     <span class="emoji">🏆</span>
                     <span><strong>Você está na zona de classificação!</strong><br>Continue assim para garantir sua vaga.</span>
                 </div>
-            </div>
-
-            <div class="info-card">
-                <div class="info-card-titulo">
-                    <span class="icone">🏆</span> Sua posição
-                    <span style="margin-left:auto;font-size:10px;color:var(--text-muted);font-weight:700;" id="posicao-turma-label">Turma --</span>
-                </div>
-                <div class="mini-ranking-posicao" id="mini-ranking-home">
-                    <div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">—</span><span class="mini-ranking-pontos">—</span></div>
-                    <div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">—</span><span class="mini-ranking-pontos">—</span></div>
-                    <div class="mini-ranking-linha voce"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">Você</span><span class="mini-ranking-pontos">—</span></div>
-                    <div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome">—</span><span class="mini-ranking-pontos">—</span></div>
-                </div>
-                <button class="mais-opcoes-btn" onclick="mostrarTela('tela-ranking')" style="min-height:auto;flex-direction:row;justify-content:center;gap:6px;padding:9px 12px;background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:#93c5fd;font-size:11.5px;">
-                    Ver ranking completo <span style="font-weight:900;">›</span>
-                </button>
             </div>
         </div>
 
@@ -2849,6 +2877,13 @@ function iniciarCountdown(inicioEm) {
 // ▲▲▲ FIM [07.07]
 
 // ▼▼▼ [07.08] Tela inicial dinâmica ────────────────────────── INÍCIO ───
+function blocoStatsJogo() {
+    return `<div class="info-etapa-stats" style="margin-top:10px;">
+        <div class="info-etapa-stat"><span class="num">4</span><span class="lbl">melhores por turma</span></div>
+        <div class="info-etapa-stat"><span class="num">20</span><span class="lbl">questões por partida</span></div>
+        <div class="info-etapa-stat"><span class="num">10s</span><span class="lbl">por questão</span></div>
+    </div>`;
+}
 async function atualizarTelaInicialComEtapa() {
     const fase = await resolverFaseAtual();
     const heroPre = document.getElementById("hero-pre-evento");
@@ -2861,39 +2896,43 @@ async function atualizarTelaInicialComEtapa() {
     acaoCtn.innerHTML = "";
     prazoCtn.innerHTML = "";
 
+    let prazoHTML = "";
+    let iniciarCd = false;
+    let inicioEmCd = null;
+
     if (fase.tipo === ETAPA_FASES.sem_agendamento) {
         heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
         acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>`;
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo encerrada">ℹ️ <strong>A Copa ainda não foi agendada.</strong> Aguarde o professor definir a data de início. Enquanto isso, use o <strong>Modo Treino Livre</strong>.</p>`;
-        return;
-    }
-
-    if (fase.tipo === ETAPA_FASES.pre_evento) {
+        prazoHTML = `<p class="nota-etapa-prazo encerrada">ℹ️ <strong>A Copa ainda não foi agendada.</strong> Aguarde o professor definir a data de início. Enquanto isso, use o <strong>Modo Treino Livre</strong>.</p>`;
+    } else if (fase.tipo === ETAPA_FASES.pre_evento) {
         heroPre.classList.remove("hidden"); heroNorm.classList.add("hidden");
         acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>`;
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏳ <strong>A etapa ainda não começou.</strong> Início em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>. A duração será definida pelos alunos em votação.</p>`;
-        iniciarCountdown(fase.dados.inicioEm);
-        return;
-    }
-
-    heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
-
-    if (fase.tipo === ETAPA_FASES.etapa_votacao) {
+        prazoHTML = `<p class="nota-etapa-prazo provisorio">⏳ <strong>A etapa ainda não começou.</strong> Início em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>. A duração será definida pelos alunos em votação.</p>`;
+        iniciarCd = true;
+        inicioEmCd = fase.dados.inicioEm;
+    } else if (fase.tipo === ETAPA_FASES.etapa_votacao) {
+        heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
         acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;">🏆 Participar da Etapa Classificatória</button>`;
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">🗳️ <strong>Duração provisória: 7 dias.</strong> A votação está aberta — os alunos elegíveis decidem se a etapa termina em 7 dias ou se estende para 14.</p>`;
+        prazoHTML = `<p class="nota-etapa-prazo provisorio">🗳️ <strong>Duração provisória: 7 dias.</strong> A votação está aberta — os alunos elegíveis decidem se a etapa termina em 7 dias ou se estende para 14.</p>`;
     } else if (fase.tipo === ETAPA_FASES.etapa_definida) {
+        heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
         acaoCtn.innerHTML = `<button onclick="mostrarTela('tela-single')" class="cta-classificatoria" style="width:100%;">🏆 Participar da Etapa Classificatória</button>`;
         const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
         const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> O prazo termina às 23h59 da data final: <strong>${fim}</strong>. A partir daí, apenas treino livre.</p>`;
+        prazoHTML = `<p class="nota-etapa-prazo oficial">✅ <strong>Duração oficial: ${dur}.</strong> O prazo termina às 23h59 da data final: <strong>${fim}</strong>. A partir daí, apenas treino livre.</p>`;
     } else if (fase.tipo === ETAPA_FASES.congelada) {
+        heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
         acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>`;
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo provisorio">⏸️ <strong>Etapa pausada temporariamente.</strong> O professor está fazendo ajustes. Volte em breve!</p>`;
+        prazoHTML = `<p class="nota-etapa-prazo provisorio">⏸️ <strong>Etapa pausada temporariamente.</strong> O professor está fazendo ajustes. Volte em breve!</p>`;
     } else if (fase.tipo === ETAPA_FASES.encerrada) {
+        heroPre.classList.add("hidden"); heroNorm.classList.remove("hidden");
         acaoCtn.innerHTML = `<button onclick="iniciarTreinoAnonimo()" class="cta-classificatoria" style="font-size:17px;padding:15px;width:100%;background:linear-gradient(135deg,#fd7e14,#dc3545);box-shadow:0 5px 0 #a02622;">🎯 Modo Treino Livre</button>
             <div style="margin-top:10px;"><button onclick="mostrarTela('tela-ranking')" class="botao-secundario" style="width:100%;">🏆 Ver classificação final</button></div>`;
-        prazoCtn.innerHTML = `<p class="nota-etapa-prazo encerrada">🏁 <strong>Etapa encerrada!</strong> A classificação final está disponível. Obrigado por participar!</p>`;
+        prazoHTML = `<p class="nota-etapa-prazo encerrada">🏁 <strong>Etapa encerrada!</strong> A classificação final está disponível. Obrigado por participar!</p>`;
     }
+
+    prazoCtn.innerHTML = prazoHTML + blocoStatsJogo();
+    if (iniciarCd && inicioEmCd) iniciarCountdown(inicioEmCd);
 }
 async function resolverFaseAtual() {
     const dados = await obterDadosEtapa();
@@ -7313,13 +7352,23 @@ async function preencherHomeEsports() {
         );
         const posicao = idx === -1 ? null : idx + 1;
 
+        let turmaRankingInfo = null;
+        try {
+            const mediasTurmas = await calcularMediasTop4Turmas(melhorPartida.modalidade);
+            const iTurma = mediasTurmas.findIndex(t => t.turma === turma);
+            if (iTurma !== -1) {
+                turmaRankingInfo = { posicao: iTurma + 1, total: mediasTurmas.length };
+            }
+        } catch(e) { console.warn("Falha ao calcular ranking de turmas:", e); }
+
         atualizarHomeValores({
             melhorPontos,
             posicao,
             melhorPartida,
             ranking,
             nome,
-            turma
+            turma,
+            turmaRankingInfo
         });
     } catch (e) {
         console.warn("Falha ao preencher home esports:", e);
@@ -7330,28 +7379,69 @@ async function preencherHomeEsports() {
 
 // ▼▼▼ [18.02] Atualização dos valores da home ────────────────────────
 function atualizarHomeValores(dados) {
-    const elPontos = document.getElementById("hero-melhor-pontos");
-    const elPosicao = document.getElementById("hero-melhor-posicao");
     const elPosNum = document.getElementById("hero-posicao-num");
+    const elTurmaAtual = document.getElementById("hero-turma-atual");
+    const elRankingLista = document.getElementById("ranking-home-lista");
+    const elSeloTurma = document.getElementById("selo-turma-ranking");
     const elAviso = document.getElementById("aviso-zona-classificado");
-    const elMini = document.getElementById("mini-ranking-home");
-    const elTurmaLbl = document.getElementById("posicao-turma-label");
+    const elAnelFill = document.getElementById("anel-fill");
+    const elAcertos = document.getElementById("anel-acertos");
+    const elMiniAcertos = document.getElementById("mini-acertos");
+    const elMiniErros = document.getElementById("mini-erros");
+    const elMiniTempo = document.getElementById("mini-tempo");
+    const perimetroAnel = 2 * Math.PI * 42;
 
     if (!dados) {
-        if (elPontos) elPontos.innerHTML = `— <span class="unidade">pts</span>`;
-        if (elPosicao) elPosicao.textContent = "—";
         if (elPosNum) elPosNum.textContent = "--ª";
-        if (elMini) elMini.innerHTML = `<div class="mini-ranking-linha"><span class="mini-ranking-pos">-</span><span class="mini-ranking-nome" style="color:var(--text-muted);">Jogue para ver o ranking</span><span class="mini-ranking-pontos">—</span></div>`;
+        if (elTurmaAtual) elTurmaAtual.textContent = "--";
+        if (elRankingLista) elRankingLista.innerHTML = `<div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver o ranking</span><span class="ranking-home-pontos">—</span></div>`;
+        if (elSeloTurma) elSeloTurma.classList.add("hidden");
         if (elAviso) elAviso.style.display = "none";
+        if (elAnelFill) elAnelFill.style.strokeDashoffset = perimetroAnel;
+        if (elAcertos) elAcertos.textContent = "0/20";
+        if (elMiniAcertos) elMiniAcertos.textContent = "0";
+        if (elMiniErros) elMiniErros.textContent = "0";
+        if (elMiniTempo) elMiniTempo.textContent = "--s";
         return;
     }
 
-    const { melhorPontos, posicao, melhorPartida, ranking, nome, turma } = dados;
+    const { melhorPontos, posicao, melhorPartida, ranking, nome, turma, turmaRankingInfo } = dados;
 
-    if (elPontos) elPontos.innerHTML = `${melhorPontos.toLocaleString("pt-BR")} <span class="unidade">pts</span>`;
-    if (elPosicao) elPosicao.textContent = posicao ? `${posicao}º` : "—";
     if (elPosNum) elPosNum.textContent = posicao ? `${posicao}ª` : "--ª";
-    if (elTurmaLbl) elTurmaLbl.textContent = `Turma ${turma}`;
+    if (elTurmaAtual) elTurmaAtual.textContent = turma;
+
+    if (elSeloTurma) {
+        if (turmaRankingInfo && turmaRankingInfo.posicao && turmaRankingInfo.total > 1) {
+            elSeloTurma.textContent = `🏫 ${turmaRankingInfo.posicao}º de ${turmaRankingInfo.total} turmas`;
+            elSeloTurma.classList.remove("hidden");
+        } else {
+            elSeloTurma.classList.add("hidden");
+        }
+    }
+
+    if (elRankingLista) {
+        const top4 = ranking.slice(0, 4);
+        const jaNoTop4 = posicao !== null && posicao <= 4;
+        let html = "";
+        top4.forEach((r, i) => {
+            const vc = normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma;
+            const nomeExibir = vc ? "Você" : r.nome.split(" ").slice(0, 2).join(" ");
+            html += `<div class="ranking-home-linha ${vc ? "voce" : ""}">
+                <span class="ranking-home-pos">${i + 1}</span>
+                <span class="ranking-home-nome">${escaparHtml(nomeExibir)}</span>
+                <span class="ranking-home-pontos">${(Number(r.pontos) || 0).toLocaleString("pt-BR")}</span>
+            </div>`;
+        });
+        if (!jaNoTop4 && posicao && melhorPartida) {
+            html += `<div class="ranking-home-divisor">· · ·</div>`;
+            html += `<div class="ranking-home-linha voce">
+                <span class="ranking-home-pos">${posicao}</span>
+                <span class="ranking-home-nome">Você</span>
+                <span class="ranking-home-pontos">${(Number(melhorPontos) || 0).toLocaleString("pt-BR")}</span>
+            </div>`;
+        }
+        elRankingLista.innerHTML = html;
+    }
 
     if (elAviso) {
         if (posicao && posicao <= 4) {
@@ -7365,41 +7455,16 @@ function atualizarHomeValores(dados) {
         }
     }
 
-    if (elMini) {
-        const top4 = ranking.slice(0, 4);
-        elMini.innerHTML = top4.map((r, i) => {
-            const vc = normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma;
-            const nomeExibir = vc ? "Você" : r.nome.split(" ").slice(0, 2).join(" ");
-            return `<div class="mini-ranking-linha ${vc ? "voce" : ""}">
-                <span class="mini-ranking-pos">${i + 1}</span>
-                <span class="mini-ranking-nome">${escaparHtml(nomeExibir)}</span>
-                <span class="mini-ranking-pontos">${(Number(r.pontos) || 0).toLocaleString("pt-BR")}</span>
-            </div>`;
-        }).join("");
-    }
-
     if (melhorPartida) {
         const acertos = Number(melhorPartida.acertos) || 0;
         const erros = Number(melhorPartida.erros) || 0;
         const tempo = Number(melhorPartida.tempoMedio) || 0;
         const pct = Math.min(1, acertos / 20);
-
-        const elAcertos = document.getElementById("anel-acertos");
-        const elMiniAcertos = document.getElementById("mini-acertos");
-        const elMiniErros = document.getElementById("mini-erros");
-        const elMiniTempo = document.getElementById("mini-tempo");
-        const elAnelFill = document.getElementById("anel-fill");
-
         if (elAcertos) elAcertos.textContent = `${acertos}/20`;
         if (elMiniAcertos) elMiniAcertos.textContent = acertos;
         if (elMiniErros) elMiniErros.textContent = erros;
         if (elMiniTempo) elMiniTempo.textContent = `${tempo.toFixed(2)}s`;
-
-        if (elAnelFill) {
-            const perimetro = 2 * Math.PI * 42;
-            const offset = perimetro * (1 - pct);
-            elAnelFill.style.strokeDashoffset = offset;
-        }
+        if (elAnelFill) elAnelFill.style.strokeDashoffset = perimetroAnel * (1 - pct);
     }
 }
 // ▲▲▲ FIM [18.02]
