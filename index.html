@@ -241,6 +241,78 @@
         .conquistas-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
         .conquista-card { background: #e9ecef; padding: 10px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: help; }
         .conquista-card.desbloqueada { background: #ffc107; color: #000; }
+        /* ▼ Chips de medalhas "em progresso" no perfil */
+.conquista-card.em-progresso {
+    background: rgba(56, 189, 248, 0.06);
+    border: 1px dashed rgba(56, 189, 248, 0.35);
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 12px;
+    min-width: 150px;
+    cursor: default;
+}
+.conquista-card.em-progresso .prog-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.conquista-card.em-progresso .prog-nome {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+}
+.conquista-card.em-progresso .prog-pct {
+    color: var(--neon-cyan);
+    font-weight: 900;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+.conquista-card.em-progresso .prog-barra {
+    height: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.conquista-card.em-progresso .prog-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #0ea5e9, #22d3ee);
+    transition: width 0.7s cubic-bezier(.22, 1, .36, 1);
+}
+.conquista-card.em-progresso .prog-fill.perto {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+.conquista-card.em-progresso .prog-fill.quase {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+.perfil-conquistas-secao {
+    margin-bottom: 16px;
+}
+.perfil-conquistas-secao .secao-titulo {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: 0.3px;
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.perfil-conquistas-secao .secao-contagem {
+    background: rgba(34, 211, 238, 0.15);
+    color: var(--neon-cyan);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 800;
+}
         .estatistica-destaque { font-size: 24px; font-weight: bold; color: #0066cc; }
         /* ▲▲▲ FIM [02.08] */
 
@@ -2297,7 +2369,11 @@
         <button onclick="carregarPerfil()" class="botao-verde">🔍 Buscar</button>
         <div id="perfil-conteudo" class="hidden">
             <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo médio dos acertos:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
-            <h3>🏅 Conquistas</h3><div id="perfil-conquistas" class="conquistas-grid"></div>
+            <h3>🏅 Conquistas</h3>
+<div id="perfil-conquistas" class="conquistas-grid"></div>
+
+<h3 style="margin-top:18px;">🎯 Em progresso</h3>
+<div id="perfil-conquistas-progresso" class="conquistas-grid"></div>
             <h3>🗺️ Mapa de Tabuadas</h3><div id="perfil-mapa"></div>
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -6058,6 +6134,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     const melhor = partidas.reduce((a, b) => a.pontos > b.pontos ? a : b);
 
     // ▼ Sincroniza medalhas/seções/estrelas antes de ler (garante dados frescos)
+    let dadosCompilados = null;
     try {
         const chave = `${normalizarNome(melhor.nome)}|${melhor.turma}`;
         const agora = Date.now();
@@ -6066,16 +6143,23 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         if (precisaSincronizar) {
             notificar("🔄 Sincronizando conquistas…", "info", 1500);
-            await Promise.race([
+            const r = await Promise.race([
                 sincronizarMedalhas(melhor.nome, melhor.turma),
                 new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000))
             ]);
+            dadosCompilados = r?.dados || null;
             perfilSyncCache = { chave, ts: agora };
+        } else {
+            // Cache válido — mas ainda precisamos dos dados compilados para calcular progresso
+            dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma);
         }
     } catch (e) {
         console.warn("Sync do perfil falhou ou expirou:", e);
+        // fallback: tenta compilar direto (pode ser mais lento, mas garante progresso)
+        try { dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma); } catch(_) {}
     }
-    // ▲        const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
+    // ▲
+        const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
         document.getElementById("perfil-melhor-pontos").innerHTML = `<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
         document.getElementById("perfil-media-acertos").innerHTML = `<span class="estatistica-destaque">${ma.toFixed(1)}</span> /20`;
         document.getElementById("perfil-melhor-tempo").innerHTML = `<span class="estatistica-destaque">${melhor.tempoMedio.toFixed(2)}</span> s`;
@@ -6087,17 +6171,56 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const status = pos <= VAGAS_CLASSIFICACAO ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
         document.getElementById("perfil-melhor-status").innerHTML = `<span class="tag tag-${status === 'Classificado' ? 'classificado' : status === 'Reserva' ? 'reserva' : 'participante'}">${status}</span>`;
         const medalhasAluno = await obterMedalsFirebase(melhor.nome, melhor.turma);
-        const idsMedalhas = Object.keys(medalhasAluno || {});
-        if (idsMedalhas.length > 0) {
-            document.getElementById("perfil-conquistas").innerHTML = idsMedalhas.map(id => {
-                const m = MEDALS_POR_ID[id];
-                if (!m) return "";
-                const rar = RARIDADES[m.raridade];
-                return `<div class="conquista-card desbloqueada" title="${escaparHtml(m.descricao)} · ${rar.nome}">${m.icone} ${escaparHtml(m.nome)}</div>`;
-            }).join("");
-        } else {
-            document.getElementById("perfil-conquistas").innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Nenhuma medalha conquistada ainda. <button onclick="abrirAlbum()" style="width:auto;background:transparent;color:#0066cc;text-decoration:underline;padding:0;margin:0 0 0 4px;font-size:13px;font-weight:700;box-shadow:none;border:none;cursor:pointer;">Ver no Álbum →</button></div>`;
-        }
+const idsMedalhas = Object.keys(medalhasAluno || {}).filter(id => MEDALS_POR_ID[id]);
+
+// ─── Bloco 1: conquistadas (como hoje)
+if (idsMedalhas.length > 0) {
+    document.getElementById("perfil-conquistas").innerHTML = idsMedalhas.map(id => {
+        const m = MEDALS_POR_ID[id];
+        const rar = RARIDADES[m.raridade];
+        return `<div class="conquista-card desbloqueada" title="${escaparHtml(m.descricao)} · ${rar.nome}">${m.icone} ${escaparHtml(m.nome)}</div>`;
+    }).join("");
+} else {
+    document.getElementById("perfil-conquistas").innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Nenhuma medalha conquistada ainda. <button onclick="abrirAlbum()" style="width:auto;background:transparent;color:#0066cc;text-decoration:underline;padding:0;margin:0 0 0 4px;font-size:13px;font-weight:700;box-shadow:none;border:none;cursor:pointer;">Ver no Álbum →</button></div>`;
+}
+
+// ─── Bloco 2: em progresso (só as 6 mais próximas de desbloquear)
+const containerProg = document.getElementById("perfil-conquistas-progresso");
+if (containerProg) {
+    const dados = dadosCompilados || {};
+    const idsConquistados = new Set(idsMedalhas);
+
+    const emProgresso = MEDALS
+        .filter(m => !idsConquistados.has(m.id))
+        .map(m => {
+            const prog = calcularProgressoMedalha(m, dados);
+            if (!prog || prog.pct <= 0 || prog.pct >= 100) return null;
+            return { medalha: m, prog };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.prog.pct - a.prog.pct)   // mais perto de conquistar primeiro
+        .slice(0, 6);                               // mostra só as 6 melhores
+
+    if (emProgresso.length === 0) {
+        containerProg.innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Todas as medalhas foram conquistadas! 🏆</div>`;
+    } else {
+        containerProg.innerHTML = emProgresso.map(({ medalha, prog }) => {
+            const pct = Math.max(0, Math.min(100, prog.pct));
+            const cls = pct >= 85 ? "perto" : pct >= 60 ? "quase" : "";
+            const rar = RARIDADES[medalha.raridade];
+            const titulo = `${medalha.descricao} · ${rar.nome} · ${Math.round(pct)}% completo`;
+            return `<div class="conquista-card em-progresso" title="${escaparHtml(titulo)}">
+                <div class="prog-linha">
+                    <span class="prog-nome">${medalha.icone} ${escaparHtml(medalha.nome)}</span>
+                    <span class="prog-pct">${Math.round(pct)}%</span>
+                </div>
+                <div class="prog-barra">
+                    <div class="prog-fill ${cls}" style="width:${pct}%"></div>
+                </div>
+            </div>`;
+        }).join("");
+    }
+}
         if (melhor.desempenhoTabuadas) desempenhoTabuadas = melhor.desempenhoTabuadas;
         alunoAtual = melhor.nome; turmaAtual = melhor.turma; modalidadeAtual = melhor.modalidade;
         treinoFocoOperacoes = null; promocoesRecentes = [];
