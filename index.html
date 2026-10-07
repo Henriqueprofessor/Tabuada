@@ -1771,7 +1771,119 @@
             .guia-treino-card:hover { transform: none; }
             .guia-treino-close { transition: none !important; }
         }
-        /* ▲▲▲ FIM [02.32] */
+                /* ▼▼▼ [02.33] Feedback de erro no treino ──────────────── */
+        .feedback-erro-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 11, 22, 0.82);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+            padding: 20px;
+            animation: modalFadeIn 0.2s ease;
+        }
+        .feedback-erro-card {
+            background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #ef4444;
+            border-radius: 18px;
+            padding: 24px 24px 22px;
+            max-width: 460px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 0 60px rgba(239, 68, 68, 0.08);
+            animation: modalSlideUp 0.25s ease;
+        }
+        .feedback-erro-titulo {
+            font-size: 20px;
+            font-weight: 900;
+            color: #fca5a5;
+            margin: 0 0 14px;
+            letter-spacing: 0.3px;
+        }
+        .feedback-erro-conta {
+            font-size: 34px;
+            font-weight: 900;
+            color: #f8fafc;
+            margin: 0 0 10px;
+            letter-spacing: 1.5px;
+        }
+        .feedback-erro-resposta {
+            font-size: 15px;
+            color: #cbd5e1;
+            margin: 0 0 18px;
+        }
+        .feedback-erro-resposta strong {
+            color: #6ee7b7;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 0.3px;
+        }
+        .feedback-erro-dica-titulo {
+            font-size: 11.5px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #fde68a;
+            margin: 0 0 8px;
+            text-align: left;
+        }
+        .feedback-erro-dica {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.14) 0%, rgba(217, 119, 6, 0.08) 100%);
+            border-left: 4px solid #fbbf24;
+            border-radius: 10px;
+            padding: 13px 15px;
+            font-size: 13.5px;
+            line-height: 1.7;
+            color: #fef3c7;
+            text-align: left;
+            margin: 0 0 20px;
+        }
+        .feedback-erro-dica strong {
+            color: #fff;
+            font-weight: 900;
+            background: rgba(251, 191, 36, 0.22);
+            padding: 1px 7px;
+            border-radius: 5px;
+            letter-spacing: 0.2px;
+        }
+        .feedback-erro-btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #3730a3, 0 6px 16px rgba(99, 102, 241, 0.35);
+            transition: all 0.15s ease;
+            font-family: inherit;
+            margin: 0;
+        }
+        .feedback-erro-btn:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            transform: translateY(-1px);
+        }
+        .feedback-erro-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #3730a3, 0 3px 10px rgba(99, 102, 241, 0.35);
+        }
+        @media (max-width: 520px) {
+            .feedback-erro-card { padding: 20px 18px 18px; }
+            .feedback-erro-conta { font-size: 28px; }
+            .feedback-erro-resposta strong { font-size: 19px; }
+            .feedback-erro-dica { font-size: 12.5px; padding: 11px 13px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .feedback-erro-overlay, .feedback-erro-card { animation: none !important; }
+        }
+        /* ▲▲▲ FIM [02.33] */
+    </style>
+</head>
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -2619,13 +2731,24 @@
             </div>
         </div>
     </div>
-    <!-- ▲▲▲ FIM [04.12] -->
+          <!-- ▲▲▲ FIM [04.12] -->
 
-    <!-- ▼▼▼ [04.13] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
+    <!-- ▼▼▼ [04.13] OVERLAY FEEDBACK DE ERRO (TREINO) ───────── -->
+    <div id="feedback-erro-treino" class="feedback-erro-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="feedback-erro-corpo">
+        <div class="feedback-erro-card">
+            <div id="feedback-erro-corpo"></div>
+            <button id="feedback-erro-btn" class="feedback-erro-btn" onclick="fecharFeedbackErro()">
+                Entendi, próxima →
+            </button>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.13] -->
+
+    <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
     <script>
-       // ═══════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     // [05] JS-CFG · Constantes e configuração global
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -2827,7 +2950,8 @@
     let mapaFonteAgregada = {};
     let modoVisualizacaoMapa = "agregado";
     let treinoFocoOperacoes = null;
-let treinoListaInteligente = null;
+    let treinoListaInteligente = null;
+    let aguardandoFeedbackErro = false;
     let promocoesRecentes = [];
     let pilhaDetalhes = [];
     let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
