@@ -1455,7 +1455,322 @@
         @media (max-width: 520px) { .certificados-container { grid-template-columns: 1fr; } .certificado-card { padding: 14px 12px 12px; } .certificado-card .cert-icone { font-size: 36px; } .cert-novo-modal { padding: 22px 18px 18px; } .cert-novo-modal .cert-modal-icone { font-size: 58px; } .cert-novo-modal .cert-modal-nome { font-size: 22px; } }
         @media (prefers-reduced-motion: reduce) { .certificado-card.conquistado.lendaria, .album-cert-pill.lendaria, .cert-novo-modal .cert-modal-icone { animation: none !important; } }
         /* ▲▲▲ FIM [02.31] */
-
+        /* ▼▼▼ [02.32] Guia de Treino (A + B) ─────────────────── */
+        .guia-treino-modal {
+            max-width: 560px;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(170deg, #0f2340 0%, #0a1628 100%);
+            border: 2px solid var(--border-neon);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(34, 211, 238, 0.05);
+        }
+        .guia-treino-header {
+            position: relative;
+            padding: 20px 22px 18px;
+            background: linear-gradient(135deg, #0d2a4d 0%, #174a73 55%, #0d7a61 100%);
+            border-bottom: 1px solid var(--border-neon);
+            overflow: hidden;
+        }
+        .guia-treino-header::after {
+            content: "🎯";
+            position: absolute;
+            right: 18px; top: 8px;
+            font-size: 62px;
+            opacity: 0.14;
+            transform: rotate(12deg);
+            pointer-events: none;
+        }
+        .guia-treino-kicker {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            color: #fde68a;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .guia-treino-titulo {
+            font-size: clamp(20px, 4.4vw, 26px);
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.15;
+            margin: 0 0 6px;
+            letter-spacing: -0.3px;
+        }
+        .guia-treino-sub {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            margin: 0;
+            max-width: 90%;
+        }
+        .guia-treino-close {
+            position: absolute;
+            top: 14px; right: 14px;
+            width: 32px; height: 32px;
+            padding: 0; margin: 0;
+            background: rgba(0, 0, 0, 0.28);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 2;
+            box-shadow: none;
+        }
+        .guia-treino-close:hover {
+            background: rgba(220, 53, 69, 0.95);
+            border-color: #dc3545;
+            transform: scale(1.1);
+        }
+        .guia-treino-corpo {
+            padding: 18px 20px 20px;
+            max-height: 68vh;
+            overflow-y: auto;
+        }
+        .guia-treino-intro {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin: 0 0 16px;
+            padding: 12px 14px;
+            background: rgba(34, 211, 238, 0.08);
+            border-left: 3px solid var(--neon-cyan);
+            border-radius: 8px;
+        }
+        .guia-treino-intro strong { color: var(--neon-cyan); font-weight: 800; }
+        .guia-treino-secao-titulo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--neon-gold);
+            margin: 20px 0 10px;
+        }
+        .guia-treino-secao-titulo:first-of-type { margin-top: 4px; }
+        .guia-treino-secao-titulo::before {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 2px;
+            background: var(--neon-gold);
+            border-radius: 2px;
+        }
+        .guia-treino-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.75) 0%, rgba(15, 35, 64, 0.75) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 44px 1fr;
+            gap: 12px;
+            align-items: start;
+            transition: transform 0.18s ease, border-color 0.2s ease;
+        }
+        .guia-treino-card:hover {
+            transform: translateX(2px);
+            border-color: var(--neon-cyan);
+        }
+        .guia-treino-card.visitante { border-left: 4px solid #94a3b8; }
+        .guia-treino-card.identificado { border-left: 4px solid #22d3ee; }
+        .guia-treino-card.inteligente { border-left: 4px solid #a855f7; }
+        .guia-treino-card.variações { border-left: 4px solid #fbbf24; }
+        .guia-treino-card-icone {
+            font-size: 32px;
+            line-height: 1;
+            text-align: center;
+            padding-top: 2px;
+        }
+        .guia-treino-card-titulo {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin: 0 0 4px;
+            letter-spacing: 0.2px;
+        }
+        .guia-treino-card-titulo small {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+        .guia-treino-card.visitante .guia-treino-card-titulo small { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; }
+        .guia-treino-card.identificado .guia-treino-card-titulo small { background: rgba(34, 211, 238, 0.18); color: #67e8f9; }
+        .guia-treino-card.inteligente .guia-treino-card-titulo small { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; }
+        .guia-treino-card.variações .guia-treino-card-titulo small { background: rgba(251, 191, 36, 0.18); color: #fde68a; }
+        .guia-treino-card-desc {
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        .guia-treino-card-desc strong { color: var(--text-primary); font-weight: 800; }
+        .guia-treino-pesos {
+            margin: 8px 0 0;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.28);
+            border-radius: 8px;
+            font-size: 11.5px;
+            line-height: 1.6;
+        }
+        .guia-treino-pesos-linha {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 2px 0;
+            color: var(--text-secondary);
+        }
+        .guia-treino-pesos-linha .lbl { display: flex; align-items: center; gap: 6px; }
+        .guia-treino-pesos-linha .peso {
+            font-weight: 900;
+            color: var(--neon-cyan);
+            font-size: 11px;
+            background: rgba(34, 211, 238, 0.14);
+            padding: 1px 7px;
+            border-radius: 8px;
+        }
+        .guia-treino-pesos-linha.top .peso {
+            color: var(--neon-gold);
+            background: rgba(251, 191, 36, 0.18);
+        }
+        .guia-treino-tabela {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12px;
+            margin: 4px 0 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-neon);
+        }
+        .guia-treino-tabela th {
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--neon-cyan);
+            font-size: 10.5px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 9px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-neon);
+        }
+        .guia-treino-tabela th.centro, .guia-treino-tabela td.centro { text-align: center; }
+        .guia-treino-tabela td {
+            padding: 8px 10px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .guia-treino-tabela tbody tr:last-child td { border-bottom: none; }
+        .guia-treino-tabela td .sim { color: #6ee7b7; font-weight: 900; font-size: 14px; }
+        .guia-treino-tabela td .nao { color: #fca5a5; font-weight: 900; font-size: 14px; }
+        .guia-treino-cta {
+            width: 100%;
+            margin: 20px 0 0;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #fff;
+            font-size: 14.5px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 0 #3730a3, 0 6px 18px rgba(99, 102, 241, 0.35);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .guia-treino-cta:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            transform: translateY(-1px);
+        }
+        .guia-treino-cta:active { transform: translateY(1px); box-shadow: 0 2px 0 #3730a3, 0 3px 10px rgba(99, 102, 241, 0.35); }
+        /* Botão "Como funciona o treino?" — link secundário */
+        .btn-como-treinar {
+            width: 100%;
+            margin: 8px 0 0;
+            padding: 10px 14px;
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 1px dashed rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: none;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .btn-como-treinar:hover {
+            background: rgba(34, 211, 238, 0.1);
+            border-color: var(--neon-cyan);
+            color: #a5f3fc;
+        }
+        /* Botão inline dentro do "Como funciona" */
+        .btn-abrir-guia-treino {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin: 10px 0 0;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28);
+            font-family: inherit;
+            width: auto;
+            transition: all 0.2s ease;
+        }
+        .btn-abrir-guia-treino:hover {
+            background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+            transform: translateY(-1px);
+        }
+        @media (max-width: 520px) {
+            .guia-treino-corpo { padding: 14px 16px 16px; max-height: 72vh; }
+            .guia-treino-card { padding: 12px 13px; grid-template-columns: 36px 1fr; gap: 10px; }
+            .guia-treino-card-icone { font-size: 26px; }
+            .guia-treino-card-titulo { font-size: 13px; }
+            .guia-treino-card-desc { font-size: 11.5px; }
+            .guia-treino-pesos { font-size: 11px; }
+            .guia-treino-tabela { font-size: 11px; }
+            .guia-treino-tabela th, .guia-treino-tabela td { padding: 7px 8px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .guia-treino-card { transition: none !important; }
+            .guia-treino-card:hover { transform: none; }
+            .guia-treino-close { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.32] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -1626,9 +1941,9 @@
                 <span class="icone">ℹ️</span>
                 <span>Como funciona</span>
             </button>
-            <button onclick="abrirChangelog()" class="botao-secundario">
-                <span class="icone">📋</span>
-                <span>Versão <span id="changelog-versao-atual">10.0.0</span></span>
+            <button onclick="abrirGuiaTreino()" class="botao-secundario">
+                <span class="icone">📚</span>
+                <span>Guia de Treino</span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -2016,7 +2331,7 @@
                 <div class="info-secao"><span class="info-icone">📚</span><div class="info-conteudo"><h4 class="info-titulo">Três modalidades para jogar</h4><p class="info-texto">Você pode jogar quantas vezes quiser, em qualquer uma destas modalidades:</p><ul class="info-lista"><li>Tabuadas do <strong>2 ao 5</strong></li><li>Tabuadas do <strong>6 ao 9</strong></li><li>Tabuadas <strong>completas (1 ao 10)</strong></li></ul><div class="info-destaque azul">💡 Só o <strong>seu melhor resultado</strong> em cada modalidade conta. Pode tentar várias vezes até acertar!</div></div></div>
                 <div class="info-secao"><span class="info-icone">🎮</span><div class="info-conteudo"><h4 class="info-titulo">Como é cada partida</h4><ul class="info-lista"><li>São <strong>20 perguntas</strong> de multiplicação</li><li>Você tem até <strong>10 segundos</strong> por questão</li><li>Quanto <strong>mais rápido acertar</strong>, mais pontos ganha</li><li>Acertos seguidos rendem <strong>bônus especiais</strong> 🔥</li></ul></div></div>
                 <div class="info-secao"><span class="info-icone">🎓</span><div class="info-conteudo"><h4 class="info-titulo">Certificados de Maestria</h4><p class="info-texto">Você pode conquistar <strong>3 certificados</strong> conforme domina mais operações da tabuada:</p><ul class="info-lista"><li>🥈 <strong>Mestre da Tabuada (Prata)</strong> — 85% do mapa dominado, 5 tentativas por operação, 80% de acerto recente</li><li>🥇 <strong>Lenda da Tabuada (Ouro)</strong> — 95% do mapa, 8 tentativas, 90% de acerto e velocidade</li><li>💎 <strong>Maestria Total (Lendária)</strong> — 100% do mapa, 10 tentativas, 90% + velocidade comprovada</li></ul><div class="info-destaque verde">🏆 O certificado fica <strong>salvo para sempre</strong> no seu Álbum, mesmo se você parar de jogar. É uma conquista histórica!</div></div></div>
-                <div class="info-secao"><span class="info-icone">🎯</span><div class="info-conteudo"><h4 class="info-titulo">Treine à vontade!</h4><p class="info-texto">Existe um <strong>Modo Treino</strong> que você pode usar sempre que quiser. Nesse modo você <strong>não entra na classificação</strong>, mas pode reforçar as tabuadas que erra mais, sem pressão.</p></div></div>
+                <div class="info-secao"><span class="info-icone">🎯</span><div class="info-conteudo"><h4 class="info-titulo">Treine à vontade!</h4><p class="info-texto">Existem <strong>4 tipos de treino</strong> que ajudam você a evoluir no mapa e nos certificados. Treinar <strong>não conta para o ranking</strong>, mas <strong>conta para</strong>:</p><ul class="info-lista"><li>✅ Mapa de tabuadas (todas as cores)</li><li>✅ Certificados (🥈 Prata · 🥇 Ouro · 💎 Lendária)</li><li>✅ Medalhas do Álbum</li></ul><button class="btn-abrir-guia-treino" onclick="fecharComoFunciona(); abrirGuiaTreino();">📚 Ver guia completo de treino →</button></div></div>
                 <div class="info-secao"><span class="info-icone">📱</span><div class="info-conteudo"><h4 class="info-titulo">Use sempre o mesmo celular</h4><p class="info-texto">Seu nome fica vinculado ao aparelho para evitar que outras pessoas usem o seu nome. Se você trocar de celular e ficar <strong>2 dias sem acessar</strong>, o app libera automaticamente. Antes disso, é só pedir ajuda ao professor.</p></div></div>
                 <div class="info-secao"><span class="info-icone">💬</span><div class="info-conteudo"><h4 class="info-titulo">Fale com o professor</h4><p class="info-texto">Precisou de ajuda e não consegue encontrar o professor na escola? Use o botão <strong>💬 Falar com o professor</strong> na tela inicial. <strong>É obrigatório estar identificado</strong> (nome completo + turma) para usar o canal.</p><div class="info-destaque azul">⏱️ Você pode enviar uma mensagem a cada <strong>5 minutos</strong>. O professor responde e você vê a resposta na mesma conversa.</div></div></div>
                 <div class="info-secao"><span class="info-icone">💡</span><div class="info-conteudo"><h4 class="info-titulo">Dicas rápidas</h4><ul class="info-lista"><li>Não precisa ter pressa para começar — jogue quando estiver concentrado</li><li>Cada tentativa oficial é registrada, mas só a melhor vale</li><li>Fique de olho no ranking — sua posição pode mudar até o último dia</li></ul></div></div>
@@ -2165,6 +2480,7 @@
             <div id="detalhes-etapa-conteudo" class="info-lista-wrap"></div>
         </div>
     </div>
+    <!-- ▲▲▲ FIM [04.09] -->
 
     <!-- ▼▼▼ [04.10] MODAL VOTAÇÃO ─────────────────────────────── -->
     <div id="modal-votacao" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="votacao-titulo" onclick="fecharModalVotacao(event)">
@@ -2180,6 +2496,7 @@
             </div>
         </div>
     </div>
+    <!-- ▲▲▲ FIM [04.10] -->
 
     <!-- ▼▼▼ [04.11] MODAL NOVO CERTIFICADO ──────────────────── -->
     <div id="modal-novo-certificado" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="fecharModalNovoCertificado(event)">
@@ -2192,8 +2509,118 @@
             <button class="cert-modal-botao" onclick="fecharModalNovoCertificadoFila()">Continuar 🚀</button>
         </div>
     </div>
+    <!-- ▲▲▲ FIM [04.11] -->
 
-    <!-- ▼▼▼ [04.12] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
+    <!-- ▼▼▼ [04.12] MODAL GUIA DE TREINO ─────────────────────── -->
+    <div id="modal-guia-treino" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="guia-treino-titulo" onclick="fecharGuiaTreino(event)">
+        <div class="modal-card guia-treino-modal" onclick="event.stopPropagation()">
+            <div class="guia-treino-header">
+                <button class="guia-treino-close" onclick="fecharGuiaTreino()" aria-label="Fechar">✕</button>
+                <div class="guia-treino-kicker">📚 GUIA COMPLETO</div>
+                <h2 class="guia-treino-titulo" id="guia-treino-titulo">Como funciona o treino</h2>
+                <p class="guia-treino-sub">Existem 4 tipos de treino. Todos ajudam você a evoluir — só não contam para o ranking oficial.</p>
+            </div>
+            <div class="guia-treino-corpo">
+
+                <div class="guia-treino-intro">
+                    <strong>Treinar é a forma mais rápida</strong> de subir de nível no mapa de tabuadas e conquistar certificados. Você pode treinar quantas vezes quiser, sem pressão de ranking.
+                </div>
+
+                <div class="guia-treino-secao-titulo">Os 4 tipos de treino</div>
+
+                <!-- Card 1: Visitante -->
+                <div class="guia-treino-card visitante">
+                    <div class="guia-treino-card-icone">🌐</div>
+                    <div>
+                        <div class="guia-treino-card-titulo">Treino Livre <small>Visitante</small></div>
+                        <p class="guia-treino-card-desc">Jogue sem se identificar. <strong>Nada é salvo.</strong> Bom para aquecer antes da Copa começar ou para experimentar.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Identificado -->
+                <div class="guia-treino-card identificado">
+                    <div class="guia-treino-card-icone">🎯</div>
+                    <div>
+                        <div class="guia-treino-card-titulo">Treino Identificado <small>Recomendado</small></div>
+                        <p class="guia-treino-card-desc">Jogue com seu nome e turma. <strong>Alimenta o mapa</strong> e <strong>desbloqueia certificados</strong>. Não entra no ranking oficial.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Inteligente -->
+                <div class="guia-treino-card inteligente">
+                    <div class="guia-treino-card-icone">🧠</div>
+                    <div>
+                        <div class="guia-treino-card-titulo">Treino Inteligente <small>Automático</small></div>
+                        <p class="guia-treino-card-desc">O sistema <strong>sorteia</strong> as operações que você mais precisa, por ordem de prioridade:</p>
+                        <div class="guia-treino-pesos">
+                            <div class="guia-treino-pesos-linha top"><span class="lbl">⚪ Cinzas (nunca praticadas)</span><span class="peso">peso 10</span></div>
+                            <div class="guia-treino-pesos-linha top"><span class="lbl">🔴 Vermelhas (&lt;60% acerto)</span><span class="peso">peso 8</span></div>
+                            <div class="guia-treino-pesos-linha"><span class="lbl">🟡 Amarelas (60–79%)</span><span class="peso">peso 6</span></div>
+                            <div class="guia-treino-pesos-linha"><span class="lbl">🔵 Azuis (80–89%)</span><span class="peso">peso 4</span></div>
+                            <div class="guia-treino-pesos-linha"><span class="lbl">🔷 Parciais (bom, mas &lt;5 tentativas)</span><span class="peso">peso 3</span></div>
+                            <div class="guia-treino-pesos-linha"><span class="lbl">🟢 Verdes (dominadas)</span><span class="peso">peso 1</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Variações -->
+                <div class="guia-treino-card variações">
+                    <div class="guia-treino-card-icone">🔀</div>
+                    <div>
+                        <div class="guia-treino-card-titulo">Treino com Variações <small>Foco total</small></div>
+                        <p class="guia-treino-card-desc">Treina <strong>7×8</strong> junto com <strong>8×7</strong> e outras formas do mesmo produto. Ajuda a memorizar o <strong>resultado</strong>, não a resposta mecânica.</p>
+                    </div>
+                </div>
+
+                <div class="guia-treino-secao-titulo">O que cada treino salva</div>
+
+                <table class="guia-treino-tabela">
+                    <thead>
+                        <tr>
+                            <th>Tipo de treino</th>
+                            <th class="centro">Mapa</th>
+                            <th class="centro">Certif.</th>
+                            <th class="centro">Ranking</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🌐 Visitante</td>
+                            <td class="centro"><span class="nao">✕</span></td>
+                            <td class="centro"><span class="nao">✕</span></td>
+                            <td class="centro"><span class="nao">✕</span></td>
+                        </tr>
+                        <tr>
+                            <td>🎯 Identificado</td>
+                            <td class="centro"><span class="sim">✓</span></td>
+                            <td class="centro"><span class="sim">✓</span></td>
+                            <td class="centro"><span class="nao">✕</span></td>
+                        </tr>
+                        <tr>
+                            <td>🧠 Inteligente</td>
+                            <td class="centro"><span class="sim">✓</span></td>
+                            <td class="centro"><span class="sim">✓</span></td>
+                            <td class="centro"><span class="nao">✕</span></td>
+                        </tr>
+                        <tr>
+                            <td>🔀 Com variações</td>
+                            <td class="centro"><span class="sim">✓</span></td>
+                            <td class="centro"><span class="sim">✓</span></td>
+                            <td class="centro"><span class="nao">✕</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button class="guia-treino-cta" onclick="fecharGuiaTreino(); iniciarTreinoInteligenteDaHome();">
+                    🎯 Começar a treinar agora
+                </button>
+
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.12] -->
+
+    <!-- ▼▼▼ [04.13] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
     <script>
@@ -6461,7 +6888,9 @@ let treinoListaInteligente = null;
                 <button class="btn-treino-inteligente" onclick="iniciarTreinoInteligenteDaHome()">
                     🎯 Treinar ${cont.pendentes} pendentes <span class="badge">+rápido</span>
                 </button>
-                <div class="aviso-treino-inteligente">💡 <strong>Treino inteligente:</strong> o sistema sorteia as operações que você mais precisa reforçar, priorizando as que você ainda não domina.</div>
+                <button class="btn-como-treinar" onclick="abrirGuiaTreino()">
+                    📚 Como funciona o treino?
+                </button>
             `;
         } catch(e) {
             console.warn("Falha ao renderizar treino inteligente:", e);
@@ -7794,11 +8223,18 @@ let treinoListaInteligente = null;
     // ▲▲▲ FIM [17.06]
 
     // ▼▼▼ [17.07] Modais auxiliares ───────────────────────────────────
-    function abrirComoFunciona() { document.getElementById("modal-como-funciona").classList.remove("hidden"); }
-    function fecharComoFunciona(e) {
-        if (e && e.target && e.target.closest(".modal-card")) return;
-        document.getElementById("modal-como-funciona").classList.add("hidden");
+    // ▼▼▼ [17.07.bis] Guia de Treino (modal A+B)
+    function abrirGuiaTreino() {
+        const m = document.getElementById("modal-guia-treino");
+        if (!m) return;
+        m.classList.remove("hidden");
+        setTimeout(() => { document.querySelector("#modal-guia-treino .guia-treino-close")?.focus(); }, 80);
     }
+    function fecharGuiaTreino(e) {
+        if (e && e.target && e.target.closest(".guia-treino-modal")) return;
+        document.getElementById("modal-guia-treino")?.classList.add("hidden");
+    }
+    // ▲▲▲ FIM [17.07.bis]
     function abrirChangelog() { document.getElementById("modal-changelog").classList.remove("hidden"); }
     function fecharChangelog(e) {
         if (e && e.target && e.target.closest(".modal-card")) return;
@@ -8179,6 +8615,8 @@ let treinoListaInteligente = null;
             if (mv && !mv.classList.contains("hidden")) fecharModalVotacao();
             const mde = document.getElementById("modal-detalhes-etapa");
             if (mde && !mde.classList.contains("hidden")) fecharDetalhesEtapa();
+	    const mgt = document.getElementById("modal-guia-treino");
+            if (mgt && !mgt.classList.contains("hidden")) fecharGuiaTreino(); 	
             const mnc = document.getElementById("modal-novo-certificado");
             if (mnc && !mnc.classList.contains("hidden")) fecharModalNovoCertificadoFila();
         }
