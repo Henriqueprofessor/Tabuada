@@ -6046,12 +6046,25 @@
 
     // ▼▼▼ [13.08] Perfil de aluno (busca) ─────────────────────────────
     async function carregarPerfil() {
-        const nome = document.getElementById("perfil-nome").value.trim();
-        const turma = document.getElementById("perfil-turma").value;
-        if (!nome || !turma) { notificar("Digite nome e turma", "aviso"); return; }
-        const partidas = await obterHistoricoAluno(nome, turma);
-        if (!partidas.length) { notificar("Nenhuma partida encontrada.", "aviso"); return; }
-        const melhor = partidas.reduce((a, b) => a.pontos > b.pontos ? a : b);
+    const nome = document.getElementById("perfil-nome").value.trim();
+    const turma = document.getElementById("perfil-turma").value;
+    if (!nome || !turma) { notificar("Digite nome e turma", "aviso"); return; }
+    const partidas = await obterHistoricoAluno(nome, turma);
+    if (!partidas.length) { notificar("Nenhuma partida encontrada.", "aviso"); return; }
+    const melhor = partidas.reduce((a, b) => a.pontos > b.pontos ? a : b);
+
+    // ▼ Sincroniza medalhas/seções/estrelas antes de ler (garante dados frescos)
+    try {
+        notificar("🔄 Sincronizando conquistas…", "info", 1500);
+        await Promise.race([
+            sincronizarMedalhas(melhor.nome, melhor.turma),
+            new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000))
+        ]);
+    } catch (e) {
+        console.warn("Sync do perfil falhou ou expirou:", e);
+        // segue em frente com o que estiver no Firebase/cache local
+    }
+    // ▲
         const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
         document.getElementById("perfil-melhor-pontos").innerHTML = `<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
         document.getElementById("perfil-media-acertos").innerHTML = `<span class="estatistica-destaque">${ma.toFixed(1)}</span> /20`;
