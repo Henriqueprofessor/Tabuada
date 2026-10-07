@@ -2902,15 +2902,8 @@
 
     <!-- ▼▼▼ [04.10] SCRIPTS FIREBASE + ABERTURA DO MAIN SCRIPT ─── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
     <script>
-    // ═══════════════════════════════════════════════════════════════════════
-    // [05] JS-CFG · Constantes e configuração global
-    // ═══════════════════════════════════════════════════════════════════════
-    // (O conteúdo JavaScript será enviado nas Partes 3 a 6)
-    </script>
-</body>
-</html>
     // ═══════════════════════════════════════════════════════════════════════
     // [05] JS-CFG · Constantes e configuração global
     // ═══════════════════════════════════════════════════════════════════════
@@ -3476,7 +3469,6 @@
         if (statusCtn) statusCtn.innerHTML = "";
         if (bannerCtn) bannerCtn.innerHTML = "";
 
-        // Banner de modo teste
         if (fase.dados.modoTeste && fase.tipo !== ETAPA_FASES.encerrada) {
             if (bannerCtn) bannerCtn.innerHTML = `<div class="modo-teste-banner"><span class="emoji">🧪</span> MODO TESTE — seus resultados não entram no ranking oficial</div>`;
         }
@@ -3687,11 +3679,11 @@
         } catch(e) { console.warn("Erro ao migrar chave copaV2:", e); }
     }
     // ▲▲▲ FIM [08.03]
+
     // ═══════════════════════════════════════════════════════════════════════
     // [09] JS-ALB · Álbum de conquistas
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [09.01] Persistência no Firebase ────────────────────────────────
     async function obterMedalsFirebase(nome, turma) {
         try { const snap = await database.ref(`${CAMINHO_MEDALS}/${chaveAlbum(nome, turma)}`).once("value"); return snap.val() || {}; }
         catch(e) { console.warn("Falha ao ler medalhas:", e); return {}; }
@@ -3726,9 +3718,7 @@
         try { const snap = await database.ref(`${CAMINHO_SNAPSHOT_DIARIO}/${chaveAlbum(nome, turma)}`).once("value"); return Object.keys(snap.val() || {}).length; }
         catch(e) { return 0; }
     }
-    // ▲▲▲ FIM [09.01]
 
-    // ▼▼▼ [09.02] Compilação de dados do aluno ─────────────────────────────
     async function compilarDadosAluno(nome, turma) {
         const partidas = await obterHistoricoAluno(nome, turma);
         const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
@@ -3867,9 +3857,7 @@
         }
         return { desbloqueadas, bloqueadas };
     }
-    // ▲▲▲ FIM [09.02]
 
-    // ▼▼▼ [09.03] Sincronização de medalhas ────────────────────────────────
     async function sincronizarMedalhas(nome, turma) {
         const dados = await compilarDadosAluno(nome, turma);
         const { desbloqueadas } = calcularMedalhasDesbloqueadas(dados);
@@ -3959,9 +3947,7 @@
         if (Math.abs(valor) >= 1000) return Math.round(valor).toLocaleString("pt-BR");
         return String(Math.round(valor * 100) / 100);
     }
-    // ▲▲▲ FIM [09.03]
 
-    // ▼▼▼ [09.04] Seções completas e estrelas ──────────────────────────────
     async function obterSecoesCompletas(nome, turma) {
         try { const snap = await database.ref(`${CAMINHO_SECOES_COMPLETAS}/${chaveAlbum(nome, turma)}`).once("value"); return snap.val() || {}; }
         catch(e) { console.warn("Falha ao ler seções completas:", e); return {}; }
@@ -4000,9 +3986,7 @@
         await salvarEstrelasFirebase(nome, turma, estrelas);
         return { novasSecoes, estrelas, reg, primeiroAcesso };
     }
-    // ▲▲▲ FIM [09.04]
 
-    // ▼▼▼ [09.05] Patentes ─────────────────────────────────────────────────
     function calcularPatente(estrelas) {
         const n = Number(estrelas) || 0;
         let atual = PATENTES[0];
@@ -4024,9 +4008,7 @@
         if (c) c.innerHTML = "";
         if (albumEstado) albumEstado.novaPatente = null;
     }
-    // ▲▲▲ FIM [09.05]
 
-    // ▼▼▼ [09.06] Popups de celebração ─────────────────────────────────────
     function mostrarPopupSecaoCompleta(secoes, estrelasTotal) {
         const lista = document.getElementById("album-modal-secao-lista");
         const modal = document.getElementById("modal-secao-completa");
@@ -4058,9 +4040,7 @@
         lista.innerHTML = `<p class="album-modal-secao-intro">${escaparHtml(m.msg)}</p><div class="album-modal-secao-cards"><div class="album-modal-secao-card"><span class="album-modal-secao-icone">${m.icone}</span><div class="album-modal-secao-info"><strong>Nova medalha no Álbum</strong><div class="album-modal-secao-reward">Veja sua coleção completa</div><span class="album-modal-secao-badge">${m.icone} Conquistada</span></div></div></div><button class="album-modal-secao-botao" onclick="fecharModalSecaoCompleta(); abrirAlbum();">📖 Ver no Álbum →</button>`;
         modal.classList.remove("hidden");
     }
-    // ▲▲▲ FIM [09.06]
 
-    // ▼▼▼ [09.07] Badge do álbum ───────────────────────────────────────────
     async function verificarBadgeAlbum() {
         const badge = document.getElementById("album-badge");
         if (!badge) return;
@@ -4106,9 +4086,7 @@
         container.classList.remove("hidden");
         setTimeout(() => { somColarFigurinha(); dispararConfetes(); }, 300);
     }
-    // ▲▲▲ FIM [09.07]
 
-    // ▼▼▼ [09.08] Renderização do álbum ────────────────────────────────────
     function renderizarCapa() {
         const { nome, turma, persistidas, estrelas } = albumEstado;
         const total = MEDALS.length;
@@ -4235,9 +4213,7 @@
         if (botao) botao.disabled = false;
         if (deveMostrarOnboardingAlbum()) setTimeout(() => mostrarOnboardingAlbum(), 320);
     }
-    // ▲▲▲ FIM [09.08]
 
-    // ▼▼▼ [09.09] Filtros e grid de medalhas ───────────────────────────────
     function carregarFiltrosAlbum() {
         try {
             const raw = localStorage.getItem(STORAGE_ALBUM_FILTROS);
@@ -4428,9 +4404,7 @@
             <div class="album-figurinha-rodape">${rodape}</div>
         </article>`;
     }
-    // ▲▲▲ FIM [09.09]
 
-    // ▼▼▼ [09.10] Modal "Como conseguir" + Onboarding ──────────────────────
     const STORAGE_ALBUM_ONBOARDING = "copa_album_onboarding_visto";
 
     function abrirDetalheMedalha(id) {
@@ -4502,13 +4476,11 @@
         document.getElementById("modal-album-onboarding")?.classList.add("hidden");
         marcarOnboardingAlbumVisto();
     }
-    // ▲▲▲ FIM [09.10]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [10] JS-MSG · Mensagens aluno ↔ professor
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [10.01] Threads do aluno ─────────────────────────────────────────
     async function carregarThreadAluno(nome, turma) {
         try {
             const snap = await database.ref(`${CAMINHO_MENSAGENS}/${chaveMsgThread(nome, turma)}`).once("value");
@@ -4568,9 +4540,7 @@
         msgEstado.thread.forEach(m => { if (m.de === "professor" && !m.lido) updates[`${chaveMsgThread(nome, turma)}/${m._id}/lido`] = true; });
         if (Object.keys(updates).length) { try { await database.ref(CAMINHO_MENSAGENS).update(updates); } catch(e) {} }
     }
-    // ▲▲▲ FIM [10.01]
 
-    // ▼▼▼ [10.02] Listener e badge do aluno ───────────────────────────────
     function iniciarListenerMsgAluno() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -4599,9 +4569,7 @@
         if (naoLidas > 0) { badge.textContent = naoLidas > 9 ? "9+" : String(naoLidas); badge.classList.remove("hidden"); }
         else badge.classList.add("hidden");
     }
-    // ▲▲▲ FIM [10.02]
 
-    // ▼▼▼ [10.03] Modal do aluno ───────────────────────────────────────────
     async function abrirFalarComProfessor() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -4703,9 +4671,7 @@
         const nomeCorreto = document.getElementById("msg-nome-correto")?.value || "";
         await enviarMensagemAluno(catId || "outro", texto, nomeCorreto);
     }
-    // ▲▲▲ FIM [10.03]
 
-    // ▼▼▼ [10.04] Painel de mensagens (professor) ──────────────────────────
     async function carregarMensagensPainel() {
         const container = document.getElementById("msg-painel-lista");
         if (!container) return;
@@ -4809,9 +4775,7 @@
             await carregarMensagensPainel();
         } catch(e) { console.warn(e); notificar("Não foi possível enviar.", "erro"); }
     }
-    // ▲▲▲ FIM [10.04]
 
-    // ▼▼▼ [10.05] Liberar acesso e excluir conversa ────────────────────────
     async function liberarAcessoDeAluno(nome, turma) {
         if (!exigirProfessorAutenticado()) return;
         if (!confirm(`Liberar o acesso de ${nome} (Turma ${turma})?\n\nIsso permite o próximo login em qualquer aparelho.`)) return;
@@ -4854,13 +4818,11 @@
             await carregarMensagensPainel();
         } catch(e) { console.warn(e); notificar("Não foi possível excluir.", "erro"); }
     }
-    // ▲▲▲ FIM [10.05]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [11] JS-MAPA · Mapa de tabuadas (copaV2)
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [11.01] Mapa Firebase/local ──────────────────────────────────────
     async function obterMapaFirebase(nome, turma, mod) {
         try {
             const chave = chaveAlunoCopa(nome, turma);
@@ -4888,9 +4850,7 @@
         await salvarMapaFirebase(nome, turma, mod, atual);
         return atual;
     }
-    // ▲▲▲ FIM [11.01]
 
-    // ▼▼▼ [11.02] Agregação global ─────────────────────────────────────────
     async function obterDesempenhoOperacoesAgregado(nome, turma, mod) {
         let dados = await obterMapaFirebase(nome, turma, mod);
         if (dados && Object.keys(dados).length > 0) return dados;
@@ -4945,9 +4905,7 @@
         }
         return combinado;
     }
-    // ▲▲▲ FIM [11.02]
 
-    // ▼▼▼ [11.03] Cores e promoções ────────────────────────────────────────
     async function obterUltimasCoresFirebase(nome, turma, mod) {
         try {
             const chave = chaveAlunoCopa(nome, turma);
@@ -5034,9 +4992,7 @@
             await Promise.all(promessas);
         } catch(e) { console.warn("Erro ao limpar copaV2 no Firebase:", e); }
     }
-    // ▲▲▲ FIM [11.03]
 
-    // ▼▼▼ [11.04] Renderização do mapa ─────────────────────────────────────
     function renderizarMapa() {
         const fa = FATORES_MAPA;
         const fb = FATORES_MAPA;
@@ -5105,9 +5061,7 @@
         if (!fracos.length) { notificar("🎉 Você não tem pontos fracos! Continue treinando.", "info"); return; }
         treinarComVariacoes(fracos.map(f => ({ fA: f.fA, fB: f.fB })));
     }
-    // ▲▲▲ FIM [11.04]
 
-    // ▼▼▼ [11.05] Detalhe da operação ──────────────────────────────────────
     function gerarDicaDecomposicao(fA, fB) {
         const r = fA * fB;
         if (fA === 1) return `${fA}×${fB} é <strong>${fB}</strong>.`;
@@ -5169,9 +5123,7 @@
         document.getElementById("modal-operacao").classList.add("hidden");
         pilhaDetalhes = [];
     }
-    // ▲▲▲ FIM [11.05]
 
-    // ▼▼▼ [11.06] Variações e treino focado ────────────────────────────────
     function obterVariacoesDeOperacao(fA, fB, mod = modalidadeAtual) {
         const produto = fA * fB;
         if (produto === 1) return [];
@@ -5215,12 +5167,11 @@
             notificar(`🔀 ${operacoesBase.length} ${pluralBase} base + ${qVar} ${pluralVar}`, "info", 4000);
         }
     }
-    // ▲▲▲ FIM [11.06]
+
     // ═══════════════════════════════════════════════════════════════════════
     // [12] JS-RANK · Ranking e perfil
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [12.01] Obter ranking e partidas ────────────────────────────────
     async function obterRanking() {
         try {
             const s = await database.ref(CAMINHO_RANKING).once("value");
@@ -5259,9 +5210,7 @@
             await renderizarRanking();
         } catch(e) { notificar("Erro na sincronização: " + e.message, "erro", 5000); }
     }
-    // ▲▲▲ FIM [12.01]
 
-    // ▼▼▼ [12.02] Salvar partida e resultado ──────────────────────────────
     async function salvarPartida(res) {
         const p = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro: "partida" };
         let l = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS) || "[]");
@@ -5293,9 +5242,7 @@
         localStorage.setItem(STORAGE_RANKING, JSON.stringify(l));
         return melhor;
     }
-    // ▲▲▲ FIM [12.02]
 
-    // ▼▼▼ [12.03] Rankings específicos ─────────────────────────────────────
     async function obterRankingPorPontos(mod, t = null) {
         const rank = await obterRanking();
         let f = rank.filter(r => r.modalidade === mod);
@@ -5327,9 +5274,7 @@
         const rank = await obterRanking();
         return rank.filter(r => normalizarNome(r.nome) === normalizarNome(n) && r.turma === t && (!mod || r.modalidade === mod)).sort(ordenarPorDataDesc);
     }
-    // ▲▲▲ FIM [12.03]
 
-    // ▼▼▼ [12.04] Médias e referências ────────────────────────────────────
     async function calcularMediasTop4Turmas(mod) {
         const rank = await obterRanking();
         const f = rank.filter(r => r.modalidade === mod);
@@ -5364,9 +5309,7 @@
         mediaTurma = ts.length ? ts.reduce((a, b) => a + b, 0) / ts.length : null;
         return { melhorMediaAluno, mediaTurma };
     }
-    // ▲▲▲ FIM [12.04]
 
-    // ▼▼▼ [12.05] Utilidades de ordenação e chaves ─────────────────────────
     function ordenarPorDataDesc(a,b) { return new Date(b.data || 0) - new Date(a.data || 0); }
     function resultadoCombinaFiltro(r, t, m) {
         if(t !== "todas" && r.turma !== t) return false;
@@ -5405,9 +5348,7 @@
         for (let i = 0; i < 5; i++) h += `<tr><td colspan="${c}"><div class="skeleton-line"></div></td></tr>`;
         t.innerHTML = h;
     }
-    // ▲▲▲ FIM [12.05]
 
-    // ▼▼▼ [12.06] Banner e médias do ranking ──────────────────────────────
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
         const n = obterNomeSalvoAluno(), t = obterTurmaSalvaAluno();
@@ -5448,9 +5389,7 @@
             c.innerHTML = h; c.classList.remove("hidden");
         } catch(e) { c.classList.add("hidden"); }
     }
-    // ▲▲▲ FIM [12.06]
 
-    // ▼▼▼ [12.07] Renderização principal do ranking ────────────────────────
     async function renderizarRanking() {
         const th = document.getElementById("tabela-head-ranking");
         const tb = document.getElementById("tabela-ranking-body");
@@ -5588,9 +5527,7 @@
         const h = document.getElementById("hint-turma-aluno"); if (!h) return;
         h.classList.toggle("hidden", !(tipoRankingAtual === "turma" && !obterTurmaSalvaAluno()));
     }
-    // ▲▲▲ FIM [12.07]
 
-    // ▼▼▼ [12.08] Perfil do aluno ──────────────────────────────────────────
     async function carregarPerfil() {
         const nome = document.getElementById("perfil-nome").value.trim();
         const turma = document.getElementById("perfil-turma").value;
@@ -5658,13 +5595,11 @@
         document.getElementById("perfil-turma").value = turma;
         carregarPerfil();
     }
-    // ▲▲▲ FIM [12.08]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [13] JS-JOGO · Geração de perguntas, partida e resultado
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [13.01] Conquistas e dificuldades ──────────────────────────────
     function calcularDificuldades(partidas, mod) {
         const fatores = MODALIDADES[mod]?.fatores || [];
         const m = {};
@@ -5724,9 +5659,7 @@
         }).join("");
         return `<div class="feedback-ranking"><strong>Plano de treino recomendado</strong><ul style="text-align:left;margin:8px 0 0;">${linhas}</ul></div>`;
     }
-    // ▲▲▲ FIM [13.01]
 
-    // ▼▼▼ [13.02] Geração adaptativa de perguntas ──────────────────────────
     function escolherPorPeso(itens, pesoFn) {
         let total = itens.reduce((s, i) => s + Math.max(0.1, pesoFn(i)), 0);
         let alvo = Math.random() * total;
@@ -5762,9 +5695,7 @@
         perguntasGeradas.push({ fA, fB, chave });
         return { fA, fB, resposta: fA * fB };
     }
-    // ▲▲▲ FIM [13.02]
 
-    // ▼▼▼ [13.03] Distratores inteligentes ────────────────────────────────
     function embaralharLista(l) {
         const c = [...l];
         for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; }
@@ -5812,9 +5743,7 @@
         }
         return valores.sort((a, b) => a - b);
     }
-    // ▲▲▲ FIM [13.03]
 
-    // ▼▼▼ [13.04] Pontuação e dicas ───────────────────────────────────────
     function calcularPontosResposta(t) {
         const base = 300;
         let bv = Math.max(0, Math.round((10 - t) * 60));
@@ -5830,9 +5759,7 @@
         if (fA === 10) return `${fB} vezes 10 é ${fB} com um zero no final.`;
         return `${fA} x ${fB} é somar ${fA}, ${fB} vezes.`;
     }
-    // ▲▲▲ FIM [13.04]
 
-    // ▼▼▼ [13.05] Navegação de telas ──────────────────────────────────────
     function mostrarTela(id) {
         ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
@@ -5841,9 +5768,7 @@
         if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); }
         if (id !== "tela-resultado") { document.getElementById("btn-treinar-novamente")?.classList.add("hidden"); document.getElementById("btn-compartilhar")?.classList.add("hidden"); }
     }
-    // ▲▲▲ FIM [13.05]
 
-    // ▼▼▼ [13.06] Cadastro e início ────────────────────────────────────────
     async function registrarAluno(treino) {
         const nomeBruto = document.getElementById("nome-aluno").value;
         const turma = document.getElementById("turma-aluno").value;
@@ -5944,9 +5869,7 @@
         const b = document.getElementById("barra-progresso-perguntas"); if (b) b.innerHTML = "";
         const p = document.getElementById("cabecalho-pontos"); if (p) p.innerText = "0 pts";
     }
-    // ▲▲▲ FIM [13.06]
 
-    // ▼▼▼ [13.07] Loop de perguntas ───────────────────────────────────────
     function gerarOpcoes() {
         const u = perguntasGeradas[perguntasGeradas.length - 1];
         const ops = gerarDistratoresInteligentes(u?.fA || tabuadaAtualPergunta || 1, u?.fB || 1, respostaCorreta, 4, modalidadeAtual);
@@ -6057,9 +5980,7 @@
         atualizarStatus(pAntes);
         setTimeout(() => { if (!finalizando) proximaPergunta(); }, 250);
     }
-    // ▲▲▲ FIM [13.07]
 
-    // ▼▼▼ [13.08] Status visual durante a partida ─────────────────────────
     function atualizarStatus(pAntes) {
         const c = document.getElementById("cabecalho-turma");
         if (c) {
@@ -6101,9 +6022,7 @@
             clearInterval(timerInterval); clearTimeout(timerTimeout); finalizarCircuito();
         }
     }
-    // ▲▲▲ FIM [13.08]
 
-    // ▼▼▼ [13.09] Finalização e resultado ─────────────────────────────────
     async function finalizarCircuito() {
         if (finalizando) return;
         finalizando = true; jogoAtivo = false;
@@ -6230,9 +6149,7 @@
             mostrarTela("tela-resultado");
         }
     }
-    // ▲▲▲ FIM [13.09]
 
-    // ▼▼▼ [13.10] Preenchimento do resultado ──────────────────────────────
     function gerarCardsComparacao(melhor, tent) {
         const novo = ehMelhorResultado(tent, melhor) && tent.data === melhor.data;
         return `<div class="cards-comparacao"><div class="card-compcard"><div class="card-comp-rotulo">Esta tentativa</div><div class="card-comp-valor">${tent.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div><div class="card-compcard card-recorde"><div class="card-comp-rotulo">${novo ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div><div class="card-comp-valor">${melhor.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div></div>`;
@@ -6377,13 +6294,11 @@
         if (navigator.share) { try { await navigator.share({ title: 'Copa da Tabuada CEIB 2026', text: t, url: window.location.href }); } catch(e) {} }
         else { try { await navigator.clipboard.writeText(t + '\n' + window.location.href); notificar("Copiado!", "sucesso"); } catch(e) { notificar("Não foi possível compartilhar.", "aviso"); } }
     }
-    // ▲▲▲ FIM [13.10]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [14] JS-META · Meta pessoal
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [14.01] Constantes e chaves da meta ─────────────────────────────
     const MARCOS_PONTOS = [
         { pts: 3000,  nome: "Aprendiz",   icone: "🎓" },
         { pts: 6000,  nome: "Praticante", icone: "📘" },
@@ -6406,9 +6321,6 @@
     function salvarEstadoMeta(nome, turma, mod, estado) {
         try { localStorage.setItem(chaveMetaEstado(nome, turma, mod), JSON.stringify(estado)); } catch(e) {}
     }
-    // ▲▲▲ FIM [14.01]
-
-    // ▼▼▼ [14.02] Cálculo e classes ────────────────────────────────────────
     function calcularPctProgressoMeta(atual, alvo) {
         if (!alvo || alvo <= 0) return 0;
         return Math.max(0, Math.min(100, (atual / alvo) * 100));
@@ -6432,9 +6344,6 @@
         const sel = document.getElementById("modalidade-tabuada");
         return sel && sel.value ? sel.value : "0-10";
     }
-    // ▲▲▲ FIM [14.02]
-
-    // ▼▼▼ [14.03] Cálculo da meta ──────────────────────────────────────────
     async function calcularMetaPessoal(nome, turma, mod) {
         const partidas = await obterHistoricoAluno(nome, turma, mod);
         const ranking = await obterRankingPorPontos(mod, turma);
@@ -6486,9 +6395,6 @@
         const meta = Math.round(melhorPontuacao * 1.03) + 50;
         return { tipo: "recorde_pessoal", icone: "🏆", mensagem: `🏆 Bata seu recorde de ${formatarPtsMeta(melhorPontuacao)} pontos!`, valorAtual: melhorPontuacao, valorMeta: meta, mostrarComparacao: true, progressoPct: 97, motivacao: "💪 Você está muito perto! Jogue mais uma vez!", conquistada: false };
     }
-    // ▲▲▲ FIM [14.03]
-
-    // ▼▼▼ [14.04] Renderização e celebração ───────────────────────────────
     async function verificarCelebracaoMeta(nome, turma, mod, meta) {
         const estado = obterEstadoMeta(nome, turma, mod);
         const chaveMetaAtual = `${meta.tipo}|${meta.valorMeta}`;
@@ -6546,13 +6452,11 @@
 
         await verificarCelebracaoMeta(nome, turma, mod, meta);
     }
-    // ▲▲▲ FIM [14.04]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [15] JS-DESP · Meu Desempenho
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [15.01] Formatação e skeletons ──────────────────────────────────
     function formatarDataHoraHistorico(dataISO) {
         if (!dataISO) return { data: "--", hora: "" };
         const d = new Date(dataISO);
@@ -6587,9 +6491,7 @@
         const classes = ["media", "longa", "curta", "media", "longa"];
         return `<div class="desempenho-skeleton">${Array.from({ length: linhas }, (_, i) => `<div class="desempenho-skeleton-linha ${classes[i % classes.length]}"></div>`).join("")}</div>`;
     }
-    // ▲▲▲ FIM [15.01]
 
-        // ▼▼▼ [15.02] Estatísticas e gráfico ──────────────────────────────────
     function renderizarEstatisticasDesempenho() {
         const container = document.getElementById("desempenho-stats");
         if (!container) return;
@@ -6684,51 +6586,32 @@
         svg.setAttribute("role", "img");
         svg.setAttribute("aria-label", "Grafico de evolucao da pontuacao");
 
-        // Defs + gradientes
         var defs = document.createElementNS(NS, "defs");
-
         var gradArea = document.createElementNS(NS, "linearGradient");
         gradArea.setAttribute("id", "gradArea");
-        gradArea.setAttribute("x1", "0");
-        gradArea.setAttribute("y1", "0");
-        gradArea.setAttribute("x2", "0");
-        gradArea.setAttribute("y2", "1");
+        gradArea.setAttribute("x1", "0"); gradArea.setAttribute("y1", "0");
+        gradArea.setAttribute("x2", "0"); gradArea.setAttribute("y2", "1");
         var stopA1 = document.createElementNS(NS, "stop");
-        stopA1.setAttribute("offset", "0%");
-        stopA1.setAttribute("stop-color", "#0ea5e9");
-        stopA1.setAttribute("stop-opacity", "0.25");
+        stopA1.setAttribute("offset", "0%"); stopA1.setAttribute("stop-color", "#0ea5e9"); stopA1.setAttribute("stop-opacity", "0.25");
         var stopA2 = document.createElementNS(NS, "stop");
-        stopA2.setAttribute("offset", "100%");
-        stopA2.setAttribute("stop-color", "#0ea5e9");
-        stopA2.setAttribute("stop-opacity", "0");
-        gradArea.appendChild(stopA1);
-        gradArea.appendChild(stopA2);
-
+        stopA2.setAttribute("offset", "100%"); stopA2.setAttribute("stop-color", "#0ea5e9"); stopA2.setAttribute("stop-opacity", "0");
+        gradArea.appendChild(stopA1); gradArea.appendChild(stopA2);
         var gradLine = document.createElementNS(NS, "linearGradient");
         gradLine.setAttribute("id", "gradLine");
-        gradLine.setAttribute("x1", "0");
-        gradLine.setAttribute("y1", "0");
-        gradLine.setAttribute("x2", "1");
-        gradLine.setAttribute("y2", "0");
+        gradLine.setAttribute("x1", "0"); gradLine.setAttribute("y1", "0");
+        gradLine.setAttribute("x2", "1"); gradLine.setAttribute("y2", "0");
         var stopL1 = document.createElementNS(NS, "stop");
-        stopL1.setAttribute("offset", "0%");
-        stopL1.setAttribute("stop-color", "#0284c7");
+        stopL1.setAttribute("offset", "0%"); stopL1.setAttribute("stop-color", "#0284c7");
         var stopL2 = document.createElementNS(NS, "stop");
-        stopL2.setAttribute("offset", "100%");
-        stopL2.setAttribute("stop-color", "#0ea5e9");
-        gradLine.appendChild(stopL1);
-        gradLine.appendChild(stopL2);
-
-        defs.appendChild(gradArea);
-        defs.appendChild(gradLine);
+        stopL2.setAttribute("offset", "100%"); stopL2.setAttribute("stop-color", "#0ea5e9");
+        gradLine.appendChild(stopL1); gradLine.appendChild(stopL2);
+        defs.appendChild(gradArea); defs.appendChild(gradLine);
         svg.appendChild(defs);
 
-        // Linhas de grade + labels Y
         var ticks = 4;
         for (var ti = 0; ti <= ticks; ti++) {
             var yTick = padT + (cH * ti / ticks);
             var valTick = yMax * (1 - ti / ticks);
-
             var lineGrid = document.createElementNS(NS, "line");
             lineGrid.setAttribute("x1", String(padL));
             lineGrid.setAttribute("y1", yTick.toFixed(1));
@@ -6737,7 +6620,6 @@
             lineGrid.setAttribute("stroke", "rgba(148,163,184,0.18)");
             lineGrid.setAttribute("stroke-width", "1");
             svg.appendChild(lineGrid);
-
             var textY = document.createElementNS(NS, "text");
             textY.setAttribute("x", String(padL - 6));
             textY.setAttribute("y", (yTick + 3.5).toFixed(1));
@@ -6747,7 +6629,6 @@
             svg.appendChild(textY);
         }
 
-        // Linha da base (X)
         var lineBase = document.createElementNS(NS, "line");
         lineBase.setAttribute("x1", String(padL));
         lineBase.setAttribute("y1", String(padT + cH));
@@ -6757,7 +6638,6 @@
         lineBase.setAttribute("stroke-width", "1");
         svg.appendChild(lineBase);
 
-        // Linha da média (tracejada)
         var lineMedia = document.createElementNS(NS, "line");
         lineMedia.setAttribute("x1", String(padL));
         lineMedia.setAttribute("y1", yMedia.toFixed(1));
@@ -6777,7 +6657,6 @@
         textMedia.textContent = "media " + formatarNumeroEixo(media, yMax);
         svg.appendChild(textMedia);
 
-        // Path da linha
         var pathD = "M " + coords[0].x.toFixed(1) + " " + coords[0].y.toFixed(1);
         for (var pi = 1; pi < coords.length; pi++) {
             pathD += " L " + coords[pi].x.toFixed(1) + " " + coords[pi].y.toFixed(1);
@@ -6787,14 +6666,12 @@
         var firstX = coords[0].x.toFixed(1);
         var areaD = pathD + " L " + lastX + " " + baseY + " L " + firstX + " " + baseY + " Z";
 
-        // Área sob a linha
         var pathArea = document.createElementNS(NS, "path");
         pathArea.setAttribute("d", areaD);
         pathArea.setAttribute("class", "desempenho-area");
         pathArea.setAttribute("fill", "url(#gradArea)");
         svg.appendChild(pathArea);
 
-        // Linha principal
         var pathLine = document.createElementNS(NS, "path");
         pathLine.setAttribute("d", pathD);
         pathLine.setAttribute("class", "desempenho-linha");
@@ -6805,7 +6682,6 @@
         pathLine.setAttribute("stroke-linejoin", "round");
         svg.appendChild(pathLine);
 
-        // Pontos
         for (var pi2 = 0; pi2 < coords.length; pi2++) {
             var c = coords[pi2];
             var isRecord = pi2 === idxRecorde;
@@ -6813,7 +6689,6 @@
             var cls = isRecord ? "desempenho-ponto recorde" : "desempenho-ponto";
             var r = isRecord ? 5.5 : 3.5;
             var delayAttr = isRecord ? (delay + "s, " + (delay + 0.4) + "s") : (delay + "s");
-
             var circle = document.createElementNS(NS, "circle");
             circle.setAttribute("cx", c.x.toFixed(1));
             circle.setAttribute("cy", c.y.toFixed(1));
@@ -6824,7 +6699,6 @@
             svg.appendChild(circle);
         }
 
-        // Coroa do recorde
         if (coords[idxRecorde]) {
             var rec = coords[idxRecorde];
             var delayCoroa = 0.45 + (idxRecorde * (0.85 / n));
@@ -6838,7 +6712,6 @@
             svg.appendChild(textCoroa);
         }
 
-        // Labels do eixo X
         var step = Math.max(1, Math.ceil(n / 8));
         var indices = [];
         for (var ki = 0; ki < n; ki += step) indices.push(ki);
@@ -6855,7 +6728,6 @@
             svg.appendChild(textEixo);
         }
 
-        // Título do eixo X
         var textTitulo = document.createElementNS(NS, "text");
         textTitulo.setAttribute("x", String(padL + cW / 2));
         textTitulo.setAttribute("y", String(VBH - 5));
@@ -6866,7 +6738,6 @@
 
         container.appendChild(svg);
 
-        // Animação da linha sendo desenhada
         requestAnimationFrame(function() {
             var linha = container.querySelector(".desempenho-linha");
             if (!linha) return;
@@ -6902,20 +6773,16 @@
             var cy = parseFloat(circle.getAttribute("cy"));
             var px = svgRect.left + (cx / VBW) * svgRect.width;
             var py = svgRect.top + (cy / VBH) * svgRect.height;
-
             tooltip.innerHTML = '<div class="desempenho-tooltip-titulo">🎯 Partida ' + (idx + 1) + '</div>' +
                 '<div class="desempenho-tooltip-linha"><span>Pontos</span><span class="val">' + ((Number(partida.pontos) || 0).toLocaleString("pt-BR")) + '</span></div>' +
                 '<div class="desempenho-tooltip-linha"><span>Acertos</span><span class="val">' + (partida.acertos || 0) + '/20</span></div>' +
                 '<div class="desempenho-tooltip-linha"><span>Tempo</span><span class="val">' + ((Number(partida.tempoMedio) || 0).toFixed(2)) + 's</span></div>' +
                 '<div class="desempenho-tooltip-linha"><span>Data</span><span class="val">' + formatarDataCurta(partida.data) + '</span></div>';
-
             tooltip.style.left = (px - wrapRect.left) + "px";
             tooltip.style.top = (py - wrapRect.top) + "px";
             tooltip.classList.add("visivel");
         }
-
         function esconder() { tooltip.classList.remove("visivel"); }
-
         var pontos = chart.querySelectorAll(".desempenho-ponto");
         for (var i = 0; i < pontos.length; i++) {
             (function(circle) {
@@ -6927,9 +6794,7 @@
             })(pontos[i]);
         }
     }
-    // ▲▲▲ FIM [15.02]
 
-    // ▼▼▼ [15.03] Comparativo com a turma ─────────────────────────────────
     async function renderizarComparativoTurma() {
         const container = document.getElementById("desempenho-turma");
         if (!container) return;
@@ -7032,9 +6897,7 @@
         }
         container.innerHTML = html;
     }
-    // ▲▲▲ FIM [15.03]
 
-    // ▼▼▼ [15.04] Evolução no ranking ─────────────────────────────────────
     async function renderizarEvolucaoRanking() {
         const container = document.getElementById("desempenho-evolucao");
         if (!container) return;
@@ -7096,9 +6959,7 @@
         html += `<div class="desempenho-evolucao-fechamento">${fechamento}</div>`;
         container.innerHTML = html;
     }
-    // ▲▲▲ FIM [15.04]
 
-    // ▼▼▼ [15.05] Histórico de partidas ────────────────────────────────────
     function renderizarHistoricoPartidas() {
         const container = document.getElementById("desempenho-historico");
         if (!container) return;
@@ -7131,9 +6992,7 @@
         const pluralPartida = total === 1 ? "partida" : "partidas";
         container.innerHTML = `<div class="desempenho-historico-cabecalho"><div class="desempenho-historico-cabecalho-esq"><span class="desempenho-historico-cabecalho-emoji">📋</span><span class="desempenho-historico-cabecalho-txt">Suas <strong>${total} ${pluralPartida}</strong> registradas</span></div><span class="desempenho-historico-contagem">${total} ${pluralPartida}</span></div><div class="desempenho-historico-scroll"><table class="desempenho-historico-tabela"><thead><tr><th>Data</th><th>Modalidade</th><th class="col-num">Pontos</th><th class="col-num">Acertos</th><th class="col-num">Tempo médio dos acertos</th><th class="col-num">Sequência</th></tr></thead><tbody>${linhas}</tbody></table></div><p class="desempenho-historico-nota">🏆 Marca seu <strong>recorde pessoal</strong> nesta modalidade. ${desempenhoModalidadeAtual !== "todas" ? `Mostrando só partidas de <strong>${MODALIDADES[desempenhoModalidadeAtual]?.nome}</strong>. ` : ""} A lista é atualizada a cada nova partida oficial.</p>`;
     }
-    // ▲▲▲ FIM [15.05]
 
-    // ▼▼▼ [15.06] Destaque pessoal ─────────────────────────────────────────
     function calcularMeuDestaque(nome, turma, partidas) {
         if (!partidas || partidas.length < 2) return null;
         const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
@@ -7191,9 +7050,7 @@
         else frasePrecisao = `💡 <strong>${d.precisao.toFixed(0)}%</strong> de acertos — o treino vai elevar!`;
         container.innerHTML = `<div class="desempenho-destaque-titulo"><span class="em">🏅</span> Seu destaque</div><div class="desempenho-destaque-grid"><div class="desempenho-destaque-card evolucao"><span class="desempenho-destaque-icone">🚀</span><div class="desempenho-destaque-valor">${ehPositiva ? "+" : ""}${evolucaoPctArred}<span class="pequeno">%</span><span class="desempenho-destaque-badge ${badgeCls}">${badgeTxt}</span></div><span class="desempenho-destaque-rotulo">Evolução de pontuação</span><p class="desempenho-destaque-frase">${fraseEvolucao}</p></div><div class="desempenho-destaque-card volume"><span class="desempenho-destaque-icone">🎮</span><div class="desempenho-destaque-valor">${d.totalPartidas}<span class="pequeno">partidas</span></div><span class="desempenho-destaque-rotulo">Volume jogado</span><p class="desempenho-destaque-frase">${fraseVolume}</p></div><div class="desempenho-destaque-card precisao"><span class="desempenho-destaque-icone">🎯</span><div class="desempenho-destaque-valor">${d.precisao.toFixed(0)}<span class="pequeno">%</span></div><span class="desempenho-destaque-rotulo">Precisão geral</span><p class="desempenho-destaque-frase">${frasePrecisao}</p></div></div>`;
     }
-    // ▲▲▲ FIM [15.06]
 
-    // ▼▼▼ [15.07] Fluxo principal do desempenho ──────────────────────────
     function abrirMeuDesempenho() {
         mostrarTela("tela-desempenho");
         comparativoTurmaCache = null;
@@ -7259,12 +7116,11 @@
         renderizarHistoricoPartidas();
         renderizarBotaoCertificado();
     }
-    // ▲▲▲ FIM [15.07]
+
     // ═══════════════════════════════════════════════════════════════════════
     // [16] JS-CERT · Certificado de Maestria
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [16.01] Geração do HTML do certificado ─────────────────────────
     function gerarNumeroCertificado(nome, turma, dataISO) {
         const str = `${normalizarNome(nome)}|${turma}|${dataISO.slice(0,10)}`;
         let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
@@ -7283,9 +7139,7 @@
         const turmaSegura = escaparHtml(turma);
         return `<div class="cert-brasao" aria-hidden="true">🏛️</div><div class="cert-escola">Colégio Estadual Ismael Branco</div><div class="cert-linha-decorativa" aria-hidden="true">❦ ❦ ❦</div><h1 class="cert-titulo">CERTIFICADO</h1><p class="cert-subtitulo">de Maestria em Tabuadas</p><p class="cert-texto-intro">Certificamos que</p><div class="cert-nome">${nomeSeguro}</div><p class="cert-texto">da turma <strong>${turmaSegura}</strong></p><p class="cert-texto-corpo">demonstrou <strong>domínio total</strong> das tabuadas de multiplicação de <strong>1 a 10</strong>, dominando <strong>100%</strong> do mapa de operações com precisão igual ou superior a <strong>90%</strong> em cada uma.</p><div class="cert-medalhas" aria-hidden="true"><span>🏆</span><span>🧠</span><span>⭐</span></div><div class="cert-stats"><span>📚 <strong>${dados.operacoesDominadas || 100}</strong> operações dominadas</span><span>🎖️ <strong>Medalha Lendária</strong></span><span>📅 <strong>${dataFmt}</strong></span></div><div class="cert-assinatura"><div class="cert-linha-assinatura"></div><div class="cert-assinatura-nome">Prof. Henrique</div><div class="cert-assinatura-cargo">Matemática · CEIB</div></div><div class="cert-rodape"><span>Copa da Tabuada CEIB 2026</span><span class="cert-numero">Nº ${numero}</span></div>`;
     }
-    // ▲▲▲ FIM [16.01]
 
-    // ▼▼▼ [16.02] Abrir, fechar e marcar visto ────────────────────────────
     async function abrirCertificado(nome, turma) {
         const container = document.getElementById("certificado-conteudo");
         const modal = document.getElementById("modal-certificado");
@@ -7318,9 +7172,7 @@
     function chaveCertVisto(nome, turma) { return STORAGE_CERT_VISTO + chaveVinculo(nome, turma); }
     function marcarCertificadoVisto(nome, turma) { try { localStorage.setItem(chaveCertVisto(nome, turma), "1"); } catch(e) {} }
     function jaViuCertificado(nome, turma) { try { return localStorage.getItem(chaveCertVisto(nome, turma)) === "1"; } catch(e) { return false; } }
-    // ▲▲▲ FIM [16.02]
 
-    // ▼▼▼ [16.03] Maestria absoluta ───────────────────────────────────────
     async function verificarMaestriaAbsoluta(nome, turma) {
         if (!nome || !turma) return;
         try {
@@ -7366,13 +7218,11 @@
             } catch(e) {}
         })();
     }
-    // ▲▲▲ FIM [16.03]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [17] JS-PROF · Painel do professor
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [17.01] Autenticação e cockpit da etapa ─────────────────────────
     async function autenticarProfessor() {
         const i = document.getElementById("senha-professor");
         const s = i.value;
@@ -7439,9 +7289,7 @@
         html += `</div>`;
         container.innerHTML = html;
     }
-    // ▲▲▲ FIM [17.01]
 
-    // ▼▼▼ [17.02] Ações do ciclo da etapa ─────────────────────────────────
     async function agendarInicioEtapa() {
         if (!exigirProfessorAutenticado()) return;
         const d = await obterDadosEtapa(true);
@@ -7485,11 +7333,7 @@
         const motivo = prompt("📝 Motivo do congelamento (opcional, ficará registrado no painel):");
         if (motivo === null) return;
         try {
-            await salvarDadosEtapa({
-                status: "congelada",
-                congeladoEm: Date.now(),
-                motivoCongelamento: motivo.trim() || "não informado"
-            });
+            await salvarDadosEtapa({ status: "congelada", congeladoEm: Date.now(), motivoCongelamento: motivo.trim() || "não informado" });
             notificar("Etapa congelada.", "aviso", 5000);
             await renderizarPainelEtapa();
             await atualizarTelaInicialComEtapa();
@@ -7543,7 +7387,7 @@
         if (!exigirProfessorAutenticado()) return;
         try {
             await salvarDadosEtapa({ modoTeste: true });
-            notificar("🧪 Modo teste ATIVADO. Agora você pode encerrar a etapa a qualquer momento.", "sucesso", 5000);
+            notificar("🧪 Modo teste ATIVADO.", "sucesso", 5000);
             await renderizarPainelEtapa();
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível ativar modo teste.", "erro"); }
@@ -7557,9 +7401,7 @@
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível desativar.", "erro"); }
     }
-    // ▲▲▲ FIM [17.02]
 
-    // ▼▼▼ [17.03] Configuração e votação ──────────────────────────────────
     async function obterConfiguracao() {
         try {
             const snap = await database.ref(CAMINHO_CONFIG).once("value");
@@ -7626,9 +7468,7 @@
             return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
         }
     }
-    // ▲▲▲ FIM [17.03]
 
-    // ▼▼▼ [17.04] Votação — registro e card ───────────────────────────────
     async function registrarVoto(opcao) {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -7727,9 +7567,7 @@
         }
         corpo.innerHTML = `<div class="votacao-botoes"><button class="btn-voto" onclick="registrarVoto('7')"><strong>7</strong>dias<small>encerrar na 1ª semana</small></button><button class="btn-voto" onclick="registrarVoto('14')"><strong>14</strong>dias<small>estender +1 semana</small></button></div><div style="font-size:12px;color:#ede9fe;text-align:center;margin-top:10px;line-height:1.5;">Após votar, você verá o resultado parcial. Sua escolha não pode ser alterada.</div>`;
     }
-    // ▲▲▲ FIM [17.04]
 
-    // ▼▼▼ [17.05] Painel de votação ───────────────────────────────────────
     async function abrirVotacaoProfessor() {
         if (!exigirProfessorAutenticado()) return;
         const dados = await obterDadosVotacao();
@@ -7747,7 +7585,7 @@
     }
     async function resetarVotacao() {
         if (!exigirProfessorAutenticado()) return;
-        if (!confirm("⚠️ Resetar votação? Todos os votos serão apagados e a votação voltará ao estado inicial (fechada).\n\nObs: NÃO apaga o histórico de partidas nem o ranking.")) return;
+        if (!confirm("⚠️ Resetar votação? Todos os votos serão apagados.\n\nObs: NÃO apaga o histórico de partidas nem o ranking.")) return;
         try {
             await database.ref(CAMINHO_VOTACAO).remove();
             await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null });
@@ -7795,9 +7633,7 @@
         html += `<button onclick="resetarVotacao()" class="botao-forcar" style="margin:0;">🗑️ Resetar votação</button>`;
         container.innerHTML = html;
     }
-    // ▲▲▲ FIM [17.05]
 
-    // ▼▼▼ [17.06] Destaques do professor ──────────────────────────────────
     function calcularDestaques(partidas, filtroTurma) {
         const porAluno = new Map();
         partidas.forEach(p => {
@@ -7870,9 +7706,7 @@
             container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível calcular os destaques agora.</div>`;
         }
     }
-    // ▲▲▲ FIM [17.06]
 
-    // ▼▼▼ [17.07] Reset e limpeza ─────────────────────────────────────────
     async function limparAlbumPorFiltro(turma) {
         const caminhos = [CAMINHO_MEDALS, CAMINHO_ESTRELAS, CAMINHO_SECOES_COMPLETAS, CAMINHO_POSICAO_BASELINE, CAMINHO_SNAPSHOT_DIARIO];
         if (turma === "todas") {
@@ -7908,7 +7742,7 @@
         const mod = document.getElementById("reset-modalidade").value;
         const limparVinculos = document.getElementById("reset-limpar-vinculos")?.checked || false;
         let msg = `Resetar ${turma === "todas" ? "TODAS" : turma} - ${mod === "todas" ? "TODAS" : MODALIDADES[mod]?.nome}?`;
-        if (limparVinculos) msg += `\n\n⚠️ TAMBÉM irá apagar TODOS os vínculos de dispositivo.\nOs nomes ficarão livres para serem usados em qualquer aparelho.`;
+        if (limparVinculos) msg += `\n\n⚠️ TAMBÉM irá apagar TODOS os vínculos de dispositivo.`;
         if (!confirm(msg)) return;
         const rank = await obterRanking();
         const novos = rank.filter(r => !resultadoCombinaFiltro(r, turma, mod));
@@ -7921,8 +7755,8 @@
         await limparAlbumPorFiltro(turma);
         await limparMensagensPorFiltro(turma);
         if (limparVinculos) {
-            try { await database.ref(CAMINHO_VINCULOS).remove(); notificar("Todos os vínculos de dispositivo foram removidos.", "info", 4000); }
-            catch(e) { console.warn("Erro ao limpar vínculos:", e); notificar("Aviso: não foi possível limpar os vínculos agora.", "aviso", 4000); }
+            try { await database.ref(CAMINHO_VINCULOS).remove(); notificar("Todos os vínculos foram removidos.", "info", 4000); }
+            catch(e) { console.warn("Erro ao limpar vínculos:", e); }
         }
         localStorage.setItem(STORAGE_RANKING, JSON.stringify(novos));
         localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(partidasN));
@@ -7945,9 +7779,7 @@
         const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "copa_tabuada.csv"; a.click();
         notificar("Download iniciado", "info");
     }
-    // ▲▲▲ FIM [17.07]
 
-    // ▼▼▼ [17.08] Gerenciar alunos ────────────────────────────────────────
     async function abrirGerenciarAlunos() { if (!exigirProfessorAutenticado()) return; document.getElementById("painel-alunos").classList.remove("hidden"); await carregarListaAlunos(); }
     function fecharGerenciarAlunos() { document.getElementById("painel-alunos").classList.add("hidden"); }
     async function carregarListaAlunos() { const r = await obterRanking(); alunosData = [...r]; filtrarAlunos(); }
@@ -7974,7 +7806,7 @@
                 const cell = document.getElementById(`vinculo-${k}`);
                 if (cell) {
                     const v = await obterVinculo(a.nome, a.turma);
-                    if (v) { cell.innerHTML = `🔒 ${v.dispositivoId.slice(0, 8)}...`; cell.title = `Dispositivo: ${v.dispositivoId}\nÚltimo acesso: ${formatarDataHora(v.ultimoAcesso || v.criadoEm)}`; }
+                    if (v) { cell.innerHTML = `🔒 ${v.dispositivoId.slice(0, 8)}...`; cell.title = `Dispositivo: ${v.dispositivoId}`; }
                     else cell.innerHTML = `🔓 Não vinculado`;
                 }
             }
@@ -8053,15 +7885,13 @@
     }
     async function desvincularAluno(nome, turma) {
         if (!exigirProfessorAutenticado()) return;
-        if (!confirm(`Desvincular ${nome} (Turma ${turma})? O próximo acesso vai liberar qualquer aparelho.`)) return;
+        if (!confirm(`Desvincular ${nome} (Turma ${turma})?`)) return;
         const c = chaveVinculo(nome, turma);
         await database.ref(`${CAMINHO_VINCULOS}/${c}`).remove();
         notificar(`Vínculo de ${nome} removido.`, "sucesso");
         await carregarListaAlunos();
     }
-    // ▲▲▲ FIM [17.08]
 
-    // ▼▼▼ [17.09] Modais de ajuda ─────────────────────────────────────────
     function abrirComoFunciona() { document.getElementById("modal-como-funciona").classList.remove("hidden"); }
     function fecharComoFunciona(e) {
         if (e && e.target && e.target.closest(".modal-card")) return;
@@ -8072,13 +7902,11 @@
         if (e && e.target && e.target.closest(".modal-card")) return;
         document.getElementById("modal-changelog").classList.add("hidden");
     }
-    // ▲▲▲ FIM [17.09]
 
     // ═══════════════════════════════════════════════════════════════════════
-    // [18] JS-HOME · Preenchimento dinâmico da Home E-Sports + Hall da Fama
+    // [18] JS-HOME · Home E-Sports + Hall da Fama
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [18.01] Preenchimento do hero ──────────────────────────────────
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -8119,19 +7947,15 @@
             );
             const posicao = idx === -1 ? null : idx + 1;
 
-            // Posição no ranking global (todas as turmas)
             let posicaoGlobal = null;
-            let totalGlobal = 0;
             try {
                 const rankingGlobal = await obterRankingPorPontos(modalidade, null);
-                totalGlobal = rankingGlobal.length;
                 const ig = rankingGlobal.findIndex(r =>
                     normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
                 );
                 if (ig !== -1) posicaoGlobal = ig + 1;
-            } catch(e) { console.warn("Falha ao calcular ranking global:", e); }
+            } catch(e) {}
 
-            // Ranking de turmas
             let turmaRankingInfo = null;
             try {
                 const mediasTurmas = await calcularMediasTop4Turmas(modalidade);
@@ -8139,9 +7963,8 @@
                 if (iTurma !== -1) {
                     turmaRankingInfo = { posicao: iTurma + 1, total: mediasTurmas.length, medias: mediasTurmas };
                 }
-            } catch(e) { console.warn("Falha ao calcular ranking de turmas:", e); }
+            } catch(e) {}
 
-            // Preencher hero com stats competitivas
             const elTurma = document.getElementById("hero-stat-turma");
             const elGlobal = document.getElementById("hero-stat-global");
             const elMelhor = document.getElementById("hero-stat-melhor");
@@ -8156,7 +7979,7 @@
                 heroSub.innerHTML = `Você está na ${posTxt}${posGlobalTxt}.`;
             }
 
-            atualizarHomeValores({ melhorPontos, posicao, melhorPartida, ranking: rankingTurma, nome, turma, posicaoGlobal, totalGlobal });
+            atualizarHomeValores({ melhorPontos, posicao, melhorPartida, ranking: rankingTurma, nome, turma, posicaoGlobal });
             atualizarRankingTurmasHome(turmaRankingInfo, turma);
         } catch (e) {
             console.warn("Falha ao preencher home esports:", e);
@@ -8164,9 +7987,6 @@
             atualizarRankingTurmasHome(null, turma);
         }
     }
-    // ▲▲▲ FIM [18.01]
-
-    // ▼▼▼ [18.02] Atualização dos valores da home ────────────────────────
     function atualizarHomeValores(dados) {
         const elRankingLista = document.getElementById("ranking-home-lista");
         const elMelhorResultado = document.getElementById("home-melhor-resultado");
@@ -8180,9 +8000,8 @@
             return;
         }
 
-        const { melhorPontos, posicao, melhorPartida, ranking, nome, turma, posicaoGlobal } = dados;
+        const { melhorPontos, posicao, melhorPartida, ranking, nome, turma } = dados;
 
-        // Mini-ranking da turma
         if (elRankingLista) {
             const top4 = ranking.slice(0, 4);
             const jaNoTop4 = posicao !== null && posicao <= 4;
@@ -8207,7 +8026,6 @@
             elRankingLista.innerHTML = html;
         }
 
-        // Indicador de distância
         if (elDistancia && posicao && ranking.length > 1) {
             let msgDist = "";
             if (posicao === 1) {
@@ -8230,7 +8048,6 @@
             }
         }
 
-        // Melhor resultado
         if (elMelhorResultado && melhorPartida) {
             const acertos = Number(melhorPartida.acertos) || 0;
             const tempo = Number(melhorPartida.tempoMedio) || 0;
@@ -8246,9 +8063,6 @@
             `;
         }
     }
-    // ▲▲▲ FIM [18.02]
-
-    // ▼▼▼ [18.03] Ranking de Turmas na Home ──────────────────────────────
     function atualizarRankingTurmasHome(info, turmaAluno) {
         const container = document.getElementById("ranking-turmas-lista");
         if (!container) return;
@@ -8259,7 +8073,6 @@
         const medias = info.medias;
         const top4 = medias.slice(0, 4);
         const minhaEsta = top4.some(t => t.turma === turmaAluno);
-
         let html = "";
         top4.forEach((t, i) => {
             const ehMinha = t.turma === turmaAluno;
@@ -8269,7 +8082,6 @@
                 <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
             </div>`;
         });
-
         if (!minhaEsta && turmaAluno) {
             const idx = medias.findIndex(t => t.turma === turmaAluno);
             if (idx !== -1) {
@@ -8282,12 +8094,9 @@
                 </div>`;
             }
         }
-
         container.innerHTML = html;
     }
-    // ▲▲▲ FIM [18.03]
 
-    // ▼▼▼ [18.04] Hall da Fama ────────────────────────────────────────────
     async function abrirHallDaFama() {
         mostrarTela("tela-hall-fama");
         await renderizarHallDaFama();
@@ -8296,20 +8105,14 @@
     async function renderizarHallDaFama() {
         const container = document.getElementById("hall-fama-conteudo");
         if (!container) return;
-
-        // Usa cache se estiver fresco
         if (hallFamaCache && (Date.now() - hallFamaUltimaAtualizacao) < HALL_FAMA_CACHE_MS) {
             renderizarHallComDados(hallFamaCache);
             return;
         }
-
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando os destaques da Copa…</div>`;
-
         try {
             const partidas = await obterPartidas();
             const ranking = await obterRanking();
-
-            // Mapa de alunos únicos (nome|turma)
             const alunosUnicos = new Map();
             partidas.forEach(p => {
                 const k = `${normalizarNome(p.nome)}|${p.turma}`;
@@ -8319,23 +8122,12 @@
                 const k = `${normalizarNome(r.nome)}|${r.turma}`;
                 if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: r.nome, turma: r.turma });
             });
-
             const listaAlunos = Array.from(alunosUnicos.values());
-
-            // Processar cada aluno (com limite para não pesar)
             const LIMITE_ALUNOS = 500;
             const alunosParaProcessar = listaAlunos.slice(0, LIMITE_ALUNOS);
-
-            const destaques = {
-                medalhas: [],
-                estrelas: [],
-                album: [],
-                mapa: []
-            };
-
+            const destaques = { medalhas: [], estrelas: [], album: [], mapa: [] };
             for (const aluno of alunosParaProcessar) {
                 try {
-                    // Medalhas e estrelas
                     const persistidas = await obterMedalsFirebase(aluno.nome, aluno.turma);
                     const qtdMedalhas = Object.keys(persistidas).length;
                     let qtdEstrelas = 0;
@@ -8343,15 +8135,12 @@
                         const m = MEDALS_POR_ID[id];
                         if (m) qtdEstrelas += m.recompensaEstrelas;
                     });
-
                     if (qtdMedalhas > 0) {
                         destaques.medalhas.push({ ...aluno, qtdMedalhas });
                         destaques.estrelas.push({ ...aluno, qtdEstrelas });
                         const pctAlbum = Math.round((qtdMedalhas / MEDALS.length) * 100);
                         destaques.album.push({ ...aluno, qtdMedalhas, pctAlbum, total: MEDALS.length });
                     }
-
-                    // Mapa de tabuadas
                     const mapa = await obterDesempenhoOperacoesGlobal(aluno.nome, aluno.turma);
                     let dominadas = 0;
                     FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
@@ -8363,13 +8152,10 @@
                     }
                 } catch(e) { console.warn("Falha ao processar aluno no Hall da Fama:", aluno.nome, e); }
             }
-
-            // Ordenar e pegar top 5
             destaques.medalhas.sort((a, b) => b.qtdMedalhas - a.qtdMedalhas);
             destaques.estrelas.sort((a, b) => b.qtdEstrelas - a.qtdEstrelas);
             destaques.album.sort((a, b) => b.qtdMedalhas - a.qtdMedalhas);
             destaques.mapa.sort((a, b) => b.dominadas - a.dominadas);
-
             hallFamaCache = {
                 medalhas: destaques.medalhas.slice(0, 5),
                 estrelas: destaques.estrelas.slice(0, 5),
@@ -8378,26 +8164,21 @@
                 totalAlunos: listaAlunos.length
             };
             hallFamaUltimaAtualizacao = Date.now();
-
             renderizarHallComDados(hallFamaCache);
         } catch(e) {
             console.warn("Falha ao renderizar Hall da Fama:", e);
             container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o Hall da Fama agora.<br>Tente novamente em alguns instantes.</div>`;
         }
     }
-
     function renderizarHallComDados(dados) {
         const container = document.getElementById("hall-fama-conteudo");
         if (!container) return;
-
         const nomeAluno = obterNomeSalvoAluno();
         const turmaAluno = obterTurmaSalvaAluno();
-
         const buildCard = (titulo, subtitulo, iconeTitulo, lista, tipoValor) => {
             if (!lista || lista.length === 0) {
                 return `<div class="hall-card"><div class="hall-card-titulo"><span class="icone">${iconeTitulo}</span> ${titulo}</div><div class="hall-card-sub">${subtitulo}</div><div class="hall-vazio">Nenhum aluno nesta categoria ainda.<br>Seja o primeiro a se destacar!</div></div>`;
             }
-
             const itensHtml = lista.map((item, i) => {
                 const ehVoce = nomeAluno && turmaAluno && normalizarNome(item.nome) === normalizarNome(nomeAluno) && item.turma === turmaAluno;
                 let valorTxt = "";
@@ -8405,7 +8186,6 @@
                 else if (tipoValor === "estrelas") valorTxt = `${item.qtdEstrelas} ⭐`;
                 else if (tipoValor === "album") valorTxt = `${item.pctAlbum}% (${item.qtdMedalhas}/${item.total})`;
                 else if (tipoValor === "mapa") valorTxt = `${item.pctMapa}% (${item.dominadas}/${TOTAL_OPERACOES_MAPA})`;
-
                 const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`;
                 return `<li class="hall-item" ${ehVoce ? 'style="border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);"' : ""}>
                     <span class="hall-item-pos">${medal}</span>
@@ -8413,29 +8193,22 @@
                     <span class="hall-item-valor">${valorTxt}</span>
                 </li>`;
             }).join("");
-
             return `<div class="hall-card"><div class="hall-card-titulo"><span class="icone">${iconeTitulo}</span> ${titulo}</div><div class="hall-card-sub">${subtitulo}</div><ul class="hall-lista">${itensHtml}</ul></div>`;
         };
-
         let html = "";
         html += buildCard("Mais Medalhas", "Quem colecionou o maior número de medalhas no Álbum.", "🏅", dados.medalhas, "medalhas");
         html += buildCard("Mais Estrelas", "Quem acumulou mais estrelas — as medalhas raras valem mais.", "⭐", dados.estrelas, "estrelas");
         html += buildCard("Álbum Mais Completo", "Quem preencheu a maior porcentagem do Álbum de Conquistas.", "📖", dados.album, "album");
         html += buildCard("Maior Mapa Verde", "Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).", "🗺️", dados.mapa, "mapa");
-
         container.innerHTML = html;
     }
-    // ▲▲▲ FIM [18.04]
 
-    // ▼▼▼ [18.05] Abrir e fechar detalhes da etapa ───────────────────────
     async function abrirDetalhesEtapa() {
         const container = document.getElementById("detalhes-etapa-conteudo");
         const modal = document.getElementById("modal-detalhes-etapa");
         if (!container || !modal) return;
-
         const etapa = await obterDadosEtapa();
         const fase = calcularFaseEtapa(etapa);
-
         const faseLabel = {
             [ETAPA_FASES.sem_agendamento]: "⚪ Não agendada",
             [ETAPA_FASES.pre_evento]: "🟣 Pré-evento (aguardando início)",
@@ -8444,39 +8217,22 @@
             [ETAPA_FASES.congelada]: "⏸️ Pausada (congelada)",
             [ETAPA_FASES.encerrada]: "🏁 Encerrada"
         }[fase];
-
         let html = "";
         html += `<div class="info-secao"><span class="info-icone">📍</span><div class="info-conteudo"><h4 class="info-titulo">Status Atual</h4><p class="info-texto"><strong>${faseLabel}</strong></p></div></div>`;
-        if (etapa.inicioEm) {
-            html += `<div class="info-secao"><span class="info-icone">📅</span><div class="info-conteudo"><h4 class="info-titulo">Data de Início</h4><p class="info-texto">${formatarDataHoraCurta(etapa.inicioEm)}</p></div></div>`;
-        }
-        if (etapa.fimPrevistoEm) {
-            html += `<div class="info-secao"><span class="info-icone">🏁</span><div class="info-conteudo"><h4 class="info-titulo">Encerramento Previsto</h4><p class="info-texto">${formatarDataHoraCurta(etapa.fimPrevistoEm)} às 23h59</p></div></div>`;
-        }
-        html += `<div class="info-secao"><span class="info-icone">📋</span><div class="info-conteudo"><h4 class="info-titulo">Regras da Etapa</h4>
-            <ul class="info-lista">
-                <li><strong>20 questões</strong> de multiplicação</li>
-                <li>Até <strong>10 segundos</strong> por questão</li>
-                <li><strong>Calculadora permitida</strong> para conferência</li>
-                <li>Os <strong>4 melhores</strong> de cada turma/modalidade avançam para a Final</li>
-            </ul>
-        </div></div>`;
+        if (etapa.inicioEm) html += `<div class="info-secao"><span class="info-icone">📅</span><div class="info-conteudo"><h4 class="info-titulo">Data de Início</h4><p class="info-texto">${formatarDataHoraCurta(etapa.inicioEm)}</p></div></div>`;
+        if (etapa.fimPrevistoEm) html += `<div class="info-secao"><span class="info-icone">🏁</span><div class="info-conteudo"><h4 class="info-titulo">Encerramento Previsto</h4><p class="info-texto">${formatarDataHoraCurta(etapa.fimPrevistoEm)} às 23h59</p></div></div>`;
+        html += `<div class="info-secao"><span class="info-icone">📋</span><div class="info-conteudo"><h4 class="info-titulo">Regras da Etapa</h4><ul class="info-lista"><li><strong>20 questões</strong> de multiplicação</li><li>Até <strong>10 segundos</strong> por questão</li><li><strong>Calculadora permitida</strong> para conferência</li><li>Os <strong>4 melhores</strong> de cada turma/modalidade avançam para a Final</li></ul></div></div>`;
         if (fase === ETAPA_FASES.etapa_votacao) {
             const dadosVot = await obterDadosVotacao();
             const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio) : null;
             const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
             const v7 = votos.filter(v => String(v.opcao) === "7").length;
             const v14 = votos.filter(v => String(v.opcao) === "14").length;
-            html += `<div class="info-secao"><span class="info-icone">🗳️</span><div class="info-conteudo"><h4 class="info-titulo">Votação em Andamento</h4>
-                <p class="info-texto">A duração da etapa está sendo decidida pelos alunos.</p>
-                <p class="info-texto">Placar parcial: <strong>7 dias</strong> (${v7} votos) vs <strong>14 dias</strong> (${v14} votos).</p>
-                ${fechamento ? `<p class="info-texto" style="font-size:12px;color:#6c757d;">A votação fecha em ${formatarDataCurta(fechamento)} às 23:59.</p>` : ""}
-            </div></div>`;
+            html += `<div class="info-secao"><span class="info-icone">🗳️</span><div class="info-conteudo"><h4 class="info-titulo">Votação em Andamento</h4><p class="info-texto">Placar parcial: <strong>7 dias</strong> (${v7} votos) vs <strong>14 dias</strong> (${v14} votos).</p>${fechamento ? `<p class="info-texto" style="font-size:12px;color:#6c757d;">A votação fecha em ${formatarDataCurta(fechamento)} às 23:59.</p>` : ""}</div></div>`;
         } else if (fase === ETAPA_FASES.etapa_definida && etapa.duracaoEscolhida) {
             html += `<div class="info-secao"><span class="info-icone">✅</span><div class="info-conteudo"><h4 class="info-titulo">Votação Encerrada</h4><p class="info-texto">A duração oficial da etapa foi definida em <strong>${etapa.duracaoEscolhida} dias</strong>.</p></div></div>`;
         }
-        html += `<div class="info-secao"><span class="info-icone">🚨</span><div class="info-conteudo"><div class="info-destaque vermelho" style="margin:0;">Lembre-se: seu nome deve estar completo e idêntico à chamada oficial. Nomes abreviados ou fora do padrão podem causar <strong>desclassificação</strong>.</div></div></div>`;
-
+        html += `<div class="info-secao"><span class="info-icone">🚨</span><div class="info-conteudo"><div class="info-destaque vermelho" style="margin:0;">Lembre-se: seu nome deve estar completo e idêntico à chamada oficial.</div></div></div>`;
         container.innerHTML = html;
         modal.classList.remove("hidden");
         setTimeout(() => document.querySelector("#modal-detalhes-etapa .modal-close")?.focus(), 80);
@@ -8485,9 +8241,8 @@
         if (e && e.target && e.target.closest(".modal-card")) return;
         document.getElementById("modal-detalhes-etapa")?.classList.add("hidden");
     }
-    // ▲▲▲ FIM [18.05]
 
-    // ═══════════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -8586,5 +8341,6 @@
         setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
     });
     // ▲▲▲ FIM [19.03]
-
-
+    </script>
+</body>
+</html>
