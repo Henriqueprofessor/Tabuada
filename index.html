@@ -1299,6 +1299,75 @@
         .ranking-home-pontos { color: var(--neon-gold); font-weight: 800; font-size: 11.5px; white-space: nowrap; }
         .ranking-home-linha.voce .ranking-home-pontos { color: #6ee7b7; }
         .ranking-home-divisor { text-align: center; font-size: 12px; color: var(--text-muted); padding: 2px 0; letter-spacing: 4px; line-height: 1; font-weight: 700; }
+         /* ▼ Cards de posição por modalidade (Home) */
+.ranking-home-modalidade {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    transition: transform 0.15s ease, border-color 0.2s ease;
+}
+.ranking-home-modalidade.zona-top4 {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.20), rgba(16, 185, 129, 0.05));
+    border-color: rgba(16, 185, 129, 0.55);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.12);
+}
+.ranking-home-modalidade.zona-reserva {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.16), rgba(251, 191, 36, 0.04));
+    border-color: rgba(251, 191, 36, 0.45);
+}
+.ranking-home-modalidade.zona-disputa {
+    background: rgba(10, 22, 40, 0.5);
+    border-color: rgba(56, 189, 248, 0.2);
+}
+.ranking-home-modalidade.sem-dados {
+    background: rgba(10, 22, 40, 0.25);
+    border-style: dashed;
+    border-color: rgba(148, 163, 184, 0.28);
+    opacity: 0.75;
+}
+.ranking-home-mod-linha1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+.ranking-home-mod-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranking-home-mod-pos { color: var(--neon-cyan); font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+.ranking-home-modalidade.zona-top4 .ranking-home-mod-pos { color: #6ee7b7; }
+.ranking-home-modalidade.zona-reserva .ranking-home-mod-pos { color: #fde68a; }
+.ranking-home-modalidade.sem-dados .ranking-home-mod-pos { color: var(--text-muted); }
+.ranking-home-mod-linha2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    line-height: 1.3;
+}
+.ranking-home-mod-status { letter-spacing: 0.3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranking-home-modalidade.zona-top4 .ranking-home-mod-status { color: #6ee7b7; }
+.ranking-home-modalidade.zona-reserva .ranking-home-mod-status { color: #fde68a; }
+.ranking-home-modalidade.zona-disputa .ranking-home-mod-status { color: #7dd3fc; }
+.ranking-home-modalidade.sem-dados .ranking-home-mod-status { color: var(--text-muted); font-style: italic; }
+.ranking-home-mod-pts { color: var(--neon-gold); font-weight: 900; white-space: nowrap; font-size: 12px; flex-shrink: 0; }
+.ranking-home-modalidade.zona-top4 .ranking-home-mod-pts { color: #a7f3d0; }
+.ranking-home-modalidade.zona-reserva .ranking-home-mod-pts { color: #fef3c7; }
+.ranking-home-modalidade.sem-dados .ranking-home-mod-pts { color: var(--text-muted); font-style: italic; font-weight: 700; }
+@media (max-width: 480px) {
+    .ranking-home-modalidade { padding: 9px 10px; gap: 4px; }
+    .ranking-home-mod-linha1 { font-size: 12.5px; }
+    .ranking-home-mod-linha2 { font-size: 11px; }
+}
         .home-distancia { background: linear-gradient(135deg, rgba(251, 191, 36, 0.14) 0%, rgba(217, 119, 6, 0.08) 100%); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 10px; padding: 10px 14px; font-size: 12.5px; font-weight: 700; color: #fde68a; text-align: left; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
         .home-distancia .emoji { font-size: 18px; line-height: 1; flex-shrink: 0; }
         .home-distancia strong { color: var(--neon-gold); }
@@ -1947,16 +2016,15 @@
         </section>
 
         <div id="acao-principal-container"></div>
-
         <div class="home-card">
-            <div class="home-card-titulo">
-                <span>🏆 Minha posição — <span id="home-turma-titulo">Turma --</span></span>
-            </div>
-            <div class="ranking-home-lista" id="ranking-home-lista">
-                <div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver o ranking</span><span class="ranking-home-pontos">—</span></div>
-            </div>
-            <div id="home-distancia-container"></div>
-        </div>
+    <div class="home-card-titulo">
+        <span>🏆 Minhas posições — <span id="home-turma-titulo">Turma --</span></span>
+    </div>
+    <div class="ranking-home-lista" id="ranking-home-lista">
+        <div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver suas posições</span><span class="ranking-home-pontos">—</span></div>
+    </div>
+    <div id="home-distancia-container"></div>
+</div>
 
         <div class="home-card">
             <div class="home-card-titulo">
@@ -8451,138 +8519,162 @@
 
     // ▼▼▼ [18.01] Home E-Sports ─────────────────────────────────────
     async function preencherHomeEsports() {
-        const nome = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
 
-        const pillNome = document.getElementById("perfil-pill-nome");
-        const pillTurma = document.getElementById("perfil-pill-turma");
-        if (pillNome) pillNome.textContent = nome || "Meu Perfil";
-        if (pillTurma) pillTurma.textContent = turma || "--";
+    const pillNome = document.getElementById("perfil-pill-nome");
+    const pillTurma = document.getElementById("perfil-pill-turma");
+    if (pillNome) pillNome.textContent = nome || "Meu Perfil";
+    if (pillTurma) pillTurma.textContent = turma || "--";
 
-        const heroNome = document.getElementById("hero-nome-destaque");
-        if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
-        const homeTurmaTitulo = document.getElementById("home-turma-titulo");
-        if (homeTurmaTitulo) homeTurmaTitulo.textContent = turma ? `Turma ${turma}` : "Turma --";
+    const heroNome = document.getElementById("hero-nome-destaque");
+    if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
+    const homeTurmaTitulo = document.getElementById("home-turma-titulo");
+    if (homeTurmaTitulo) homeTurmaTitulo.textContent = turma ? `Turma ${turma}` : "Turma --";
 
-        if (!nome || !turma) {
-            atualizarHomeValores(null);
-            atualizarRankingTurmasHome(null, null);
-            return;
-        }
+    if (!nome || !turma) {
+        atualizarHomeValores(null);
+        atualizarRankingTurmasHome(null, null);
+        return;
+    }
 
-        try {
-            const partidas = await obterHistoricoAluno(nome, turma);
-            if (!partidas.length) {
-                atualizarHomeValores(null);
-                atualizarRankingTurmasHome(null, turma);
-                return;
-            }
-            const melhorPartida = partidas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a);
-            const melhorPontos = Math.max(...partidas.map(p => Number(p.pontos) || 0));
-            const modalidade = melhorPartida.modalidade;
-            const rankingTurma = await obterRankingPorPontos(modalidade, turma);
-            const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-            const posicao = idx === -1 ? null : idx + 1;
-            let posicaoGlobal = null;
-            try {
-                const rankingGlobal = await obterRankingPorPontos(modalidade, null);
-                const ig = rankingGlobal.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-                if (ig !== -1) posicaoGlobal = ig + 1;
-            } catch(e) {}
-            let turmaRankingInfo = null;
-            try {
-                const mediasTurmas = await calcularMediasTop4Turmas(modalidade);
-                const iTurma = mediasTurmas.findIndex(t => t.turma === turma);
-                if (iTurma !== -1) turmaRankingInfo = { posicao: iTurma + 1, total: mediasTurmas.length, medias: mediasTurmas };
-            } catch(e) {}
-            const elTurma = document.getElementById("hero-stat-turma");
-            const elGlobal = document.getElementById("hero-stat-global");
-            const elMelhor = document.getElementById("hero-stat-melhor");
-            if (elTurma) elTurma.textContent = posicao ? `${posicao}º` : "--";
-            if (elGlobal) elGlobal.textContent = posicaoGlobal ? `${posicaoGlobal}º` : "--";
-            if (elMelhor) elMelhor.innerHTML = `${melhorPontos.toLocaleString("pt-BR")}<span class="unidade">pts</span>`;
-            const heroSub = document.getElementById("hero-sub-dinamica");
-            if (heroSub) {
-                const posTxt = posicao ? `<span class="posicao-num">${posicao}ª</span> posição na turma ${turma}` : `na turma ${turma}`;
-                const posGlobalTxt = posicaoGlobal ? ` · <strong>${posicaoGlobal}º</strong> no ranking geral` : "";
-                heroSub.innerHTML = `Você está na ${posTxt}${posGlobalTxt}.`;
-            }
-            atualizarHomeValores({ melhorPontos, posicao, melhorPartida, ranking: rankingTurma, nome, turma, posicaoGlobal });
-            atualizarRankingTurmasHome(turmaRankingInfo, turma);
-        } catch (e) {
-            console.warn("Falha ao preencher home esports:", e);
+    try {
+        const partidas = await obterHistoricoAluno(nome, turma);
+        if (!partidas.length) {
             atualizarHomeValores(null);
             atualizarRankingTurmasHome(null, turma);
-        }
-    }
-    function atualizarHomeValores(dados) {
-        const elRankingLista = document.getElementById("ranking-home-lista");
-        const elMelhorResultado = document.getElementById("home-melhor-resultado");
-        const elDistancia = document.getElementById("home-distancia-container");
-        if (elDistancia) elDistancia.innerHTML = "";
-        if (!dados) {
-            if (elRankingLista) elRankingLista.innerHTML = `<div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver o ranking</span><span class="ranking-home-pontos">—</span></div>`;
-            if (elMelhorResultado) elMelhorResultado.innerHTML = `<div class="home-empty-msg">Jogue uma partida para ver seu melhor resultado.</div>`;
             return;
         }
-        const { melhorPontos, posicao, melhorPartida, ranking, nome, turma } = dados;
-        if (elRankingLista) {
-            const top4 = ranking.slice(0, 4);
-            const jaNoTop4 = posicao !== null && posicao <= 4;
-            let html = "";
-            top4.forEach((r, i) => {
-                const vc = normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma;
-                const nomeExibir = vc ? "Você" : r.nome.split(" ").slice(0, 2).join(" ");
-                html += `<div class="ranking-home-linha ${vc ? "voce" : ""}">
-                    <span class="ranking-home-pos">${i + 1}</span>
-                    <span class="ranking-home-nome">${escaparHtml(nomeExibir)}</span>
-                    <span class="ranking-home-pontos">${(Number(r.pontos) || 0).toLocaleString("pt-BR")}</span>
-                </div>`;
-            });
-            if (!jaNoTop4 && posicao && melhorPartida) {
-                html += `<div class="ranking-home-divisor">· · ·</div>`;
-                html += `<div class="ranking-home-linha voce">
-                    <span class="ranking-home-pos">${posicao}</span>
-                    <span class="ranking-home-nome">Você</span>
-                    <span class="ranking-home-pontos">${(Number(melhorPontos) || 0).toLocaleString("pt-BR")}</span>
-                </div>`;
-            }
-            elRankingLista.innerHTML = html;
+
+        const melhorPartida = partidas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a);
+        const melhorPontos = Math.max(...partidas.map(p => Number(p.pontos) || 0));
+        const modalidade = melhorPartida.modalidade;
+
+        // Busca as 3 modalidades em paralelo
+        const mods = Object.keys(MODALIDADES);
+        const ranks = await Promise.all(
+            mods.map(m => obterRankingPorPontos(m, turma).catch(() => []))
+        );
+
+        // Etiquetas curtas para caber bem no mobile
+        const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+
+        const modalidadesInfo = mods.map((mod, i) => {
+            const rankingMod = ranks[i] || [];
+            const idxMod = rankingMod.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+            const minhasPartidasMod = partidas.filter(p => p.modalidade === mod);
+            const melhorMod = minhasPartidasMod.length
+                ? minhasPartidasMod.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
+                : null;
+            return {
+                mod,
+                nome: rotulosCurtos[mod] || MODALIDADES[mod].nome,
+                posicao: idxMod === -1 ? null : idxMod + 1,
+                total: rankingMod.length,
+                pontos: melhorMod ? (Number(melhorMod.pontos) || 0) : 0,
+                jogou: !!melhorMod
+            };
+        });
+
+        // Ranking da melhor modalidade (usado na hero)
+        const rankingTurma = ranks[mods.indexOf(modalidade)] || [];
+        const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+        const posicao = idx === -1 ? null : idx + 1;
+
+        let posicaoGlobal = null;
+        try {
+            const rankingGlobal = await obterRankingPorPontos(modalidade, null);
+            const ig = rankingGlobal.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+            if (ig !== -1) posicaoGlobal = ig + 1;
+        } catch(e) {}
+
+        let turmaRankingInfo = null;
+        try {
+            const mediasTurmas = await calcularMediasTop4Turmas(modalidade);
+            const iTurma = mediasTurmas.findIndex(t => t.turma === turma);
+            if (iTurma !== -1) turmaRankingInfo = { posicao: iTurma + 1, total: mediasTurmas.length, medias: mediasTurmas };
+        } catch(e) {}
+
+        const elTurma = document.getElementById("hero-stat-turma");
+        const elGlobal = document.getElementById("hero-stat-global");
+        const elMelhor = document.getElementById("hero-stat-melhor");
+        if (elTurma) elTurma.textContent = posicao ? `${posicao}º` : "--";
+        if (elGlobal) elGlobal.textContent = posicaoGlobal ? `${posicaoGlobal}º` : "--";
+        if (elMelhor) elMelhor.innerHTML = `${melhorPontos.toLocaleString("pt-BR")}<span class="unidade">pts</span>`;
+
+        const heroSub = document.getElementById("hero-sub-dinamica");
+        if (heroSub) {
+            const posTxt = posicao ? `<span class="posicao-num">${posicao}ª</span> posição na turma ${turma}` : `na turma ${turma}`;
+            const posGlobalTxt = posicaoGlobal ? ` · <strong>${posicaoGlobal}º</strong> no ranking geral` : "";
+            heroSub.innerHTML = `Você está na ${posTxt}${posGlobalTxt}.`;
         }
-        if (elDistancia && posicao && ranking.length > 1) {
-            let msgDist = "";
-            if (posicao === 1) {
-                const segundo = ranking[1];
-                if (segundo) {
-                    const vantagem = melhorPontos - (Number(segundo.pontos) || 0);
-                    msgDist = `<span class="emoji">👑</span><span>Você lidera com <strong>${vantagem.toLocaleString("pt-BR")} pts</strong> de vantagem sobre o 2º lugar.</span>`;
-                }
-            } else {
-                const acima = ranking[posicao - 2];
-                if (acima) {
-                    const diff = (Number(acima.pontos) || 0) - melhorPontos;
-                    if (diff > 0) {
-                        msgDist = `<span class="emoji">🎯</span><span>Faltam <strong>${diff.toLocaleString("pt-BR")} pts</strong> para alcançar o ${posicao - 1}º lugar (${escaparHtml(acima.nome.split(" ")[0])}).</span>`;
-                    }
-                }
-            }
-            if (msgDist) elDistancia.innerHTML = `<div class="home-distancia">${msgDist}</div>`;
-        }
-        if (elMelhorResultado && melhorPartida) {
-            const acertos = Number(melhorPartida.acertos) || 0;
-            const tempo = Number(melhorPartida.tempoMedio) || 0;
-            const seq = Number(melhorPartida.maiorSequencia) || 0;
-            elMelhorResultado.innerHTML = `
-                <div class="home-resultado-pontos">${melhorPontos.toLocaleString('pt-BR')} <span>pts</span></div>
-                <div class="home-resultado-detalhes">
-                    <span>🎯 ${acertos}/20 acertos</span>
-                    <span>⏱️ Tempo médio: ${tempo.toFixed(2)}s</span>
-                    <span>🔥 Sequência: ${seq}</span>
-                </div>
-                <div class="home-resultado-modalidade">${MODALIDADES[melhorPartida.modalidade]?.nome || melhorPartida.modalidade}</div>
-            `;
-        }
+
+        atualizarHomeValores({ melhorPontos, posicao, melhorPartida, ranking: rankingTurma, nome, turma, posicaoGlobal, modalidadesInfo });
+        atualizarRankingTurmasHome(turmaRankingInfo, turma);
+    } catch (e) {
+        console.warn("Falha ao preencher home esports:", e);
+        atualizarHomeValores(null);
+        atualizarRankingTurmasHome(null, turma);
     }
+}
+    function classificarZonaHome(pos) {
+    if (!pos) return { cls: "sem-dados", icone: "⚪", label: "Sem partida ainda" };
+    if (pos <= 4) return { cls: "zona-top4", icone: "🎟️", label: "Zona de classificação" };
+    if (pos <= 6) return { cls: "zona-reserva", icone: "🔄", label: "Zona de reserva" };
+    return { cls: "zona-disputa", icone: "🎯", label: "Em disputa" };
+}
+
+function atualizarHomeValores(dados) {
+    const elRankingLista = document.getElementById("ranking-home-lista");
+    const elMelhorResultado = document.getElementById("home-melhor-resultado");
+    const elDistancia = document.getElementById("home-distancia-container");
+    if (elDistancia) elDistancia.innerHTML = "";
+
+    if (!dados) {
+        if (elRankingLista) elRankingLista.innerHTML = `<div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver suas posições</span><span class="ranking-home-pontos">—</span></div>`;
+        if (elMelhorResultado) elMelhorResultado.innerHTML = `<div class="home-empty-msg">Jogue uma partida para ver seu melhor resultado.</div>`;
+        return;
+    }
+
+    const { melhorPontos, melhorPartida, modalidadesInfo } = dados;
+
+    // Renderiza 1 card por modalidade
+    if (elRankingLista && modalidadesInfo && modalidadesInfo.length) {
+        let html = "";
+        modalidadesInfo.forEach((m) => {
+            const zona = classificarZonaHome(m.posicao);
+            const posTxt = m.posicao ? `${m.posicao}º <small style="opacity:.7;font-weight:700;">de ${m.total}</small>` : "—";
+            const ptsTxt = m.jogou ? `${m.pontos.toLocaleString('pt-BR')} pts` : "sem partida";
+            html += `<div class="ranking-home-modalidade ${zona.cls}">
+                <div class="ranking-home-mod-linha1">
+                    <span class="ranking-home-mod-nome">${zona.icone} ${escaparHtml(m.nome)}</span>
+                    <span class="ranking-home-mod-pos">${posTxt}</span>
+                </div>
+                <div class="ranking-home-mod-linha2">
+                    <span class="ranking-home-mod-status">${zona.label}</span>
+                    <span class="ranking-home-mod-pts">${ptsTxt}</span>
+                </div>
+            </div>`;
+        });
+        elRankingLista.innerHTML = html;
+    }
+
+    // Melhor resultado geral (permanece igual)
+    if (elMelhorResultado && melhorPartida) {
+        const acertos = Number(melhorPartida.acertos) || 0;
+        const tempo = Number(melhorPartida.tempoMedio) || 0;
+        const seq = Number(melhorPartida.maiorSequencia) || 0;
+        elMelhorResultado.innerHTML = `
+            <div class="home-resultado-pontos">${melhorPontos.toLocaleString('pt-BR')} <span>pts</span></div>
+            <div class="home-resultado-detalhes">
+                <span>🎯 ${acertos}/20 acertos</span>
+                <span>⏱️ Tempo médio: ${tempo.toFixed(2)}s</span>
+                <span>🔥 Sequência: ${seq}</span>
+            </div>
+            <div class="home-resultado-modalidade">${MODALIDADES[melhorPartida.modalidade]?.nome || melhorPartida.modalidade}</div>
+        `;
+    }
+}
     function atualizarRankingTurmasHome(info, turmaAluno) {
         const container = document.getElementById("ranking-turmas-lista");
         if (!container) return;
