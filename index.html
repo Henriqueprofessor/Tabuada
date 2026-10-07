@@ -150,13 +150,7 @@
         .acoes-resultado.duas-colunas { grid-template-columns: 1fr 1fr; }
         .btn-share { background: #495057; }
         .btn-share:hover { background: #343a40; }
-        .novas-conquistas { background: linear-gradient(135deg, #e7f5ff 0%, #d0e8ff 100%); border: 1px solid #b8daff; border-left: 4px solid #0066cc; border-radius: 12px; padding: 14px 16px; margin: 16px 0; text-align: left; color: #084298; font-size: 14px; line-height: 1.5; }
-        .novas-conquistas strong { display: block; color: #0066cc; font-size: 15px; font-weight: 800; letter-spacing: .5px; margin-bottom: 10px; }
-        .novas-conquistas .conquistas-grid { margin: 0; }
-        .novas-conquistas .conquista-card { background: #fff; color: #102a43; border: 1px solid #b8daff; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: help; }
-        .novas-conquistas .conquista-card.desbloqueada { background: linear-gradient(135deg, #ffc107 0%, #fbbf24 100%); color: #422006; border-color: #b45309; box-shadow: 0 1px 4px rgba(180,83,9,.25); }
         /* ▲▲▲ FIM [02.06] */
-
         /* ▼▼▼ [02.07] Votação ───────────────────────────────── */
         .card-votacao { position: relative; overflow: hidden; background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 55%, #7c3aed 100%); color: #fff; text-align: left; padding: 22px 24px; margin: 20px auto 0; border-radius: 18px; max-width: 1000px; box-shadow: 0 10px 24px rgba(76,29,149,.28); }
         .card-votacao::after { content: "🗳️"; position: absolute; right: 18px; top: 8px; font-size: 72px; opacity: .12; }
@@ -2173,7 +2167,6 @@
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
         <div id="feedback-ranking-container" class="feedback-ranking"></div>
-        <div id="novas-conquistas" class="novas-conquistas"></div>
         <div id="album-cta-resultado" class="hidden" aria-live="polite"></div>
         <div id="mapa-tabuadas-container"></div>
                 <div id="acoes-resultado-container" class="acoes-resultado duas-colunas">
@@ -6583,7 +6576,6 @@
             document.getElementById("resumo-media-turma").innerText = "--";
             document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Treino Livre</span>`;
             document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>💡 Treino Livre</strong><br>Nenhuma informação foi salva. Quando a etapa oficial começar, suas partidas valerão para a classificação!</div>`;
-            document.getElementById("novas-conquistas").innerHTML = "";
             document.getElementById("mapa-tabuadas-container").innerHTML = "";
             document.getElementById("album-cta-resultado")?.classList.add("hidden");
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
@@ -6632,7 +6624,6 @@
             promocoesRecentes = await verificarPromocoes(alunoAtual, turmaAtual, modalidadeAtual, mapaFonteAgregada);
             document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
             if (promocoesRecentes.length > 0) { mostrarBannerPromocao(promocoesRecentes); dispararConfetes(); setTimeout(() => { promocoesRecentes = []; }, 6000); }
-            document.getElementById("novas-conquistas").innerHTML = "";
             document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -6809,7 +6800,6 @@
         document.getElementById("resumo-media-turma").innerText = "--";
         document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Fora do prazo</span>`;
         document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>⏱️ Partida fora do prazo</strong><br>Não contou para a classificação oficial. Ficou no seu histórico para acompanhamento.</div>`;
-        document.getElementById("novas-conquistas").innerHTML = "";
         document.getElementById("mapa-tabuadas-container").innerHTML = "";
         document.getElementById("album-cta-resultado")?.classList.add("hidden");
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
