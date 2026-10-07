@@ -6339,6 +6339,9 @@
         proximaPergunta();
     }
     function reiniciarVariaveisJogo() {
+        const _ov = document.getElementById("feedback-erro-treino");
+        if (_ov) _ov.classList.add("hidden");
+        aguardandoFeedbackErro = false;
         perguntaAtual = 0; pontosAcumulados = 0; acertos = 0; erros = 0; sequenciaAtual = 0; maiorSequencia = 0;
         temposCorretas = []; temposRespostas = []; desempenhoTabuadas = {};
         desempenhoOperacoes = {}; // { "7x8": { respostas: [{acertou, tempo}, ...] } }
@@ -6422,21 +6425,6 @@
             const d = document.getElementById("pergunta");
             if (d) { d.classList.add("erro-visual"); setTimeout(() => d.classList.remove("erro-visual"), 300); }
         } else if (!modoTreino && pontos > 0) mostrarToast(`+${pontos} pontos! 🎉`);
-
-        if (modoTreino) {
-            const dd = document.getElementById("dica-resposta");
-            if (dd) {
-                dd.classList.remove("hidden");
-                if (acertou) { dd.innerHTML = "✅ Correto! Muito bem!"; dd.style.background = "#d1e7dd"; dd.style.color = "#0f5132"; }
-                else {
-                    const u = perguntasGeradas[perguntasGeradas.length - 1] || {};
-                    dd.innerHTML = `❌ Errado! Resposta correta: ${respostaCorreta}. ${dicaMultiplicacao(u.fA, u.fB)}`;
-                    dd.style.background = "#f8d7da"; dd.style.color = "#842029";
-                }
-                setTimeout(() => dd.classList.add("hidden"), 2000);
-            }
-        }
-
         const pAntes = pontosAcumulados;
         pontosAcumulados += pontos;
 
@@ -6464,8 +6452,45 @@
             if ([5, 10, 15, 20].includes(sequenciaAtual)) exibirComboVisual(sequenciaAtual);
         } else { erros++; sequenciaAtual = 0; }
         atualizarStatus(pAntes);
+
+        // ▼▼▼ Feedback rico no treino: pausa quando erra
+        if (modoTreino && !acertou) {
+            const u2 = perguntasGeradas[perguntasGeradas.length - 1] || {};
+            const fA = u2.fA || tabuadaAtualPergunta || 1;
+            const fB = u2.fB || 1;
+            mostrarFeedbackErroTreino(fA, fB, respostaCorreta);
+            return; // não chama proximaPergunta — o aluno decide quando avançar
+        }
+        // ▲▲▲
+
         setTimeout(() => { if (!finalizando) proximaPergunta(); }, 250);
     }
+    // ▼▼▼ [14.06.bis] Feedback rico de erro no treino
+    function mostrarFeedbackErroTreino(fA, fB, resposta) {
+        const overlay = document.getElementById("feedback-erro-treino");
+        const corpo = document.getElementById("feedback-erro-corpo");
+        if (!overlay || !corpo) return;
+        const dica = gerarDicaDecomposicao(fA, fB);
+        corpo.innerHTML = `
+            <div class="feedback-erro-titulo">❌ Você errou!</div>
+            <div class="feedback-erro-conta">${fA} × ${fB} = ?</div>
+            <div class="feedback-erro-resposta">Resposta correta: <strong>${resposta}</strong></div>
+            <div class="feedback-erro-dica-titulo">💡 Veja como calcular</div>
+            <div class="feedback-erro-dica">${dica}</div>
+        `;
+        overlay.classList.remove("hidden");
+        aguardandoFeedbackErro = true;
+        setTimeout(() => document.getElementById("feedback-erro-btn")?.focus(), 100);
+    }
+
+    function fecharFeedbackErro() {
+        const overlay = document.getElementById("feedback-erro-treino");
+        if (overlay) overlay.classList.add("hidden");
+        aguardandoFeedbackErro = false;
+        if (!finalizando) proximaPergunta();
+    }
+    // ▲▲▲ FIM [14.06.bis]
+
     // ▲▲▲ FIM [14.06]
 
     // ▼▼▼ [14.07] Status + encerramento manual ─────────────────────────
@@ -6517,6 +6542,9 @@
     async function finalizarCircuito() {
         if (finalizando) return;
         finalizando = true; jogoAtivo = false;
+        const _ov = document.getElementById("feedback-erro-treino");
+        if (_ov) _ov.classList.add("hidden");
+        aguardandoFeedbackErro = false;
         clearInterval(timerInterval); clearTimeout(timerTimeout);
         const tempoMedio = temposCorretas.length ? temposCorretas.reduce((a, b) => a + b, 0) / temposCorretas.length : 10;
 
