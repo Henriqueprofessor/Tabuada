@@ -8606,7 +8606,7 @@
     }
     // ▲▲▲ FIM [18.01]
 
-    // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
+        // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
     async function abrirHallDaFama() {
         mostrarTela("tela-hall-fama");
         await renderizarHallDaFama();
@@ -8614,79 +8614,101 @@
     async function renderizarHallDaFama() {
         const container = document.getElementById("hall-fama-conteudo");
         if (!container) return;
+
+        // Se já tem cache recente, usa ele (carregamento instantâneo)
         if (hallFamaCache && (Date.now() - hallFamaUltimaAtualizacao) < HALL_FAMA_CACHE_MS) {
             renderizarHallComDados(hallFamaCache);
             return;
         }
+
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando os destaques da Copa…</div>`;
+
         try {
-            const partidas = await obterPartidas();
             const ranking = await obterRanking();
+
+            // Otimização: pega apenas os 100 melhores do ranking geral.
+            // O Hall da Fama mostra só o Top 5, então não precisa processar a escola inteira.
             const alunosUnicos = new Map();
-            partidas.forEach(p => {
-                const k = `${normalizarNome(p.nome)}|${p.turma}`;
-                if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: p.nome, turma: p.turma });
-            });
             ranking.forEach(r => {
                 const k = `${normalizarNome(r.nome)}|${r.turma}`;
                 if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: r.nome, turma: r.turma });
             });
-            const listaAlunos = Array.from(alunosUnicos.values());
-            const LIMITE_ALUNOS = 500;
-            const alunosParaProcessar = listaAlunos.slice(0, LIMITE_ALUNOS);
-            const destaques = { medalhas: [], estrelas: [], album: [], mapa: [] };
-            for (const aluno of alunosParaProcessar) {
+
+            const alunosParaProcessar = Array.from(alunosUnicos.values()).slice(0, 100);
+
+            // Otimização: processa todos os alunos em PARALELO usando Promise.all
+            const promessas = alunosParaProcessar.map(async (aluno) => {
                 try {
                     const persistidas = await obterMedalsFirebase(aluno.nome, aluno.turma);
                     const qtdMedalhas = Object.keys(persistidas).length;
                     let qtdEstrelas = 0;
+
                     Object.keys(persistidas).forEach(id => {
                         const m = MEDALS_POR_ID[id];
                         if (m) qtdEstrelas += m.recompensaEstrelas;
                     });
-                    // Soma bônus de seções completas + certificados
-                    try {
-                        const secoesReg = await obterSecoesCompletas(aluno.nome, aluno.turma);
-                        SECOES.forEach(s => { if (secoesReg[s.id]) qtdEstrelas += s.recompensaCompleta.estrelas; });
-                        const certs = await obterCertificadosFirebase(aluno.nome, aluno.turma);
-                        Object.keys(certs || {}).forEach(mod => {
-                            const pMod = certs[mod] || {};
-                            Object.keys(pMod).forEach(nivel => {
-                                const cfg = CERT_NIVEIS[nivel];
-                                if (cfg && cfg.estrelas) qtdEstrelas += cfg.estrelas;
-                            });
+
+                    const secoesReg = await obterSecoesCompletas(aluno.nome, aluno.turma);
+                    SECOES.forEach(s => { if (secoesReg[s.id]) qtdEstrelas += s.recompensaCompleta.estrelas; });
+
+                    const certs = await obterCertificadosFirebase(aluno.nome, aluno.turma);
+                    Object.keys(certs || {}).forEach(mod => {
+                        const pMod = certs[mod] || {};
+                        Object.keys(pMod).forEach(nivel => {
+                            const cfg = CERT_NIVEIS[nivel];
+                            if (cfg && cfg.estrelas) qtdEstrelas += cfg.estrelas;
                         });
-                    } catch(e) {}
-                    if (qtdMedalhas > 0) {
-                        destaques.medalhas.push({ ...aluno, qtdMedalhas });
-                        destaques.estrelas.push({ ...aluno, qtdEstrelas });
-                        const pctAlbum = Math.round((qtdMedalhas / MEDALS.length) * 100);
-                        destaques.album.push({ ...aluno, qtdMedalhas, pctAlbum, total: MEDALS.length });
-                    }
+                    });
+
                     const mapa = await obterDesempenhoOperacoesGlobal(aluno.nome, aluno.turma);
                     let dominadas = 0;
                     FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
                         const h = normalizarHistoricoOperacao(mapa[`${a}x${b}`]);
                         if (dominadaParaNivel(h, { minTentativas: MAPA_MIN_TENT_PADRAO, minTaxa: 0.9 })) dominadas++;
                     }));
-                    if (dominadas > 0) {
-                        destaques.mapa.push({ ...aluno, dominadas, pctMapa: Math.round((dominadas / TOTAL_OPERACOES_MAPA) * 100) });
-                    }
-                } catch(e) { console.warn("Falha ao processar aluno no Hall da Fama:", aluno.nome, e); }
-            }
+
+                    return { aluno, qtdMedalhas, qtdEstrelas, dominadas };
+                } catch(e) {
+                    console.warn("Falha ao processar aluno no Hall da Fama:", aluno.nome, e);
+                    return null;
+                }
+            });
+
+            // Aguarda TODAS as requisições terminarem ao mesmo tempo
+            const resultados = await Promise.all(promessas);
+
+            const destaques = { medalhas: [], estrelas: [], album: [], mapa: [] };
+
+            resultados.forEach(res => {
+                if (!res) return;
+                const { aluno, qtdMedalhas, qtdEstrelas, dominadas } = res;
+
+                if (qtdMedalhas > 0) {
+                    destaques.medalhas.push({ ...aluno, qtdMedalhas });
+                    destaques.estrelas.push({ ...aluno, qtdEstrelas });
+                    const pctAlbum = Math.round((qtdMedalhas / MEDALS.length) * 100);
+                    destaques.album.push({ ...aluno, qtdMedalhas, pctAlbum, total: MEDALS.length });
+                }
+                if (dominadas > 0) {
+                    destaques.mapa.push({ ...aluno, dominadas, pctMapa: Math.round((dominadas / TOTAL_OPERACOES_MAPA) * 100) });
+                }
+            });
+
             destaques.medalhas.sort((a, b) => b.qtdMedalhas - a.qtdMedalhas);
             destaques.estrelas.sort((a, b) => b.qtdEstrelas - a.qtdEstrelas);
             destaques.album.sort((a, b) => b.qtdMedalhas - a.qtdMedalhas);
             destaques.mapa.sort((a, b) => b.dominadas - a.dominadas);
+
             hallFamaCache = {
                 medalhas: destaques.medalhas.slice(0, 5),
                 estrelas: destaques.estrelas.slice(0, 5),
                 album: destaques.album.slice(0, 5),
                 mapa: destaques.mapa.slice(0, 5),
-                totalAlunos: listaAlunos.length
+                totalAlunos: ranking.length
             };
             hallFamaUltimaAtualizacao = Date.now();
             renderizarHallComDados(hallFamaCache);
+
         } catch(e) {
             console.warn("Falha ao renderizar Hall da Fama:", e);
             container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o Hall da Fama agora.<br>Tente novamente em alguns instantes.</div>`;
@@ -8724,6 +8746,7 @@
         html += buildCard("Maior Mapa Verde", "Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).", "🗺️", dados.mapa, "mapa");
         container.innerHTML = html;
     }
+    // ▲▲▲ FIM [18.02]
     // ▲▲▲ FIM [18.02]
 
     // ▼▼▼ [18.03] Detalhes da etapa (modal) ─────────────────────────
