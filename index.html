@@ -6225,8 +6225,12 @@
         if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); atualizarTelaInicialComEtapa(); preencherHomeEsports(); renderizarTreinoInteligenteHome(); }
         if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
         if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); }
-        if (id !== "tela-resultado") { document.getElementById("btn-treinar-novamente")?.classList.add("hidden"); document.getElementById("btn-compartilhar")?.classList.add("hidden"); }
-    }
+        if (id !== "tela-resultado") {
+            document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
+            document.getElementById("btn-compartilhar")?.classList.add("hidden");
+            document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
+            document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
+        }
 
     async function registrarAluno(treino) {
         const nomeBruto = document.getElementById("nome-aluno").value;
@@ -6620,6 +6624,8 @@
             document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
+            document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
+            document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
             document.getElementById("album-cta-resultado")?.classList.add("hidden");
             somConclusao();
             // Verifica certificados mesmo no treino
@@ -6757,9 +6763,13 @@
         document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
         if (promocoesRecentes.length > 0) { mostrarBannerPromocao(promocoesRecentes); dispararConfetes(); setTimeout(() => { promocoesRecentes = []; }, 6000); }
         document.getElementById("novas-conquistas").innerHTML = "";
-        const btnT = document.getElementById("btn-treinar-novamente");
+                const btnT = document.getElementById("btn-treinar-novamente");
         if (btnT) { if (pT > VAGAS_CLASSIFICACAO) btnT.classList.remove("hidden"); else btnT.classList.add("hidden"); }
         const btnS = document.getElementById("btn-compartilhar"); if (btnS) btnS.classList.remove("hidden");
+        const btnJN = document.getElementById("btn-jogar-novamente");
+        if (btnJN) btnJN.classList.remove("hidden");
+        const btnTM = document.getElementById("btn-trocar-modalidade");
+        if (btnTM) btnTM.classList.remove("hidden");
         await gerarFeedbackRanking(melhor, pT, posAntes);
         verificarAlbumPosPartida(tent.nome, tent.turma);
         verificarMaestriaAbsoluta(tent.nome, tent.turma);
@@ -6792,6 +6802,8 @@
         document.getElementById("album-cta-resultado")?.classList.add("hidden");
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
         document.getElementById("btn-compartilhar")?.classList.add("hidden");
+        document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
+        document.getElementById("btn-trocar-modalidade")?.classList.remove("hidden");
         try { verificarAlbumPosPartida(tent.nome, tent.turma); } catch(e) {}
         try { verificarMaestriaAbsoluta(tent.nome, tent.turma); } catch(e) {}
         try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
