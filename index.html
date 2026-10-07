@@ -3046,11 +3046,15 @@
     let albumFiltros = { ...FILTROS_DEFAULT };
     // ▲▲▲ FIM [06.05]
 
-    // ▼▼▼ [06.06] Estado do Hall da Fama ───────────────────────────────────
-    let hallFamaCache = null;
-    let hallFamaUltimaAtualizacao = 0;
-    const HALL_FAMA_CACHE_MS = 5 * 60 * 1000;
-    // ▲▲▲ FIM [06.06]
+   // ▼▼▼ [06.06] Estado do Hall da Fama ───────────────────────────────────
+let hallFamaCache = null;
+let hallFamaUltimaAtualizacao = 0;
+const HALL_FAMA_CACHE_MS = 5 * 60 * 1000;
+
+// Cache de sincronização do perfil do aluno (evita re-sincronizar toda hora)
+let perfilSyncCache = { chave: null, ts: 0 };
+const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
+// ▲▲▲ FIM [06.06]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [07] JS-UTIL · Áudio, notificações, utilidades
@@ -6055,17 +6059,23 @@
 
     // ▼ Sincroniza medalhas/seções/estrelas antes de ler (garante dados frescos)
     try {
-        notificar("🔄 Sincronizando conquistas…", "info", 1500);
-        await Promise.race([
-            sincronizarMedalhas(melhor.nome, melhor.turma),
-            new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000))
-        ]);
+        const chave = `${normalizarNome(melhor.nome)}|${melhor.turma}`;
+        const agora = Date.now();
+        const precisaSincronizar = perfilSyncCache.chave !== chave
+            || (agora - perfilSyncCache.ts) > PERFIL_SYNC_CACHE_MS;
+
+        if (precisaSincronizar) {
+            notificar("🔄 Sincronizando conquistas…", "info", 1500);
+            await Promise.race([
+                sincronizarMedalhas(melhor.nome, melhor.turma),
+                new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000))
+            ]);
+            perfilSyncCache = { chave, ts: agora };
+        }
     } catch (e) {
         console.warn("Sync do perfil falhou ou expirou:", e);
-        // segue em frente com o que estiver no Firebase/cache local
     }
-    // ▲
-        const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
+    // ▲        const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
         document.getElementById("perfil-melhor-pontos").innerHTML = `<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
         document.getElementById("perfil-media-acertos").innerHTML = `<span class="estatistica-destaque">${ma.toFixed(1)}</span> /20`;
         document.getElementById("perfil-melhor-tempo").innerHTML = `<span class="estatistica-destaque">${melhor.tempoMedio.toFixed(2)}</span> s`;
