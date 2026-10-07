@@ -6218,6 +6218,18 @@
     function mostrarTela(id) {
         ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
+        
+        // ▼▼▼ CORREÇÃO: Preenche automaticamente o nome e a turma na tela de cadastro
+        if (id === "tela-single") {
+            const nomeSalvo = obterNomeSalvoAluno();
+            const turmaSalva = obterTurmaSalvaAluno();
+            const inputNome = document.getElementById("nome-aluno");
+            const selectTurma = document.getElementById("turma-aluno");
+            if (nomeSalvo && inputNome) inputNome.value = nomeSalvo;
+            if (turmaSalva && selectTurma) selectTurma.value = turmaSalva;
+        }
+        // ▲▲▲ FIM DA CORREÇÃO
+
         if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); atualizarTelaInicialComEtapa(); preencherHomeEsports(); renderizarTreinoInteligenteHome(); }
         if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
         if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); }
