@@ -3577,6 +3577,10 @@
     function normalizarHistoricoOperacao(valor) {
         if (!valor) return [];
         if (Array.isArray(valor.historico)) return valor.historico.slice();
+        // Formato em memória durante o jogo: { respostas: [{acertou, tempo}, ...] }
+        if (Array.isArray(valor.respostas)) {
+            return valor.respostas.map(r => ({ acertou: !!r.acertou, tempo: Number(r.tempo) || 0, data: Date.now() }));
+        }
         // Compatibilidade defensiva com formato antigo {acertos, erros, tentativas}
         const acertos = Number(valor.acertos) || 0;
         const erros   = Number(valor.erros)   || 0;
