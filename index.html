@@ -2177,9 +2177,7 @@
         <div id="album-cta-resultado" class="hidden" aria-live="polite"></div>
         <div id="mapa-tabuadas-container"></div>
         <div id="acoes-resultado-container" class="acoes-resultado duas-colunas">
-            <button id="btn-jogar-novamente" class="botao-verde hidden" onclick="jogarNovamente()">🎮 Jogar novamente</button>
-            <button id="btn-trocar-modalidade" class="botao-desempenho hidden" onclick="voltarEscolherModalidade()">🔄 Trocar modalidade</button>
-            <button id="btn-treinar-novamente" class="botao-treino hidden" onclick="iniciarTreinoDaTelaResultado()">🎯 Treinar focos</button>
+            <button id="btn-treinar-novamente" class="botao-treino hidden" onclick="iniciarTreinoDaTelaResultado()">🎯 Treinar novamente</button>
             <button id="btn-compartilhar" class="btn-share hidden" onclick="compartilharResultado()">📤 Compartilhar</button>
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
@@ -6827,36 +6825,6 @@
         if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não disponíveis.", "aviso"); return; }
         await carregarFocoTreino(alunoAtual, turmaAtual, modalidadeAtual);
         await iniciarTreinoInteligente();
-    }
-
-    async function jogarNovamente() {
-        if (!ultimaTentativa) {
-            notificar("Dados da partida não disponíveis.", "aviso");
-            return;
-        }
-        const fase = await resolverFaseAtual();
-        if (!etapaPermiteClassificatoria(fase.tipo)) {
-            notificar("A Etapa Classificatória não está mais disponível no momento.", "aviso", 6000);
-            return;
-        }
-        window._pendingGame = {
-            nome: ultimaTentativa.nome,
-            turma: ultimaTentativa.turma,
-            modalidade: ultimaTentativa.modalidade,
-            treino: false
-        };
-        iniciarPartidaClassificatoria();
-    }
-
-    function voltarEscolherModalidade() {
-        const nome = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-        if (nome) document.getElementById("nome-aluno").value = nome;
-        if (turma) document.getElementById("turma-aluno").value = turma;
-        if (ultimaTentativa?.modalidade) {
-            document.getElementById("modalidade-tabuada").value = ultimaTentativa.modalidade;
-        }
-        mostrarTela("tela-single");
     }
     async function compartilharResultado() {
         if (!ultimoMelhorOficial) { notificar("Nenhum resultado.", "aviso"); return; }
