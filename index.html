@@ -8788,20 +8788,50 @@ function atualizarHomeValores(dados) {
                 const { aluno, qtdMedalhas, qtdEstrelas, dominadas } = res;
 
                 if (qtdMedalhas > 0) {
-                    destaques.medalhas.push({ ...aluno, qtdMedalhas });
-                    destaques.estrelas.push({ ...aluno, qtdEstrelas });
-                    const pctAlbum = Math.round((qtdMedalhas / MEDALS.length) * 100);
-                    destaques.album.push({ ...aluno, qtdMedalhas, pctAlbum, total: MEDALS.length });
-                }
-                if (dominadas > 0) {
-                    destaques.mapa.push({ ...aluno, dominadas, pctMapa: Math.round((dominadas / TOTAL_OPERACOES_MAPA) * 100) });
-                }
+    destaques.medalhas.push({ ...aluno, qtdMedalhas });
+    destaques.estrelas.push({ ...aluno, qtdEstrelas });
+
+    // ▼ Score híbrido: raridade das medalhas + bônus por seções completas
+    const pesosRar = { comum: 1, incomum: 2, raro: 3, epico: 5, lendario: 8 };
+
+    let scoreRaro = 0;
+    let qtdRaras = 0;
+    Object.keys(persistidas).forEach(id => {
+        const m = MEDALS_POR_ID[id];
+        if (!m) return;
+        scoreRaro += pesosRar[m.raridade] || 1;
+        if (m.raridade === "raro" || m.raridade === "epico" || m.raridade === "lendario") qtdRaras++;
+    });
+
+    // Bônus por seção: proporcional à soma de pesos das medalhas dela (× 0.7)
+    let bonusSecoes = 0;
+    let qtdSecoesCompletas = 0;
+    SECOES.forEach(s => {
+        if (!secoesReg[s.id]) return;
+        const medsSecao = MEDALS.filter(m => m.secao === s.id);
+        const somaPesos = medsSecao.reduce((sum, m) => sum + (pesosRar[m.raridade] || 1), 0);
+        bonusSecoes += Math.round(somaPesos * 0.7);
+        qtdSecoesCompletas++;
+    });
+
+    const scoreAlbum = scoreRaro + bonusSecoes;
+    const pctAlbum = Math.round((qtdMedalhas / MEDALS.length) * 100);
+    destaques.album.push({
+        ...aluno,
+        qtdMedalhas, pctAlbum, total: MEDALS.length,
+        scoreRaro, bonusSecoes, scoreAlbum, qtdRaras, qtdSecoesCompletas
+    });
+    // ▲
+}
+if (dominadas > 0) {
+    destaques.mapa.push({ ...aluno, dominadas, pctMapa: Math.round((dominadas / TOTAL_OPERACOES_MAPA) * 100) });
+}
             });
 
             destaques.medalhas.sort((a, b) => b.qtdMedalhas - a.qtdMedalhas);
-            destaques.estrelas.sort((a, b) => b.qtdEstrelas - a.qtdEstrelas);
-            destaques.album.sort((a, b) => b.qtdMedalhas - a.qtdMedalhas);
-            destaques.mapa.sort((a, b) => b.dominadas - a.dominadas);
+destaques.estrelas.sort((a, b) => b.qtdEstrelas - a.qtdEstrelas);
+destaques.album.sort((a, b) => b.scoreAlbum - a.scoreAlbum || b.qtdMedalhas - a.qtdMedalhas);
+destaques.mapa.sort((a, b) => b.dominadas - a.dominadas);
 
             hallFamaCache = {
                 medalhas: destaques.medalhas.slice(0, 5),
@@ -8832,12 +8862,12 @@ function atualizarHomeValores(dados) {
                 let valorTxt = "";
                 if (tipoValor === "medalhas") valorTxt = `${item.qtdMedalhas} 🏅`;
                 else if (tipoValor === "estrelas") valorTxt = `${item.qtdEstrelas} ⭐`;
-                else if (tipoValor === "album") valorTxt = `${item.pctAlbum}% (${item.qtdMedalhas}/${item.total})`;
+                else if (tipoValor === "album") valorTxt = `${item.scoreAlbum} pts`;
                 else if (tipoValor === "mapa") valorTxt = `${item.pctMapa}% (${item.dominadas}/${TOTAL_OPERACOES_MAPA})`;
                 const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`;
                 return `<li class="hall-item" ${ehVoce ? 'style="border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);"' : ""}>
                     <span class="hall-item-pos">${medal}</span>
-                    <span class="hall-item-nome">${escaparHtml(item.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>Turma ${escaparHtml(item.turma)}</small></span>
+                    <span class="hall-item-nome">${escaparHtml(item.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>Turma ${escaparHtml(item.turma)}${tipoValor === "album" ? ` · ${item.qtdRaras} raras · ${item.qtdSecoesCompletas} ${item.qtdSecoesCompletas === 1 ? "seção" : "seções"}` : ""}</small></span>
                     <span class="hall-item-valor">${valorTxt}</span>
                 </li>`;
             }).join("");
@@ -8846,7 +8876,7 @@ function atualizarHomeValores(dados) {
         let html = "";
         html += buildCard("Mais Medalhas", "Quem colecionou o maior número de medalhas no Álbum.", "🏅", dados.medalhas, "medalhas");
         html += buildCard("Mais Estrelas", "Quem acumulou mais estrelas — as medalhas raras valem mais.", "⭐", dados.estrelas, "estrelas");
-        html += buildCard("Álbum Mais Completo", "Quem preencheu a maior porcentagem do Álbum de Conquistas.", "📖", dados.album, "album");
+        html += buildCard("Álbum de Elite", "Raridade das medalhas + bônus por seções completas. Lendárias valem 8, Épicas 5, Raras 3.", "💎", dados.album, "album");
         html += buildCard("Maior Mapa Verde", "Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).", "🗺️", dados.mapa, "mapa");
         container.innerHTML = html;
     }
