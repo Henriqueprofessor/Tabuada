@@ -3803,7 +3803,11 @@
         const fonte = modoVisualizacaoMapa === "agregado" ? mapaFonteAgregada : mapaFonteUltima;
         const cont = { verde: 0, azul: 0, amarelo: 0, vermelho: 0, cinza: 0, parcial: 0 };
         const ops = obterOperacoesDaModalidade(modalidadeAtual);
-        ops.forEach(op => { cont[estadoDaOperacao(normalizarHistoricoOperacao(fonte[op]))]++; });
+        ops.forEach(op => {
+            const est = estadoDaOperacao(normalizarHistoricoOperacao(fonte[op]));
+            const chave = est === "cinza-parcial" ? "parcial" : est;
+            cont[chave]++;
+        });
         const dominadas = cont.verde;
         const domPct = ops.length ? Math.round((dominadas / ops.length) * 100) : 0;
 
@@ -3819,10 +3823,11 @@
                 <div class="resumo-titulo">🏆 Domínio: <strong>${domPct}%</strong> <span style="font-size:12px;color:var(--text-muted);">(${dominadas}/${ops.length} operações)</span></div>
                 <div class="resumo-contadores">
                     <span class="contador verde">🟢 Dominadas: ${cont.verde}</span>
-                    <span class="contador azul" style="background:#e0f2fe;color:#075985;border-color:#7dd3fc;">🔵 Quase: ${cont.azul}</span>
-                    <span class="contador amarelo">🟡 Desenvolvimento: ${cont.amarelo}</span>
-                    <span class="contador vermelho">🔴 Atenção: ${cont.vermelho}</span>
-                    <span class="contador cinza">⚪ Não praticadas: ${cont.cinza + cont.parcial}</span>
+                    <span class="contador" style="background:#ecfeff;color:#0e7490;border-color:#67e8f9;">🔷 A confirmar: ${cont.parcial}</span>
+                    <span class="contador" style="background:#e0f2fe;color:#075985;border-color:#7dd3fc;">🔵 Quase lá: ${cont.azul}</span>
+                    <span class="contador amarelo">🟡 Em treino: ${cont.amarelo}</span>
+                    <span class="contador vermelho">🔴 Preciso reforçar: ${cont.vermelho}</span>
+                    <span class="contador cinza">⚪ Sem prática: ${cont.cinza}</span>
                 </div>
               </div>`;
 
@@ -3837,12 +3842,12 @@
 
         // Legenda
         h += `<div class="mapa-legenda">
-                <span class="legenda-item"><span class="legenda-cor verde"></span> Dominada (≥90%)</span>
-                <span class="legenda-item"><span class="legenda-cor azul" style="background:#38bdf8;"></span> Quase dominada (80-89%)</span>
-                <span class="legenda-item"><span class="legenda-cor amarelo"></span> Em desenvolvimento (60-79%)</span>
-                <span class="legenda-item"><span class="legenda-cor vermelho"></span> Precisa atenção (&lt;60%)</span>
-                <span class="legenda-item"><span class="legenda-cor cinza"></span> Não praticada</span>
-                <span class="legenda-item"><span class="legenda-cor parcial"></span> Avaliando (faltam tentativas)</span>
+                <span class="legenda-item"><span class="legenda-cor verde"></span> Dominada</span>
+                <span class="legenda-item"><span class="legenda-cor parcial"></span> A confirmar</span>
+                <span class="legenda-item"><span class="legenda-cor azul" style="background:#38bdf8;"></span> Quase lá</span>
+                <span class="legenda-item"><span class="legenda-cor amarelo"></span> Em treino</span>
+                <span class="legenda-item"><span class="legenda-cor vermelho"></span> Preciso reforçar</span>
+                <span class="legenda-item"><span class="legenda-cor cinza"></span> Sem prática</span>
               </div>`;
 
         // Grid
@@ -3929,12 +3934,12 @@
         const s = statsDaOperacao(hh);
         const est = estadoDaOperacao(hh);
         const st = {
-            verde: "🟢 Dominada!",
-            azul: "🔵 Quase dominada.",
-            amarelo: "🟡 Em desenvolvimento.",
-            vermelho: "🔴 Precisa melhorar.",
-            cinza: "⚪ Ainda não praticada.",
-            "cinza-parcial": "🔷 Avaliando — faltam tentativas para confirmar."
+            verde: "🟢 Dominada — resolvo com segurança.",
+            azul: "🔵 Quase lá — falta pouco para dominar.",
+            amarelo: "🟡 Em treino — erro às vezes, mas estou evoluindo.",
+            vermelho: "🔴 Preciso reforçar — vou praticar mais.",
+            cinza: "⚪ Sem prática — ainda não pratiquei.",
+            "cinza-parcial": "🔷 A confirmar — acerto bem, mas faltam tentativas."
         };
         const corStatus = est === "cinza-parcial" ? "azul" : est;
 
