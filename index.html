@@ -6589,7 +6589,7 @@
     }
     // ▲▲▲ FIM [15.01]
 
-    // ▼▼▼ [15.02] Estatísticas e gráfico ──────────────────────────────────
+        // ▼▼▼ [15.02] Estatísticas e gráfico ──────────────────────────────────
     function renderizarEstatisticasDesempenho() {
         const container = document.getElementById("desempenho-stats");
         if (!container) return;
@@ -6627,136 +6627,305 @@
         if (yMax <= 5000) return Math.round(v).toLocaleString("pt-BR");
         return (v / 1000).toFixed((v % 1000 === 0) ? 0 : 1).replace(".", ",") + "k";
     }
+
     function renderizarGraficoDesempenho() {
-        const container = document.getElementById("desempenho-chart");
-        const tooltip = document.getElementById("desempenho-tooltip");
+        var container = document.getElementById("desempenho-chart");
+        var tooltip = document.getElementById("desempenho-tooltip");
         if (!container) return;
         if (tooltip) tooltip.classList.remove("visivel");
-        const ordenadas = [...desempenhoPartidasFiltradas].sort(function(a, b) { return new Date(a.data || 0) - new Date(b.data || 0); });
-        const MAX_PONTOS = 25;
-        const partidasVisiveis = ordenadas.length > MAX_PONTOS ? ordenadas.slice(-MAX_PONTOS) : ordenadas;
-        desempenhoPartidasGrafico = partidasVisiveis;
-        const n = partidasVisiveis.length;
-        if (n === 0) { container.innerHTML = '<div class="desempenho-empty-msg">Nenhuma partida nesta modalidade ainda.</div>'; return; }
-        if (n === 1) { container.innerHTML = '<div class="desempenho-empty-msg">🎯 Você tem apenas <strong>1 partida</strong> registrada. Jogue mais para desenhar sua linha de evolução!</div>'; return; }
 
-        const VBW = 360, VBH = 280;
-        const padL = 42, padR = 14, padT = 26, padB = 38;
-        const cW = VBW - padL - padR;
-        const cH = VBH - padT - padB;
-        const valores = partidasVisiveis.map(function(p) { return Number(p.pontos) || 0; });
-        const maxScore = Math.max.apply(null, valores);
-        const yMax = Math.max(1000, Math.ceil((maxScore * 1.12) / 500) * 500);
-        const xFor = function(i) { return padL + (i / (n - 1)) * cW; };
-        const yFor = function(v) { return padT + cH - (v / yMax) * cH; };
-        const coords = valores.map(function(v, i) { return { x: xFor(i), y: yFor(v), valor: v, idx: i }; });
-        const media = valores.reduce(function(a, b) { return a + b; }, 0) / n;
-        const yMedia = Math.max(padT + 2, Math.min(padT + cH - 2, yFor(media)));
-        const idxRecorde = valores.indexOf(maxScore);
-
-        var svg = '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" class="desempenho-svg" preserveAspectRatio="xMidYMid meet" aria-label="Grafico de evolucao da pontuacao" role="img">';
-        svg += '<defs>';
-        svg += '<linearGradient id="gradArea" x1="0" y1="0" x2="0" y2="1">';
-        svg += '<stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.25"/>';
-        svg += '<stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>';
-        svg += '</linearGradient>';
-        svg += '<linearGradient id="gradLine" x1="0" y1="0" x2="1" y2="0">';
-        svg += '<stop offset="0%" stop-color="#0284c7"/>';
-        svg += '<stop offset="100%" stop-color="#0ea5e9"/>';
-        svg += '</linearGradient>';
-        svg += '</defs>';
-
-        var ticks = 4;
-        for (var i = 0; i <= ticks; i++) {
-            var y = padT + (cH * i / ticks);
-            var val = yMax * (1 - i / ticks);
-            svg += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (padL + cW).toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="rgba(148,163,184,0.18)" stroke-width="1" />';
-            svg += '<text x="' + (padL - 6) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end" class="desempenho-axis-label">' + formatarNumeroEixo(val, yMax) + '</text>';
-        }
-        svg += '<line x1="' + padL + '" y1="' + (padT + cH).toFixed(1) + '" x2="' + (padL + cW).toFixed(1) + '" y2="' + (padT + cH).toFixed(1) + '" stroke="rgba(148,163,184,0.35)" stroke-width="1" />';
-        svg += '<line x1="' + padL + '" y1="' + yMedia.toFixed(1) + '" x2="' + (padL + cW).toFixed(1) + '" y2="' + yMedia.toFixed(1) + '" stroke="#f59e0b" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.85" />';
-        svg += '<text x="' + (padL + cW - 3).toFixed(1) + '" y="' + (yMedia - 4).toFixed(1) + '" text-anchor="end" class="desempenho-avg-label">media ' + formatarNumeroEixo(media, yMax) + '</text>';
-
-        var pathD = 'M ' + coords[0].x.toFixed(1) + ' ' + coords[0].y.toFixed(1);
-        for (var j = 1; j < coords.length; j++) {
-            pathD += ' L ' + coords[j].x.toFixed(1) + ' ' + coords[j].y.toFixed(1);
-        }
-        var areaD = pathD + ' L ' + coords[coords.length - 1].x.toFixed(1) + ' ' + (padT + cH).toFixed(1) + ' L ' + coords[0].x.toFixed(1) + ' ' + (padT + cH).toFixed(1) + ' Z';
-
-        svg += '<path d="' + areaD + '" class="desempenho-area" fill="url(#gradArea)" />';
-        svg += '<path d="' + pathD + '" class="desempenho-linha" fill="none" stroke="url(#gradLine)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />';
-
-        coords.forEach(function(c, idx) {
-            var isRecord = idx === idxRecorde;
-            var delay = 0.25 + (idx * (0.85 / n));
-            var cls = isRecord ? 'desempenho-ponto recorde' : 'desempenho-ponto';
-            var r = isRecord ? 5.5 : 3.5;
-            var delayAttr = isRecord ? (delay + 's, ' + (delay + 0.4) + 's') : (delay + 's');
-            svg += '<circle cx="' + c.x.toFixed(1) + '" cy="' + c.y.toFixed(1) + '" r="' + r + '" class="' + cls + '" data-idx="' + idx + '" style="animation-delay: ' + delayAttr + '" />';
+        var ordenadas = desempenhoPartidasFiltradas.slice().sort(function(a, b) {
+            return new Date(a.data || 0) - new Date(b.data || 0);
         });
+        var MAX_PONTOS = 25;
+        var partidasVisiveis = ordenadas.length > MAX_PONTOS ? ordenadas.slice(-MAX_PONTOS) : ordenadas;
+        desempenhoPartidasGrafico = partidasVisiveis;
+        var n = partidasVisiveis.length;
 
-        var rec = coords[idxRecorde];
-        if (rec) {
-            var delayCoroa = 0.45 + (idxRecorde * (0.85 / n));
-            svg += '<text x="' + rec.x.toFixed(1) + '" y="' + Math.max(14, rec.y - 9).toFixed(1) + '" text-anchor="middle" class="desempenho-recorde-icone" style="animation-delay: ' + delayCoroa + 's">🏆</text>';
+        if (n === 0) {
+            container.innerHTML = '<div class="desempenho-empty-msg">Nenhuma partida nesta modalidade ainda.</div>';
+            return;
+        }
+        if (n === 1) {
+            container.innerHTML = '<div class="desempenho-empty-msg">Voce tem apenas <strong>1 partida</strong> registrada. Jogue mais para desenhar sua linha de evolucao!</div>';
+            return;
         }
 
+        var VBW = 360, VBH = 280;
+        var padL = 42, padR = 14, padT = 26, padB = 38;
+        var cW = VBW - padL - padR;
+        var cH = VBH - padT - padB;
+
+        var valores = partidasVisiveis.map(function(p) { return Number(p.pontos) || 0; });
+        var maxScore = Math.max.apply(null, valores);
+        var yMax = Math.max(1000, Math.ceil((maxScore * 1.12) / 500) * 500);
+
+        function xFor(i) { return padL + (i / (n - 1)) * cW; }
+        function yFor(v) { return padT + cH - (v / yMax) * cH; }
+
+        var coords = [];
+        for (var ci = 0; ci < valores.length; ci++) {
+            coords.push({ x: xFor(ci), y: yFor(valores[ci]), valor: valores[ci], idx: ci });
+        }
+
+        var somaVal = 0;
+        for (var si = 0; si < valores.length; si++) somaVal += valores[si];
+        var media = somaVal / n;
+        var yMedia = Math.max(padT + 2, Math.min(padT + cH - 2, yFor(media)));
+        var idxRecorde = valores.indexOf(maxScore);
+
+        var NS = "http://www.w3.org/2000/svg";
+        container.innerHTML = "";
+
+        var svg = document.createElementNS(NS, "svg");
+        svg.setAttribute("viewBox", "0 0 " + VBW + " " + VBH);
+        svg.setAttribute("class", "desempenho-svg");
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+        svg.setAttribute("role", "img");
+        svg.setAttribute("aria-label", "Grafico de evolucao da pontuacao");
+
+        // Defs + gradientes
+        var defs = document.createElementNS(NS, "defs");
+
+        var gradArea = document.createElementNS(NS, "linearGradient");
+        gradArea.setAttribute("id", "gradArea");
+        gradArea.setAttribute("x1", "0");
+        gradArea.setAttribute("y1", "0");
+        gradArea.setAttribute("x2", "0");
+        gradArea.setAttribute("y2", "1");
+        var stopA1 = document.createElementNS(NS, "stop");
+        stopA1.setAttribute("offset", "0%");
+        stopA1.setAttribute("stop-color", "#0ea5e9");
+        stopA1.setAttribute("stop-opacity", "0.25");
+        var stopA2 = document.createElementNS(NS, "stop");
+        stopA2.setAttribute("offset", "100%");
+        stopA2.setAttribute("stop-color", "#0ea5e9");
+        stopA2.setAttribute("stop-opacity", "0");
+        gradArea.appendChild(stopA1);
+        gradArea.appendChild(stopA2);
+
+        var gradLine = document.createElementNS(NS, "linearGradient");
+        gradLine.setAttribute("id", "gradLine");
+        gradLine.setAttribute("x1", "0");
+        gradLine.setAttribute("y1", "0");
+        gradLine.setAttribute("x2", "1");
+        gradLine.setAttribute("y2", "0");
+        var stopL1 = document.createElementNS(NS, "stop");
+        stopL1.setAttribute("offset", "0%");
+        stopL1.setAttribute("stop-color", "#0284c7");
+        var stopL2 = document.createElementNS(NS, "stop");
+        stopL2.setAttribute("offset", "100%");
+        stopL2.setAttribute("stop-color", "#0ea5e9");
+        gradLine.appendChild(stopL1);
+        gradLine.appendChild(stopL2);
+
+        defs.appendChild(gradArea);
+        defs.appendChild(gradLine);
+        svg.appendChild(defs);
+
+        // Linhas de grade + labels Y
+        var ticks = 4;
+        for (var ti = 0; ti <= ticks; ti++) {
+            var yTick = padT + (cH * ti / ticks);
+            var valTick = yMax * (1 - ti / ticks);
+
+            var lineGrid = document.createElementNS(NS, "line");
+            lineGrid.setAttribute("x1", String(padL));
+            lineGrid.setAttribute("y1", yTick.toFixed(1));
+            lineGrid.setAttribute("x2", String(padL + cW));
+            lineGrid.setAttribute("y2", yTick.toFixed(1));
+            lineGrid.setAttribute("stroke", "rgba(148,163,184,0.18)");
+            lineGrid.setAttribute("stroke-width", "1");
+            svg.appendChild(lineGrid);
+
+            var textY = document.createElementNS(NS, "text");
+            textY.setAttribute("x", String(padL - 6));
+            textY.setAttribute("y", (yTick + 3.5).toFixed(1));
+            textY.setAttribute("text-anchor", "end");
+            textY.setAttribute("class", "desempenho-axis-label");
+            textY.textContent = formatarNumeroEixo(valTick, yMax);
+            svg.appendChild(textY);
+        }
+
+        // Linha da base (X)
+        var lineBase = document.createElementNS(NS, "line");
+        lineBase.setAttribute("x1", String(padL));
+        lineBase.setAttribute("y1", String(padT + cH));
+        lineBase.setAttribute("x2", String(padL + cW));
+        lineBase.setAttribute("y2", String(padT + cH));
+        lineBase.setAttribute("stroke", "rgba(148,163,184,0.35)");
+        lineBase.setAttribute("stroke-width", "1");
+        svg.appendChild(lineBase);
+
+        // Linha da média (tracejada)
+        var lineMedia = document.createElementNS(NS, "line");
+        lineMedia.setAttribute("x1", String(padL));
+        lineMedia.setAttribute("y1", yMedia.toFixed(1));
+        lineMedia.setAttribute("x2", String(padL + cW));
+        lineMedia.setAttribute("y2", yMedia.toFixed(1));
+        lineMedia.setAttribute("stroke", "#f59e0b");
+        lineMedia.setAttribute("stroke-width", "1.4");
+        lineMedia.setAttribute("stroke-dasharray", "4 3");
+        lineMedia.setAttribute("opacity", "0.85");
+        svg.appendChild(lineMedia);
+
+        var textMedia = document.createElementNS(NS, "text");
+        textMedia.setAttribute("x", String(padL + cW - 3));
+        textMedia.setAttribute("y", (yMedia - 4).toFixed(1));
+        textMedia.setAttribute("text-anchor", "end");
+        textMedia.setAttribute("class", "desempenho-avg-label");
+        textMedia.textContent = "media " + formatarNumeroEixo(media, yMax);
+        svg.appendChild(textMedia);
+
+        // Path da linha
+        var pathD = "M " + coords[0].x.toFixed(1) + " " + coords[0].y.toFixed(1);
+        for (var pi = 1; pi < coords.length; pi++) {
+            pathD += " L " + coords[pi].x.toFixed(1) + " " + coords[pi].y.toFixed(1);
+        }
+        var lastX = coords[coords.length - 1].x.toFixed(1);
+        var baseY = (padT + cH).toFixed(1);
+        var firstX = coords[0].x.toFixed(1);
+        var areaD = pathD + " L " + lastX + " " + baseY + " L " + firstX + " " + baseY + " Z";
+
+        // Área sob a linha
+        var pathArea = document.createElementNS(NS, "path");
+        pathArea.setAttribute("d", areaD);
+        pathArea.setAttribute("class", "desempenho-area");
+        pathArea.setAttribute("fill", "url(#gradArea)");
+        svg.appendChild(pathArea);
+
+        // Linha principal
+        var pathLine = document.createElementNS(NS, "path");
+        pathLine.setAttribute("d", pathD);
+        pathLine.setAttribute("class", "desempenho-linha");
+        pathLine.setAttribute("fill", "none");
+        pathLine.setAttribute("stroke", "url(#gradLine)");
+        pathLine.setAttribute("stroke-width", "2.5");
+        pathLine.setAttribute("stroke-linecap", "round");
+        pathLine.setAttribute("stroke-linejoin", "round");
+        svg.appendChild(pathLine);
+
+        // Pontos
+        for (var pi2 = 0; pi2 < coords.length; pi2++) {
+            var c = coords[pi2];
+            var isRecord = pi2 === idxRecorde;
+            var delay = 0.25 + (pi2 * (0.85 / n));
+            var cls = isRecord ? "desempenho-ponto recorde" : "desempenho-ponto";
+            var r = isRecord ? 5.5 : 3.5;
+            var delayAttr = isRecord ? (delay + "s, " + (delay + 0.4) + "s") : (delay + "s");
+
+            var circle = document.createElementNS(NS, "circle");
+            circle.setAttribute("cx", c.x.toFixed(1));
+            circle.setAttribute("cy", c.y.toFixed(1));
+            circle.setAttribute("r", String(r));
+            circle.setAttribute("class", cls);
+            circle.setAttribute("data-idx", String(pi2));
+            circle.style.animationDelay = delayAttr;
+            svg.appendChild(circle);
+        }
+
+        // Coroa do recorde
+        if (coords[idxRecorde]) {
+            var rec = coords[idxRecorde];
+            var delayCoroa = 0.45 + (idxRecorde * (0.85 / n));
+            var textCoroa = document.createElementNS(NS, "text");
+            textCoroa.setAttribute("x", rec.x.toFixed(1));
+            textCoroa.setAttribute("y", Math.max(14, rec.y - 9).toFixed(1));
+            textCoroa.setAttribute("text-anchor", "middle");
+            textCoroa.setAttribute("class", "desempenho-recorde-icone");
+            textCoroa.style.animationDelay = delayCoroa + "s";
+            textCoroa.textContent = "\uD83C\uDFC6";
+            svg.appendChild(textCoroa);
+        }
+
+        // Labels do eixo X
         var step = Math.max(1, Math.ceil(n / 8));
         var indices = [];
-        for (var k = 0; k < n; k += step) indices.push(k);
+        for (var ki = 0; ki < n; ki += step) indices.push(ki);
         if (indices[indices.length - 1] !== n - 1) indices.push(n - 1);
-        indices.forEach(function(i) {
-            svg += '<text x="' + coords[i].x.toFixed(1) + '" y="' + (padT + cH + 14).toFixed(1) + '" text-anchor="middle" class="desempenho-axis-label">' + (i + 1) + '</text>';
-        });
-        svg += '<text x="' + (padL + cW / 2).toFixed(1) + '" y="' + (VBH - 5) + '" text-anchor="middle" class="desempenho-axis-title">Numero da partida</text>';
-        svg += '</svg>';
 
-        container.innerHTML = svg;
+        for (var ii = 0; ii < indices.length; ii++) {
+            var idxEixo = indices[ii];
+            var textEixo = document.createElementNS(NS, "text");
+            textEixo.setAttribute("x", coords[idxEixo].x.toFixed(1));
+            textEixo.setAttribute("y", String(padT + cH + 14));
+            textEixo.setAttribute("text-anchor", "middle");
+            textEixo.setAttribute("class", "desempenho-axis-label");
+            textEixo.textContent = String(idxEixo + 1);
+            svg.appendChild(textEixo);
+        }
 
+        // Título do eixo X
+        var textTitulo = document.createElementNS(NS, "text");
+        textTitulo.setAttribute("x", String(padL + cW / 2));
+        textTitulo.setAttribute("y", String(VBH - 5));
+        textTitulo.setAttribute("text-anchor", "middle");
+        textTitulo.setAttribute("class", "desempenho-axis-title");
+        textTitulo.textContent = "Numero da partida";
+        svg.appendChild(textTitulo);
+
+        container.appendChild(svg);
+
+        // Animação da linha sendo desenhada
         requestAnimationFrame(function() {
             var linha = container.querySelector(".desempenho-linha");
             if (!linha) return;
             try {
                 var len = linha.getTotalLength();
-                linha.style.strokeDasharray = len;
-                linha.style.strokeDashoffset = len;
+                linha.style.strokeDasharray = String(len);
+                linha.style.strokeDashoffset = String(len);
                 void linha.getBoundingClientRect();
                 linha.style.transition = "stroke-dashoffset 1.2s cubic-bezier(0.65, 0, 0.35, 1)";
                 linha.style.strokeDashoffset = "0";
             } catch(e) {}
         });
+
         configurarTooltipsGrafico();
     }
-        const wrap = document.querySelector(".desempenho-chart-wrap");
-        const chart = document.getElementById("desempenho-chart");
-        const tooltip = document.getElementById("desempenho-tooltip");
+
+    function configurarTooltipsGrafico() {
+        var wrap = document.querySelector(".desempenho-chart-wrap");
+        var chart = document.getElementById("desempenho-chart");
+        var tooltip = document.getElementById("desempenho-tooltip");
         if (!wrap || !chart || !tooltip) return;
-        const svgEl = chart.querySelector("svg");
+        var svgEl = chart.querySelector("svg");
         if (!svgEl) return;
-        const VBW = 360, VBH = 280;
-        const mostrar = (idx) => {
-            const partida = desempenhoPartidasGrafico[idx];
-            const circle = chart.querySelector(`.desempenho-ponto[data-idx="${idx}"]`);
+        var VBW = 360, VBH = 280;
+
+        function mostrar(idx) {
+            var partida = desempenhoPartidasGrafico[idx];
+            var circle = chart.querySelector(".desempenho-ponto[data-idx='" + idx + "']");
             if (!partida || !circle) return;
-            const svgRect = svgEl.getBoundingClientRect();
-            const wrapRect = wrap.getBoundingClientRect();
-            const cx = parseFloat(circle.getAttribute("cx"));
-            const cy = parseFloat(circle.getAttribute("cy"));
-            const px = svgRect.left + (cx / VBW) * svgRect.width;
-            const py = svgRect.top + (cy / VBH) * svgRect.height;
-            tooltip.innerHTML = `<div class="desempenho-tooltip-titulo">🎯 Partida ${idx + 1}</div><div class="desempenho-tooltip-linha"><span>Pontos</span><span class="val">${(Number(partida.pontos) || 0).toLocaleString("pt-BR")}</span></div><div class="desempenho-tooltip-linha"><span>Acertos</span><span class="val">${partida.acertos || 0}/20</span></div><div class="desempenho-tooltip-linha"><span>Tempo</span><span class="val">${(Number(partida.tempoMedio) || 0).toFixed(2)}s</span></div><div class="desempenho-tooltip-linha"><span>Data</span><span class="val">${formatarDataCurta(partida.data)}</span></div>`;
+            var svgRect = svgEl.getBoundingClientRect();
+            var wrapRect = wrap.getBoundingClientRect();
+            var cx = parseFloat(circle.getAttribute("cx"));
+            var cy = parseFloat(circle.getAttribute("cy"));
+            var px = svgRect.left + (cx / VBW) * svgRect.width;
+            var py = svgRect.top + (cy / VBH) * svgRect.height;
+
+            tooltip.innerHTML = '<div class="desempenho-tooltip-titulo">🎯 Partida ' + (idx + 1) + '</div>' +
+                '<div class="desempenho-tooltip-linha"><span>Pontos</span><span class="val">' + ((Number(partida.pontos) || 0).toLocaleString("pt-BR")) + '</span></div>' +
+                '<div class="desempenho-tooltip-linha"><span>Acertos</span><span class="val">' + (partida.acertos || 0) + '/20</span></div>' +
+                '<div class="desempenho-tooltip-linha"><span>Tempo</span><span class="val">' + ((Number(partida.tempoMedio) || 0).toFixed(2)) + 's</span></div>' +
+                '<div class="desempenho-tooltip-linha"><span>Data</span><span class="val">' + formatarDataCurta(partida.data) + '</span></div>';
+
             tooltip.style.left = (px - wrapRect.left) + "px";
             tooltip.style.top = (py - wrapRect.top) + "px";
             tooltip.classList.add("visivel");
-        };
-        const esconder = () => tooltip.classList.remove("visivel");
-        chart.querySelectorAll(".desempenho-ponto").forEach(circle => {
-            const idx = parseInt(circle.dataset.idx, 10);
-            circle.addEventListener("mouseenter", () => mostrar(idx));
-            circle.addEventListener("mouseleave", esconder);
-            circle.addEventListener("touchstart", (e) => { e.preventDefault(); mostrar(idx); }, { passive: false });
-            circle.addEventListener("touchend", () => { setTimeout(esconder, 1600); });
-        });
+        }
+
+        function esconder() { tooltip.classList.remove("visivel"); }
+
+        var pontos = chart.querySelectorAll(".desempenho-ponto");
+        for (var i = 0; i < pontos.length; i++) {
+            (function(circle) {
+                var idx = parseInt(circle.dataset.idx, 10);
+                circle.addEventListener("mouseenter", function() { mostrar(idx); });
+                circle.addEventListener("mouseleave", esconder);
+                circle.addEventListener("touchstart", function(e) { e.preventDefault(); mostrar(idx); }, { passive: false });
+                circle.addEventListener("touchend", function() { setTimeout(esconder, 1600); });
+            })(pontos[i]);
+        }
     }
     // ▲▲▲ FIM [15.02]
 
