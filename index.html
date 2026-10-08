@@ -9223,7 +9223,7 @@ function atualizarHomeValores(dados) {
     }
 
     // ▼▼▼ [18.02.bis] Métricas acumulativas do Hall da Fama
-        async function calcularMetricasHallFama() {
+    async function calcularMetricasHallFama() {
         const partidas = await obterPartidas();
         const porAluno = new Map();
 
@@ -9236,10 +9236,14 @@ function atualizarHomeValores(dados) {
                     totalAcertos: 0,
                     totalPartidas: 0,
                     somaPontos: 0,
-                    melhorTempoMedio: Infinity,
-                    partidasPerfeitas: 0,
+                    // Raio de Pontuação (qualquer partida)
                     maxTemposRapidos: 0,
                     melhorTempoNaPartidaRapida: Infinity,
+                    // Mestre da Velocidade (só partidas 20/20)
+                    partidasPerfeitas: 0,
+                    maxTemposRapidosPerfeito: 0,
+                    melhorTempoPerfeito: Infinity,
+                    // Outros
                     diasSet: new Set(),
                     treinosFocados: 0
                 });
@@ -9248,20 +9252,29 @@ function atualizarHomeValores(dados) {
             const acertos = Number(p.acertos) || 0;
             const pontos  = Number(p.pontos)  || 0;
             const tm      = Number(p.tempoMedio) || 0;
+            const tr      = Number(p.temposRapidos) || 0;
 
             a.totalAcertos += acertos;
             a.totalPartidas++;
             a.somaPontos += pontos;
-            if (acertos === 20) a.partidasPerfeitas++;
 
-            if (tm > 0 && tm < a.melhorTempoMedio) a.melhorTempoMedio = tm;
-
-            const tr = Number(p.temposRapidos) || 0;
+            // ─── Raio de Pontuação (qualquer partida) ───
             if (tr > a.maxTemposRapidos) {
                 a.maxTemposRapidos = tr;
                 a.melhorTempoNaPartidaRapida = tm;
             } else if (tr === a.maxTemposRapidos && tm > 0 && tm < a.melhorTempoNaPartidaRapida) {
                 a.melhorTempoNaPartidaRapida = tm;
+            }
+
+            // ─── Mestre da Velocidade (SÓ partidas perfeitas 20/20) ───
+            if (acertos === 20) {
+                a.partidasPerfeitas++;
+                if (tr > a.maxTemposRapidosPerfeito) {
+                    a.maxTemposRapidosPerfeito = tr;
+                    a.melhorTempoPerfeito = tm;
+                } else if (tr === a.maxTemposRapidosPerfeito && tm > 0 && tm < a.melhorTempoPerfeito) {
+                    a.melhorTempoPerfeito = tm;
+                }
             }
 
             if (p.data) {
@@ -9270,7 +9283,7 @@ function atualizarHomeValores(dados) {
             }
         });
 
-        // ▼ NOVO: lê o contador de treinos focados/inteligentes do Firebase
+        // Lê o contador de treinos focados/inteligentes do Firebase
         try {
             const snapTreinos = await database.ref(CAMINHO_TREINOS_FOCADOS).once("value");
             const treinosFirebase = snapTreinos.val() || {};
@@ -9289,10 +9302,14 @@ function atualizarHomeValores(dados) {
         }));
 
         return {
+            // Só entra quem tem pelo menos 1 partida perfeita (20/20).
+            // Ranking: mais respostas abaixo de 0,8s em uma partida 20/20.
+            // Desempate: menor tempo médio naquela partida perfeita, depois mais partidas perfeitas.
             velocidade: [...lista]
-                .filter(a => a.melhorTempoMedio < Infinity)
+                .filter(a => a.partidasPerfeitas >= 1)
                 .sort((a, b) =>
-                    a.melhorTempoMedio - b.melhorTempoMedio ||
+                    b.maxTemposRapidosPerfeito - a.maxTemposRapidosPerfeito ||
+                    a.melhorTempoPerfeito - b.melhorTempoPerfeito ||
                     b.partidasPerfeitas - a.partidasPerfeitas
                 ),
 
@@ -9344,10 +9361,8 @@ function atualizarHomeValores(dados) {
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando os destaques da Copa…</div>`;
 
         try {
-            // NOVO: processa TODAS as partidas (sem limite de alunos)
             const metricas = await calcularMetricasHallFama();
 
-            // MANTIDO: categorias antigas (medalhas, estrelas, álbum, mapa)
             const ranking = await obterRanking();
             const alunosUnicos = new Map();
             ranking.forEach(r => {
@@ -9355,7 +9370,6 @@ function atualizarHomeValores(dados) {
                 if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: r.nome, turma: r.turma });
             });
 
-            // Limite alterado de 100 → 200
             const alunosParaProcessar = Array.from(alunosUnicos.values()).slice(0, 200);
 
             const promessas = alunosParaProcessar.map(async (aluno) => {
@@ -9444,7 +9458,6 @@ function atualizarHomeValores(dados) {
             destaques.album.sort((a, b) => b.scoreAlbum - a.scoreAlbum || b.qtdMedalhas - a.qtdMedalhas);
             destaques.mapa.sort((a, b) => b.dominadas - a.dominadas);
 
-            // NOVO: adiciona as novas categorias (Top 5 de cada)
             destaques.velocidade  = metricas.velocidade.slice(0, 5);
             destaques.acertos     = metricas.acertos.slice(0, 5);
             destaques.raio        = metricas.raio.slice(0, 5);
@@ -9452,7 +9465,6 @@ function atualizarHomeValores(dados) {
             destaques.presenca    = metricas.presenca.slice(0, 5);
             destaques.treino      = metricas.treino.slice(0, 5);
 
-            // NOVO: Turma de Elite
             try {
                 const medias = await calcularMediasTop4Turmas("0-10");
                 destaques.turmas = medias.slice(0, 5);
@@ -9505,7 +9517,7 @@ function atualizarHomeValores(dados) {
                 else if (tipoValor === "mapa")     valorTxt = `${item.pctMapa}% (${item.dominadas}/${TOTAL_OPERACOES_MAPA})`;
 
                 // Novas categorias
-                else if (tipoValor === "velocidade")   valorTxt = `${item.melhorTempoMedio.toFixed(2)}s`;
+                else if (tipoValor === "velocidade")   valorTxt = `${item.maxTemposRapidosPerfeito} ⚡`;
                 else if (tipoValor === "acertos")      valorTxt = `${item.totalAcertos} ✅`;
                 else if (tipoValor === "raio")         valorTxt = `${item.maxTemposRapidos} ⚡`;
                 else if (tipoValor === "maratonista")  valorTxt = `${item.totalPartidas} 🎮`;
@@ -9518,7 +9530,7 @@ function atualizarHomeValores(dados) {
                 if (tipoValor === "album") {
                     subLinha = `Turma ${escaparHtml(item.turma)} · ${item.qtdRaras} raras · ${item.qtdSecoesCompletas} ${item.qtdSecoesCompletas === 1 ? "seção" : "seções"}`;
                 } else if (tipoValor === "velocidade") {
-                    subLinha = `Turma ${escaparHtml(item.turma)} · ${item.partidasPerfeitas} ${item.partidasPerfeitas === 1 ? "perfeita" : "perfeitas"}`;
+                    subLinha = `Turma ${escaparHtml(item.turma)} · ${item.partidasPerfeitas} ${item.partidasPerfeitas === 1 ? "perfeita" : "perfeitas"} · ${item.melhorTempoPerfeito.toFixed(2)}s`;
                 } else if (tipoValor === "maratonista") {
                     subLinha = `Turma ${escaparHtml(item.turma)} · média ${Math.round(item.mediaPontos).toLocaleString("pt-BR")} pts`;
                 } else if (tipoValor === "presenca") {
@@ -9545,14 +9557,14 @@ function atualizarHomeValores(dados) {
         html += buildCard("Maior Mapa Verde", "Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).", "🗺️", dados.mapa, "mapa");
 
         // NOVAS CATEGORIAS
-        html += buildCard("Mestre da Velocidade", "Quem responde mais rápido — desempate por partidas perfeitas (20/20).", "🏆", dados.velocidade, "velocidade");
+        html += buildCard("Mestre da Velocidade", "Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas abaixo de 0,8s.", "🏆", dados.velocidade, "velocidade");
         html += buildCard("Total de Acertos", "Soma de todos os acertos acumulados. Jogar muito é recompensado!", "✅", dados.acertos, "acertos");
         html += buildCard("Raio de Pontuação", "Maior número de respostas rápidas (abaixo de 0,8s) em uma única partida.", "⚡", dados.raio, "raio");
         html += buildCard("Maratonista da Copa", "Quem jogou o maior número de partidas. Dedicação total!", "🏃", dados.maratonista, "maratonista");
         html += buildCard("Presença VIP", "Quem jogou em mais dias diferentes. Constância é a chave!", "📅", dados.presenca, "presenca");
         html += buildCard("Mestre do Treino", "Quem mais usou o Treino Focado/Inteligente para evoluir.", "🧠", dados.treino, "treino");
 
-        // TURMA DE ELITE (card especial — estrutura diferente)
+        // TURMA DE ELITE (card especial)
         if (dados.turmas && dados.turmas.length > 0) {
             const itensHtml = dados.turmas.map((t, i) => {
                 const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`;
