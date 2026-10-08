@@ -2020,6 +2020,116 @@
             .feedback-erro-overlay, .feedback-erro-card { animation: none !important; }
         }
         /* ▲▲▲ FIM [02.33] */
+            /* ▼▼▼ [02.34] Minhas Posições + Ranking Turmas (resultado) ─── */
+        .minhas-posicoes-card {
+            background: linear-gradient(135deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: left;
+            box-shadow: var(--shadow-card);
+        }
+        .minhas-posicoes-titulo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .minhas-posicoes-titulo .tag-turma { color: var(--neon-cyan); font-weight: 900; }
+        .minhas-posicoes-lista { display: flex; flex-direction: column; gap: 8px; }
+        .minhas-posicoes-linha {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            transition: transform 0.15s ease, border-color 0.2s ease;
+        }
+        .minhas-posicoes-linha.zona-top4 {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.22), rgba(16, 185, 129, 0.05));
+            border-color: rgba(16, 185, 129, 0.55);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.12);
+        }
+        .minhas-posicoes-linha.zona-reserva {
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.18), rgba(251, 191, 36, 0.04));
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+        .minhas-posicoes-linha.zona-disputa {
+            background: rgba(10, 22, 40, 0.5);
+            border-color: rgba(56, 189, 248, 0.2);
+        }
+        .minhas-posicoes-linha.sem-dados {
+            background: rgba(10, 22, 40, 0.25);
+            border-style: dashed;
+            border-color: rgba(148, 163, 184, 0.28);
+            opacity: 0.75;
+        }
+        .minhas-posicoes-mod-nome {
+            font-size: 13.5px; font-weight: 800; color: var(--text-primary);
+            display: flex; align-items: center; gap: 6px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .minhas-posicoes-mod-pos {
+            font-size: 13px; font-weight: 900; color: var(--neon-cyan);
+            white-space: nowrap; text-align: right;
+        }
+        .minhas-posicoes-linha.zona-top4 .minhas-posicoes-mod-pos { color: #6ee7b7; }
+        .minhas-posicoes-linha.zona-reserva .minhas-posicoes-mod-pos { color: #fde68a; }
+        .minhas-posicoes-linha.sem-dados .minhas-posicoes-mod-pos { color: var(--text-muted); }
+        .minhas-posicoes-mod-status {
+            font-size: 11.5px; font-weight: 700; color: var(--text-secondary);
+            letter-spacing: 0.3px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .minhas-posicoes-linha.zona-top4 .minhas-posicoes-mod-status { color: #6ee7b7; }
+        .minhas-posicoes-linha.zona-reserva .minhas-posicoes-mod-status { color: #fde68a; }
+        .minhas-posicoes-linha.zona-disputa .minhas-posicoes-mod-status { color: #7dd3fc; }
+        .minhas-posicoes-linha.sem-dados .minhas-posicoes-mod-status { color: var(--text-muted); font-style: italic; }
+        .minhas-posicoes-mod-pts {
+            font-size: 12px; font-weight: 900; color: var(--neon-gold);
+            white-space: nowrap; text-align: right;
+        }
+        .minhas-posicoes-linha.zona-top4 .minhas-posicoes-mod-pts { color: #a7f3d0; }
+        .minhas-posicoes-linha.zona-reserva .minhas-posicoes-mod-pts { color: #fef3c7; }
+        .minhas-posicoes-linha.sem-dados .minhas-posicoes-mod-pts { color: var(--text-muted); font-weight: 700; font-style: italic; }
+
+        .ranking-turmas-resultado {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin: 16px 0;
+            text-align: left;
+            box-shadow: var(--shadow-card);
+        }
+        .ranking-turmas-resultado-titulo {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12.5px; font-weight: 800; color: var(--text-primary);
+            letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 10px;
+        }
+        .ranking-turmas-resultado .ranking-turmas-lista { display: flex; flex-direction: column; gap: 4px; }
+
+        @media (max-width: 520px) {
+            .minhas-posicoes-card { padding: 14px; }
+            .minhas-posicoes-linha { padding: 10px 12px; }
+            .minhas-posicoes-mod-nome { font-size: 12.5px; }
+            .minhas-posicoes-mod-pos { font-size: 12px; }
+            .minhas-posicoes-mod-status { font-size: 11px; }
+            .ranking-turmas-resultado { padding: 12px 14px; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .minhas-posicoes-card,
+            .ranking-turmas-resultado { background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%); }
+        }
+        /* ▲▲▲ FIM [02.34] */
     </style>
 </head>
     </style>
@@ -2299,6 +2409,7 @@
             <div><strong>Status:</strong> <span id="resumo-status"></span></div>
         </div>
         <div id="feedback-ranking-container" class="feedback-ranking"></div>
+        <div id="ranking-turmas-resultado-container"></div>
         <div id="album-cta-resultado" class="hidden" aria-live="polite"></div>
         <div id="mapa-tabuadas-container"></div>
                 <div id="acoes-resultado-container" class="acoes-resultado duas-colunas">
@@ -6911,41 +7022,119 @@ if (containerProg) {
     }
     // ▲▲▲ FIM [14.08]
 
-        // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
+    // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
     function gerarCardsComparacao(melhor, tent) {
         const novo = ehMelhorResultado(tent, melhor) && tent.data === melhor.data;
         return `<div class="cards-comparacao"><div class="card-compcard"><div class="card-comp-rotulo">Esta tentativa</div><div class="card-comp-valor">${tent.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div><div class="card-compcard card-recorde"><div class="card-comp-rotulo">${novo ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div><div class="card-comp-valor">${melhor.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div></div>`;
     }
+
     async function renderizarCardClassificacao(r) {
-        const rank = await obterRankingPorPontos(r.modalidade, r.turma);
-        let pos = -1;
-        for (let i = 0; i < rank.length; i++) { if (normalizarNome(rank[i].nome) === normalizarNome(r.nome) && rank[i].turma === r.turma) { pos = i + 1; break; } }
-        if (pos === -1) return "";
-        const mn = MODALIDADES[r.modalidade]?.nome || r.modalidade;
-        const q4 = rank[VAGAS_CLASSIFICACAO - 1] || null;
-        const ex = explicarDesempate(r, q4);
-        const top6 = rank.slice(0, 6);
-        let mini = '<div class="mini-ranking">';
-        for (let i = 0; i < top6.length; i++) {
-            const it = top6[i]; const p = i + 1;
-            const vc = normalizarNome(it.nome) === normalizarNome(r.nome);
-            const cls = vc ? 'voce' : (p <= VAGAS_CLASSIFICACAO ? 'classificado' : (p <= 6 ? 'reserva' : 'fora'));
-            const med = p === 1 ? '🥇' : p === 2 ? '🥈' : p === 3 ? '🥉' : p === 4 ? '🎫' : '';
-            mini += `<div class="mini-ranking-item ${cls}"><span>${p}º ${med} ${escaparHtml(it.nome)}${vc ? ' ← Você' : ''}</span><span><strong>${it.pontos.toLocaleString('pt-BR')}</strong> pts</span></div>`;
-            if (i === VAGAS_CLASSIFICACAO - 1 && top6.length > VAGAS_CLASSIFICACAO) mini += `<div class="divisor-ranking">— corte (${VAGAS_CLASSIFICACAO} vagas) —</div>`;
+        if (!r || !r.nome || !r.turma) return "";
+
+        // Busca as 3 modalidades em paralelo
+        const mods = Object.keys(MODALIDADES);
+        const ranks = await Promise.all(
+            mods.map(m => obterRankingPorPontos(m, r.turma).catch(() => []))
+        );
+
+        const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+
+        let htmlLinhas = "";
+        let estaNoTop4Alguma = false;
+
+        for (let i = 0; i < mods.length; i++) {
+            const mod = mods[i];
+            const rankingMod = ranks[i] || [];
+            const idxMod = rankingMod.findIndex(x => normalizarNome(x.nome) === normalizarNome(r.nome) && x.turma === r.turma);
+            const posicao = idxMod === -1 ? null : idxMod + 1;
+            const meuResult = posicao !== null ? rankingMod[idxMod] : null;
+            const pontos = meuResult ? (Number(meuResult.pontos) || 0) : 0;
+
+            let classe, icone, status;
+            if (!posicao) {
+                classe = "sem-dados"; icone = "⚪"; status = "Sem partida ainda";
+            } else if (posicao <= VAGAS_CLASSIFICACAO) {
+                classe = "zona-top4"; icone = "🎟️"; status = "Zona de classificação";
+                estaNoTop4Alguma = true;
+            } else if (posicao <= 6) {
+                classe = "zona-reserva"; icone = "🔄"; status = "Zona de reserva";
+            } else {
+                classe = "zona-disputa"; icone = "🎯"; status = "Em disputa";
+            }
+
+            const posTxt = posicao ? `${posicao}º <small style="opacity:.7;font-weight:700;">de ${rankingMod.length}</small>` : "—";
+            const ptsTxt = posicao ? `${pontos.toLocaleString('pt-BR')} pts` : "sem partida";
+
+            htmlLinhas += `<div class="minhas-posicoes-linha ${classe}">
+                <div class="minhas-posicoes-mod-nome">${icone} ${escaparHtml(rotulosCurtos[mod] || MODALIDADES[mod].nome)}</div>
+                <div class="minhas-posicoes-mod-pos">${posTxt}</div>
+                <div class="minhas-posicoes-mod-status">${status}</div>
+                <div class="minhas-posicoes-mod-pts">${ptsTxt}</div>
+            </div>`;
         }
-        mini += '</div>';
-        const avisoNome = `<div class="aviso-nome-classificado">🚨 <strong>Confira seu nome:</strong> "${escaparHtml(r.nome)}". Ele precisa estar completo e <strong>idêntico à chamada oficial</strong>. Nome abreviado ou fora do padrão pode causar <strong>desclassificação</strong>. Se houver erro, fale com o professor antes do fim da etapa.</div>`;
-        if (pos <= VAGAS_CLASSIFICACAO) {
+
+        if (estaNoTop4Alguma) {
             const ck = `ceib_confetti_${normalizarNome(r.nome)}_${r.turma}`;
-            if (!localStorage.getItem(ck)) { setTimeout(() => dispararConfetes(), 300); localStorage.setItem(ck, "1"); }
-            return `<div class="card-classificacao zona-classificacao"><h3>🎉 VOCÊ ESTÁ NA ZONA DE CLASSIFICAÇÃO!</h3><div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div><div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div><div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div>${mini}${avisoNome}<div class="mensagem-rodape">✅ Os <strong>${VAGAS_CLASSIFICACAO} primeiros</strong> de cada turma/modalidade serão convidados para a Copa.<br>⚠️ <strong>Classificação provisória</strong>.</div></div>`;
-        } else if (pos <= 6) {
-            return `<div class="card-classificacao zona-reserva"><h3>💪 VOCÊ ESTÁ PERTO DA CLASSIFICAÇÃO!</h3><div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div><div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div><div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div><p class="mensagem-corte">${ex.mensagem}</p>${mini}${avisoNome}<div class="mensagem-rodape">⚠️ <strong>Classificação provisória</strong>.</div></div>`;
-        } else {
-            return `<div class="card-classificacao fora-zona"><h3>🎯 CONTINUE TREINANDO!</h3><div class="posicao-destaque">${pos}º<span class="sufixo"> lugar</span></div><div class="contexto-modalidade"><strong>Turma ${r.turma}</strong> — ${mn}</div><div class="pontuacao-destaque">${r.pontos.toLocaleString('pt-BR')} pts</div><p class="mensagem-corte">${ex.mensagem}</p>${mini}${avisoNome}<div class="mensagem-rodape">💡 Use o <strong>Modo Treino Inteligente</strong>.<br>⚠️ <strong>Classificação provisória</strong>.</div></div>`;
+            if (!localStorage.getItem(ck)) {
+                setTimeout(() => dispararConfetes(), 300);
+                localStorage.setItem(ck, "1");
+            }
+        }
+
+        const avisoNome = `<div class="aviso-nome-classificado">🚨 <strong>Confira seu nome:</strong> "${escaparHtml(r.nome)}". Ele precisa estar completo e <strong>idêntico à chamada oficial</strong>. Nome abreviado ou fora do padrão pode causar <strong>desclassificação</strong>. Se houver erro, fale com o professor antes do fim da etapa.</div>`;
+
+        return `<div class="minhas-posicoes-card">
+            <div class="minhas-posicoes-titulo">🏆 Minhas posições — <span class="tag-turma">Turma ${escaparHtml(r.turma)}</span></div>
+            <div class="minhas-posicoes-lista">${htmlLinhas}</div>
+            ${avisoNome}
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;text-align:center;line-height:1.5;">⚠️ Classificação provisória · Top ${VAGAS_CLASSIFICACAO} de cada modalidade avança para a Final.</div>
+        </div>`;
+    }
+
+    async function renderizarRankingTurmasResultado(turmaAtual, modalidade) {
+        const container = document.getElementById("ranking-turmas-resultado-container");
+        if (!container) return;
+        container.innerHTML = "";
+        if (!turmaAtual) return;
+
+        try {
+            const medias = await calcularMediasTop4Turmas(modalidade || "0-10");
+            if (!medias || medias.length === 0) return;
+
+            const top3 = medias.slice(0, 3);
+            const idxMinha = medias.findIndex(t => t.turma === turmaAtual);
+            const minhaEstaNoTop3 = top3.some(t => t.turma === turmaAtual);
+
+            let htmlLinhas = "";
+            top3.forEach((t, i) => {
+                const ehMinha = t.turma === turmaAtual;
+                htmlLinhas += `<div class="ranking-turmas-linha ${ehMinha ? "minha-turma" : ""}">
+                    <span class="ranking-turmas-pos">${i + 1}</span>
+                    <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? " ← Sua" : ""}</span>
+                    <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
+                </div>`;
+            });
+
+            if (!minhaEstaNoTop3 && idxMinha !== -1) {
+                const t = medias[idxMinha];
+                htmlLinhas += `<div class="ranking-turmas-linha divisor-turma">· · ·</div>`;
+                htmlLinhas += `<div class="ranking-turmas-linha minha-turma">
+                    <span class="ranking-turmas-pos">${idxMinha + 1}</span>
+                    <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)} ← Sua</span>
+                    <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
+                </div>`;
+            }
+
+            container.innerHTML = `<div class="ranking-turmas-resultado">
+                <div class="ranking-turmas-resultado-titulo">🏫 Ranking das Turmas</div>
+                <div class="ranking-turmas-lista">${htmlLinhas}</div>
+                <div class="ranking-turmas-nota" style="margin-top:10px;">📊 Classificação por média dos <strong>4 melhores alunos</strong> de cada turma.</div>
+            </div>`;
+        } catch(e) {
+            console.warn("Falha ao renderizar ranking das turmas no resultado:", e);
         }
     }
+
     async function gerarFeedbackRanking(melhor, pT, pA) {
         let f = "";
         if (pA === null || pA === undefined) f = `<div class="feedback-ranking"><strong>🎉 VOCÊ ENTROU NA CLASSIFICAÇÃO!</strong><br><br>📊 Turma ${melhor.turma}: <strong>${pT}º lugar</strong>.<br><br>Continue assim! 💪</div>`;
@@ -6954,6 +7143,7 @@ if (containerProg) {
         else f = `<div class="feedback-ranking"><strong>📊 Você manteve o <strong>${pT}º</strong> lugar! 🎯</strong></div>`;
         document.getElementById("feedback-ranking-container").innerHTML = f;
     }
+
     async function preencherResultado(melhor, tent, posAntes) {
         ultimoMelhorOficial = melhor; ultimaTentativa = tent;
         document.getElementById("card-classificacao-container").innerHTML = await renderizarCardClassificacao(melhor);
@@ -6991,11 +7181,13 @@ if (containerProg) {
         const btnTM = document.getElementById("btn-trocar-modalidade");
         if (btnTM) btnTM.classList.remove("hidden");
         await gerarFeedbackRanking(melhor, pT, posAntes);
+        try { await renderizarRankingTurmasResultado(tent.turma, tent.modalidade); } catch(e) { console.warn(e); }
         verificarAlbumPosPartida(tent.nome, tent.turma);
         verificarMaestriaAbsoluta(tent.nome, tent.turma);
         verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade);
         await renderizarCardVotacao();
     }
+
     async function preencherResultadoForaDoPrazo(tent) {
         document.getElementById("resultado-titulo").innerHTML = "⏱️ Partida fora do prazo";
         document.getElementById("feedback-pontos").innerHTML = `<strong>${escaparHtml(tent.nome)}</strong>, sua partida terminou após o encerramento da etapa.`;
@@ -7018,6 +7210,7 @@ if (containerProg) {
         document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Fora do prazo</span>`;
         document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>⏱️ Partida fora do prazo</strong><br>Não contou para a classificação oficial. Ficou no seu histórico para acompanhamento.</div>`;
         document.getElementById("mapa-tabuadas-container").innerHTML = "";
+        document.getElementById("ranking-turmas-resultado-container").innerHTML = "";
         document.getElementById("album-cta-resultado")?.classList.add("hidden");
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
         document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -9182,4 +9375,3 @@ function atualizarHomeValores(dados) {
     </script>
 </body>
 </html>
-
