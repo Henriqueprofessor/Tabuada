@@ -427,7 +427,7 @@
         /* ▲▲▲ FIM [02.10] */
 
         /* ▼▼▼ [02.11] Álbum ─────────────────────────────────── */
-        #album-badge { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #dc3545; margin-left: 6px; vertical-align: middle; box-shadow: 0 0 0 2px #fff; }
+        #album-badge { position: absolute; top: -3px; right: -8px; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #dc3545; box-shadow: 0 0 0 2px #0a1628; pointer-events: none; }
         #album-badge.hidden { display: none; }
         #tela-album { padding: 0; overflow: hidden; }
         .album-view { padding: 24px; transition: opacity .25s ease; }
@@ -581,7 +581,7 @@
         .album-modal-secao-botao { width: 100%; margin: 0; padding: 14px 24px; border-radius: 10px; border: none; background: linear-gradient(135deg, #b45309 0%, #7c2d12 100%); color: #fff; font-size: 15px; font-weight: 900; letter-spacing: .5px; cursor: pointer; box-shadow: 0 4px 0 #5a2008, 0 6px 16px rgba(0,0,0,.3); }
         .album-modal-secao-botao:hover:not(:disabled) { background: linear-gradient(135deg, #c76611 0%, #8f3416 100%); transform: translateY(-1px); }
         @keyframes albumBadgePulse { 0%, 100% { box-shadow: 0 0 0 2px #fff, 0 0 0 0 rgba(220,53,69,.55); transform: scale(1); } 50% { box-shadow: 0 0 0 2px #fff, 0 0 0 7px rgba(220,53,69,0); transform: scale(1.2); } }
-        #album-badge { animation: albumBadgePulse 1.9s ease-in-out infinite; position: relative; }
+        #album-badge { animation: albumBadgePulse 1.9s ease-in-out infinite; }
         #album-badge.hidden { animation: none; }
         .album-cta-resultado { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%); border: 2px solid #b45309; border-radius: 14px; padding: 16px 18px; margin: 16px 0; text-align: left; box-shadow: 0 4px 16px rgba(180,83,9,.22); animation: albumCtaIn .45s cubic-bezier(.34,1.56,.64,1); }
         @keyframes albumCtaIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -651,7 +651,7 @@
         /* ▲▲▲ FIM [02.12] */
 
         /* ▼▼▼ [02.13] Mensagens ─────────────────────────────── */
-        #msg-badge-aluno { display: inline-block; min-width: 18px; height: 18px; line-height: 18px; padding: 0 5px; border-radius: 9px; background: #dc3545; color: #fff; font-size: 11px; font-weight: 800; margin-left: 6px; vertical-align: middle; box-shadow: 0 0 0 2px #fff; }
+        #msg-badge-aluno { position: absolute; top: -6px; right: -10px; display: inline-block; min-width: 18px; height: 18px; line-height: 18px; padding: 0 5px; border-radius: 9px; background: #dc3545; color: #fff; font-size: 11px; font-weight: 800; text-align: center; box-shadow: 0 0 0 2px #0a1628; pointer-events: none; }
         #msg-badge-aluno.hidden { display: none; }
         #msg-painel-badge { display: inline-block; min-width: 20px; height: 20px; line-height: 20px; padding: 0 6px; border-radius: 10px; background: #dc3545; color: #fff; font-size: 11px; font-weight: 800; margin-left: 6px; text-align: center; vertical-align: middle; }
         #msg-painel-badge.hidden { display: none; }
@@ -1357,6 +1357,7 @@
         .bottom-nav-btn { background: transparent; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; cursor: pointer; width: auto; margin: 0; padding: 6px 10px; border-radius: 8px; transition: all 0.2s ease; box-shadow: none; }
         .bottom-nav-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.08); color: var(--text-primary); }
         .bottom-nav-btn.ativo { color: var(--neon-cyan); background: rgba(34, 211, 238, 0.12); }
+        .bottom-nav-btn .nav-icon-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
         .bottom-nav-btn .nav-icon { font-size: 20px; line-height: 1; }
         .bottom-nav-btn .nav-label { font-size: 10px; letter-spacing: 0.3px; }
         .mais-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
@@ -2300,23 +2301,35 @@
     <!-- ▼▼▼ [03.01.bis] NAVEGAÇÃO INFERIOR GLOBAL ─────────── INÍCIO ─── -->
     <nav id="bottom-nav-global" class="bottom-nav hidden" aria-label="Navegação principal">
         <button class="bottom-nav-btn" data-tela="hall" onclick="abrirHallDaFama()">
-            <span class="nav-icon">🏅</span>
+            <span class="nav-icon-wrap">
+                <span class="nav-icon">🏅</span>
+            </span>
             <span class="nav-label">Hall da Fama</span>
         </button>
         <button class="bottom-nav-btn" data-tela="ranking" onclick="mostrarTela('tela-ranking')">
-            <span class="nav-icon">🏆</span>
+            <span class="nav-icon-wrap">
+                <span class="nav-icon">🏆</span>
+            </span>
             <span class="nav-label">Ranking</span>
         </button>
         <button class="bottom-nav-btn" data-tela="desempenho" onclick="abrirMeuDesempenho()">
-            <span class="nav-icon">📊</span>
+            <span class="nav-icon-wrap">
+                <span class="nav-icon">📊</span>
+            </span>
             <span class="nav-label">Desempenho</span>
         </button>
         <button class="bottom-nav-btn" data-tela="album" onclick="abrirAlbum()">
-            <span class="nav-icon">📖</span>
+            <span class="nav-icon-wrap">
+                <span class="nav-icon">📖</span>
+                <span id="album-badge" class="hidden" aria-hidden="true"></span>
+            </span>
             <span class="nav-label">Álbum</span>
         </button>
         <button class="bottom-nav-btn" data-tela="mais" onclick="mostrarTela('tela-mais')">
-            <span class="nav-icon">⚙️</span>
+            <span class="nav-icon-wrap">
+                <span class="nav-icon">⚙️</span>
+                <span id="msg-badge-aluno" class="hidden" aria-hidden="true">0</span>
+            </span>
             <span class="nav-label">Mais</span>
         </button>
     </nav>
@@ -2340,7 +2353,6 @@
             <button onclick="abrirFalarComProfessor()" class="botao-mensagens">
                 <span class="icone">💬</span>
                 <span>Falar com o Professor</span>
-                <span id="msg-badge-aluno" class="hidden">0</span>
             </button>
             <button onclick="abrirVotacao()" id="btn-votacao-menu" style="display:none;" class="botao-secundario">
                 <span class="icone">🗳️</span>
