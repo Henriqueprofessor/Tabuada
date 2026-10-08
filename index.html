@@ -3161,7 +3161,7 @@
     const CAMINHO_SNAPSHOT_DIARIO   = "copa_snapshot_diario";
     const CAMINHO_ETAPA             = "copa_etapa";
     const CAMINHO_CERTIFICADOS      = "copa_certificados";
-
+    const CAMINHO_TREINOS_FOCADOS   = "copa_treinos_focados";
     const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
     const PREFIXO_LOCAL_CORES = "copaV2_cores_";
     const PREFIXO_LEGADO_CORES = "ceib_cores_";
@@ -7105,6 +7105,13 @@ if (containerProg) {
 
             // Salva mapa (treino também alimenta o mapa — o certificado se baseia nele)
             try { await incrementarMapaAluno(alunoAtual, turmaAtual, modalidadeAtual, resultado.desempenhoOperacoes); } catch(e) {}
+            // Contabiliza treino focado/inteligente para o Hall da Fama
+            if (treinoFocoOperacoes || treinoListaInteligente) {
+                try {
+                    const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
+                    await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1);
+                } catch(e) { console.warn("Falha ao contabilizar treino focado:", e); }
+            }
             mapaFonteUltima = resultado.desempenhoOperacoes;
             mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(alunoAtual, turmaAtual);
             if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
@@ -9216,7 +9223,7 @@ function atualizarHomeValores(dados) {
     }
 
     // ▼▼▼ [18.02.bis] Métricas acumulativas do Hall da Fama
-    async function calcularMetricasHallFama() {
+        async function calcularMetricasHallFama() {
         const partidas = await obterPartidas();
         const porAluno = new Map();
 
@@ -9261,9 +9268,19 @@ function atualizarHomeValores(dados) {
                 const d = new Date(p.data);
                 a.diasSet.add(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
             }
-
-            if (Array.isArray(p.treinoFocado) && p.treinoFocado.length > 0) a.treinosFocados++;
         });
+
+        // ▼ NOVO: lê o contador de treinos focados/inteligentes do Firebase
+        try {
+            const snapTreinos = await database.ref(CAMINHO_TREINOS_FOCADOS).once("value");
+            const treinosFirebase = snapTreinos.val() || {};
+            porAluno.forEach((a) => {
+                const chave = chaveAlbum(a.nome, a.turma);
+                if (treinosFirebase[chave]) a.treinosFocados = Number(treinosFirebase[chave]) || 0;
+            });
+        } catch(e) {
+            console.warn("Falha ao ler contador de treinos:", e);
+        }
 
         const lista = Array.from(porAluno.values()).map(a => ({
             ...a,
