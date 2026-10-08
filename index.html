@@ -1311,7 +1311,8 @@
             --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35); --shadow-green: 0 0 24px rgba(16, 185, 129, 0.45);
             --shadow-cyan: 0 0 24px rgba(34, 211, 238, 0.35); --shadow-gold: 0 0 24px rgba(251, 191, 36, 0.35);
         }
-        body { background: radial-gradient(ellipse at top, #0f2340 0%, #0a1628 60%, #050b16 100%) !important; color: var(--text-primary) !important; font-family: 'Segoe UI', 'Nunito', 'Poppins', system-ui, sans-serif !important; padding: 12px !important; }
+        body { background: radial-gradient(ellipse at top, #0f2340 0%, #0a1628 60%, #050b16 100%) !important; color: var(--text-primary) !important; font-family: 'Segoe UI', 'Nunito', 'Poppins', system-ui, sans-serif !important; padding: 12px !important; padding-bottom: 92px !important; }
+        @media (max-width: 500px) { body { padding-bottom: 84px !important; } }
         #tela-inicial.card, .card { background: transparent !important; box-shadow: none !important; padding: 0 !important; max-width: 1000px !important; }
         #tela-inicial h1, #tela-inicial h2, #tela-inicial h3 { color: var(--text-primary) !important; }
         .esports-header { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #0f2340 0%, #132a47 100%); border: 1px solid var(--border-neon); border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; box-shadow: var(--shadow-card); gap: 12px; flex-wrap: wrap; }
@@ -1351,7 +1352,8 @@
         .home-empty-msg { font-size: 13px; color: var(--text-muted); text-align: center; padding: 12px 0; line-height: 1.5; }
         .home-status-etapa { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
         .home-status-etapa strong { color: var(--text-primary); }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 22, 40, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border-neon); display: flex; justify-content: space-around; padding: 8px 4px; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.5); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 22, 40, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border-neon); display: flex; justify-content: space-around; padding: 8px 4px max(8px, env(safe-area-inset-bottom)) 4px; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.5); }
+        .bottom-nav.hidden { display: none !important; }
         .bottom-nav-btn { background: transparent; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; cursor: pointer; width: auto; margin: 0; padding: 6px 10px; border-radius: 8px; transition: all 0.2s ease; box-shadow: none; }
         .bottom-nav-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.08); color: var(--text-primary); }
         .bottom-nav-btn.ativo { color: var(--neon-cyan); background: rgba(34, 211, 238, 0.12); }
@@ -2292,30 +2294,33 @@
             </div>
         </div>
 
-        <nav class="bottom-nav">
-            <button class="bottom-nav-btn" onclick="abrirHallDaFama()">
-                <span class="nav-icon">🏅</span>
-                <span class="nav-label">Hall da Fama</span>
-            </button>
-            <button class="bottom-nav-btn" onclick="mostrarTela('tela-ranking')">
-                <span class="nav-icon">🏆</span>
-                <span class="nav-label">Ranking</span>
-            </button>
-            <button class="bottom-nav-btn" onclick="abrirMeuDesempenho()">
-                <span class="nav-icon">📊</span>
-                <span class="nav-label">Desempenho</span>
-            </button>
-            <button class="bottom-nav-btn" onclick="abrirAlbum()">
-                <span class="nav-icon">📖</span>
-                <span class="nav-label">Álbum</span>
-            </button>
-            <button class="bottom-nav-btn" onclick="mostrarTela('tela-mais')">
-                <span class="nav-icon">⚙️</span>
-                <span class="nav-label">Mais</span>
-            </button>
-        </nav>
     </div>
     <!-- ▲▲▲ FIM [03.01] -->
+
+    <!-- ▼▼▼ [03.01.bis] NAVEGAÇÃO INFERIOR GLOBAL ─────────── INÍCIO ─── -->
+    <nav id="bottom-nav-global" class="bottom-nav hidden" aria-label="Navegação principal">
+        <button class="bottom-nav-btn" data-tela="hall" onclick="abrirHallDaFama()">
+            <span class="nav-icon">🏅</span>
+            <span class="nav-label">Hall da Fama</span>
+        </button>
+        <button class="bottom-nav-btn" data-tela="ranking" onclick="mostrarTela('tela-ranking')">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-label">Ranking</span>
+        </button>
+        <button class="bottom-nav-btn" data-tela="desempenho" onclick="abrirMeuDesempenho()">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Desempenho</span>
+        </button>
+        <button class="bottom-nav-btn" data-tela="album" onclick="abrirAlbum()">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">Álbum</span>
+        </button>
+        <button class="bottom-nav-btn" data-tela="mais" onclick="mostrarTela('tela-mais')">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Mais</span>
+        </button>
+    </nav>
+    <!-- ▲▲▲ FIM [03.01.bis] -->
     <!-- ▼▼▼ [03.02] TELA MAIS OPÇÕES ───────────────────────── -->
     <div id="tela-mais" class="card hidden">
         <h2>⚙️ Mais Opções</h2>
@@ -6588,6 +6593,30 @@ if (containerProg) {
     // ▲▲▲ FIM [14.03]
 
     // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
+    // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
+    const TELAS_COM_NAV_GLOBAL = new Set([
+        "tela-inicial", "tela-mais", "tela-ranking",
+        "tela-desempenho", "tela-album", "tela-hall-fama", "tela-perfil"
+    ]);
+    const MAPA_NAV_ATIVA = {
+        "tela-hall-fama": "hall",
+        "tela-ranking":   "ranking",
+        "tela-desempenho":"desempenho",
+        "tela-album":     "album",
+        "tela-mais":      "mais"
+    };
+    function atualizarNavGlobal(idTela) {
+        const nav = document.getElementById("bottom-nav-global");
+        if (!nav) return;
+        const visivel = TELAS_COM_NAV_GLOBAL.has(idTela);
+        nav.classList.toggle("hidden", !visivel);
+        if (!visivel) return;
+        const alvo = MAPA_NAV_ATIVA[idTela] || null;
+        nav.querySelectorAll(".bottom-nav-btn").forEach(b => {
+            b.classList.toggle("ativo", b.dataset.tela === alvo);
+        });
+    }
+
     function mostrarTela(id) {
         ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
@@ -6602,6 +6631,10 @@ if (containerProg) {
             if (turmaSalva && selectTurma) selectTurma.value = turmaSalva;
         }
         // ▲▲▲ FIM DA CORREÇÃO
+
+        // ▼▼▼ NAVEGAÇÃO INFERIOR GLOBAL
+        atualizarNavGlobal(id);
+        // ▲▲▲
 
         if (id === "tela-inicial") { renderizarMetaPessoal(); atualizarBadgeAluno(); atualizarTelaInicialComEtapa(); preencherHomeEsports(); renderizarTreinoInteligenteHome(); }
         if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
