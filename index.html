@@ -9175,11 +9175,110 @@ function atualizarHomeValores(dados) {
         await renderizarHallDaFama();
     }
 
+    // ▼▼▼ [18.02.bis] Métricas acumulativas do Hall da Fama
+    async function calcularMetricasHallFama() {
+        const partidas = await obterPartidas();
+        const porAluno = new Map();
+
+        partidas.forEach(p => {
+            const k = `${normalizarNome(p.nome)}|${p.turma}`;
+            if (!porAluno.has(k)) {
+                porAluno.set(k, {
+                    nome: p.nome,
+                    turma: p.turma,
+                    totalAcertos: 0,
+                    totalPartidas: 0,
+                    somaPontos: 0,
+                    melhorTempoMedio: Infinity,
+                    partidasPerfeitas: 0,
+                    maxTemposRapidos: 0,
+                    melhorTempoNaPartidaRapida: Infinity,
+                    diasSet: new Set(),
+                    treinosFocados: 0
+                });
+            }
+            const a = porAluno.get(k);
+            const acertos = Number(p.acertos) || 0;
+            const pontos  = Number(p.pontos)  || 0;
+            const tm      = Number(p.tempoMedio) || 0;
+
+            a.totalAcertos += acertos;
+            a.totalPartidas++;
+            a.somaPontos += pontos;
+            if (acertos === 20) a.partidasPerfeitas++;
+
+            if (tm > 0 && tm < a.melhorTempoMedio) a.melhorTempoMedio = tm;
+
+            const tr = Number(p.temposRapidos) || 0;
+            if (tr > a.maxTemposRapidos) {
+                a.maxTemposRapidos = tr;
+                a.melhorTempoNaPartidaRapida = tm;
+            } else if (tr === a.maxTemposRapidos && tm > 0 && tm < a.melhorTempoNaPartidaRapida) {
+                a.melhorTempoNaPartidaRapida = tm;
+            }
+
+            if (p.data) {
+                const d = new Date(p.data);
+                a.diasSet.add(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
+            }
+
+            if (Array.isArray(p.treinoFocado) && p.treinoFocado.length > 0) a.treinosFocados++;
+        });
+
+        const lista = Array.from(porAluno.values()).map(a => ({
+            ...a,
+            diasDistintos: a.diasSet.size,
+            mediaPontos: a.totalPartidas > 0 ? a.somaPontos / a.totalPartidas : 0
+        }));
+
+        return {
+            velocidade: [...lista]
+                .filter(a => a.melhorTempoMedio < Infinity)
+                .sort((a, b) =>
+                    a.melhorTempoMedio - b.melhorTempoMedio ||
+                    b.partidasPerfeitas - a.partidasPerfeitas
+                ),
+
+            acertos: [...lista]
+                .sort((a, b) =>
+                    b.totalAcertos - a.totalAcertos ||
+                    b.totalPartidas - a.totalPartidas
+                ),
+
+            raio: [...lista]
+                .filter(a => a.maxTemposRapidos > 0)
+                .sort((a, b) =>
+                    b.maxTemposRapidos - a.maxTemposRapidos ||
+                    a.melhorTempoNaPartidaRapida - b.melhorTempoNaPartidaRapida
+                ),
+
+            maratonista: [...lista]
+                .sort((a, b) =>
+                    b.totalPartidas - a.totalPartidas ||
+                    b.mediaPontos - a.mediaPontos
+                ),
+
+            presenca: [...lista]
+                .sort((a, b) =>
+                    b.diasDistintos - a.diasDistintos ||
+                    b.totalPartidas - a.totalPartidas ||
+                    b.mediaPontos - a.mediaPontos
+                ),
+
+            treino: [...lista]
+                .filter(a => a.treinosFocados > 0)
+                .sort((a, b) =>
+                    b.treinosFocados - a.treinosFocados ||
+                    b.totalAcertos - a.totalAcertos
+                )
+        };
+    }
+    // ▲▲▲ FIM [18.02.bis]
+
     async function renderizarHallDaFama() {
         const container = document.getElementById("hall-fama-conteudo");
         if (!container) return;
 
-        // Se já tem cache recente, usa ele (carregamento instantâneo)
         if (hallFamaCache && (Date.now() - hallFamaUltimaAtualizacao) < HALL_FAMA_CACHE_MS) {
             renderizarHallComDados(hallFamaCache);
             return;
@@ -9188,19 +9287,20 @@ function atualizarHomeValores(dados) {
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando os destaques da Copa…</div>`;
 
         try {
-            const ranking = await obterRanking();
+            // NOVO: processa TODAS as partidas (sem limite de alunos)
+            const metricas = await calcularMetricasHallFama();
 
-            // Otimização: pega apenas os 100 melhores do ranking geral.
-            // O Hall da Fama mostra só o Top 5, então não precisa processar a escola inteira.
+            // MANTIDO: categorias antigas (medalhas, estrelas, álbum, mapa)
+            const ranking = await obterRanking();
             const alunosUnicos = new Map();
             ranking.forEach(r => {
                 const k = `${normalizarNome(r.nome)}|${r.turma}`;
                 if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: r.nome, turma: r.turma });
             });
 
-            const alunosParaProcessar = Array.from(alunosUnicos.values()).slice(0, 100);
+            // Limite alterado de 100 → 200
+            const alunosParaProcessar = Array.from(alunosUnicos.values()).slice(0, 200);
 
-            // Processa todos os alunos em PARALELO usando Promise.all
             const promessas = alunosParaProcessar.map(async (aluno) => {
                 try {
                     const persistidas = await obterMedalsFirebase(aluno.nome, aluno.turma);
@@ -9231,7 +9331,6 @@ function atualizarHomeValores(dados) {
                         if (dominadaParaNivel(h, { minTentativas: MAPA_MIN_TENT_PADRAO, minTaxa: 0.9 })) dominadas++;
                     }));
 
-                    // Devolve persistidas e secoesReg para o forEach usar
                     return { aluno, qtdMedalhas, qtdEstrelas, dominadas, persistidas, secoesReg };
                 } catch(e) {
                     console.warn("Falha ao processar aluno no Hall da Fama:", aluno.nome, e);
@@ -9250,9 +9349,7 @@ function atualizarHomeValores(dados) {
                     destaques.medalhas.push({ ...aluno, qtdMedalhas });
                     destaques.estrelas.push({ ...aluno, qtdEstrelas });
 
-                    // ▼ Score híbrido: raridade das medalhas + bônus por seções completas
                     const pesosRar = { comum: 1, incomum: 2, raro: 3, epico: 5, lendario: 8 };
-
                     let scoreRaro = 0;
                     let qtdRaras = 0;
                     Object.keys(persistidas).forEach(id => {
@@ -9262,7 +9359,6 @@ function atualizarHomeValores(dados) {
                         if (m.raridade === "raro" || m.raridade === "epico" || m.raridade === "lendario") qtdRaras++;
                     });
 
-                    // Bônus por seção completa: proporcional à soma dos pesos das medalhas dela (× 0.7)
                     let bonusSecoes = 0;
                     let qtdSecoesCompletas = 0;
                     SECOES.forEach(s => {
@@ -9291,12 +9387,36 @@ function atualizarHomeValores(dados) {
             destaques.album.sort((a, b) => b.scoreAlbum - a.scoreAlbum || b.qtdMedalhas - a.qtdMedalhas);
             destaques.mapa.sort((a, b) => b.dominadas - a.dominadas);
 
+            // NOVO: adiciona as novas categorias (Top 5 de cada)
+            destaques.velocidade  = metricas.velocidade.slice(0, 5);
+            destaques.acertos     = metricas.acertos.slice(0, 5);
+            destaques.raio        = metricas.raio.slice(0, 5);
+            destaques.maratonista = metricas.maratonista.slice(0, 5);
+            destaques.presenca    = metricas.presenca.slice(0, 5);
+            destaques.treino      = metricas.treino.slice(0, 5);
+
+            // NOVO: Turma de Elite
+            try {
+                const medias = await calcularMediasTop4Turmas("0-10");
+                destaques.turmas = medias.slice(0, 5);
+            } catch(e) {
+                console.warn("Falha ao calcular Turma de Elite:", e);
+                destaques.turmas = [];
+            }
+
             hallFamaCache = {
-                medalhas: destaques.medalhas.slice(0, 5),
-                estrelas: destaques.estrelas.slice(0, 5),
-                album: destaques.album.slice(0, 5),
-                mapa: destaques.mapa.slice(0, 5),
-                totalAlunos: ranking.length
+                medalhas:     destaques.medalhas.slice(0, 5),
+                estrelas:     destaques.estrelas.slice(0, 5),
+                album:        destaques.album.slice(0, 5),
+                mapa:         destaques.mapa.slice(0, 5),
+                velocidade:   destaques.velocidade,
+                acertos:      destaques.acertos,
+                raio:         destaques.raio,
+                maratonista:  destaques.maratonista,
+                presenca:     destaques.presenca,
+                treino:       destaques.treino,
+                turmas:       destaques.turmas,
+                totalAlunos:  ranking.length
             };
             hallFamaUltimaAtualizacao = Date.now();
             renderizarHallComDados(hallFamaCache);
@@ -9320,14 +9440,36 @@ function atualizarHomeValores(dados) {
             const itensHtml = lista.map((item, i) => {
                 const ehVoce = nomeAluno && turmaAluno && normalizarNome(item.nome) === normalizarNome(nomeAluno) && item.turma === turmaAluno;
                 let valorTxt = "";
-                if (tipoValor === "medalhas") valorTxt = `${item.qtdMedalhas} 🏅`;
+
+                // Categorias clássicas
+                if (tipoValor === "medalhas")      valorTxt = `${item.qtdMedalhas} 🏅`;
                 else if (tipoValor === "estrelas") valorTxt = `${item.qtdEstrelas} ⭐`;
-                else if (tipoValor === "album") valorTxt = `${item.scoreAlbum} pts`;
-                else if (tipoValor === "mapa") valorTxt = `${item.pctMapa}% (${item.dominadas}/${TOTAL_OPERACOES_MAPA})`;
+                else if (tipoValor === "album")    valorTxt = `${item.scoreAlbum} pts`;
+                else if (tipoValor === "mapa")     valorTxt = `${item.pctMapa}% (${item.dominadas}/${TOTAL_OPERACOES_MAPA})`;
+
+                // Novas categorias
+                else if (tipoValor === "velocidade")   valorTxt = `${item.melhorTempoMedio.toFixed(2)}s`;
+                else if (tipoValor === "acertos")      valorTxt = `${item.totalAcertos} ✅`;
+                else if (tipoValor === "raio")         valorTxt = `${item.maxTemposRapidos} ⚡`;
+                else if (tipoValor === "maratonista")  valorTxt = `${item.totalPartidas} 🎮`;
+                else if (tipoValor === "presenca")     valorTxt = `${item.diasDistintos} dias`;
+                else if (tipoValor === "treino")       valorTxt = `${item.treinosFocados} 🧠`;
+
                 const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`;
-                const subLinha = tipoValor === "album"
-                    ? `Turma ${escaparHtml(item.turma)} · ${item.qtdRaras} raras · ${item.qtdSecoesCompletas} ${item.qtdSecoesCompletas === 1 ? "seção" : "seções"}`
-                    : `Turma ${escaparHtml(item.turma)}`;
+
+                let subLinha = `Turma ${escaparHtml(item.turma)}`;
+                if (tipoValor === "album") {
+                    subLinha = `Turma ${escaparHtml(item.turma)} · ${item.qtdRaras} raras · ${item.qtdSecoesCompletas} ${item.qtdSecoesCompletas === 1 ? "seção" : "seções"}`;
+                } else if (tipoValor === "velocidade") {
+                    subLinha = `Turma ${escaparHtml(item.turma)} · ${item.partidasPerfeitas} ${item.partidasPerfeitas === 1 ? "perfeita" : "perfeitas"}`;
+                } else if (tipoValor === "maratonista") {
+                    subLinha = `Turma ${escaparHtml(item.turma)} · média ${Math.round(item.mediaPontos).toLocaleString("pt-BR")} pts`;
+                } else if (tipoValor === "presenca") {
+                    subLinha = `Turma ${escaparHtml(item.turma)} · ${item.totalPartidas} ${item.totalPartidas === 1 ? "partida" : "partidas"}`;
+                } else if (tipoValor === "treino") {
+                    subLinha = `Turma ${escaparHtml(item.turma)} · ${item.totalAcertos} acertos totais`;
+                }
+
                 return `<li class="hall-item" ${ehVoce ? 'style="border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);"' : ""}>
                     <span class="hall-item-pos">${medal}</span>
                     <span class="hall-item-nome">${escaparHtml(item.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>${subLinha}</small></span>
@@ -9338,10 +9480,41 @@ function atualizarHomeValores(dados) {
         };
 
         let html = "";
+
+        // CATEGORIAS CLÁSSICAS
         html += buildCard("Mais Medalhas", "Quem colecionou o maior número de medalhas no Álbum.", "🏅", dados.medalhas, "medalhas");
         html += buildCard("Mais Estrelas", "Quem acumulou mais estrelas — as medalhas raras valem mais.", "⭐", dados.estrelas, "estrelas");
         html += buildCard("Álbum de Elite", "Raridade das medalhas + bônus por seções completas. Lendárias valem 8, Épicas 5, Raras 3.", "💎", dados.album, "album");
         html += buildCard("Maior Mapa Verde", "Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).", "🗺️", dados.mapa, "mapa");
+
+        // NOVAS CATEGORIAS
+        html += buildCard("Mestre da Velocidade", "Quem responde mais rápido — desempate por partidas perfeitas (20/20).", "🏆", dados.velocidade, "velocidade");
+        html += buildCard("Total de Acertos", "Soma de todos os acertos acumulados. Jogar muito é recompensado!", "✅", dados.acertos, "acertos");
+        html += buildCard("Raio de Pontuação", "Maior número de respostas rápidas (abaixo de 0,8s) em uma única partida.", "⚡", dados.raio, "raio");
+        html += buildCard("Maratonista da Copa", "Quem jogou o maior número de partidas. Dedicação total!", "🏃", dados.maratonista, "maratonista");
+        html += buildCard("Presença VIP", "Quem jogou em mais dias diferentes. Constância é a chave!", "📅", dados.presenca, "presenca");
+        html += buildCard("Mestre do Treino", "Quem mais usou o Treino Focado/Inteligente para evoluir.", "🧠", dados.treino, "treino");
+
+        // TURMA DE ELITE (card especial — estrutura diferente)
+        if (dados.turmas && dados.turmas.length > 0) {
+            const itensHtml = dados.turmas.map((t, i) => {
+                const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`;
+                const ehMinha = t.turma === turmaAluno;
+                return `<li class="hall-item" ${ehMinha ? 'style="border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);"' : ""}>
+                    <span class="hall-item-pos">${medal}</span>
+                    <span class="hall-item-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? ' <span style="color:var(--neon-green);font-weight:800;">← Sua</span>' : ''}<small>Média dos ${t.totalJogadores} melhores de ${t.totalTurma} alunos</small></span>
+                    <span class="hall-item-valor">${t.media.toLocaleString("pt-BR")} pts</span>
+                </li>`;
+            }).join("");
+            html += `<div class="hall-card">
+                <div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div>
+                <div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos (modalidade completa 1-10).</div>
+                <ul class="hall-lista">${itensHtml}</ul>
+            </div>`;
+        } else {
+            html += `<div class="hall-card"><div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div><div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos.</div><div class="hall-vazio">Nenhuma turma com 4 alunos classificados ainda.</div></div>`;
+        }
+
         container.innerHTML = html;
     }
     // ▲▲▲ FIM [18.02]
