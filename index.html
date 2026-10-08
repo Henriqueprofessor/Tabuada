@@ -4722,6 +4722,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         modal.classList.remove("hidden");
         try { somConclusao(); } catch(e) {}
     }
+
+    function fecharCertificado(e) {
+        if (e && e.target && e.target.closest(".cert-modal-card")) return;
+        document.getElementById("modal-certificado")?.classList.add("hidden");
+    }
+
+    function imprimirCertificado() {
+        const modal = document.getElementById("modal-certificado");
+        if (!modal || modal.classList.contains("hidden")) return;
+        try { window.print(); } catch(e) { console.warn("Falha ao imprimir certificado:", e); }
+    }
     // ▲▲▲ FIM [10.06]
     // ═══════════════════════════════════════════════════════════════════════
     // [11] JS-ALB · Álbum de conquistas + integração com certificados
