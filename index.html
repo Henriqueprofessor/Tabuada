@@ -2768,7 +2768,17 @@
             <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
             <div class="changelog-lista">
                 <div class="changelog-item">
-                    <span class="changelog-versao atual">v10.0.0 · atual</span>
+                    <span class="changelog-versao atual" id="changelog-versao-atual">v10.0.2 · atual</span>
+                    <h4 class="changelog-titulo">🧭 Navegação global + badges na nav</h4>
+                    <p class="changelog-descricao">A navegação inferior agora <strong>persiste entre as telas</strong> principais e marca automaticamente a aba ativa. Os avisos de <strong>medalha nova no Álbum</strong> e <strong>mensagem do professor</strong> foram movidos para a própria nav — você vê tudo de qualquer tela, sem abrir menu. Também foram corrigidas funções que travavam os modais de <strong>Certificado</strong> e <strong>Como Funciona</strong>.</p>
+                </div>
+                <div class="changelog-item">
+                    <span class="changelog-versao">v10.0.1</span>
+                    <h4 class="changelog-titulo">🎨 Hierarquia da Home + fix de tema claro</h4>
+                    <p class="changelog-descricao">Meta pessoal reposicionada logo abaixo do CTA principal. Botão de treino com peso visual reduzido. Faixa do Modo Teste ficou âmbar discreta. Corrigido bug em que a tela de resultado do treino ficava <strong>ilegível</strong> em celulares com sistema em modo claro.</p>
+                </div>
+                <div class="changelog-item">
+                    <span class="changelog-versao">v10.0.0</span>
                     <h4 class="changelog-titulo">🎓 Sistema de Certificados (Prata / Ouro / Lendária)</h4>
                     <p class="changelog-descricao">Novo sistema de domínio com <strong>janela deslizante</strong> (últimas 10 tentativas) — o passado não pune mais o aluno. Mapa com <strong>5 cores</strong>: dominada, quase dominada, em desenvolvimento, atenção e avaliando. Certificados por modalidade: <strong>Prata</strong> (85% do mapa), <strong>Ouro</strong> (95% + velocidade) e <strong>Lendária</strong> (100% + fluência). Treino inteligente que prioriza operações pendentes.</p>
                 </div>
@@ -3063,7 +3073,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-    const APP_VERSION = "10.0.0";
+    const APP_VERSION = "10.0.2";
     const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
     const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -9450,7 +9460,7 @@ function atualizarHomeValores(dados) {
         try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
         try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
         const elV = document.getElementById("changelog-versao-atual");
-        if (elV) elV.textContent = APP_VERSION;
+        if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
         iniciarListenerMsgAluno();
 
         try {
