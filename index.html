@@ -4008,10 +4008,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [07.08]
     // ▼▼▼ [07.08.bis] Mapa de Tabuadas — Card da Home ───────────
-    // Estado do modal do mapa: qual modalidade está sendo exibida
-    let modalMapaMod = "0-10";
-    // Snapshot da modalidadeAtual global, para restaurar ao fechar o modal
-    let modalMapaModOriginal = null;
+    // Estado do modal do mapa
+    let modalMapaMod = "todas";
+    // Fonte GLOBAL (mesma que o resto do jogo usa) — carregada uma vez ao abrir o modal
+    let modalMapaFonteAgregada = {};
+    let modalMapaFonteUltima = {};
+    // Backup do estado global (restaurado ao fechar)
+    let modalMapaBackup = null;
 
     async function renderizarMapaHome() {
         const container = document.getElementById("mapa-home-container");
@@ -4034,6 +4037,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => todasChaves.push(`${a}x${b}`)));
             const totalOps = todasChaves.length;
 
+            // % geral: mapa global agregado das 3 modalidades (mesma fonte do resto do jogo)
             const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
             let totalDominadas = 0;
             todasChaves.forEach(k => {
@@ -4042,15 +4046,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             });
             const pct = totalOps ? Math.round((totalDominadas / totalOps) * 100) : 0;
 
+            // Chips por modalidade — mostra quantas verdes dentro da faixa de cada modalidade
+            // (usa a fonte global: o que foi praticado em 2-5 aparece no chip de 2-5, e por
+            //  consequência no "1-10". Isso é o comportamento que você espera.)
             const iconesMod  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
             const rotulosMod = { "2-5": "2-5", "6-9": "6-9", "0-10": "1-10" };
             let chipsHtml = "";
             for (const mod of Object.keys(MODALIDADES)) {
-                const mapaMod = await obterDesempenhoOperacoesAgregado(nome, turma, mod);
                 const ops = obterOperacoesDaModalidade(mod);
                 let dom = 0;
                 ops.forEach(op => {
-                    const h = normalizarHistoricoOperacao(mapaMod[op]);
+                    const h = normalizarHistoricoOperacao(mapaGlobal[op]);
                     if (estadoDaOperacao(h) === "verde") dom++;
                 });
                 chipsHtml += `<span class="mapa-home-chip"><span class="icone">${iconesMod[mod] || "📖"}</span> ${rotulosMod[mod] || mod}: <strong>${dom}/${ops.length}</strong></span>`;
@@ -4084,7 +4090,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // ─── Modal do mapa completo ────────────────────────────────────────
+    // ─── Modal do mapa completo (3 abas, fonte global) ─────────────────
     async function abrirMapaCompleto() {
         const modal = document.getElementById("modal-mapa-completo");
         const container = document.getElementById("modal-mapa-completo-conteudo");
@@ -4103,46 +4109,43 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return;
         }
 
-        // Estado inicial do modal
-        modalMapaMod = "0-10";
-        // Guarda a modalidadeAtual original pra restaurar depois
-        modalMapaModOriginal = modalidadeAtual;
-
         // Abre imediatamente com loading
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando seu mapa…</div>`;
         modal.classList.remove("hidden");
         setTimeout(() => document.querySelector("#modal-mapa-completo .modal-close")?.focus(), 80);
 
-        // Prepara fontes para TODAS as modalidades (evita refetch ao trocar aba)
         try {
+            // Backup do estado global (será restaurado em fecharMapaCompleto)
+            modalMapaBackup = {
+                mapaFonteAgregada,
+                mapaFonteUltima,
+                modalidadeAtual,
+                modoVisualizacaoMapa
+            };
+
             alunoAtual = nome;
             turmaAtual = turma;
-            modoVisualizacaoMapa = "agregado";
             treinoFocoOperacoes = null;
             treinoListaInteligente = null;
 
-            // Pré-carrega as duas fontes:
-            //  - mapaFonteAgregada = global (todas as modalidades somadas)
-            //  - mapaFonteUltima    = última partida
-            mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(nome, turma);
+            // Fonte GLOBAL — mescla 2-5 + 6-9 + 0-10, igual ao resto do jogo.
+            // É por isso que jogar 2-5 "aparece" na visão 1-10: são os mesmos dados.
+            modalMapaFonteAgregada = await obterDesempenhoOperacoesGlobal(nome, turma);
+
+            // Última partida (qualquer modalidade) para o toggle "🎯 Uma partida"
             try {
                 const partidas = await obterHistoricoAluno(nome, turma);
                 if (partidas && partidas.length && partidas[0].desempenhoOperacoes) {
-                    mapaFonteUltima = partidas[0].desempenhoOperacoes;
+                    modalMapaFonteUltima = partidas[0].desempenhoOperacoes;
                 } else {
-                    mapaFonteUltima = {};
+                    modalMapaFonteUltima = {};
                 }
             } catch(e) {
-                mapaFonteUltima = {};
-            }
-            if (!Object.keys(mapaFonteAgregada).length && Object.keys(mapaFonteUltima).length) {
-                mapaFonteAgregada = mapaFonteUltima;
+                modalMapaFonteUltima = {};
             }
 
-            // Aplica a modalidade do modal
-            modalidadeAtual = modalMapaMod;
-
-            renderizarModalMapaCompleto();
+            // Aplica aba padrão
+            trocarModMapaCompleto("todas");
         } catch(e) {
             console.warn("Falha ao abrir mapa completo:", e);
             container.innerHTML = `<div class="mapa-home-vazio" style="padding:28px 12px;">
@@ -4157,38 +4160,55 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (!container) return;
 
         const abas = [
-            { id: "2-5",  label: "📚 Tabuadas 2-5" },
-            { id: "6-9",  label: "🎯 Tabuadas 6-9" },
-            { id: "0-10", label: "⭐ Completa 1-10" }
+            { id: "todas", label: "🌐 Todas", titulo: "Todas as tabuadas (1 a 10)" },
+            { id: "2-5",   label: "📚 2-5",   titulo: "Só as tabuadas 2, 3, 4 e 5" },
+            { id: "6-9",   label: "🎯 6-9",   titulo: "Só as tabuadas 6, 7, 8 e 9" }
         ];
 
         const tabsHtml = abas.map(a => {
             const ativa = modalMapaMod === a.id ? "ativa" : "";
-            return `<button class="mapa-completo-tab ${ativa}" onclick="trocarModMapaCompleto('${a.id}')" aria-pressed="${modalMapaMod === a.id}">${a.label}</button>`;
+            return `<button class="mapa-completo-tab ${ativa}" onclick="trocarModMapaCompleto('${a.id}')" aria-pressed="${modalMapaMod === a.id}" title="${escaparHtml(a.titulo)}">${a.label}</button>`;
         }).join("");
 
         container.innerHTML = `
-            <div class="mapa-completo-tabs" role="tablist" aria-label="Modalidade do mapa">${tabsHtml}</div>
+            <div class="mapa-completo-tabs" role="tablist" aria-label="Visão do mapa">${tabsHtml}</div>
             <div id="modal-mapa-completo-map-area">${renderizarMapa()}</div>
         `;
     }
 
-    // Troca a modalidade exibida DENTRO do modal (não sai da tela)
+    // Troca a visão do modal. A fonte é SEMPRE global — a aba só muda as LINHAS exibidas.
+    // Isso garante o comportamento que você espera: jogar 2-5 preenche o 1-10.
     function trocarModMapaCompleto(mod) {
-        if (!MODALIDADES[mod]) return;
+        if (mod !== "todas" && mod !== "2-5" && mod !== "6-9") return;
         modalMapaMod = mod;
-        modalidadeAtual = mod; // renderizarMapa() lê essa global
-        renderizarModalMapaCompleto();
+
+        // Fonte global sempre
+        mapaFonteAgregada = modalMapaFonteAgregada;
+        mapaFonteUltima    = modalMapaFonteUltima;
+
+        // modalidadeAtual controla apenas as LINHAS exibidas:
+        //  - "todas" → 0-10 (fatores 1..10)  → 100 células
+        //  - "2-5"   → 2-5  (fatores 2,3,4,5) → 40 células
+        //  - "6-9"   → 6-9  (fatores 6,7,8,9) → 40 células
+        modalidadeAtual = mod === "todas" ? "0-10" : mod;
+
+        const area = document.getElementById("modal-mapa-completo-map-area");
+        if (area) area.innerHTML = renderizarMapa();
+        else renderizarModalMapaCompleto();
     }
 
     function fecharMapaCompleto(e) {
         if (e && e.target && e.target.closest(".mapa-completo-modal-card")) return;
         const modal = document.getElementById("modal-mapa-completo");
         if (modal) modal.classList.add("hidden");
-        // Restaura a modalidadeAtual global para não afetar o resto do jogo
-        if (modalMapaModOriginal) {
-            modalidadeAtual = modalMapaModOriginal;
-            modalMapaModOriginal = null;
+
+        // Restaura o estado global ao que era antes de abrir o modal
+        if (modalMapaBackup) {
+            mapaFonteAgregada   = modalMapaBackup.mapaFonteAgregada   ?? {};
+            mapaFonteUltima     = modalMapaBackup.mapaFonteUltima     ?? {};
+            modalidadeAtual     = modalMapaBackup.modalidadeAtual;
+            modoVisualizacaoMapa = modalMapaBackup.modoVisualizacaoMapa || "agregado";
+            modalMapaBackup = null;
         }
     }
 
