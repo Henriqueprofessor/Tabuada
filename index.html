@@ -2514,6 +2514,50 @@
             .mapa-completo-tab { font-size: 11.5px; padding: 8px 10px; min-width: 90px; }
         }
         /* ▲▲▲ FIM [02.37] */
+        /* ▼▼▼ [02.38] Ranking Turmas — Avisos de turma pequena ──── */
+        .aviso-turma-fora-ranking {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 12px 14px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.14) 0%, rgba(217, 119, 6, 0.08) 100%);
+            border: 1px dashed rgba(251, 191, 36, 0.55);
+            border-left: 4px solid #fbbf24;
+            border-radius: 10px;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: #fde68a;
+            text-align: left;
+        }
+        .aviso-turma-fora-ranking .icone {
+            font-size: 18px;
+            line-height: 1;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5));
+        }
+        .aviso-turma-fora-ranking strong {
+            color: #fbbf24;
+            font-weight: 800;
+        }
+        .medias-turmas-vazio,
+        .ranking-turmas-vazio,
+        .home-turmas-vazio {
+            padding: 14px 12px;
+            text-align: center;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            font-style: italic;
+            line-height: 1.55;
+            background: rgba(10, 22, 40, 0.4);
+            border: 1px dashed rgba(148, 163, 184, 0.28);
+            border-radius: 10px;
+        }
+        @media (max-width: 520px) {
+            .aviso-turma-fora-ranking { padding: 10px 12px; font-size: 12px; }
+            .aviso-turma-fora-ranking .icone { font-size: 16px; }
+        }
+        /* ▲▲▲ FIM [02.38] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -3455,6 +3499,7 @@
     const STORAGE_LAST_SYNC = "lastSyncTime";
     const TOTAL_PERGUNTAS = 20;
     const VAGAS_CLASSIFICACAO = 4;
+    const MIN_ALUNOS_RANKING_TURMA = 4;
     const JANELA_COOLDOWN_MS = 48 * 60 * 60 * 1000;
     const THROTTLE_ACESSO_MS = 30 * 60 * 1000;
     const PESO_ORIGINAL_VARIACAO = 2.0;
@@ -6599,17 +6644,71 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const m = porTurma.get(r.turma);
             if (!m.has(c) || ehMelhorResultado(r, m.get(c))) m.set(c, r);
         });
-        const res = [];
+
+        // Monta TODAS as turmas com pelo menos 1 jogador (para saber quem ficou de fora)
+        const todas = [];
         porTurma.forEach((m, turma) => {
             const lista = Array.from(m.values()).sort(compararParaOrdenacao);
             const top4 = lista.slice(0, 4);
             if (!top4.length) return;
             const media = top4.reduce((s, a) => s + (a.pontos || 0), 0) / top4.length;
-            res.push({ turma, media: Math.round(media), totalJogadores: top4.length, totalTurma: lista.length, melhorAluno: top4[0] });
+            todas.push({
+                turma,
+                media: Math.round(media),
+                totalJogadores: top4.length,   // quantos entraram na média (<=4)
+                totalTurma: lista.length,      // total de alunos únicos que jogaram
+                melhorAluno: top4[0]
+            });
         });
-        res.sort((a, b) => b.media - a.media);
-        return res;
+        todas.sort((a, b) => b.media - a.media);
+
+        // Ranking final: só turmas com >= MIN_ALUNOS_RANKING_TURMA alunos únicos
+        const ranking = todas.filter(t => t.totalTurma >= MIN_ALUNOS_RANKING_TURMA);
+
+        // Info sobre a turma do aluno atual (se aplicável)
+        const turmaAluno = obterTurmaSalvaAluno();
+        let minhaTurma = null;
+        if (turmaAluno) {
+            const jaNoRanking = ranking.some(t => t.turma === turmaAluno);
+            if (!jaNoRanking) {
+                const info = todas.find(t => t.turma === turmaAluno);
+                if (info) {
+                    minhaTurma = {
+                        turma: turmaAluno,
+                        totalJogadores: info.totalTurma,
+                        faltam: Math.max(0, MIN_ALUNOS_RANKING_TURMA - info.totalTurma),
+                        media: info.media,
+                        motivo: "poucos-alunos"
+                    };
+                } else {
+                    minhaTurma = {
+                        turma: turmaAluno,
+                        totalJogadores: 0,
+                        faltam: MIN_ALUNOS_RANKING_TURMA,
+                        media: null,
+                        motivo: "sem-partida"
+                    };
+                }
+            }
+        }
+
+        return { ranking, minhaTurma, minimo: MIN_ALUNOS_RANKING_TURMA };
     }
+
+    // Helper único para os 4 avisos (Home, Resultado, Ranking, Hall da Fama)
+    function renderizarAvisoTurmaFora(minha, mod) {
+        if (!minha) return "";
+        const nomeMod = (mod && MODALIDADES[mod]) ? ` em <strong>${escaparHtml(MODALIDADES[mod].nome)}</strong>` : "";
+        let texto;
+        if (minha.motivo === "sem-partida") {
+            texto = `Nenhum aluno da <strong>Turma ${escaparHtml(minha.turma)}</strong> jogou${nomeMod} ainda.`;
+        } else {
+            const n = minha.totalJogadores;
+            texto = `A <strong>Turma ${escaparHtml(minha.turma)}</strong> só tem <strong>${n} ${n === 1 ? "aluno" : "alunos"}</strong> com resultado${nomeMod}. Faltam <strong>${minha.faltam}</strong> ${minha.faltam === 1 ? "colega" : "colegas"} para entrar no ranking.`;
+        }
+        return `<div class="aviso-turma-fora-ranking"><span class="icone">⚠️</span><div>${texto}</div></div>`;
+    }
+
     async function carregarMediasReferencia(n, t, mod) {
         const partidas = await obterPartidas();
         const base = partidas.length ? partidas : await obterRanking();
@@ -6684,29 +6783,52 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (pa && dp > 0) h += `<br>🎯 Próximo objetivo: <strong>${escaparHtml(pa.nome)}</strong> (${dp.toLocaleString('pt-BR')} pontos à frente).`;
         b.innerHTML = h; b.classList.remove("hidden");
     }
+
     async function renderizarMediasTurmas(mod) {
         const c = document.getElementById("medias-turmas-container"); if (!c) return;
         try {
-            const m = await calcularMediasTop4Turmas(mod);
-            if (m.length <= 1) { c.classList.add("hidden"); return; }
-            const ts = obterTurmaSalvaAluno();
-            let h = `<h4>🏫 Comparação das turmas — Top 4</h4><p class="subtitulo-bloco">Média dos melhores alunos de cada turma (até 4).</p><table class="tabela-medias"><thead><tr><th>Turma</th><th>Participantes</th><th>Média dos pontos</th></tr></thead><tbody>`;
-            m.forEach((x, i) => {
-                const cl = x.turma === ts ? ' class="minha-turma"' : '';
-                let tag = "";
-                if (i === 0) tag = ' <span class="tag-media-1">🥇 1º</span>';
-                else if (i === 1) tag = ' <span class="tag-media-2">🥈 2º</span>';
-                else if (i === 2) tag = ' <span class="tag-media-3">🥉 3º</span>';
-                h += `<tr${cl}><td><strong>${x.turma}</strong>${tag}</td><td>${x.totalJogadores} de ${x.totalTurma}</td><td><strong>${x.media.toLocaleString('pt-BR')}</strong> pts</td></tr>`;
-            });
-            h += `</tbody></table>`;
-            if (ts) {
-                const p = m.findIndex(x => x.turma === ts);
-                if (p > 2) { const a = m[p - 1], mi = m[p]; if (a && mi) h += `<p class="subtitulo-bloco" style="margin-top:12px;">💪 Sua turma está em <strong>${p + 1}º</strong>. Faltam <strong>${(a.media - mi.media).toLocaleString('pt-BR')} pontos</strong> na média para alcançar ${a.turma}.</p>`; }
+            const r = await calcularMediasTop4Turmas(mod);
+            const medias = r.ranking;
+            const minha = r.minhaTurma;
+            const minimo = r.minimo;
+
+            // Se não há ranking nem aviso, esconde
+            if (medias.length === 0 && !minha) { c.classList.add("hidden"); return; }
+
+            let h = `<h4>🏫 Comparação das turmas — Top 4</h4><p class="subtitulo-bloco">Média dos melhores alunos de cada turma (até 4). Só entram turmas com <strong>${minimo}+</strong> alunos nesta modalidade.</p>`;
+
+            if (medias.length > 0) {
+                h += `<table class="tabela-medias"><thead><tr><th>Turma</th><th>Participantes</th><th>Média dos pontos</th></tr></thead><tbody>`;
+                medias.forEach((x, i) => {
+                    const cl = x.turma === obterTurmaSalvaAluno() ? ' class="minha-turma"' : '';
+                    let tag = "";
+                    if (i === 0) tag = ' <span class="tag-media-1">🥇 1º</span>';
+                    else if (i === 1) tag = ' <span class="tag-media-2">🥈 2º</span>';
+                    else if (i === 2) tag = ' <span class="tag-media-3">🥉 3º</span>';
+                    h += `<tr${cl}><td><strong>${x.turma}</strong>${tag}</td><td>${x.totalJogadores} de ${x.totalTurma}</td><td><strong>${x.media.toLocaleString('pt-BR')}</strong> pts</td></tr>`;
+                });
+                h += `</tbody></table>`;
+
+                const ts = obterTurmaSalvaAluno();
+                if (ts) {
+                    const p = medias.findIndex(x => x.turma === ts);
+                    if (p > 2) {
+                        const a = medias[p - 1], mi = medias[p];
+                        if (a && mi) h += `<p class="subtitulo-bloco" style="margin-top:12px;">💪 Sua turma está em <strong>${p + 1}º</strong>. Faltam <strong>${(a.media - mi.media).toLocaleString('pt-BR')} pontos</strong> na média para alcançar ${a.turma}.</p>`;
+                    }
+                }
+            } else {
+                h += `<div class="medias-turmas-vazio">Nenhuma turma atingiu <strong>${minimo} alunos</strong> nesta modalidade ainda.</div>`;
             }
-            c.innerHTML = h; c.classList.remove("hidden");
+
+            // Aviso: própria turma fora do ranking
+            if (minha) h += renderizarAvisoTurmaFora(minha, mod);
+
+            c.innerHTML = h;
+            c.classList.remove("hidden");
         } catch(e) { c.classList.add("hidden"); }
     }
+
     async function renderizarRanking() {
         const th = document.getElementById("tabela-head-ranking");
         const tb = document.getElementById("tabela-ranking-body");
@@ -7684,18 +7806,13 @@ if (containerProg) {
 
     async function renderizarCardClassificacao(r) {
         if (!r || !r.nome || !r.turma) return "";
-
-        // Busca as 3 modalidades em paralelo
         const mods = Object.keys(MODALIDADES);
         const ranks = await Promise.all(
             mods.map(m => obterRankingPorPontos(m, r.turma).catch(() => []))
         );
-
         const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
-
         let htmlLinhas = "";
         let estaNoTop4Alguma = false;
-
         for (let i = 0; i < mods.length; i++) {
             const mod = mods[i];
             const rankingMod = ranks[i] || [];
@@ -7703,22 +7820,13 @@ if (containerProg) {
             const posicao = idxMod === -1 ? null : idxMod + 1;
             const meuResult = posicao !== null ? rankingMod[idxMod] : null;
             const pontos = meuResult ? (Number(meuResult.pontos) || 0) : 0;
-
             let classe, icone, status;
-            if (!posicao) {
-                classe = "sem-dados"; icone = "⚪"; status = "Sem partida ainda";
-            } else if (posicao <= VAGAS_CLASSIFICACAO) {
-                classe = "zona-top4"; icone = "🎟️"; status = "Zona de classificação";
-                estaNoTop4Alguma = true;
-            } else if (posicao <= 6) {
-                classe = "zona-reserva"; icone = "🔄"; status = "Zona de reserva";
-            } else {
-                classe = "zona-disputa"; icone = "🎯"; status = "Em disputa";
-            }
-
+            if (!posicao) { classe = "sem-dados"; icone = "⚪"; status = "Sem partida ainda"; }
+            else if (posicao <= VAGAS_CLASSIFICACAO) { classe = "zona-top4"; icone = "🎟️"; status = "Zona de classificação"; estaNoTop4Alguma = true; }
+            else if (posicao <= 6) { classe = "zona-reserva"; icone = "🔄"; status = "Zona de reserva"; }
+            else { classe = "zona-disputa"; icone = "🎯"; status = "Em disputa"; }
             const posTxt = posicao ? `${posicao}º <small style="opacity:.7;font-weight:700;">de ${rankingMod.length}</small>` : "—";
             const ptsTxt = posicao ? `${pontos.toLocaleString('pt-BR')} pts` : "sem partida";
-
             htmlLinhas += `<div class="minhas-posicoes-linha ${classe}">
                 <div class="minhas-posicoes-mod-nome">${icone} ${escaparHtml(rotulosCurtos[mod] || MODALIDADES[mod].nome)}</div>
                 <div class="minhas-posicoes-mod-pos">${posTxt}</div>
@@ -7726,17 +7834,11 @@ if (containerProg) {
                 <div class="minhas-posicoes-mod-pts">${ptsTxt}</div>
             </div>`;
         }
-
         if (estaNoTop4Alguma) {
             const ck = `ceib_confetti_${normalizarNome(r.nome)}_${r.turma}`;
-            if (!localStorage.getItem(ck)) {
-                setTimeout(() => dispararConfetes(), 300);
-                localStorage.setItem(ck, "1");
-            }
+            if (!localStorage.getItem(ck)) { setTimeout(() => dispararConfetes(), 300); localStorage.setItem(ck, "1"); }
         }
-
         const avisoNome = `<div class="aviso-nome-classificado">🚨 <strong>Confira seu nome:</strong> "${escaparHtml(r.nome)}". Ele precisa estar completo e <strong>idêntico à chamada oficial</strong>. Nome abreviado ou fora do padrão pode causar <strong>desclassificação</strong>. Se houver erro, fale com o professor antes do fim da etapa.</div>`;
-
         return `<div class="minhas-posicoes-card">
             <div class="minhas-posicoes-titulo">🏆 Minhas posições — <span class="tag-turma">Turma ${escaparHtml(r.turma)}</span></div>
             <div class="minhas-posicoes-lista">${htmlLinhas}</div>
@@ -7752,37 +7854,51 @@ if (containerProg) {
         if (!turmaAtual) return;
 
         try {
-            const medias = await calcularMediasTop4Turmas(modalidade || "0-10");
-            if (!medias || medias.length === 0) return;
+            const r = await calcularMediasTop4Turmas(modalidade || "0-10");
+            const medias = r.ranking;
+            const minha = r.minhaTurma;
+            const minimo = r.minimo;
 
-            const top3 = medias.slice(0, 3);
-            const idxMinha = medias.findIndex(t => t.turma === turmaAtual);
-            const minhaEstaNoTop3 = top3.some(t => t.turma === turmaAtual);
+            // Se não há ranking nem aviso, nada a mostrar
+            if (!medias.length && !minha) return;
 
             let htmlLinhas = "";
-            top3.forEach((t, i) => {
-                const ehMinha = t.turma === turmaAtual;
-                htmlLinhas += `<div class="ranking-turmas-linha ${ehMinha ? "minha-turma" : ""}">
-                    <span class="ranking-turmas-pos">${i + 1}</span>
-                    <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? " ← Sua" : ""}</span>
-                    <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
-                </div>`;
-            });
+            if (medias.length > 0) {
+                const top3 = medias.slice(0, 3);
+                const idxMinha = medias.findIndex(t => t.turma === turmaAtual);
+                const minhaEstaNoTop3 = top3.some(t => t.turma === turmaAtual);
 
-            if (!minhaEstaNoTop3 && idxMinha !== -1) {
-                const t = medias[idxMinha];
-                htmlLinhas += `<div class="ranking-turmas-linha divisor-turma">· · ·</div>`;
-                htmlLinhas += `<div class="ranking-turmas-linha minha-turma">
-                    <span class="ranking-turmas-pos">${idxMinha + 1}</span>
-                    <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)} ← Sua</span>
-                    <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
-                </div>`;
+                top3.forEach((t, i) => {
+                    const ehMinha = t.turma === turmaAtual;
+                    htmlLinhas += `<div class="ranking-turmas-linha ${ehMinha ? "minha-turma" : ""}">
+                        <span class="ranking-turmas-pos">${i + 1}</span>
+                        <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? " ← Sua" : ""}</span>
+                        <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
+                    </div>`;
+                });
+
+                if (!minhaEstaNoTop3 && idxMinha !== -1) {
+                    const t = medias[idxMinha];
+                    htmlLinhas += `<div class="ranking-turmas-linha divisor-turma">· · ·</div>`;
+                    htmlLinhas += `<div class="ranking-turmas-linha minha-turma">
+                        <span class="ranking-turmas-pos">${idxMinha + 1}</span>
+                        <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)} ← Sua</span>
+                        <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
+                    </div>`;
+                }
             }
+
+            const listaHtml = medias.length > 0
+                ? `<div class="ranking-turmas-lista">${htmlLinhas}</div>`
+                : `<div class="ranking-turmas-vazio">Nenhuma turma com <strong>${minimo} alunos</strong> nesta modalidade ainda.</div>`;
+
+            const avisoHtml = minha ? renderizarAvisoTurmaFora(minha, modalidade) : "";
 
             container.innerHTML = `<div class="ranking-turmas-resultado">
                 <div class="ranking-turmas-resultado-titulo">🏫 Ranking das Turmas</div>
-                <div class="ranking-turmas-lista">${htmlLinhas}</div>
-                <div class="ranking-turmas-nota" style="margin-top:10px;">📊 Classificação por média dos <strong>4 melhores alunos</strong> de cada turma.</div>
+                ${listaHtml}
+                ${avisoHtml}
+                <div class="ranking-turmas-nota" style="margin-top:10px;">📊 Classificação por média dos <strong>4 melhores alunos</strong> de cada turma. Turmas com menos de <strong>${minimo} alunos</strong> ficam fora.</div>
             </div>`;
         } catch(e) {
             console.warn("Falha ao renderizar ranking das turmas no resultado:", e);
@@ -9529,179 +9645,206 @@ if (containerProg) {
 
     // ▼▼▼ [18.01] Home E-Sports ─────────────────────────────────────
     async function preencherHomeEsports() {
-    const nome = obterNomeSalvoAluno();
-    const turma = obterTurmaSalvaAluno();
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
 
-    const pillNome = document.getElementById("perfil-pill-nome");
-    const pillTurma = document.getElementById("perfil-pill-turma");
-    if (pillNome) pillNome.textContent = nome || "Meu Perfil";
-    if (pillTurma) pillTurma.textContent = turma || "--";
+        const pillNome = document.getElementById("perfil-pill-nome");
+        const pillTurma = document.getElementById("perfil-pill-turma");
+        if (pillNome) pillNome.textContent = nome || "Meu Perfil";
+        if (pillTurma) pillTurma.textContent = turma || "--";
 
-    const heroNome = document.getElementById("hero-nome-destaque");
-    if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
-    const homeTurmaTitulo = document.getElementById("home-turma-titulo");
-    if (homeTurmaTitulo) homeTurmaTitulo.textContent = turma ? `Turma ${turma}` : "Turma --";
+        const heroNome = document.getElementById("hero-nome-destaque");
+        if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
+        const homeTurmaTitulo = document.getElementById("home-turma-titulo");
+        if (homeTurmaTitulo) homeTurmaTitulo.textContent = turma ? `Turma ${turma}` : "Turma --";
 
-    if (!nome || !turma) {
-        atualizarHomeValores(null);
-        atualizarRankingTurmasHome(null, null);
-        return;
-    }
-
-    try {
-        const partidas = await obterHistoricoAluno(nome, turma);
-        if (!partidas.length) {
+        if (!nome || !turma) {
             atualizarHomeValores(null);
-            atualizarRankingTurmasHome(null, turma);
+            atualizarRankingTurmasHome(null, null);
             return;
         }
 
-        const melhorPartida = partidas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a);
-        const melhorPontos = Math.max(...partidas.map(p => Number(p.pontos) || 0));
-        const modalidade = melhorPartida.modalidade;
-
-        // Busca as 3 modalidades em paralelo
-        const mods = Object.keys(MODALIDADES);
-        const ranks = await Promise.all(
-            mods.map(m => obterRankingPorPontos(m, turma).catch(() => []))
-        );
-
-        // Etiquetas curtas para caber bem no mobile
-        const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
-
-        const modalidadesInfo = mods.map((mod, i) => {
-            const rankingMod = ranks[i] || [];
-            const idxMod = rankingMod.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-            const minhasPartidasMod = partidas.filter(p => p.modalidade === mod);
-            const melhorMod = minhasPartidasMod.length
-                ? minhasPartidasMod.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
-                : null;
-            return {
-                mod,
-                nome: rotulosCurtos[mod] || MODALIDADES[mod].nome,
-                posicao: idxMod === -1 ? null : idxMod + 1,
-                total: rankingMod.length,
-                pontos: melhorMod ? (Number(melhorMod.pontos) || 0) : 0,
-                jogou: !!melhorMod
-            };
-        });
-
-        // Ranking da melhor modalidade (usado na hero)
-        const rankingTurma = ranks[mods.indexOf(modalidade)] || [];
-        const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-        const posicao = idx === -1 ? null : idx + 1;
-
-        let posicaoGlobal = null;
         try {
-            const rankingGlobal = await obterRankingPorPontos(modalidade, null);
-            const ig = rankingGlobal.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-            if (ig !== -1) posicaoGlobal = ig + 1;
-        } catch(e) {}
+            const partidas = await obterHistoricoAluno(nome, turma);
+            if (!partidas.length) {
+                atualizarHomeValores(null);
+                atualizarRankingTurmasHome(null, turma);
+                return;
+            }
 
-        let turmaRankingInfo = null;
-        try {
-            const mediasTurmas = await calcularMediasTop4Turmas(modalidade);
-            const iTurma = mediasTurmas.findIndex(t => t.turma === turma);
-            if (iTurma !== -1) turmaRankingInfo = { posicao: iTurma + 1, total: mediasTurmas.length, medias: mediasTurmas };
-        } catch(e) {}
+            const melhorPartida = partidas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a);
+            const melhorPontos = Math.max(...partidas.map(p => Number(p.pontos) || 0));
+            const modalidade = melhorPartida.modalidade;
 
-        const elTurma = document.getElementById("hero-stat-turma");
-        const elGlobal = document.getElementById("hero-stat-global");
-        const elMelhor = document.getElementById("hero-stat-melhor");
-        if (elTurma) elTurma.textContent = posicao ? `${posicao}º` : "--";
-        if (elGlobal) elGlobal.textContent = posicaoGlobal ? `${posicaoGlobal}º` : "--";
-        if (elMelhor) elMelhor.innerHTML = `${melhorPontos.toLocaleString("pt-BR")}<span class="unidade">pts</span>`;
+            const mods = Object.keys(MODALIDADES);
+            const ranks = await Promise.all(
+                mods.map(m => obterRankingPorPontos(m, turma).catch(() => []))
+            );
 
-        const heroSub = document.getElementById("hero-sub-dinamica");
-        if (heroSub) {
-            const posTxt = posicao ? `<span class="posicao-num">${posicao}ª</span> posição na turma ${turma}` : `na turma ${turma}`;
-            const posGlobalTxt = posicaoGlobal ? ` · <strong>${posicaoGlobal}º</strong> no ranking geral` : "";
-            heroSub.innerHTML = `Você está na ${posTxt}${posGlobalTxt}.`;
+            const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+
+            const modalidadesInfo = mods.map((mod, i) => {
+                const rankingMod = ranks[i] || [];
+                const idxMod = rankingMod.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+                const minhasPartidasMod = partidas.filter(p => p.modalidade === mod);
+                const melhorMod = minhasPartidasMod.length
+                    ? minhasPartidasMod.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
+                    : null;
+                return {
+                    mod,
+                    nome: rotulosCurtos[mod] || MODALIDADES[mod].nome,
+                    posicao: idxMod === -1 ? null : idxMod + 1,
+                    total: rankingMod.length,
+                    pontos: melhorMod ? (Number(melhorMod.pontos) || 0) : 0,
+                    jogou: !!melhorMod
+                };
+            });
+
+            const rankingTurma = ranks[mods.indexOf(modalidade)] || [];
+            const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+            const posicao = idx === -1 ? null : idx + 1;
+
+            let posicaoGlobal = null;
+            try {
+                const rankingGlobal = await obterRankingPorPontos(modalidade, null);
+                const ig = rankingGlobal.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+                if (ig !== -1) posicaoGlobal = ig + 1;
+            } catch(e) {}
+
+            let turmaRankingInfo = null;
+            try {
+                const r = await calcularMediasTop4Turmas(modalidade);
+                const mediasTurmas = r.ranking;
+                const iTurma = mediasTurmas.findIndex(t => t.turma === turma);
+                turmaRankingInfo = {
+                    medias: mediasTurmas,
+                    posicao: iTurma === -1 ? null : iTurma + 1,
+                    total: mediasTurmas.length,
+                    minhaTurma: r.minhaTurma,
+                    minimo: r.minimo,
+                    modalidade
+                };
+            } catch(e) {}
+
+            const elTurma = document.getElementById("hero-stat-turma");
+            const elGlobal = document.getElementById("hero-stat-global");
+            const elMelhor = document.getElementById("hero-stat-melhor");
+            if (elTurma) elTurma.textContent = posicao ? `${posicao}º` : "--";
+            if (elGlobal) elGlobal.textContent = posicaoGlobal ? `${posicaoGlobal}º` : "--";
+            if (elMelhor) elMelhor.innerHTML = `${melhorPontos.toLocaleString("pt-BR")}<span class="unidade">pts</span>`;
+
+            const heroSub = document.getElementById("hero-sub-dinamica");
+            if (heroSub) {
+                const posTxt = posicao ? `<span class="posicao-num">${posicao}ª</span> posição na turma ${turma}` : `na turma ${turma}`;
+                const posGlobalTxt = posicaoGlobal ? ` · <strong>${posicaoGlobal}º</strong> no ranking geral` : "";
+                heroSub.innerHTML = `Você está na ${posTxt}${posGlobalTxt}.`;
+            }
+
+            atualizarHomeValores({ melhorPontos, posicao, ranking: rankingTurma, nome, turma, posicaoGlobal, modalidadesInfo });
+            atualizarRankingTurmasHome(turmaRankingInfo, turma);
+        } catch (e) {
+            console.warn("Falha ao preencher home esports:", e);
+            atualizarHomeValores(null);
+            atualizarRankingTurmasHome(null, turma);
+        }
+    }
+
+    function classificarZonaHome(pos) {
+        if (!pos) return { cls: "sem-dados", icone: "⚪", label: "Sem partida ainda" };
+        if (pos <= 4) return { cls: "zona-top4", icone: "🎟️", label: "Zona de classificação" };
+        if (pos <= 6) return { cls: "zona-reserva", icone: "🔄", label: "Zona de reserva" };
+        return { cls: "zona-disputa", icone: "🎯", label: "Em disputa" };
+    }
+
+    // ⚙️ L2 — Removido bloco do card "Meu melhor resultado" (elemento foi tirado do HTML).
+    // Função agora só renderiza as posições por modalidade e limpa o container de distância.
+    function atualizarHomeValores(dados) {
+        const elRankingLista = document.getElementById("ranking-home-lista");
+        const elDistancia = document.getElementById("home-distancia-container");
+        if (elDistancia) elDistancia.innerHTML = "";
+
+        if (!dados) {
+            if (elRankingLista) elRankingLista.innerHTML = `<div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver suas posições</span><span class="ranking-home-pontos">—</span></div>`;
+            return;
         }
 
-        // ⚙️ L2 — Não passa mais `melhorPartida` para a Home (card foi removido)
-        atualizarHomeValores({ melhorPontos, posicao, ranking: rankingTurma, nome, turma, posicaoGlobal, modalidadesInfo });
-        atualizarRankingTurmasHome(turmaRankingInfo, turma);
-    } catch (e) {
-        console.warn("Falha ao preencher home esports:", e);
-        atualizarHomeValores(null);
-        atualizarRankingTurmasHome(null, turma);
-    }
-}
-    function classificarZonaHome(pos) {
-    if (!pos) return { cls: "sem-dados", icone: "⚪", label: "Sem partida ainda" };
-    if (pos <= 4) return { cls: "zona-top4", icone: "🎟️", label: "Zona de classificação" };
-    if (pos <= 6) return { cls: "zona-reserva", icone: "🔄", label: "Zona de reserva" };
-    return { cls: "zona-disputa", icone: "🎯", label: "Em disputa" };
-}
+        const { modalidadesInfo } = dados;
 
-// ⚙️ L2 — Removido bloco do card "Meu melhor resultado" (elemento foi tirado do HTML).
-// Função agora só renderiza as posições por modalidade e limpa o container de distância.
-function atualizarHomeValores(dados) {
-    const elRankingLista = document.getElementById("ranking-home-lista");
-    const elDistancia = document.getElementById("home-distancia-container");
-    if (elDistancia) elDistancia.innerHTML = "";
-
-    if (!dados) {
-        if (elRankingLista) elRankingLista.innerHTML = `<div class="ranking-home-linha"><span class="ranking-home-pos">-</span><span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver suas posições</span><span class="ranking-home-pontos">—</span></div>`;
-        return;
+        if (elRankingLista && modalidadesInfo && modalidadesInfo.length) {
+            let html = "";
+            modalidadesInfo.forEach((m) => {
+                const zona = classificarZonaHome(m.posicao);
+                const posTxt = m.posicao ? `${m.posicao}º <small style="opacity:.7;font-weight:700;">de ${m.total}</small>` : "—";
+                const ptsTxt = m.jogou ? `${m.pontos.toLocaleString('pt-BR')} pts` : "sem partida";
+                html += `<div class="ranking-home-modalidade ${zona.cls}">
+                    <div class="ranking-home-mod-linha1">
+                        <span class="ranking-home-mod-nome">${zona.icone} ${escaparHtml(m.nome)}</span>
+                        <span class="ranking-home-mod-pos">${posTxt}</span>
+                    </div>
+                    <div class="ranking-home-mod-linha2">
+                        <span class="ranking-home-mod-status">${zona.label}</span>
+                        <span class="ranking-home-mod-pts">${ptsTxt}</span>
+                    </div>
+                </div>`;
+            });
+            elRankingLista.innerHTML = html;
+        }
     }
 
-    const { modalidadesInfo } = dados;
-
-    // Renderiza 1 card por modalidade
-    if (elRankingLista && modalidadesInfo && modalidadesInfo.length) {
-        let html = "";
-        modalidadesInfo.forEach((m) => {
-            const zona = classificarZonaHome(m.posicao);
-            const posTxt = m.posicao ? `${m.posicao}º <small style="opacity:.7;font-weight:700;">de ${m.total}</small>` : "—";
-            const ptsTxt = m.jogou ? `${m.pontos.toLocaleString('pt-BR')} pts` : "sem partida";
-            html += `<div class="ranking-home-modalidade ${zona.cls}">
-                <div class="ranking-home-mod-linha1">
-                    <span class="ranking-home-mod-nome">${zona.icone} ${escaparHtml(m.nome)}</span>
-                    <span class="ranking-home-mod-pos">${posTxt}</span>
-                </div>
-                <div class="ranking-home-mod-linha2">
-                    <span class="ranking-home-mod-status">${zona.label}</span>
-                    <span class="ranking-home-mod-pts">${ptsTxt}</span>
-                </div>
-            </div>`;
-        });
-        elRankingLista.innerHTML = html;
-    }
-}
     function atualizarRankingTurmasHome(info, turmaAluno) {
         const container = document.getElementById("ranking-turmas-lista");
         if (!container) return;
-        if (!info || !info.medias || info.medias.length === 0) {
+
+        // Sem info: mensagem neutra
+        if (!info || !info.medias) {
             container.innerHTML = `<div class="ranking-turmas-linha"><span class="ranking-turmas-pos">-</span><span class="ranking-turmas-nome" style="color:var(--text-muted);">Jogue para ver o ranking das turmas</span><span class="ranking-turmas-pontos">—</span></div>`;
             return;
         }
+
         const medias = info.medias;
-        const top4 = medias.slice(0, 4);
-        const minhaEsta = top4.some(t => t.turma === turmaAluno);
+        const minha = info.minhaTurma;
+        const minimo = info.minimo || MIN_ALUNOS_RANKING_TURMA;
+
         let html = "";
-        top4.forEach((t, i) => {
-            const ehMinha = t.turma === turmaAluno;
-            html += `<div class="ranking-turmas-linha ${ehMinha ? "minha-turma" : ""}">
-                <span class="ranking-turmas-pos">${i + 1}</span>
-                <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? " ← Sua" : ""}</span>
-                <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
-            </div>`;
-        });
-        if (!minhaEsta && turmaAluno) {
-            const idx = medias.findIndex(t => t.turma === turmaAluno);
-            if (idx !== -1) {
-                html += `<div class="ranking-turmas-linha divisor-turma">· · ·</div>`;
-                const t = medias[idx];
-                html += `<div class="ranking-turmas-linha minha-turma">
-                    <span class="ranking-turmas-pos">${idx + 1}</span>
-                    <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)} ← Sua</span>
+
+        if (medias.length > 0) {
+            const top4 = medias.slice(0, 4);
+            const minhaEsta = top4.some(t => t.turma === turmaAluno);
+            top4.forEach((t, i) => {
+                const ehMinha = t.turma === turmaAluno;
+                html += `<div class="ranking-turmas-linha ${ehMinha ? "minha-turma" : ""}">
+                    <span class="ranking-turmas-pos">${i + 1}</span>
+                    <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? " ← Sua" : ""}</span>
                     <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
                 </div>`;
+            });
+            if (!minhaEsta && turmaAluno) {
+                const idx = medias.findIndex(t => t.turma === turmaAluno);
+                if (idx !== -1) {
+                    html += `<div class="ranking-turmas-linha divisor-turma">· · ·</div>`;
+                    const t = medias[idx];
+                    html += `<div class="ranking-turmas-linha minha-turma">
+                        <span class="ranking-turmas-pos">${idx + 1}</span>
+                        <span class="ranking-turmas-nome">Turma ${escaparHtml(t.turma)} ← Sua</span>
+                        <span class="ranking-turmas-pontos">${t.media.toLocaleString("pt-BR")}</span>
+                    </div>`;
+                }
             }
+        } else {
+            html = `<div class="home-turmas-vazio">Nenhuma turma com <strong>${minimo} alunos</strong> ainda.</div>`;
         }
+
         container.innerHTML = html;
+
+        // Aviso (fora do container da lista, para não virar linha do ranking)
+        const avisoContainerId = "home-aviso-turma-fora";
+        let avisoEl = document.getElementById(avisoContainerId);
+        if (!avisoEl) {
+            avisoEl = document.createElement("div");
+            avisoEl.id = avisoContainerId;
+            container.parentNode.insertBefore(avisoEl, container.nextSibling);
+        }
+        avisoEl.innerHTML = minha ? renderizarAvisoTurmaFora(minha, info.modalidade) : "";
     }
     // ▲▲▲ FIM [18.01]
 
@@ -9725,11 +9868,9 @@ function atualizarHomeValores(dados) {
                     totalAcertos: 0,
                     totalPartidas: 0,
                     somaPontos: 0,
-                    // Mestre da Velocidade (só partidas 20/20)
                     partidasPerfeitas: 0,
                     maxTemposRapidosPerfeito: 0,
                     melhorTempoPerfeito: Infinity,
-                    // Outros
                     diasSet: new Set(),
                     treinosFocados: 0
                 });
@@ -9744,7 +9885,6 @@ function atualizarHomeValores(dados) {
             a.totalPartidas++;
             a.somaPontos += pontos;
 
-            // ─── Mestre da Velocidade (SÓ partidas perfeitas 20/20) ───
             if (acertos === 20) {
                 a.partidasPerfeitas++;
                 if (tr > a.maxTemposRapidosPerfeito) {
@@ -9761,7 +9901,6 @@ function atualizarHomeValores(dados) {
             }
         });
 
-        // Lê o contador de treinos focados/inteligentes do Firebase
         try {
             const snapTreinos = await database.ref(CAMINHO_TREINOS_FOCADOS).once("value");
             const treinosFirebase = snapTreinos.val() || {};
@@ -9780,9 +9919,6 @@ function atualizarHomeValores(dados) {
         }));
 
         return {
-            // Só entra quem tem pelo menos 1 partida perfeita (20/20).
-            // Ranking: mais respostas abaixo de 0,8s em uma partida 20/20.
-            // Desempate: menor tempo médio naquela partida perfeita, depois mais partidas perfeitas.
             velocidade: [...lista]
                 .filter(a => a.partidasPerfeitas >= 1)
                 .sort((a, b) =>
@@ -9790,26 +9926,22 @@ function atualizarHomeValores(dados) {
                     a.melhorTempoPerfeito - b.melhorTempoPerfeito ||
                     b.partidasPerfeitas - a.partidasPerfeitas
                 ),
-
             acertos: [...lista]
                 .sort((a, b) =>
                     b.totalAcertos - a.totalAcertos ||
                     b.totalPartidas - a.totalPartidas
                 ),
-
             maratonista: [...lista]
                 .sort((a, b) =>
                     b.totalPartidas - a.totalPartidas ||
                     b.mediaPontos - a.mediaPontos
                 ),
-
             presenca: [...lista]
                 .sort((a, b) =>
                     b.diasDistintos - a.diasDistintos ||
                     b.totalPartidas - a.totalPartidas ||
                     b.mediaPontos - a.mediaPontos
                 ),
-
             treino: [...lista]
                 .filter(a => a.treinosFocados > 0)
                 .sort((a, b) =>
@@ -9935,12 +10067,13 @@ function atualizarHomeValores(dados) {
             destaques.presenca    = metricas.presenca.slice(0, 5);
             destaques.treino      = metricas.treino.slice(0, 5);
 
+            // ▼ Turma de Elite — novo formato com aviso
+            let turmaInfo = null;
             try {
-                const medias = await calcularMediasTop4Turmas("0-10");
-                destaques.turmas = medias.slice(0, 5);
+                const r = await calcularMediasTop4Turmas("0-10");
+                turmaInfo = r;
             } catch(e) {
                 console.warn("Falha ao calcular Turma de Elite:", e);
-                destaques.turmas = [];
             }
 
             hallFamaCache = {
@@ -9953,7 +10086,9 @@ function atualizarHomeValores(dados) {
                 maratonista:  destaques.maratonista,
                 presenca:     destaques.presenca,
                 treino:       destaques.treino,
-                turmas:       destaques.turmas,
+                turmas:       turmaInfo ? turmaInfo.ranking.slice(0, 5) : [],
+                minhaTurmaTurmas: turmaInfo ? turmaInfo.minhaTurma : null,
+                minimoTurma:  turmaInfo ? turmaInfo.minimo : MIN_ALUNOS_RANKING_TURMA,
                 totalAlunos:  ranking.length
             };
             hallFamaUltimaAtualizacao = Date.now();
@@ -9979,13 +10114,10 @@ function atualizarHomeValores(dados) {
                 const ehVoce = nomeAluno && turmaAluno && normalizarNome(item.nome) === normalizarNome(nomeAluno) && item.turma === turmaAluno;
                 let valorTxt = "";
 
-                // Categorias clássicas
                 if (tipoValor === "medalhas")      valorTxt = `${item.qtdMedalhas} 🏅`;
                 else if (tipoValor === "estrelas") valorTxt = `${item.qtdEstrelas} ⭐`;
                 else if (tipoValor === "album")    valorTxt = `${item.scoreAlbum} pts`;
                 else if (tipoValor === "mapa")     valorTxt = `${item.pctMapa}% (${item.dominadas}/${TOTAL_OPERACOES_MAPA})`;
-
-                // Categorias ativas
                 else if (tipoValor === "velocidade")   valorTxt = `${item.maxTemposRapidosPerfeito} ⚡`;
                 else if (tipoValor === "acertos")      valorTxt = `${item.totalAcertos} ✅`;
                 else if (tipoValor === "maratonista")  valorTxt = `${item.totalPartidas} 🎮`;
@@ -10018,20 +10150,21 @@ function atualizarHomeValores(dados) {
 
         let html = "";
 
-        // CATEGORIAS CLÁSSICAS
         html += buildCard("Mais Medalhas", "Quem colecionou o maior número de medalhas no Álbum.", "🏅", dados.medalhas, "medalhas");
         html += buildCard("Mais Estrelas", "Quem acumulou mais estrelas — as medalhas raras valem mais.", "⭐", dados.estrelas, "estrelas");
         html += buildCard("Álbum de Elite", "Raridade das medalhas + bônus por seções completas. Lendárias valem 8, Épicas 5, Raras 3.", "💎", dados.album, "album");
         html += buildCard("Maior Mapa Verde", "Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).", "🗺️", dados.mapa, "mapa");
 
-        // CATEGORIAS ATIVAS
         html += buildCard("Mestre da Velocidade", "Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas abaixo de 0,8s.", "🏆", dados.velocidade, "velocidade");
         html += buildCard("Total de Acertos", "Soma de todos os acertos acumulados. Jogar muito é recompensado!", "✅", dados.acertos, "acertos");
         html += buildCard("Maratonista da Copa", "Quem jogou o maior número de partidas. Dedicação total!", "🏃", dados.maratonista, "maratonista");
         html += buildCard("Presença VIP", "Quem jogou em mais dias diferentes. Constância é a chave!", "📅", dados.presenca, "presenca");
         html += buildCard("Mestre do Treino", "Quem mais usou o Treino Focado/Inteligente para evoluir.", "🧠", dados.treino, "treino");
 
-        // TURMA DE ELITE (card especial)
+        // Turma de Elite — com aviso da própria turma
+        const minimo = dados.minimoTurma || MIN_ALUNOS_RANKING_TURMA;
+        const minhaTurmaTurmas = dados.minhaTurmaTurmas;
+
         if (dados.turmas && dados.turmas.length > 0) {
             const itensHtml = dados.turmas.map((t, i) => {
                 const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`;
@@ -10044,11 +10177,12 @@ function atualizarHomeValores(dados) {
             }).join("");
             html += `<div class="hall-card">
                 <div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div>
-                <div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos (modalidade completa 1-10).</div>
+                <div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos (modalidade completa 1-10). Mínimo de <strong>${minimo} alunos</strong>.</div>
                 <ul class="hall-lista">${itensHtml}</ul>
+                ${minhaTurmaTurmas ? renderizarAvisoTurmaFora(minhaTurmaTurmas, "0-10") : ""}
             </div>`;
         } else {
-            html += `<div class="hall-card"><div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div><div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos.</div><div class="hall-vazio">Nenhuma turma com 4 alunos classificados ainda.</div></div>`;
+            html += `<div class="hall-card"><div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div><div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos.</div><div class="hall-vazio">Nenhuma turma tem <strong>${minimo} alunos</strong> com resultado ainda.</div>${minhaTurmaTurmas ? renderizarAvisoTurmaFora(minhaTurmaTurmas, "0-10") : ""}</div>`;
         }
 
         container.innerHTML = html;
