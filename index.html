@@ -3551,7 +3551,12 @@
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.0 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.1 · atual</span>
+                <h4 class="changelog-titulo">🎯 Foco Absoluto: agora dá pra chegar aos 100%</h4>
+                <p class="changelog-descricao">Correção de um bug que atrapalhava quem estava chegando perto da maestria. Antes, o treino inteligente só ligava com <strong>3+ operações pendentes</strong> — quando sobravam 1 ou 2, ele desligava e você voltava ao modo aleatório. Agora ele liga a partir de 1 pendente, e se faltam <strong>até 5 operações</strong>, entra em <strong>FOCO ABSOLUTO</strong>: 92% das perguntas da partida vão para essas operações específicas. Também apareceu um botão direto no card <strong>Mapa de Tabuadas</strong> da Home: <em>"🎯 Foco absoluto: N operações"</em>. Destrava em 1-2 partidas o que antes dependia de sorte.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.4.0</span>
                 <h4 class="changelog-titulo">📱 Agora é um app instalável (PWA)</h4>
                 <p class="changelog-descricao">Você pode <strong>instalar a Copa da Tabuada na tela inicial do celular</strong>, como um app de verdade. Abre em tela cheia, com ícone próprio (🏆 dourado) e splash screen. No Android/Chrome aparece o botão "Instalar app"; no iPhone, use <strong>Safari → Compartilhar → Adicionar à Tela de Início</strong>. Continua funcionando no navegador para quem não instalar — nada quebrou.</p>
             </div>
@@ -3879,7 +3884,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
 // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.4.0";
+const APP_VERSION = "10.4.1";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -4067,30 +4072,31 @@ verificarVersao();
     // [06] JS-FB · Estado global da aplicação
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
-    let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
-    let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
-    let treinoAnonimo = false;
-    let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
-    let desempenhoOperacoes = {};
-    let mapaFonteUltima = {};
-    let mapaFonteAgregada = {};
-    let modoVisualizacaoMapa = "agregado";
-    let treinoFocoOperacoes = null;
-    let treinoListaInteligente = null;
-    let aguardandoFeedbackErro = false;
-    let promocoesRecentes = [];
-    let pilhaDetalhes = [];
-    let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
-    let alunosData=[], alunosFiltrados=[];
-    let melhorMediaAluno = null, mediaTurma = null;
-    let somAtivo = true, jaToCouSomSuperacao = false;
-    let ultimoMelhorOficial = null, ultimaTentativa = null;
-    let votacaoInicioCache = null;
-    let votacaoTimerInterval = null;
-    let countdownTimerInterval = null;
-    let etapaEstadoCache = null;
-    // ▲▲▲ FIM [06.01]
+// ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
+let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
+let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
+let treinoAnonimo = false;
+let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
+let desempenhoOperacoes = {};
+let mapaFonteUltima = {};
+let mapaFonteAgregada = {};
+let modoVisualizacaoMapa = "agregado";
+let treinoFocoOperacoes = null;
+let treinoListaInteligente = null;
+let treinoFocoAbsoluto = null; // v10.4.1 — força operações pendentes quando faltam ≤5
+let aguardandoFeedbackErro = false;
+let promocoesRecentes = [];
+let pilhaDetalhes = [];
+let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
+let alunosData=[], alunosFiltrados=[];
+let melhorMediaAluno = null, mediaTurma = null;
+let somAtivo = true, jaToCouSomSuperacao = false;
+let ultimoMelhorOficial = null, ultimaTentativa = null;
+let votacaoInicioCache = null;
+let votacaoTimerInterval = null;
+let countdownTimerInterval = null;
+let etapaEstadoCache = null;
+// ▲▲▲ FIM [06.01]
 
     // ▼▼▼ [06.02] Estado do desempenho ─────────────────────────────────────
     let desempenhoPartidasCache = [];
@@ -4524,15 +4530,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             // % geral: mapa global agregado das 3 modalidades (mesma fonte do resto do jogo)
             const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
             let totalDominadas = 0;
+            let totalPendentes = 0;
             todasChaves.forEach(k => {
                 const h = normalizarHistoricoOperacao(mapaGlobal[k]);
-                if (estadoDaOperacao(h) === "verde") totalDominadas++;
+                const est = estadoDaOperacao(h);
+                if (est === "verde") totalDominadas++;
+                else totalPendentes++;
             });
             const pct = totalOps ? Math.round((totalDominadas / totalOps) * 100) : 0;
 
             // Chips por modalidade — mostra quantas verdes dentro da faixa de cada modalidade
-            // (usa a fonte global: o que foi praticado em 2-5 aparece no chip de 2-5, e por
-            //  consequência no "1-10". Isso é o comportamento que você espera.)
             const iconesMod  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
             const rotulosMod = { "2-5": "2-5", "6-9": "6-9", "0-10": "1-10" };
             let chipsHtml = "";
@@ -4546,6 +4553,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 chipsHtml += `<span class="mapa-home-chip"><span class="icone">${iconesMod[mod] || "📖"}</span> ${rotulosMod[mod] || mod}: <strong>${dom}/${ops.length}</strong></span>`;
             }
 
+            // v10.4.1 — Botão "Treinar focos": aparece só se houver pendentes.
+            // O texto se adapta: se faltam ≤5, é FOCO ABSOLUTO.
+            let botaoTreinoHtml = "";
+            if (totalPendentes > 0) {
+                const ehFocoAbsoluto = totalPendentes <= 5;
+                const label = ehFocoAbsoluto
+                    ? `🎯 Foco absoluto: ${totalPendentes} ${totalPendentes === 1 ? "operação" : "operações"}`
+                    : `🎯 Treinar ${totalPendentes} operações pendentes`;
+                botaoTreinoHtml = `<button class="home-btn-link" style="margin-top:2px;border-style:solid;border-color:${ehFocoAbsoluto ? "rgba(251,191,36,.7)" : "rgba(34,211,238,.4)"};color:${ehFocoAbsoluto ? "#fde68a" : "var(--neon-cyan)"};background:${ehFocoAbsoluto ? "rgba(251,191,36,.10)" : "transparent"};" onclick="iniciarFocoAbsolutoDaHome()">${label}</button>`;
+            }
+
             container.innerHTML = `
                 <div class="mapa-home-card">
                     <div class="mapa-home-titulo">🗺️ Seu Mapa de Tabuadas</div>
@@ -4557,6 +4575,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         <div class="mapa-home-barra-fill" data-width="${pct}%" style="width:0%"></div>
                     </div>
                     <div class="mapa-home-chips">${chipsHtml}</div>
+                    ${botaoTreinoHtml}
                     <button class="home-btn-link" onclick="irParaMapaCompleto()">🗺️ Ver mapa completo →</button>
                 </div>
             `;
@@ -4613,7 +4632,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             treinoListaInteligente = null;
 
             // Fonte GLOBAL — mescla 2-5 + 6-9 + 0-10, igual ao resto do jogo.
-            // É por isso que jogar 2-5 "aparece" na visão 1-10: são os mesmos dados.
             modalMapaFonteAgregada = await obterDesempenhoOperacoesGlobal(nome, turma);
 
             // Última partida (qualquer modalidade) para o toggle "🎯 Uma partida"
@@ -4661,7 +4679,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     // Troca a visão do modal. A fonte é SEMPRE global — a aba só muda as LINHAS exibidas.
-    // Isso garante o comportamento que você espera: jogar 2-5 preenche o 1-10.
     function trocarModMapaCompleto(mod) {
         if (mod !== "todas" && mod !== "2-5" && mod !== "6-9") return;
         modalMapaMod = mod;
@@ -4670,10 +4687,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         mapaFonteAgregada = modalMapaFonteAgregada;
         mapaFonteUltima    = modalMapaFonteUltima;
 
-        // modalidadeAtual controla apenas as LINHAS exibidas:
-        //  - "todas" → 0-10 (fatores 1..10)  → 100 células
-        //  - "2-5"   → 2-5  (fatores 2,3,4,5) → 40 células
-        //  - "6-9"   → 6-9  (fatores 6,7,8,9) → 40 células
         modalidadeAtual = mod === "todas" ? "0-10" : mod;
 
         const area = document.getElementById("modal-mapa-completo-map-area");
@@ -7887,19 +7900,29 @@ if (containerProg) {
     }
 
     function gerarPerguntaAdaptativa(mod) {
-        // Prioridade 1: treino focado (operações específicas + variações)
+        // ─── Prioridade 0 (v10.4.1): FOCO ABSOLUTO ───
+        // Quando faltam ≤5 operações para dominar, 92% das perguntas são delas.
+        // Isso permite fechar a maestria (100%) em 1-2 partidas em vez de depender de sorte.
+        if (treinoFocoAbsoluto && treinoFocoAbsoluto.length && modoTreino) {
+            if (Math.random() < 0.92) {
+                const op = escolherPorPeso(treinoFocoAbsoluto, o => o.peso || 1);
+                perguntasGeradas.push({ fA: op.fA, fB: op.fB, chave: `${op.fA}x${op.fB}` });
+                return { fA: op.fA, fB: op.fB, resposta: op.fA * op.fB };
+            }
+        }
+        // ─── Prioridade 1: treino focado (operações específicas + variações) ───
         if (treinoFocoOperacoes && treinoFocoOperacoes.length && modoTreino) {
             const op = escolherPorPeso(treinoFocoOperacoes, o => o.peso || 1);
             perguntasGeradas.push({ fA: op.fA, fB: op.fB, chave: `${op.fA}x${op.fB}` });
             return { fA: op.fA, fB: op.fB, resposta: op.fA * op.fB };
         }
-        // Prioridade 2: treino inteligente (operações pendentes com peso)
+        // ─── Prioridade 2: treino inteligente (operações pendentes com peso) ───
         if (treinoListaInteligente && treinoListaInteligente.length && modoTreino) {
             const op = escolherPorPeso(treinoListaInteligente, o => o.peso || 1);
             perguntasGeradas.push({ fA: op.fA, fB: op.fB, chave: `${op.fA}x${op.fB}` });
             return { fA: op.fA, fB: op.fB, resposta: op.fA * op.fB };
         }
-        // Fallback: adaptativo normal
+        // ─── Fallback: adaptativo normal ───
         let fA, fB, chave, t = 0;
         do { fA = escolherFatorAdaptativo(); fB = Math.floor(Math.random() * 10) + 1; chave = `${fA}x${fB}`; t++; }
         while (perguntasGeradas.slice(-5).some(p => p.chave === chave) && t < 20);
@@ -8055,6 +8078,7 @@ if (containerProg) {
         salvarTurmaENomeAluno(turma, nome);
         treinoFocoOperacoes = null;
         treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
         iniciarListenerMsgAluno();
         if (!modoTreino) {
             const r = await verificarVinculo(nome, turma);
@@ -8086,19 +8110,42 @@ if (containerProg) {
         }
     }
 
+    // v10.4.1 — Escolhe o modo de treino conforme quantidade de operações pendentes.
+    //  0 pendentes → nada (já dominou tudo)
+    //  1-5 pendentes → FOCO ABSOLUTO (92% das perguntas vão para essas)
+    //  6-15 pendentes → treino inteligente normal
+    //  >15 pendentes → treino inteligente normal (lista completa)
     async function iniciarTreinoInteligente() {
         const lista = await montarListaTreinoInteligente(alunoAtual, turmaAtual, modalidadeAtual);
         const pendentes = lista.filter(i => i.peso > 1);
-        if (pendentes.length >= 3) {
-            treinoListaInteligente = pendentes;
-            treinoFocoOperacoes = null;
-            notificar(`🎯 Treino inteligente: ${pendentes.length} operações para reforçar!`, "info", 4000);
+
+        treinoFocoOperacoes = null;
+        treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
+
+        if (pendentes.length === 0) {
+            notificar("🎉 Você já domina tudo nesta modalidade! Jogue uma partida oficial para manter o ritmo.", "info", 5000);
+        } else if (pendentes.length <= 5) {
+            treinoFocoAbsoluto = pendentes;
+            notificar(`🎯 FOCO ABSOLUTO: ${pendentes.length} ${pendentes.length === 1 ? "operação" : "operações"} para dominar!`, "info", 5000);
         } else {
-            treinoListaInteligente = null;
-            treinoFocoOperacoes = null;
+            treinoListaInteligente = pendentes;
+            notificar(`🎯 Treino inteligente: ${pendentes.length} operações para reforçar!`, "info", 4000);
         }
         modoTreino = true;
         iniciarPartidaTreino();
+    }
+
+    // v10.4.1 — Atalho da Home: dispara o treino de foco a partir do card do Mapa.
+    async function iniciarFocoAbsolutoDaHome() {
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        const mod = obterModalidadeMetaAtual();
+        if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
+        alunoAtual = nome; turmaAtual = turma; modalidadeAtual = mod;
+        treinoAnonimo = false;
+        await carregarFocoTreino(nome, turma, mod);
+        await iniciarTreinoInteligente();
     }
 
     function iniciarTreinoAnonimo() {
@@ -8109,6 +8156,7 @@ if (containerProg) {
         modalidadeAtual = "0-10";
         treinoFocoOperacoes = null;
         treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
         focoTreinoTabuadas = [];
         dificuldadesHistoricas = {};
         reiniciarVariaveisJogo();
@@ -8123,7 +8171,8 @@ if (containerProg) {
         modoTreino = true;
         reiniciarVariaveisJogo();
         let t = `🎯 TREINO — TURMA ${turmaAtual}`;
-        if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 TREINO FOCADO — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
+        if (treinoFocoAbsoluto && treinoFocoAbsoluto.length) t = `🎯 FOCO ABSOLUTO — ${treinoFocoAbsoluto.length} ${treinoFocoAbsoluto.length === 1 ? "operação" : "operações"}`;
+        else if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 TREINO FOCADO — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
         else if (treinoFocoOperacoes && treinoFocoOperacoes.length > 1) t = `🎯 TREINO FOCADO — ${treinoFocoOperacoes.length} operações`;
         else if (treinoListaInteligente && treinoListaInteligente.length) t = `🎯 TREINO INTELIGENTE — ${treinoListaInteligente.length} operações pendentes`;
         document.getElementById("cabecalho-turma").innerText = t;
@@ -8137,6 +8186,7 @@ if (containerProg) {
         treinoAnonimo = false;
         treinoFocoOperacoes = null;
         treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
         salvarTurmaENomeAluno(turma, nome);
         reiniciarVariaveisJogo();
         document.getElementById("cabecalho-turma").innerText = `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
@@ -8374,7 +8424,7 @@ if (containerProg) {
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
             somConclusao();
-            treinoAnonimo = false; modoTreino = false; treinoListaInteligente = null;
+            treinoAnonimo = false; modoTreino = false; treinoListaInteligente = null; treinoFocoAbsoluto = null;
             mostrarTela("tela-resultado");
             return;
         }
@@ -8392,7 +8442,8 @@ if (containerProg) {
         // Treino identificado
         if (modoTreino) {
             let t = "🎯 Resultado do Treino";
-            if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 Treino focado — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
+            if (treinoFocoAbsoluto && treinoFocoAbsoluto.length) t = `🎯 Foco absoluto — ${treinoFocoAbsoluto.length} ${treinoFocoAbsoluto.length === 1 ? "operação" : "operações"}`;
+            else if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 Treino focado — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
             else if (treinoFocoOperacoes && treinoFocoOperacoes.length > 1) t = `🎯 Treino focado — ${treinoFocoOperacoes.length} operações`;
             else if (treinoListaInteligente && treinoListaInteligente.length) t = `🎯 Treino inteligente — ${treinoListaInteligente.length} operações`;
             document.getElementById("resultado-titulo").innerHTML = t;
@@ -8407,12 +8458,12 @@ if (containerProg) {
             document.getElementById("resumo-media-turma").innerText = "--";
             document.getElementById("resumo-turma").innerText = turmaAtual;
             document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual].nome;
-            document.getElementById("resumo-status").innerHTML = treinoFocoOperacoes ? "Treino Focado" : (treinoListaInteligente ? "Treino Inteligente" : "Modo Treino");
+            document.getElementById("resumo-status").innerHTML = treinoFocoAbsoluto ? "Foco Absoluto" : (treinoFocoOperacoes ? "Treino Focado" : (treinoListaInteligente ? "Treino Inteligente" : "Modo Treino"));
 
             // Salva mapa (treino também alimenta o mapa — o certificado se baseia nele)
             try { await incrementarMapaAluno(alunoAtual, turmaAtual, modalidadeAtual, resultado.desempenhoOperacoes); } catch(e) {}
             // Contabiliza treino focado/inteligente para o Hall da Fama
-            if (treinoFocoOperacoes || treinoListaInteligente) {
+            if (treinoFocoOperacoes || treinoListaInteligente || treinoFocoAbsoluto) {
                 try {
                     const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
                     await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1);
@@ -8433,7 +8484,7 @@ if (containerProg) {
             somConclusao();
             // Verifica certificados mesmo no treino
             verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
-            treinoFocoOperacoes = null; treinoListaInteligente = null;
+            treinoFocoOperacoes = null; treinoListaInteligente = null; treinoFocoAbsoluto = null;
             mostrarTela("tela-resultado");
             return;
         }
