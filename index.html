@@ -30,7 +30,7 @@
     <meta name="description" content="Competição de tabuada — Copa da Tabuada CEIB 2026">
     <meta name="format-detection" content="telephone=no">
     <!-- ▲▲▲ FIM [01.02] -->
-<!-- ▼▼▼ [01.03] Manifest PWA inline (via Blob) ───────── INÍCIO ─── -->
+<!-- ▼▼▼ [01.03] Manifest PWA inline (com PNG gerado em runtime) ─── INÍCIO ─── -->
 <script>
 (function() {
   try {
@@ -64,57 +64,95 @@
         '</g>' +
       '</svg>';
 
-    var iconeUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICONE_SVG);
+    var iconeSvgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICONE_SVG);
 
-    // ─── Base absoluta: resolve contra a URL da página, ignora query string ───
-    // Em GitHub Pages, o arquivo está em /Tabuada/index.html (ou /Tabuada/),
-    // então a base correta é https://<user>.github.io/Tabuada/
+    // ─── Base absoluta (para start_url/scope) ───
     var baseUrl;
     try {
-      baseUrl = new URL('.', location.href).href;   // ex.: https://.../Tabuada/
+      baseUrl = new URL('.', location.href).href;
     } catch (e) {
       baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
     }
 
-    // ─── Manifest JSON (com URLs ABSOLUTAS — a chave da correção) ───
-    var manifest = {
-      name: "Copa da Tabuada CEIB 2026",
-      short_name: "Copa Tabuada",
-      description: "Competição de tabuada — Colégio Estadual Ismael Branco",
-      lang: "pt-BR",
-      start_url: baseUrl,
-      scope: baseUrl,
-      display: "standalone",
-      orientation: "portrait",
-      background_color: "#0a1628",
-      theme_color: "#0a1628",
-      categories: ["education", "games"],
-      icons: [
-        { src: iconeUrl, sizes: "192x192", type: "image/svg+xml", purpose: "any" },
-        { src: iconeUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any" },
-        { src: iconeUrl, sizes: "512x512", type: "image/svg+xml", purpose: "maskable" }
-      ]
-    };
-
-    var manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
-    var manifestUrl  = URL.createObjectURL(manifestBlob);
-
-    // ─── Injeta <link rel="manifest"> ───
-    var linkManifest = document.createElement("link");
-    linkManifest.rel = "manifest";
-    linkManifest.href = manifestUrl;
-    document.head.appendChild(linkManifest);
-
-    // ─── Injeta <link rel="apple-touch-icon"> (iOS) ───
+    // ─── Injeta <link rel="apple-touch-icon"> (iOS aceita SVG, mantemos) ───
     var linkApple = document.createElement("link");
     linkApple.rel = "apple-touch-icon";
-    linkApple.href = iconeUrl;
+    linkApple.href = iconeSvgUrl;
     document.head.appendChild(linkApple);
 
-    // ─── Guarda as URLs em escopo global (uso opcional) ───
-    window.__PWA_ICONE_URL__ = iconeUrl;
-    window.__PWA_MANIFEST_URL__ = manifestUrl;
-    window.__PWA_BASE_URL__ = baseUrl;
+    // ─── Gera PNG em runtime a partir do SVG (Chrome exige PNG para instalar) ───
+    function gerarPng(tamanho) {
+      return new Promise(function(resolve) {
+        var img = new Image();
+        img.onload = function() {
+          try {
+            var canvas = document.createElement('canvas');
+            canvas.width = tamanho;
+            canvas.height = tamanho;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, tamanho, tamanho);
+            ctx.drawImage(img, 0, 0, tamanho, tamanho);
+            resolve(canvas.toDataURL('image/png'));
+          } catch (e) {
+            console.info('PWA: falha ao gerar PNG ' + tamanho + 'px —', e && e.message);
+            resolve(null);
+          }
+        };
+        img.onerror = function() {
+          console.info('PWA: falha ao carregar SVG para PNG ' + tamanho + 'px');
+          resolve(null);
+        };
+        img.src = iconeSvgUrl;
+      });
+    }
+
+    // ─── Monta e injeta o manifest (assíncrono) ───
+    Promise.all([gerarPng(192), gerarPng(512), gerarPng(512)]).then(function(pngs) {
+      var png192 = pngs[0];
+      var png512 = pngs[1];
+      var png512Mask = pngs[2];
+
+      var icons = [];
+      if (png192) icons.push({ src: png192, sizes: "192x192", type: "image/png", purpose: "any" });
+      if (png512) icons.push({ src: png512, sizes: "512x512", type: "image/png", purpose: "any" });
+      if (png512Mask) icons.push({ src: png512Mask, sizes: "512x512", type: "image/png", purpose: "maskable" });
+      // Fallback SVG (não ajuda no install do Chrome, mas não atrapalha)
+      icons.push({ src: iconeSvgUrl, sizes: "any", type: "image/svg+xml", purpose: "any" });
+
+      var manifest = {
+        name: "Copa da Tabuada CEIB 2026",
+        short_name: "Copa Tabuada",
+        description: "Competição de tabuada — Colégio Estadual Ismael Branco",
+        lang: "pt-BR",
+        start_url: baseUrl,
+        scope: baseUrl,
+        id: baseUrl,
+        display: "standalone",
+        orientation: "portrait",
+        background_color: "#0a1628",
+        theme_color: "#0a1628",
+        categories: ["education", "games"],
+        icons: icons
+      };
+
+      var manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+      var manifestUrl  = URL.createObjectURL(manifestBlob);
+
+      var linkManifest = document.createElement("link");
+      linkManifest.rel = "manifest";
+      linkManifest.href = manifestUrl;
+      document.head.appendChild(linkManifest);
+
+      window.__PWA_ICONE_URL__ = iconeSvgUrl;
+      window.__PWA_MANIFEST_URL__ = manifestUrl;
+      window.__PWA_BASE_URL__ = baseUrl;
+      console.info('✅ PWA: manifest injetado —', (icons.length - 1) + ' PNG(s) + 1 SVG');
+
+      // ─── Auto-reload silencioso se o link for trocado depois do SW estar ativo ───
+      // Isso garante que o Chrome reavalie o manifest no próximo load.
+    }).catch(function(e) {
+      console.info('PWA: erro ao montar manifest —', e && e.message);
+    });
   } catch (e) {
     console.info("PWA: manifest inline indisponível neste contexto.", e && e.message);
   }
@@ -11141,7 +11179,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     votacaoTimerInterval = setInterval(async () => {
         try {
             await verificarEFecharVotacaoSeNecessario();
-            await verificarEEncerrarEtapaSeNecessario();
+            await verificarEEncerrarEt17:52 10/10/2026apaSeNecessario();
             const card = document.getElementById("card-votacao");
             if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
             await atualizarTelaInicialComEtapa();
