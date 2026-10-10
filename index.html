@@ -4,19 +4,114 @@
      📑 ÍNDICE — Ctrl+F pelo código para pular direto
      [01] HEAD · [02] CSS · [03] HTML telas · [04] HTML modais · [05]-[19] JS
      Blocos recentes:
-       [02.40]      CSS · Alerta de proximidade pós-partida
-       [02.41]      CSS · Tela "Meu Progresso"
+       [01.02]      HEAD · Meta tags PWA
+       [01.03]      HEAD · Manifest inline (Blob)
+       [02.40]      CSS  · Alerta de proximidade pós-partida
+       [02.41]      CSS  · Tela "Meu Progresso"
        [03.13]      HTML · Tela "Meu Progresso"
-       [10.07]      JS  · Render da tela "Meu Progresso" (5 funções)
-       [14.09.bis]  JS  · Cálculo do alerta de proximidade
-       [14.10]      JS  · Chamada do alerta + certificados pós-partida
-     Versão: 10.3.0 — Alerta de proximidade + Tela "Meu Progresso" de certificados
+       [10.07]      JS   · Render da tela "Meu Progresso" (5 funções)
+       [14.09.bis]  JS   · Cálculo do alerta de proximidade
+       [14.10]      JS   · Chamada do alerta + certificados pós-partida
+     Versão: 10.4.0 — App instalável (PWA) + Alerta de proximidade + Meu Progresso
      ═══════════════════════════════════════════════════════════════════════ -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Copa da Tabuada CEIB 2026 · Etapa Classificatória</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏆%3C/text%3E%3C/svg%3E">
+
+    <!-- ▼▼▼ [01.02] Meta tags PWA ──────────────────────── INÍCIO ─── -->
+    <meta name="theme-color" content="#0a1628">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Copa da Tabuada">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Copa da Tabuada">
+    <meta name="description" content="Competição de tabuada — Copa da Tabuada CEIB 2026">
+    <meta name="format-detection" content="telephone=no">
+    <!-- ▲▲▲ FIM [01.02] -->
+
+    <!-- ▼▼▼ [01.03] Manifest PWA inline (via Blob) ───────── INÍCIO ─── -->
+    <script>
+    (function() {
+      try {
+        // ─── Ícone SVG (trofêu dourado + × sobre taça, fundo escuro) ───
+        var ICONE_SVG =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
+            '<defs>' +
+              '<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#fde68a"/>' +
+                '<stop offset="0.5" stop-color="#fbbf24"/>' +
+                '<stop offset="1" stop-color="#b45309"/>' +
+              '</linearGradient>' +
+              '<radialGradient id="h" cx="50%" cy="45%" r="60%">' +
+                '<stop offset="0" stop-color="#fbbf24" stop-opacity="0.22"/>' +
+                '<stop offset="1" stop-color="#fbbf24" stop-opacity="0"/>' +
+              '</radialGradient>' +
+            '</defs>' +
+            '<rect width="512" height="512" rx="96" fill="#0a1628"/>' +
+            '<rect width="512" height="512" rx="96" fill="url(#h)"/>' +
+            '<g transform="translate(0,8)">' +
+              '<path d="M164 118 H348 V230 C348 296 305 340 256 340 C207 340 164 296 164 230 Z" fill="url(#g)"/>' +
+              '<path d="M164 148 H126 C100 148 88 168 88 194 C88 240 118 268 166 274 L166 250 C132 244 112 226 112 196 C112 178 124 170 142 170 H164 Z" fill="url(#g)"/>' +
+              '<path d="M348 148 H386 C412 148 424 168 424 194 C424 240 394 268 346 274 L346 250 C380 244 400 226 400 196 C400 178 388 170 370 170 H348 Z" fill="url(#g)"/>' +
+              '<g stroke="#0a1628" stroke-width="22" stroke-linecap="round">' +
+                '<path d="M226 190 L286 250"/>' +
+                '<path d="M286 190 L226 250"/>' +
+              '</g>' +
+              '<rect x="236" y="340" width="40" height="52" fill="url(#g)"/>' +
+              '<rect x="200" y="392" width="112" height="16" rx="4" fill="url(#g)"/>' +
+              '<rect x="170" y="408" width="172" height="26" rx="8" fill="url(#g)"/>' +
+            '</g>' +
+          '</svg>';
+
+        var iconeUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICONE_SVG);
+
+        // ─── Manifest JSON ───
+        var manifest = {
+          name: "Copa da Tabuada CEIB 2026",
+          short_name: "Copa Tabuada",
+          description: "Competição de tabuada — Colégio Estadual Ismael Branco",
+          lang: "pt-BR",
+          start_url: "./",
+          scope: "./",
+          display: "standalone",
+          orientation: "portrait",
+          background_color: "#0a1628",
+          theme_color: "#0a1628",
+          categories: ["education", "games"],
+          icons: [
+            { src: iconeUrl, sizes: "192x192", type: "image/svg+xml", purpose: "any" },
+            { src: iconeUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any" },
+            { src: iconeUrl, sizes: "512x512", type: "image/svg+xml", purpose: "maskable" }
+          ]
+        };
+
+        var manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+        var manifestUrl  = URL.createObjectURL(manifestBlob);
+
+        // ─── Injeta <link rel="manifest"> ───
+        var linkManifest = document.createElement("link");
+        linkManifest.rel = "manifest";
+        linkManifest.href = manifestUrl;
+        document.head.appendChild(linkManifest);
+
+        // ─── Injeta <link rel="apple-touch-icon"> (iOS) ───
+        var linkApple = document.createElement("link");
+        linkApple.rel = "apple-touch-icon";
+        linkApple.href = iconeUrl;
+        document.head.appendChild(linkApple);
+
+        // ─── Guarda as URLs em escopo global (uso opcional em outros pontos) ───
+        window.__PWA_ICONE_URL__ = iconeUrl;
+        window.__PWA_MANIFEST_URL__ = manifestUrl;
+      } catch (e) {
+        console.info("PWA: manifest inline indisponível neste contexto.", e && e.message);
+      }
+    })();
+    </script>
+    <!-- ▲▲▲ FIM [01.03] -->
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js"></script>
     <style>
 
@@ -3403,49 +3498,54 @@
         </div>
     </div>
 
-    <!-- ▼▼▼ [04.03] MODAL CHANGELOG ──────────────────────────── -->
-    <div id="modal-changelog" class="modal-overlay hidden" onclick="fecharChangelog(event)">
-        <div class="modal-card changelog-modal-card" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
-            <div class="changelog-lista">
-                <div class="changelog-item">
-                    <span class="changelog-versao atual" id="changelog-versao-atual">v10.3.0 · atual</span>
-                    <h4 class="changelog-titulo">🎯 Alerta de proximidade + Tela "Meu Progresso"</h4>
-                    <p class="changelog-descricao">Após cada partida, você agora vê <strong>o quanto falta</strong> para conquistar o próximo certificado — se faltam até 5 operações, aparece em <strong>dourado</strong>; se faltam 6 a 15, em <strong>ciano discreto</strong>. Se o problema é só velocidade, o alerta avisa: "falta acelerar". Nova tela <strong>"Meu Progresso"</strong> (no Desempenho → 📈) mostra todos os seus certificados possíveis, <strong>timeline de conquistas</strong> com datas, e um card de "Próximo Objetivo" com botão direto para <strong>treinar a modalidade</strong>.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v10.2.0</span>
-                    <h4 class="changelog-titulo">🗺️ Mapa de Tabuadas na Home + Ranking de Turmas</h4>
-                    <p class="changelog-descricao">Novo card <strong>Mapa de Tabuadas</strong> na Home com % de domínio geral e chips por modalidade. Botão abre o <strong>modal do mapa completo com 3 abas</strong> (🌐 Todas · 📚 2-5 · 🎯 6-9), todas na fonte global — jogar 2-5 preenche o 1-10 automaticamente. <strong>Ranking de Turmas</strong> agora exige mínimo de <strong>4 alunos por modalidade</strong>; se sua turma está fora, aparece aviso amarelo com quantos colegas faltam. Novo card <strong>Minhas Posições</strong> mostra sua posição nas 3 modalidades de uma vez.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v10.1.0</span>
-                    <h4 class="changelog-titulo">🧭 Navegação global + badges na nav</h4>
-                    <p class="changelog-descricao">A navegação inferior agora <strong>persiste entre as telas</strong> principais e marca automaticamente a aba ativa. Os avisos de <strong>medalha nova no Álbum</strong> e <strong>mensagem do professor</strong> foram movidos para a própria nav — você vê tudo de qualquer tela, sem abrir menu.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v10.0.0</span>
-                    <h4 class="changelog-titulo">🎓 Sistema de Certificados (Prata / Ouro / Lendária)</h4>
-                    <p class="changelog-descricao">Novo sistema de domínio com <strong>janela deslizante</strong> (últimas 10 tentativas) — o passado não pune mais o aluno. Mapa com <strong>5 cores</strong>: dominada, quase dominada, em desenvolvimento, atenção e avaliando. Certificados por modalidade: <strong>Prata</strong> (85% do mapa), <strong>Ouro</strong> (95% + velocidade) e <strong>Lendária</strong> (100% + fluência). Treino inteligente que prioriza operações pendentes.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v9.0.0</span>
-                    <h4 class="changelog-titulo">🏆 Home Competitiva + Hall da Fama + Ranking de Turmas</h4>
-                    <p class="changelog-descricao">Redesign completo da Home. Novo card "Ranking de Turmas" (Top 4 + sua turma), indicador de distância para o próximo colocado, meta pessoal compacta e alerta de Modo Teste. Nova tela "Hall da Fama".</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.9.3</span>
-                    <h4 class="changelog-titulo">📅 Modal Detalhes da Etapa + Retorno no Álbum</h4>
-                    <p class="changelog-descricao">Novo botão "Ver detalhes da etapa" abre um modal dedicado com status, prazos e votação.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v8.9</span>
-                    <h4 class="changelog-titulo">🏠 Home Player Hub + Navegação Inferior</h4>
-                    <p class="changelog-descricao">Redesign completo da tela inicial. Nova navegação inferior fixa com 5 abas.</p>
-                </div>
+<!-- ▼▼▼ [04.03] MODAL CHANGELOG ──────────────────────────── -->
+<div id="modal-changelog" class="modal-overlay hidden" onclick="fecharChangelog(event)">
+    <div class="modal-card changelog-modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
+        <div class="changelog-lista">
+            <div class="changelog-item">
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.0 · atual</span>
+                <h4 class="changelog-titulo">📱 Agora é um app instalável (PWA)</h4>
+                <p class="changelog-descricao">Você pode <strong>instalar a Copa da Tabuada na tela inicial do celular</strong>, como um app de verdade. Abre em tela cheia, com ícone próprio (🏆 dourado) e splash screen. No Android/Chrome aparece o botão "Instalar app"; no iPhone, use <strong>Safari → Compartilhar → Adicionar à Tela de Início</strong>. Continua funcionando no navegador para quem não instalar — nada quebrou.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.3.0</span>
+                <h4 class="changelog-titulo">🎯 Alerta de proximidade + Tela "Meu Progresso"</h4>
+                <p class="changelog-descricao">Após cada partida, você agora vê <strong>o quanto falta</strong> para conquistar o próximo certificado — se faltam até 5 operações, aparece em <strong>dourado</strong>; se faltam 6 a 15, em <strong>ciano discreto</strong>. Se o problema é só velocidade, o alerta avisa: "falta acelerar". Nova tela <strong>"Meu Progresso"</strong> (no Desempenho → 📈) mostra todos os seus certificados possíveis, <strong>timeline de conquistas</strong> com datas, e um card de "Próximo Objetivo" com botão direto para <strong>treinar a modalidade</strong>.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.2.0</span>
+                <h4 class="changelog-titulo">🗺️ Mapa de Tabuadas na Home + Ranking de Turmas</h4>
+                <p class="changelog-descricao">Novo card <strong>Mapa de Tabuadas</strong> na Home com % de domínio geral e chips por modalidade. Botão abre o <strong>modal do mapa completo com 3 abas</strong> (🌐 Todas · 📚 2-5 · 🎯 6-9), todas na fonte global — jogar 2-5 preenche o 1-10 automaticamente. <strong>Ranking de Turmas</strong> agora exige mínimo de <strong>4 alunos por modalidade</strong>; se sua turma está fora, aparece aviso amarelo com quantos colegas faltam. Novo card <strong>Minhas Posições</strong> mostra sua posição nas 3 modalidades de uma vez.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.1.0</span>
+                <h4 class="changelog-titulo">🧭 Navegação global + badges na nav</h4>
+                <p class="changelog-descricao">A navegação inferior agora <strong>persiste entre as telas</strong> principais e marca automaticamente a aba ativa. Os avisos de <strong>medalha nova no Álbum</strong> e <strong>mensagem do professor</strong> foram movidos para a própria nav — você vê tudo de qualquer tela, sem abrir menu.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.0.0</span>
+                <h4 class="changelog-titulo">🎓 Sistema de Certificados (Prata / Ouro / Lendária)</h4>
+                <p class="changelog-descricao">Novo sistema de domínio com <strong>janela deslizante</strong> (últimas 10 tentativas) — o passado não pune mais o aluno. Mapa com <strong>5 cores</strong>: dominada, quase dominada, em desenvolvimento, atenção e avaliando. Certificados por modalidade: <strong>Prata</strong> (85% do mapa), <strong>Ouro</strong> (95% + velocidade) e <strong>Lendária</strong> (100% + fluência). Treino inteligente que prioriza operações pendentes.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v9.0.0</span>
+                <h4 class="changelog-titulo">🏆 Home Competitiva + Hall da Fama + Ranking de Turmas</h4>
+                <p class="changelog-descricao">Redesign completo da Home. Novo card "Ranking de Turmas" (Top 4 + sua turma), indicador de distância para o próximo colocado, meta pessoal compacta e alerta de Modo Teste. Nova tela "Hall da Fama".</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v8.9.3</span>
+                <h4 class="changelog-titulo">📅 Modal Detalhes da Etapa + Retorno no Álbum</h4>
+                <p class="changelog-descricao">Novo botão "Ver detalhes da etapa" abre um modal dedicado com status, prazos e votação.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v8.9</span>
+                <h4 class="changelog-titulo">🏠 Home Player Hub + Navegação Inferior</h4>
+                <p class="changelog-descricao">Redesign completo da tela inicial. Nova navegação inferior fixa com 5 abas.</p>
             </div>
         </div>
     </div>
+</div>
 
     <!-- ▼▼▼ [04.04] MODAL SEÇÃO COMPLETA ─────────────────────── -->
     <div id="modal-secao-completa" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="album-modal-secao-titulo" onclick="fecharModalSecaoCompleta(event)">
@@ -3731,21 +3831,21 @@
     // [05] JS-CFG · Constantes e configuração global
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-    const APP_VERSION = "10.3.0";
-    const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
-    const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
+// ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
+const APP_VERSION = "10.4.0";
+const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
+const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
-    function verificarVersao() {
-        const versaoLocal = localStorage.getItem('appVersao');
-        if (versaoLocal !== APP_VERSION) {
-            localStorage.setItem('appVersao', APP_VERSION);
-            if (window.location.search.includes('v=')) { location.reload(true); }
-            else { const sep = window.location.search ? '&' : '?'; window.location.href = window.location.href + sep + 'v=' + APP_VERSION; }
-        }
+function verificarVersao() {
+    const versaoLocal = localStorage.getItem('appVersao');
+    if (versaoLocal !== APP_VERSION) {
+        localStorage.setItem('appVersao', APP_VERSION);
+        if (window.location.search.includes('v=')) { location.reload(true); }
+        else { const sep = window.location.search ? '&' : '?'; window.location.href = window.location.href + sep + 'v=' + APP_VERSION; }
     }
-    verificarVersao();
-    // ▲▲▲ FIM [05.01]
+}
+verificarVersao();
+// ▲▲▲ FIM [05.01]
 
     // ▼▼▼ [05.02] Firebase e caminhos ──────────────────────────────────────
     const firebaseConfig = {
@@ -10983,47 +11083,64 @@ if (containerProg) {
     }
     // ▲▲▲ FIM [19.02]
 
-    // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
-    window.addEventListener("DOMContentLoaded", async () => {
-        mostrarTela("tela-inicial");
-        atualizarBotaoMinhaTurma();
-        mudarTipoRanking("turma");
-        configurarToqueSecreto();
-        inicializarAudio();
-        atualizarAcessoSeConhecido();
-        try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
-        try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
-        const elV = document.getElementById("changelog-versao-atual");
-        if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
-        const elVMenu = document.getElementById("mais-versao-atual");
-        if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
-        iniciarListenerMsgAluno();
+// ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
+async function registrarServiceWorker() {
+    // PWA só faz sentido em HTTPS (ou localhost). Fora disso, no-op silencioso.
+    if (!('serviceWorker' in navigator)) return;
+    const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if (!isHTTPS) return;
+    try {
+        const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
+        console.info('✅ PWA: Service Worker registrado em', reg.scope);
+    } catch (e) {
+        // Sem sw.js hospedado? Sem problema — o app roda 100% sem ele.
+        console.info('ℹ️ PWA: Service Worker não disponível (opcional). App segue normal.');
+    }
+}
 
+window.addEventListener("DOMContentLoaded", async () => {
+    // ─── PWA: registra Service Worker (opcional; falha em silêncio) ───
+    registrarServiceWorker();
+
+    mostrarTela("tela-inicial");
+    atualizarBotaoMinhaTurma();
+    mudarTipoRanking("turma");
+    configurarToqueSecreto();
+    inicializarAudio();
+    atualizarAcessoSeConhecido();
+    try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
+    try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
+    const elV = document.getElementById("changelog-versao-atual");
+    if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
+    const elVMenu = document.getElementById("mais-versao-atual");
+    if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
+    iniciarListenerMsgAluno();
+
+    try {
+        await verificarEIniciarEtapaSeNecessario();
+        await verificarEFecharVotacaoSeNecessario();
+        await verificarEEncerrarEtapaSeNecessario();
+    } catch(e) { console.warn("Falha ao processar ciclo da etapa:", e); }
+    try { await atualizarTelaInicialComEtapa(); } catch(e) { console.warn("Falha ao atualizar tela inicial com etapa:", e); }
+    try { await renderizarCardVotacao(); } catch(e) { console.warn("Falha ao renderizar card de votação:", e); }
+    try { await preencherHomeEsports(); } catch(e) { console.warn("Falha ao preencher home:", e); }
+    try { await renderizarMapaHome(); } catch(e) { console.warn("Falha ao renderizar mapa home:", e); }
+    try { await renderizarTreinoInteligenteHome(); } catch(e) { console.warn("Falha ao renderizar treino inteligente:", e); }
+
+    if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
+    votacaoTimerInterval = setInterval(async () => {
         try {
-            await verificarEIniciarEtapaSeNecessario();
             await verificarEFecharVotacaoSeNecessario();
             await verificarEEncerrarEtapaSeNecessario();
-        } catch(e) { console.warn("Falha ao processar ciclo da etapa:", e); }
-        try { await atualizarTelaInicialComEtapa(); } catch(e) { console.warn("Falha ao atualizar tela inicial com etapa:", e); }
-        try { await renderizarCardVotacao(); } catch(e) { console.warn("Falha ao renderizar card de votação:", e); }
-        try { await preencherHomeEsports(); } catch(e) { console.warn("Falha ao preencher home:", e); }
-        try { await renderizarMapaHome(); } catch(e) { console.warn("Falha ao renderizar mapa home:", e); }
-        try { await renderizarTreinoInteligenteHome(); } catch(e) { console.warn("Falha ao renderizar treino inteligente:", e); }
+            const card = document.getElementById("card-votacao");
+            if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
+            await atualizarTelaInicialComEtapa();
+        } catch(e) { console.warn("Timer votação/etapa:", e); }
+    }, 60000);
 
-        if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
-        votacaoTimerInterval = setInterval(async () => {
-            try {
-                await verificarEFecharVotacaoSeNecessario();
-                await verificarEEncerrarEtapaSeNecessario();
-                const card = document.getElementById("card-votacao");
-                if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
-                await atualizarTelaInicialComEtapa();
-            } catch(e) { console.warn("Timer votação/etapa:", e); }
-        }, 60000);
-
-        setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
-    });
-    // ▲▲▲ FIM [19.03]
+    setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
+});
+// ▲▲▲ FIM [19.03]
     </script>
 </body>
 </html>
