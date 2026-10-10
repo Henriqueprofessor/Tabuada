@@ -3040,6 +3040,164 @@
             .mapa-home-mod-btn { min-width: 70px; padding: 7px 6px; font-size: 11px; }
         }
         /* ▲▲▲ FIM [02.42] */
+        /* ▼▼▼ [02.43] Alerta proativo: falta pouco pro 100% ──────── INÍCIO ─── */
+        .alerta-foco-absoluto {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px 18px;
+            margin: 14px 0 0;
+            border-radius: 16px;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(255,255,255,.18) 0%, transparent 45%),
+                linear-gradient(135deg, #78350f 0%, #b45309 45%, #f59e0b 100%);
+            border: 2px solid #fbbf24;
+            box-shadow:
+                0 8px 28px rgba(251, 191, 36, 0.35),
+                inset 0 0 40px rgba(0, 0, 0, 0.15);
+            animation: alertaFocoIn 0.55s cubic-bezier(.34, 1.56, .64, 1),
+                       alertaFocoPulse 2.6s ease-in-out infinite 0.55s;
+        }
+        @keyframes alertaFocoIn {
+            0% { opacity: 0; transform: translateY(-8px) scale(0.97); }
+            60% { opacity: 1; transform: translateY(0) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes alertaFocoPulse {
+            0%, 100% { box-shadow: 0 8px 28px rgba(251, 191, 36, 0.35), inset 0 0 40px rgba(0, 0, 0, 0.15); }
+            50% { box-shadow: 0 8px 34px rgba(251, 191, 36, 0.55), inset 0 0 40px rgba(0, 0, 0, 0.15); }
+        }
+        .alerta-foco-absoluto::after {
+            content: "🎯";
+            position: absolute;
+            right: -10px;
+            top: -14px;
+            font-size: 110px;
+            opacity: 0.08;
+            transform: rotate(14deg);
+            pointer-events: none;
+        }
+        .alerta-foco-topo {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        .alerta-foco-icone {
+            font-size: 40px;
+            line-height: 1;
+            flex-shrink: 0;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+            animation: alertaFocoFloat 2.4s ease-in-out infinite;
+        }
+        @keyframes alertaFocoFloat {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+        .alerta-foco-texto {
+            flex: 1;
+            min-width: 0;
+        }
+        .alerta-foco-titulo {
+            font-size: 15.5px;
+            font-weight: 900;
+            color: #fef3c7;
+            line-height: 1.25;
+            letter-spacing: 0.2px;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+            margin-bottom: 4px;
+        }
+        .alerta-foco-sub {
+            font-size: 13px;
+            color: #fff7ed;
+            line-height: 1.45;
+            font-weight: 600;
+        }
+        .alerta-foco-sub strong {
+            color: #fff;
+            font-weight: 900;
+            background: rgba(0, 0, 0, 0.22);
+            padding: 1px 7px;
+            border-radius: 6px;
+            letter-spacing: 0.2px;
+        }
+        .alerta-foco-botao {
+            width: 100%;
+            margin: 0;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            background: #0a1628;
+            color: #fde68a;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #050b16, 0 6px 18px rgba(0, 0, 0, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.15s ease;
+        }
+        .alerta-foco-botao:hover {
+            background: #050b16;
+            color: #fef3c7;
+            transform: translateY(-1px);
+        }
+        .alerta-foco-botao:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #050b16, 0 3px 10px rgba(0, 0, 0, 0.35);
+        }
+        .alerta-foco-botao small {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: 0.3px;
+        }
+        .alerta-foco-fechar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            margin: 0;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.25);
+            color: #fef3c7;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .alerta-foco-fechar:hover {
+            background: rgba(220, 38, 38, 0.9);
+            border-color: #dc2626;
+        }
+        @media (max-width: 480px) {
+            .alerta-foco-absoluto { padding: 14px 14px; gap: 10px; margin-top: 12px; }
+            .alerta-foco-icone { font-size: 34px; }
+            .alerta-foco-titulo { font-size: 14px; }
+            .alerta-foco-sub { font-size: 12px; }
+            .alerta-foco-botao { font-size: 14px; padding: 13px 16px; }
+            .alerta-foco-fechar { top: 8px; right: 8px; width: 24px; height: 24px; font-size: 11px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .alerta-foco-absoluto, .alerta-foco-icone { animation: none !important; }
+        }
+        /* ▲▲▲ FIM [02.43] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -3068,6 +3226,7 @@
         </header>
 
         <div id="modo-teste-banner-container"></div>
+        <div id="alerta-foco-absoluto-container"></div>
 
         <section id="hero-pre-evento" class="hero-pre-evento hidden" aria-labelledby="titulo-pre-evento">
             <div class="hero-pre-evento-kicker">🚀 A COPA VAI COMEÇAR</div>
@@ -3626,7 +3785,12 @@
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.2 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.3 · atual</span>
+                <h4 class="changelog-titulo">🎯 Aviso impossível de ignorar: falta pouco pro 100%</h4>
+                <p class="changelog-descricao">Se você está a <strong>5 operações ou menos</strong> de fechar o mapa, agora aparece um <strong>banner dourado no topo da Home</strong> — logo abaixo do cabeçalho, antes do "Olá, [seu nome]". Ele mostra quantas operações faltam e em qual modalidade, com um botão grande <strong>"🎯 Focar agora"</strong> que já abre o treino em FOCO ABSOLUTO. Dá pra dispensar por hoje no ✕, mas ele volta no dia seguinte enquanto você não fechar os 100%.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.4.2</span>
                 <h4 class="changelog-titulo">🎯 Foco Absoluto à prova de erro</h4>
                 <p class="changelog-descricao">Agora o card <strong>Mapa de Tabuadas</strong> mostra um seletor para você escolher em qual modalidade focar (📚 2-5 · 🎯 6-9 · ⭐ 1-10). Cada botão mostra <strong>quantas operações estão pendentes</strong> naquela modalidade. O sistema já <strong>pula automaticamente</strong> para a modalidade que tem pendências — mesmo que o seletor antigo estivesse em outra. Também ficou impossível cair no caso "escolhi a modalidade errada e o app disse que eu já domino tudo". Se uma modalidade está 100% verde, o botão fica apagado com um ✓.</p>
             </div>
@@ -3964,7 +4128,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
 // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.4.2";
+const APP_VERSION = "10.4.3";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -11241,6 +11405,119 @@ if (containerProg) {
         document.getElementById("modal-detalhes-etapa")?.classList.add("hidden");
     }
     // ▲▲▲ FIM [18.03]
+    // ▼▼▼ [18.04] Alerta proativo: falta pouco pro 100% ───────────
+    // Mostra um banner dourado no topo da Home quando o aluno tem ≤5 operações
+    // pendentes em qualquer modalidade, com botão direto para o Foco Absoluto.
+    // Dispensável uma vez por dia (não persegue o aluno).
+
+    const STORAGE_ALERTA_FOCO_DIA = "copa_alerta_foco_dispensado_dia";
+
+    function diaDeHoje() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+
+    function foiDispensadoHoje() {
+        try { return localStorage.getItem(STORAGE_ALERTA_FOCO_DIA) === diaDeHoje(); }
+        catch(e) { return false; }
+    }
+
+    function dispensarAlertaFocoDia() {
+        try { localStorage.setItem(STORAGE_ALERTA_FOCO_DIA, diaDeHoje()); } catch(e) {}
+        const c = document.getElementById("alerta-foco-absoluto-container");
+        if (c) c.innerHTML = "";
+    }
+
+    async function renderizarAlertaFocoAbsoluto() {
+        const container = document.getElementById("alerta-foco-absoluto-container");
+        if (!container) return;
+        container.innerHTML = "";
+
+        // Não perseguir aluno: se ele já dispensou hoje, não incomoda de novo.
+        if (foiDispensadoHoje()) return;
+
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) return;
+
+        try {
+            const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
+
+            // Conta pendências por modalidade — mesmo cálculo do card do Mapa
+            const pendentesPorMod = {};
+            let totalPendentes = 0;
+            for (const mod of Object.keys(MODALIDADES)) {
+                const ops = obterOperacoesDaModalidade(mod);
+                let pend = 0;
+                ops.forEach(op => {
+                    const h = normalizarHistoricoOperacao(mapaGlobal[op]);
+                    if (estadoDaOperacao(h) !== "verde") pend++;
+                });
+                pendentesPorMod[mod] = pend;
+                totalPendentes += pend;
+            }
+
+            // Alerta só aparece se estiver no final da jornada (total geral ≤ 5)
+            if (totalPendentes === 0 || totalPendentes > 5) return;
+
+            // Escolhe a modalidade com mais pendências (a que a aluna deve focar)
+            const modAlvo = Object.keys(pendentesPorMod)
+                .filter(m => pendentesPorMod[m] > 0)
+                .sort((a, b) => pendentesPorMod[b] - pendentesPorMod[a])[0];
+            if (!modAlvo) return;
+
+            const pendNaAlvo = pendentesPorMod[modAlvo];
+            const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+            const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
+
+            const pluralOp = pendNaAlvo === 1 ? "operação" : "operações";
+            const rotuloMod = `${icones[modAlvo]} ${rotulos[modAlvo]}`;
+
+            container.innerHTML = `
+                <div class="alerta-foco-absoluto" role="status" aria-live="polite">
+                    <button class="alerta-foco-fechar" onclick="dispensarAlertaFocoDia()" aria-label="Dispensar por hoje">✕</button>
+                    <div class="alerta-foco-topo">
+                        <span class="alerta-foco-icone" aria-hidden="true">🎯</span>
+                        <div class="alerta-foco-texto">
+                            <div class="alerta-foco-titulo">Falta pouco pro 100%!</div>
+                            <div class="alerta-foco-sub">
+                                Você tem <strong>${pendNaAlvo} ${pluralOp}</strong> para dominar em <strong>${rotuloMod}</strong>.
+                                ${totalPendentes > pendNaAlvo ? `No total, faltam <strong>${totalPendentes}</strong> no mapa.` : ""}
+                            </div>
+                        </div>
+                    </div>
+                    <button class="alerta-foco-botao" onclick="iniciarFocoAbsolutoDaHome('${modAlvo}')">
+                        🎯 Focar agora <small>~3 min</small>
+                    </button>
+                </div>
+            `;
+
+            // Registra no console para debug
+            console.info(`[Alerta Foco] ${pendNaAlvo} pendente(s) em ${modAlvo}, total ${totalPendentes}`);
+        } catch(e) {
+            console.warn("[Alerta Foco] Falha ao renderizar:", e);
+        }
+    }
+
+    // Observa a tela-inicial: sempre que ela deixar de estar `.hidden`,
+    // recalcula o alerta. Isso garante que ele apareça em TODA entrada na Home,
+    // sem precisar editar `mostrarTela()`.
+    function ativarObserverAlertaFoco() {
+        const telaInicial = document.getElementById("tela-inicial");
+        if (!telaInicial) return;
+        const disparar = () => {
+            if (!telaInicial.classList.contains("hidden")) {
+                // Pequeno delay para garantir que os dados do Firebase já chegaram
+                setTimeout(() => { renderizarAlertaFocoAbsoluto(); }, 250);
+            }
+        };
+        // MutationObserver — dispara sempre que a classe da tela-inicial mudar
+        const obs = new MutationObserver(disparar);
+        obs.observe(telaInicial, { attributes: true, attributeFilter: ["class"] });
+        // Primeira execução (caso já esteja visível no boot)
+        disparar();
+    }
+    // ▲▲▲ FIM [18.04]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
@@ -11352,6 +11629,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     try { await preencherHomeEsports(); } catch(e) { console.warn("Falha ao preencher home:", e); }
     try { await renderizarMapaHome(); } catch(e) { console.warn("Falha ao renderizar mapa home:", e); }
     try { await renderizarTreinoInteligenteHome(); } catch(e) { console.warn("Falha ao renderizar treino inteligente:", e); }
+
+    // v10.4.3 — Ativa o observer que dispara o alerta de foco sempre que a Home é exibida
+    try { ativarObserverAlertaFoco(); } catch(e) { console.warn("Falha ao ativar observer do alerta:", e); }
+    // Primeira renderização imediata (não espera clique)
+    try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
 
     if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
     votacaoTimerInterval = setInterval(async () => {
