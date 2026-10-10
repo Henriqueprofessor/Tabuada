@@ -2497,6 +2497,156 @@
         .tabela-medias .tag-media-2 { background: #94a3b8 !important; color: #1e293b !important; }
         .tabela-medias .tag-media-3 { background: #b45309 !important; color: #fef3c7 !important; }
         /* ▲▲▲ FIM [02.39] */
+        /* ▼▼▼ [02.40] Alerta de proximidade pós-partida ─────── */
+        .alerta-proximidade {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(217, 119, 6, 0.10) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.55);
+            border-left: 4px solid #fbbf24;
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin: 16px 0;
+            text-align: left;
+            box-shadow: 0 4px 18px rgba(251, 191, 36, 0.18), inset 0 0 40px rgba(251, 191, 36, 0.04);
+            animation: alertaProxIn 0.5s cubic-bezier(.34, 1.56, .64, 1);
+        }
+        .alerta-proximidade::after {
+            content: "🎯";
+            position: absolute;
+            right: 14px;
+            top: 8px;
+            font-size: 56px;
+            opacity: 0.10;
+            transform: rotate(12deg);
+            pointer-events: none;
+        }
+        @keyframes alertaProxIn {
+            0% { opacity: 0; transform: translateY(-6px) scale(0.97); }
+            60% { opacity: 1; transform: translateY(0) scale(1.01); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .alerta-prox-topo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .alerta-prox-icone {
+            font-size: 34px;
+            line-height: 1;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+            animation: alertaProxFloat 2.4s ease-in-out infinite;
+        }
+        @keyframes alertaProxFloat {
+            0%, 100% { transform: translateY(0) rotate(-4deg); }
+            50% { transform: translateY(-4px) rotate(4deg); }
+        }
+        .alerta-prox-titulo {
+            font-size: 15px;
+            font-weight: 900;
+            color: #fde68a;
+            line-height: 1.25;
+            letter-spacing: 0.2px;
+        }
+        .alerta-prox-titulo strong {
+            color: #fbbf24;
+            font-size: 17px;
+        }
+        .alerta-prox-mensagem {
+            font-size: 13.5px;
+            color: #fef3c7;
+            line-height: 1.55;
+            margin: 0 0 12px;
+        }
+        .alerta-prox-mensagem strong {
+            color: #fff;
+            font-weight: 900;
+            background: rgba(251, 191, 36, 0.22);
+            padding: 1px 7px;
+            border-radius: 5px;
+        }
+        .alerta-prox-barra {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .alerta-prox-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #fbbf24 0%, #fde68a 100%);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+            transition: width 0.9s cubic-bezier(.22, 1, .36, 1);
+            width: 0%;
+        }
+        .alerta-prox-barra-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: #fcd34d;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .alerta-prox-barra-info .pct {
+            color: #fbbf24;
+            font-weight: 900;
+        }
+
+        /* Variante discreta — usada quando faltam 6 a 15 operações */
+        .alerta-proximidade.secundario {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.10) 0%, rgba(14, 165, 233, 0.06) 100%);
+            border-color: rgba(34, 211, 238, 0.40);
+            border-left-color: #22d3ee;
+            box-shadow: 0 3px 14px rgba(34, 211, 238, 0.10);
+        }
+        .alerta-proximidade.secundario::after {
+            content: "📈";
+            opacity: 0.10;
+        }
+        .alerta-proximidade.secundario .alerta-prox-icone {
+            filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.6));
+        }
+        .alerta-proximidade.secundario .alerta-prox-titulo {
+            color: #a5f3fc;
+        }
+        .alerta-proximidade.secundario .alerta-prox-titulo strong {
+            color: #22d3ee;
+        }
+        .alerta-proximidade.secundario .alerta-prox-mensagem {
+            color: #cffafe;
+        }
+        .alerta-proximidade.secundario .alerta-prox-mensagem strong {
+            background: rgba(34, 211, 238, 0.22);
+            color: #fff;
+        }
+        .alerta-proximidade.secundario .alerta-prox-fill {
+            background: linear-gradient(90deg, #22d3ee 0%, #67e8f9 100%);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        }
+        .alerta-proximidade.secundario .alerta-prox-barra-info {
+            color: #67e8f9;
+        }
+        .alerta-proximidade.secundario .alerta-prox-barra-info .pct {
+            color: #22d3ee;
+        }
+
+        @media (max-width: 520px) {
+            .alerta-proximidade { padding: 14px 15px; }
+            .alerta-proximidade::after { font-size: 44px; right: 8px; top: 6px; }
+            .alerta-prox-icone { font-size: 28px; }
+            .alerta-prox-titulo { font-size: 14px; }
+            .alerta-prox-titulo strong { font-size: 15.5px; }
+            .alerta-prox-mensagem { font-size: 12.5px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .alerta-proximidade { animation: none !important; }
+            .alerta-prox-icone { animation: none !important; }
+            .alerta-prox-fill { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.40] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -2776,6 +2926,7 @@
         <h2 id="resultado-titulo">Resultado</h2>
         <p id="feedback-pontos"></p>
         <div id="cards-comparacao-resultado"></div>
+        <div id="alerta-proximidade-container"></div>
         <div id="card-classificacao-container"></div>
         <div class="resumo-resultado">
             <div><strong>Turma:</strong> <span id="resumo-turma"></span></div>
@@ -7965,6 +8116,133 @@ if (containerProg) {
         try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
     }
     // ▲▲▲ FIM [14.09]
+    // ▼▼▼ [14.09.bis] Alerta de proximidade pós-partida ─────────
+    // Encontra o certificado NÃO conquistado mais próximo de ser vencido
+    // na modalidade recém-jogada. Retorna null se nenhum está a ≤15 operações.
+    function calcularProximoCertificado(mapaMod, mod) {
+        if (!mapaMod || !mod) return null;
+
+        const niveis = ["prata", "ouro", "lendaria"]; // ordem crescente de prestígio
+        const candidatos = [];
+
+        niveis.forEach(nivel => {
+            const cfg = CERT_NIVEIS[nivel];
+            if (!cfg) return;
+            const prog = calcularProgressoCertificado(mapaMod, mod, nivel);
+            if (prog.conquistado) return;
+
+            const gap = Math.max(0, prog.exigido - prog.dominadas);
+            const semVelocidade = prog.exigidoVelocidade && !prog.velocidadeOk && prog.dominadas > 0;
+
+            candidatos.push({ nivel, cfg, prog, gap, semVelocidade });
+        });
+
+        if (!candidatos.length) return null;
+
+        // Prioriza menor gap; empate → nível mais baixo (prata antes de ouro)
+        const ordem = { prata: 0, ouro: 1, lendaria: 2 };
+        candidatos.sort((a, b) => {
+            if (a.gap !== b.gap) return a.gap - b.gap;
+            return ordem[a.nivel] - ordem[b.nivel];
+        });
+
+        const melhor = candidatos[0];
+        // Fora da janela de "proximidade" — não mostra nada
+        if (melhor.gap > 15 && !melhor.semVelocidade) return null;
+        return melhor;
+    }
+
+    // Renderiza o card na tela de resultado.
+    // Deve ser chamada após a partida (oficial ou treino), com o container já no DOM.
+    async function renderizarAlertaProximidade(nome, turma, mod) {
+        const container = document.getElementById("alerta-proximidade-container");
+        if (!container) return;
+        container.innerHTML = "";
+
+        if (!nome || !turma || !mod) return;
+
+        let mapaMod = null;
+        try {
+            mapaMod = await obterMapaFirebase(nome, turma, mod);
+            if (!mapaMod || !Object.keys(mapaMod).length) {
+                mapaMod = obterMapaLocal(nome, turma, mod) || {};
+            }
+        } catch(e) {
+            console.warn("Alerta proximidade: falha ao ler mapa:", e);
+            return;
+        }
+
+        const alvo = calcularProximoCertificado(mapaMod, mod);
+        if (!alvo) return;
+
+        const { nivel, cfg, prog, gap, semVelocidade } = alvo;
+        const dominadas = prog.dominadas || 0;
+
+        // Decide o modo:
+        // - "proximo" (dourado): gap entre 0 e 5, ou falta só velocidade
+        // - "secundario" (ciano): gap entre 6 e 15
+        let variante = "proximo";
+        let titulo = "";
+        let mensagem = "";
+        let icone = "";
+
+        if (semVelocidade && gap === 0) {
+            const lentas = Math.max(0, dominadas - (prog.dominadasRapidas || 0));
+            variante = "proximo";
+            icone = "⚡";
+            titulo = `Você está a um passo do <strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong>!`;
+            mensagem = `Você já dominou todas as operações exigidas, mas <strong>${lentas} ${lentas === 1 ? "operação está lenta" : "operações estão lentas"}</strong>. Acelere nas próximas partidas para conquistar o certificado.`;
+        } else if (gap === 0) {
+            variante = "proximo";
+            icone = "🎯";
+            titulo = `Você está a um passo do <strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong>!`;
+            mensagem = `Continue jogando — você está muito perto de conquistar este certificado.`;
+        } else if (gap <= 5) {
+            const plural = gap === 1 ? "operação" : "operações";
+            variante = "proximo";
+            icone = "🎯";
+            titulo = `Você está a <strong>${gap} ${plural}</strong> do <strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong>!`;
+            mensagem = `Domine ${gap === 1 ? "mais essa operação" : `mais essas ${gap} operações`} na <strong>${escaparHtml(MODALIDADES[mod]?.nome || mod)}</strong> e o certificado é seu.`;
+        } else {
+            variante = "secundario";
+            icone = "📈";
+            titulo = `Próximo objetivo: <strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong>`;
+            mensagem = `Faltam <strong>${gap} operações</strong> para você desbloquear este certificado na <strong>${escaparHtml(MODALIDADES[mod]?.nome || mod)}</strong>. Continua firme!`;
+        }
+
+        const pct = prog.exigido > 0 ? Math.min(100, Math.round((dominadas / prog.exigido) * 100)) : 0;
+
+        container.innerHTML = `
+            <div class="alerta-proximidade ${variante === "secundario" ? "secundario" : ""}" role="status" aria-live="polite">
+                <div class="alerta-prox-topo">
+                    <span class="alerta-prox-icone" aria-hidden="true">${icone}</span>
+                    <div class="alerta-prox-titulo">${titulo}</div>
+                </div>
+                <p class="alerta-prox-mensagem">${mensagem}</p>
+                <div class="alerta-prox-barra">
+                    <div class="alerta-prox-fill" data-width="${pct}%" style="width:0%"></div>
+                </div>
+                <div class="alerta-prox-barra-info">
+                    <span>${dominadas} de ${prog.exigido} operações</span>
+                    <span class="pct">${pct}%</span>
+                </div>
+            </div>
+        `;
+
+        requestAnimationFrame(() => {
+            const fill = container.querySelector(".alerta-prox-fill");
+            if (fill) requestAnimationFrame(() => { fill.style.width = fill.dataset.width || "0%"; });
+        });
+
+        // Chime suave — só no alerta dourado, respeitando o botão de som
+        if (variante === "proximo") {
+            try {
+                tocarNota(1047, 0.12, "sine", 0.08);
+                tocarNota(1319, 0.20, "sine", 0.10, 0.10);
+            } catch(e) {}
+        }
+    }
+    // ▲▲▲ FIM [14.09.bis]
 
     // ▼▼▼ [14.10] Certificados pós-partida + promoções + treino da tela ─
     async function verificarCertificadosPosPartida(nome, turma, mod) {
@@ -7976,6 +8254,16 @@ if (containerProg) {
                 const ordenados = [...r.novos].sort((a, b) => ordem[a.nivel] - ordem[b.nivel]);
                 ordenados.forEach(c => enfileirarPopupCertificado(c));
             }
+            // P11 — Alerta de proximidade.
+            // Só exibe quando NÃO houve conquista (senão o popup dourado já basta).
+            try {
+                if (!r.novos || r.novos.length === 0) {
+                    await renderizarAlertaProximidade(nome, turma, mod);
+                } else {
+                    const ctn = document.getElementById("alerta-proximidade-container");
+                    if (ctn) ctn.innerHTML = "";
+                }
+            } catch(e) { console.warn("Falha ao renderizar alerta de proximidade:", e); }
             return r;
         } catch(e) { console.warn("Falha ao verificar certificados pós-partida:", e); return { novos: [] }; }
     }
