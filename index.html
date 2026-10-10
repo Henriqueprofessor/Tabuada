@@ -3,7 +3,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      📑 ÍNDICE — Ctrl+F pelo código para pular direto
      [01] HEAD · [02] CSS · [03] HTML telas · [04] HTML modais · [05]-[19] JS
-     Versão: 10.0.0 — Sistema de Certificados (Prata / Ouro / Lendária)
+     Versão: 10.2.0 — Home com Mapa de Tabuadas + Ranking de Turmas (mín. 4 alunos)
      ═══════════════════════════════════════════════════════════════════════ -->
 
 <!-- ▼▼▼ [01] HEAD ─────────────────────────────────────────── INÍCIO ─── -->
@@ -2570,6 +2570,31 @@
         <!-- ▼ NOVO: Mapa de Tabuadas na Home -->
         <div id="mapa-home-container"></div>
 
+        <!-- ▼ NOVO: Minhas Posições por modalidade (2-5, 6-9, 1-10) -->
+        <div class="home-card">
+            <div class="home-card-titulo">🏆 Minhas Posições</div>
+            <div id="ranking-home-lista" class="ranking-home-lista">
+                <div class="ranking-home-linha">
+                    <span class="ranking-home-pos">-</span>
+                    <span class="ranking-home-nome" style="color:var(--text-muted);">Jogue para ver suas posições</span>
+                    <span class="ranking-home-pontos">—</span>
+                </div>
+            </div>
+            <div id="home-distancia-container"></div>
+        </div>
+
+        <!-- ▼ NOVO: Ranking de Turmas (Top 4 + sua turma) -->
+        <div class="home-card">
+            <div class="home-card-titulo">🏫 Ranking de Turmas</div>
+            <div id="ranking-turmas-lista" class="ranking-turmas-lista">
+                <div class="ranking-turmas-linha">
+                    <span class="ranking-turmas-pos">-</span>
+                    <span class="ranking-turmas-nome" style="color:var(--text-muted);">Jogue para ver o ranking das turmas</span>
+                    <span class="ranking-turmas-pontos">—</span>
+                </div>
+            </div>
+        </div>
+
         <div class="home-card">
             <div class="home-card-titulo">🎯 Treino Inteligente</div>
             <div id="home-treino-inteligente-conteudo">
@@ -3058,9 +3083,19 @@
             <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
             <div class="changelog-lista">
                 <div class="changelog-item">
-                    <span class="changelog-versao atual" id="changelog-versao-atual">v10.0.2 · atual</span>
+                    <span class="changelog-versao atual" id="changelog-versao-atual">v10.2.0 · atual</span>
+                    <h4 class="changelog-titulo">🗺️ Mapa de Tabuadas na Home + Ranking de Turmas</h4>
+                    <p class="changelog-descricao">Novo card <strong>Mapa de Tabuadas</strong> na Home com % de domínio geral e chips por modalidade. Botão abre o <strong>modal do mapa completo com 3 abas</strong> (🌐 Todas · 📚 2-5 · 🎯 6-9), todas na fonte global — jogar 2-5 preenche o 1-10 automaticamente. <strong>Ranking de Turmas</strong> agora exige mínimo de <strong>4 alunos por modalidade</strong>; se sua turma está fora, aparece aviso amarelo com quantos colegas faltam. Novo card <strong>Minhas Posições</strong> mostra sua posição nas 3 modalidades de uma vez. Corrigido bug de tema claro nas médias de turmas em celulares.</p>
+                </div>
+                <div class="changelog-item">
+                    <span class="changelog-versao">v10.1.0</span>
                     <h4 class="changelog-titulo">🧭 Navegação global + badges na nav</h4>
                     <p class="changelog-descricao">A navegação inferior agora <strong>persiste entre as telas</strong> principais e marca automaticamente a aba ativa. Os avisos de <strong>medalha nova no Álbum</strong> e <strong>mensagem do professor</strong> foram movidos para a própria nav — você vê tudo de qualquer tela, sem abrir menu. Também foram corrigidas funções que travavam os modais de <strong>Certificado</strong> e <strong>Como Funciona</strong>.</p>
+                </div>
+                <div class="changelog-item">
+                    <span class="changelog-versao">v10.0.2</span>
+                    <h4 class="changelog-titulo">🎨 Hierarquia da Home + fix de tema claro</h4>
+                    <p class="changelog-descricao">Meta pessoal reposicionada logo abaixo do CTA principal. Botão de treino com peso visual reduzido. Faixa do Modo Teste ficou âmbar discreta. Corrigido bug em que a tela de resultado do treino ficava <strong>ilegível</strong> em celulares com sistema em modo claro.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v10.0.1</span>
@@ -3376,7 +3411,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-    const APP_VERSION = "10.0.2";
+    const APP_VERSION = "10.2.0";
     const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
     const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
