@@ -2647,6 +2647,177 @@
             .alerta-prox-fill { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.40] */
+        /* ▼▼▼ [02.41] Tela Meu Progresso de Certificados ─────── */
+        .progresso-hero {
+            background: linear-gradient(135deg, #0d2a4d 0%, #174a73 55%, #1e3a8a 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 18px;
+            padding: 22px 20px 20px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            box-shadow: var(--shadow-card), inset 0 0 60px rgba(34, 211, 238, 0.06);
+        }
+        .progresso-hero::before {
+            content: "";
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 15% 30%, rgba(34, 211, 238, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(251, 191, 36, 0.12) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .progresso-hero-conteudo { position: relative; z-index: 1; }
+        .progresso-hero-kicker { font-size: 11.5px; font-weight: 800; letter-spacing: 0.14em; color: #a5f3fc; margin-bottom: 6px; text-transform: uppercase; }
+        .progresso-hero-titulo { font-size: clamp(20px, 4.4vw, 26px); font-weight: 900; color: #fff; margin: 0 0 6px; line-height: 1.15; letter-spacing: -0.3px; }
+        .progresso-hero-sub { font-size: 13.5px; color: #cbd5e1; line-height: 1.5; margin: 0 0 14px; max-width: 560px; }
+        .progresso-hero-sub strong { color: #fbbf24; }
+        .progresso-hero-barra { height: 10px; background: rgba(0, 0, 0, 0.4); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+        .progresso-hero-barra-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #fbbf24, #fde68a); box-shadow: 0 0 12px rgba(251, 191, 36, 0.55); transition: width 1s cubic-bezier(.22, 1, .36, 1); width: 0%; }
+        .progresso-hero-barra-info { display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; font-weight: 700; }
+        .progresso-hero-barra-info .pct { color: #fbbf24; font-weight: 900; }
+
+        .progresso-mod-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+        .progresso-mod-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: left;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progresso-mod-card::before {
+            content: "";
+            position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--cor-mod, #22d3ee);
+        }
+        .progresso-mod-card.mod-2-5 { --cor-mod: #22c55e; }
+        .progresso-mod-card.mod-6-9 { --cor-mod: #a855f7; }
+        .progresso-mod-card.mod-0-10 { --cor-mod: #fbbf24; }
+        .progresso-mod-titulo { font-size: 12.5px; font-weight: 900; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-primary); }
+        .progresso-mod-titulo .icone { font-size: 15px; margin-right: 4px; }
+        .progresso-mod-atual {
+            background: rgba(10, 22, 40, 0.55);
+            border-radius: 10px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            font-weight: 800;
+        }
+        .progresso-mod-atual .icone { font-size: 20px; line-height: 1; }
+        .progresso-mod-atual .nome { color: var(--text-primary); line-height: 1.2; }
+        .progresso-mod-atual .nome small { display: block; font-size: 10.5px; color: var(--text-muted); font-weight: 700; margin-top: 2px; letter-spacing: 0.3px; }
+        .progresso-mod-atual.sem-cert .icone { filter: grayscale(1) opacity(0.4); }
+        .progresso-mod-atual.sem-cert .nome { color: var(--text-muted); }
+        .progresso-mod-prox { font-size: 11px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.3px; line-height: 1.4; }
+        .progresso-mod-prox strong { color: var(--text-primary); font-weight: 900; }
+        .progresso-mod-barra { height: 6px; background: rgba(0, 0, 0, 0.4); border-radius: 4px; overflow: hidden; }
+        .progresso-mod-barra-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #0ea5e9, #22d3ee); transition: width 0.8s cubic-bezier(.22, 1, .36, 1); width: 0%; }
+        .progresso-mod-barra-fill.prata { background: linear-gradient(90deg, #94a3b8, #cbd5e1); }
+        .progresso-mod-barra-fill.ouro { background: linear-gradient(90deg, #fbbf24, #fde68a); }
+        .progresso-mod-barra-fill.lendaria { background: linear-gradient(90deg, #f472b6, #be185d, #f59e0b); }
+        .progresso-mod-info { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+        .progresso-mod-info .pct { color: var(--neon-cyan); font-weight: 900; }
+        .progresso-mod-btn {
+            width: 100%; margin: 0; padding: 9px 12px;
+            background: rgba(34, 211, 238, 0.10);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+        }
+        .progresso-mod-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.18); border-color: var(--neon-cyan); }
+
+        .progresso-timeline-wrap {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 18px;
+            margin: 16px 0;
+            text-align: left;
+            box-shadow: var(--shadow-card);
+        }
+        .progresso-secao-titulo {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12.5px; font-weight: 900; letter-spacing: 0.5px;
+            color: var(--neon-gold); text-transform: uppercase;
+            margin: 0 0 14px;
+        }
+        .progresso-secao-titulo .icone { font-size: 18px; }
+        .progresso-timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+        .progresso-timeline-item {
+            display: grid;
+            grid-template-columns: 34px 1fr auto;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(148, 163, 184, 0.15);
+            position: relative;
+        }
+        .progresso-timeline-item:last-child { border-bottom: none; }
+        .progresso-timeline-item::before {
+            content: "";
+            position: absolute;
+            left: 17px; top: 44px; bottom: -10px;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(34, 211, 238, 0.4), transparent);
+        }
+        .progresso-timeline-item:last-child::before { display: none; }
+        .progresso-timeline-icone {
+            width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            background: rgba(10, 22, 40, 0.6);
+            border: 2px solid rgba(56, 189, 248, 0.4);
+            border-radius: 50%;
+            z-index: 1;
+            position: relative;
+        }
+        .progresso-timeline-icone.prata { border-color: #94a3b8; box-shadow: 0 0 10px rgba(148, 163, 184, 0.35); }
+        .progresso-timeline-icone.ouro { border-color: #fbbf24; box-shadow: 0 0 10px rgba(251, 191, 36, 0.45); }
+        .progresso-timeline-icone.lendaria { border-color: #f472b6; box-shadow: 0 0 12px rgba(244, 114, 182, 0.5); }
+        .progresso-timeline-info { min-width: 0; line-height: 1.3; }
+        .progresso-timeline-titulo { font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px; }
+        .progresso-timeline-titulo strong { color: #fbbf24; }
+        .progresso-timeline-sub { font-size: 11.5px; color: var(--text-secondary); font-weight: 600; }
+        .progresso-timeline-sub .mod { color: var(--neon-cyan); font-weight: 700; }
+        .progresso-timeline-data { font-size: 11.5px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
+
+        .progresso-vazio {
+            text-align: center;
+            padding: 26px 16px;
+            font-size: 13.5px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            background: rgba(10, 22, 40, 0.4);
+            border: 1px dashed rgba(148, 163, 184, 0.28);
+            border-radius: 12px;
+        }
+        .progresso-vazio strong { color: var(--text-secondary); }
+
+        @media (max-width: 700px) {
+            .progresso-mod-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 520px) {
+            .progresso-hero { padding: 18px 16px; }
+            .progresso-timeline-item { grid-template-columns: 30px 1fr; }
+            .progresso-timeline-data { grid-column: 1 / -1; padding-left: 42px; text-align: left; margin-top: 2px; }
+            .progresso-timeline-item::before { left: 15px; top: 40px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .progresso-hero-barra-fill, .progresso-mod-barra-fill { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.41] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -3048,6 +3219,7 @@
             <div id="desempenho-certificados-container" class="certificados-container">
                 <div class="desempenho-loading">⏳ Carregando certificados…</div>
             </div>
+            <button onclick="abrirMeuProgresso()" class="botao-desempenho" style="margin:0 0 20px;">📈 Ver progresso detalhado dos certificados →</button>
             <div id="desempenho-destaque" class="desempenho-destaque-wrap">
                 <div class="desempenho-destaque-titulo"><span class="em">🏅</span> Seu destaque</div>
                 <div class="desempenho-loading">⏳ Calculando seu destaque…</div>
@@ -3196,7 +3368,17 @@
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
-
+<!-- ▲▲▲ FIM [03.12] PAINEL PROFESSOR -->
+    <!-- ▼▼▼ [03.13] TELA MEU PROGRESSO ─────────────────────── -->
+    <div id="tela-meu-progresso" class="card hidden">
+        <h2 style="text-align:left;">📈 Meu Progresso</h2>
+        <div id="meu-progresso-conteudo">
+            <div class="desempenho-loading" style="padding:40px 20px;text-align:center;color:var(--text-muted);">⏳ Carregando seu progresso…</div>
+        </div>
+        <button onclick="mostrarTela('tela-desempenho')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar ao desempenho</button>
+        <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
+    </div>
+    <!-- ▲▲▲ FIM [03.13] -->
     <!-- ▼▼▼ [04.01] MODAL OPERAÇÃO ───────────────────────────── -->
     <div id="modal-operacao" class="modal-overlay hidden" onclick="fecharModalOperacao(event)">
         <div class="modal-card" onclick="event.stopPropagation()">
@@ -3234,24 +3416,19 @@
             <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
             <div class="changelog-lista">
                 <div class="changelog-item">
-                    <span class="changelog-versao atual" id="changelog-versao-atual">v10.2.0 · atual</span>
+                    <span class="changelog-versao atual" id="changelog-versao-atual">v10.3.0 · atual</span>
+                    <h4 class="changelog-titulo">🎯 Alerta de proximidade + Tela "Meu Progresso"</h4>
+                    <p class="changelog-descricao">Após cada partida, você agora vê <strong>o quanto falta</strong> para conquistar o próximo certificado — se faltam até 5 operações, aparece em <strong>dourado</strong>; se faltam 6 a 15, em <strong>ciano discreto</strong>. Se o problema é só velocidade, o alerta avisa: "falta acelerar". Nova tela <strong>"Meu Progresso"</strong> (no Desempenho → 📈) mostra todos os seus certificados possíveis, <strong>timeline de conquistas</strong> com datas, e um card de "Próximo Objetivo" com botão direto para <strong>treinar a modalidade</strong>.</p>
+                </div>
+                <div class="changelog-item">
+                    <span class="changelog-versao">v10.2.0</span>
                     <h4 class="changelog-titulo">🗺️ Mapa de Tabuadas na Home + Ranking de Turmas</h4>
-                    <p class="changelog-descricao">Novo card <strong>Mapa de Tabuadas</strong> na Home com % de domínio geral e chips por modalidade. Botão abre o <strong>modal do mapa completo com 3 abas</strong> (🌐 Todas · 📚 2-5 · 🎯 6-9), todas na fonte global — jogar 2-5 preenche o 1-10 automaticamente. <strong>Ranking de Turmas</strong> agora exige mínimo de <strong>4 alunos por modalidade</strong>; se sua turma está fora, aparece aviso amarelo com quantos colegas faltam. Novo card <strong>Minhas Posições</strong> mostra sua posição nas 3 modalidades de uma vez. Corrigido bug de tema claro nas médias de turmas em celulares.</p>
+                    <p class="changelog-descricao">Novo card <strong>Mapa de Tabuadas</strong> na Home com % de domínio geral e chips por modalidade. Botão abre o <strong>modal do mapa completo com 3 abas</strong> (🌐 Todas · 📚 2-5 · 🎯 6-9), todas na fonte global — jogar 2-5 preenche o 1-10 automaticamente. <strong>Ranking de Turmas</strong> agora exige mínimo de <strong>4 alunos por modalidade</strong>; se sua turma está fora, aparece aviso amarelo com quantos colegas faltam. Novo card <strong>Minhas Posições</strong> mostra sua posição nas 3 modalidades de uma vez.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v10.1.0</span>
                     <h4 class="changelog-titulo">🧭 Navegação global + badges na nav</h4>
-                    <p class="changelog-descricao">A navegação inferior agora <strong>persiste entre as telas</strong> principais e marca automaticamente a aba ativa. Os avisos de <strong>medalha nova no Álbum</strong> e <strong>mensagem do professor</strong> foram movidos para a própria nav — você vê tudo de qualquer tela, sem abrir menu. Também foram corrigidas funções que travavam os modais de <strong>Certificado</strong> e <strong>Como Funciona</strong>.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v10.0.2</span>
-                    <h4 class="changelog-titulo">🎨 Hierarquia da Home + fix de tema claro</h4>
-                    <p class="changelog-descricao">Meta pessoal reposicionada logo abaixo do CTA principal. Botão de treino com peso visual reduzido. Faixa do Modo Teste ficou âmbar discreta. Corrigido bug em que a tela de resultado do treino ficava <strong>ilegível</strong> em celulares com sistema em modo claro.</p>
-                </div>
-                <div class="changelog-item">
-                    <span class="changelog-versao">v10.0.1</span>
-                    <h4 class="changelog-titulo">🎨 Hierarquia da Home + fix de tema claro</h4>
-                    <p class="changelog-descricao">Meta pessoal reposicionada logo abaixo do CTA principal. Botão de treino com peso visual reduzido. Faixa do Modo Teste ficou âmbar discreta. Corrigido bug em que a tela de resultado do treino ficava <strong>ilegível</strong> em celulares com sistema em modo claro.</p>
+                    <p class="changelog-descricao">A navegação inferior agora <strong>persiste entre as telas</strong> principais e marca automaticamente a aba ativa. Os avisos de <strong>medalha nova no Álbum</strong> e <strong>mensagem do professor</strong> foram movidos para a própria nav — você vê tudo de qualquer tela, sem abrir menu.</p>
                 </div>
                 <div class="changelog-item">
                     <span class="changelog-versao">v10.0.0</span>
@@ -3562,7 +3739,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-    const APP_VERSION = "10.2.0";
+    const APP_VERSION = "10.3.0";
     const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
     const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -5442,6 +5619,257 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         try { window.print(); } catch(e) { console.warn("Falha ao imprimir certificado:", e); }
     }
     // ▲▲▲ FIM [10.06]
+    // ▼▼▼ [10.07] Tela "Meu Progresso" — Certificados ────────────
+    async function abrirMeuProgresso() {
+        mostrarTela("tela-meu-progresso");
+        await renderizarMeuProgresso();
+    }
+
+    async function renderizarMeuProgresso() {
+        const container = document.getElementById("meu-progresso-conteudo");
+        if (!container) return;
+
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+
+        if (!nome || !turma) {
+            container.innerHTML = `<div class="progresso-vazio">🎯 Você precisa se identificar primeiro.<br>Jogue uma partida para liberar seu progresso.</div>`;
+            return;
+        }
+
+        container.innerHTML = `<div class="desempenho-loading" style="padding:40px 20px;text-align:center;color:var(--text-muted);">⏳ Carregando seu progresso…</div>`;
+
+        try {
+            const persistidos = await obterCertificadosFirebase(nome, turma);
+            const totalPossiveis = Object.keys(MODALIDADES).length * 3;
+            const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+            const icones = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
+
+            const dadosMods = {};
+            let totalConquistados = 0;
+
+            for (const mod of Object.keys(MODALIDADES)) {
+                let mapaMod = await obterMapaFirebase(nome, turma, mod);
+                if (!mapaMod || !Object.keys(mapaMod).length) mapaMod = obterMapaLocal(nome, turma, mod) || {};
+                const progPorNivel = resumoCertificadosModalidade(mapaMod, mod);
+                const pMod = persistidos[mod] || {};
+
+                let certAtual = null;
+                for (const nivel of CERT_ORDEM) {
+                    if (pMod[nivel]) { certAtual = { nivel, dados: pMod[nivel], cfg: CERT_NIVEIS[nivel] }; break; }
+                }
+                if (certAtual) totalConquistados++;
+
+                let proxNivel = null;
+                for (const nivel of ["prata", "ouro", "lendaria"]) {
+                    if (!pMod[nivel]) { proxNivel = nivel; break; }
+                }
+
+                dadosMods[mod] = { progPorNivel, certAtual, proxNivel, persistidosMod: pMod };
+            }
+
+            const pctGeral = totalPossiveis > 0 ? Math.round((totalConquistados / totalPossiveis) * 100) : 0;
+            const hero = `
+                <div class="progresso-hero">
+                    <div class="progresso-hero-conteudo">
+                        <div class="progresso-hero-kicker">🎓 SUA JORNADA DE MAESTRIA</div>
+                        <h2 class="progresso-hero-titulo">Sua evolução em certificados</h2>
+                        <p class="progresso-hero-sub">Você conquistou <strong>${totalConquistados}</strong> de <strong>${totalPossiveis}</strong> certificados possíveis.<br>Domine mais operações nas modalidades para desbloquear os próximos.</p>
+                        <div class="progresso-hero-barra">
+                            <div class="progresso-hero-barra-fill" data-width="${pctGeral}%" style="width:0%"></div>
+                        </div>
+                        <div class="progresso-hero-barra-info">
+                            <span>${totalConquistados} / ${totalPossiveis} certificados</span>
+                            <span class="pct">${pctGeral}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let melhorAlvo = null;
+            for (const mod of Object.keys(MODALIDADES)) {
+                const info = dadosMods[mod];
+                if (!info.proxNivel) continue;
+                const prog = info.progPorNivel[info.proxNivel];
+                if (!prog) continue;
+                const gap = Math.max(0, prog.exigido - prog.dominadas);
+                const semVel = prog.exigidoVelocidade && !prog.velocidadeOk && prog.dominadas > 0;
+                const prioridade = (semVel && gap === 0) ? 0 : gap;
+                if (!melhorAlvo || prioridade < melhorAlvo.prioridade) {
+                    melhorAlvo = { mod, nivel: info.proxNivel, prog, prioridade, semVel };
+                }
+            }
+            const proximoHtml = melhorAlvo ? renderizarProximoPassoProgresso(melhorAlvo) : "";
+
+            let cardsHtml = "";
+            for (const mod of Object.keys(MODALIDADES)) {
+                cardsHtml += renderizarCardProgressoMod(mod, dadosMods[mod], rotulosCurtos[mod], icones[mod]);
+            }
+
+            const timelineHtml = renderizarTimelineProgresso(persistidos, rotulosCurtos);
+
+            container.innerHTML = hero + proximoHtml + `<div class="progresso-mod-grid">${cardsHtml}</div>` + timelineHtml;
+
+            requestAnimationFrame(() => {
+                container.querySelectorAll("[data-width]").forEach(el => {
+                    requestAnimationFrame(() => { el.style.width = el.dataset.width; });
+                });
+            });
+
+        } catch(e) {
+            console.warn("Falha ao renderizar Meu Progresso:", e);
+            container.innerHTML = `<div class="progresso-vazio">Não foi possível carregar seu progresso agora.<br>Tente novamente em instantes.</div>`;
+        }
+    }
+
+    function renderizarCardProgressoMod(mod, info, nomeMod, icone) {
+        const { certAtual, proxNivel, progPorNivel } = info;
+        const modCls = mod === "2-5" ? "mod-2-5" : mod === "6-9" ? "mod-6-9" : "mod-0-10";
+
+        let certHtml;
+        if (certAtual) {
+            const dataFmt = certAtual.dados.conquistadoEm
+                ? formatarDataCurta(new Date(certAtual.dados.conquistadoEm).getTime())
+                : "—";
+            certHtml = `<div class="progresso-mod-atual">
+                <span class="icone">${certAtual.cfg.icone}</span>
+                <span class="nome">${escaparHtml(certAtual.cfg.nome)}<small>Conquistado em ${dataFmt}</small></span>
+            </div>`;
+        } else {
+            certHtml = `<div class="progresso-mod-atual sem-cert">
+                <span class="icone">🔒</span>
+                <span class="nome">Nenhum certificado ainda<small>Jogue para começar</small></span>
+            </div>`;
+        }
+
+        let proxHtml = "";
+        if (proxNivel) {
+            const prog = progPorNivel[proxNivel];
+            const cfg = CERT_NIVEIS[proxNivel];
+            const gap = Math.max(0, prog.exigido - prog.dominadas);
+            const pct = prog.exigido > 0 ? Math.min(100, Math.round((prog.dominadas / prog.exigido) * 100)) : 0;
+            const semVel = prog.exigidoVelocidade && !prog.velocidadeOk && prog.dominadas > 0;
+            let linhaProx;
+            if (semVel && gap === 0) {
+                linhaProx = `<strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong> — falta velocidade`;
+            } else if (gap === 0) {
+                linhaProx = `<strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong> — quase lá!`;
+            } else {
+                linhaProx = `<strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong> — faltam ${gap} ${gap === 1 ? "operação" : "operações"}`;
+            }
+            proxHtml = `
+                <div class="progresso-mod-prox">Próximo: ${linhaProx}</div>
+                <div class="progresso-mod-barra">
+                    <div class="progresso-mod-barra-fill ${proxNivel}" data-width="${pct}%" style="width:0%"></div>
+                </div>
+                <div class="progresso-mod-info">
+                    <span>${prog.dominadas} / ${prog.exigido} operações</span>
+                    <span class="pct">${pct}%</span>
+                </div>
+            `;
+        } else {
+            proxHtml = `<div class="progresso-mod-prox" style="color:#86efac;font-weight:800;">🏆 Você conquistou todos os certificados desta modalidade!</div>`;
+        }
+
+        return `<div class="progresso-mod-card ${modCls}">
+            <div class="progresso-mod-titulo"><span class="icone">${icone}</span>${escaparHtml(nomeMod)}</div>
+            ${certHtml}
+            ${proxHtml}
+            <button class="progresso-mod-btn" onclick="treinarModalidadeProgresso('${mod}')">🎯 Treinar essa modalidade</button>
+        </div>`;
+    }
+
+    function renderizarProximoPassoProgresso(alvo) {
+        const { mod, nivel, prog, semVel } = alvo;
+        const cfg = CERT_NIVEIS[nivel];
+        const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+        const gap = Math.max(0, prog.exigido - prog.dominadas);
+
+        let msg;
+        let icone = "🎯";
+        if (semVel && gap === 0) {
+            icone = "⚡";
+            msg = `Você já dominou todas as operações de <strong>${rotulos[mod]}</strong>. Falta <strong>acelerar</strong> para conquistar o <strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong>.`;
+        } else if (gap === 0) {
+            msg = `Você está a um passo do <strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong> em <strong>${rotulos[mod]}</strong>. Jogue mais uma vez para garantir!`;
+        } else {
+            msg = `Você está a <strong>${gap} ${gap === 1 ? "operação" : "operações"}</strong> do <strong>${cfg.icone} ${escaparHtml(cfg.nome)}</strong> em <strong>${rotulos[mod]}</strong>.`;
+        }
+
+        const pct = prog.exigido > 0 ? Math.min(100, Math.round((prog.dominadas / prog.exigido) * 100)) : 0;
+
+        return `<div class="alerta-proximidade">
+            <div class="alerta-prox-topo">
+                <span class="alerta-prox-icone">${icone}</span>
+                <div class="alerta-prox-titulo">🚀 PRÓXIMO OBJETIVO</div>
+            </div>
+            <p class="alerta-prox-mensagem">${msg}</p>
+            <div class="alerta-prox-barra">
+                <div class="alerta-prox-fill" data-width="${pct}%" style="width:0%"></div>
+            </div>
+            <div class="alerta-prox-barra-info">
+                <span>${prog.dominadas} de ${prog.exigido} operações</span>
+                <span class="pct">${pct}%</span>
+            </div>
+            <button class="progresso-mod-btn" style="margin-top:12px;" onclick="treinarModalidadeProgresso('${mod}')">🎯 Treinar ${escaparHtml(rotulos[mod])} agora</button>
+        </div>`;
+    }
+
+    function renderizarTimelineProgresso(persistidos, rotulosCurtos) {
+        const itens = [];
+        for (const mod of Object.keys(MODALIDADES)) {
+            const pMod = persistidos[mod] || {};
+            for (const nivel of CERT_ORDEM) {
+                if (!pMod[nivel] || !pMod[nivel].conquistadoEm) continue;
+                itens.push({
+                    mod, nivel,
+                    cfg: CERT_NIVEIS[nivel],
+                    data: pMod[nivel].conquistadoEm,
+                    dominadas: pMod[nivel].dominadasNoMomento || 0,
+                    cobertura: pMod[nivel].coberturaNoMomento || 0
+                });
+            }
+        }
+        itens.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+        if (!itens.length) {
+            return `<div class="progresso-timeline-wrap">
+                <div class="progresso-secao-titulo"><span class="icone">📅</span> Sua Timeline de Conquistas</div>
+                <div class="progresso-vazio">🎯 Você ainda não conquistou nenhum certificado.<br><strong>Continue jogando</strong> — seu primeiro está mais perto do que parece!</div>
+            </div>`;
+        }
+
+        const itensHtml = itens.map(it => `
+            <div class="progresso-timeline-item">
+                <div class="progresso-timeline-icone ${it.nivel}">${it.cfg.icone}</div>
+                <div class="progresso-timeline-info">
+                    <div class="progresso-timeline-titulo"><strong>${escaparHtml(it.cfg.nome)}</strong> · ${it.dominadas} ops</div>
+                    <div class="progresso-timeline-sub">Modalidade: <span class="mod">${escaparHtml(rotulosCurtos[it.mod] || it.mod)}</span> · ${it.cobertura}% do mapa</div>
+                </div>
+                <div class="progresso-timeline-data">${formatarDataCurta(new Date(it.data).getTime())}</div>
+            </div>
+        `).join("");
+
+        return `<div class="progresso-timeline-wrap">
+            <div class="progresso-secao-titulo"><span class="icone">📅</span> Sua Timeline de Conquistas</div>
+            <div class="progresso-timeline">${itensHtml}</div>
+        </div>`;
+    }
+
+    async function treinarModalidadeProgresso(mod) {
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
+        if (!MODALIDADES[mod]) { notificar("Modalidade inválida.", "aviso"); return; }
+        alunoAtual = nome;
+        turmaAtual = turma;
+        modalidadeAtual = mod;
+        treinoAnonimo = false;
+        treinoFocoOperacoes = null;
+        await carregarFocoTreino(nome, turma, mod);
+        await iniciarTreinoInteligente();
+    }
+    // ▲▲▲ FIM [10.07]
     // ═══════════════════════════════════════════════════════════════════════
     // [11] JS-ALB · Álbum de conquistas + integração com certificados
     // ═══════════════════════════════════════════════════════════════════════
@@ -7403,14 +7831,16 @@ if (containerProg) {
     // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
     const TELAS_COM_NAV_GLOBAL = new Set([
         "tela-inicial", "tela-mais", "tela-ranking",
-        "tela-desempenho", "tela-album", "tela-hall-fama", "tela-perfil"
+        "tela-desempenho", "tela-album", "tela-hall-fama", "tela-perfil",
+        "tela-meu-progresso"
     ]);
     const MAPA_NAV_ATIVA = {
-        "tela-hall-fama": "hall",
-        "tela-ranking":   "ranking",
-        "tela-desempenho":"desempenho",
-        "tela-album":     "album",
-        "tela-mais":      "mais"
+        "tela-hall-fama":    "hall",
+        "tela-ranking":      "ranking",
+        "tela-desempenho":   "desempenho",
+        "tela-album":        "album",
+        "tela-mais":         "mais",
+        "tela-meu-progresso":"desempenho"
     };
     function atualizarNavGlobal(idTela) {
         const nav = document.getElementById("bottom-nav-global");
@@ -7425,7 +7855,7 @@ if (containerProg) {
     }
 
     function mostrarTela(id) {
-        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
+        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
 
         // ▼▼▼ CORREÇÃO: Preenche automaticamente o nome e a turma na tela de cadastro
