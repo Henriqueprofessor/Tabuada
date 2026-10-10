@@ -2965,6 +2965,81 @@
             .progresso-hero-barra-fill, .progresso-mod-barra-fill { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.41] */
+        /* ▼▼▼ [02.42] Seletor de modalidade no card do Mapa ──────── INÍCIO ─── */
+        .mapa-home-seletor {
+            margin-top: 8px;
+            padding: 10px 12px;
+            background: rgba(10, 22, 40, 0.5);
+            border: 1px dashed rgba(34, 211, 238, 0.3);
+            border-radius: 10px;
+        }
+        .mapa-home-seletor-rotulo {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .mapa-home-seletor-btns {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .mapa-home-mod-btn {
+            flex: 1;
+            min-width: 90px;
+            padding: 8px 10px;
+            background: rgba(10, 22, 40, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+            font-family: inherit;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .mapa-home-mod-btn small {
+            display: block;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-top: 3px;
+        }
+        .mapa-home-mod-btn:hover:not(.ativa) {
+            background: rgba(34, 211, 238, 0.10);
+            border-color: rgba(34, 211, 238, 0.5);
+            color: var(--text-primary);
+        }
+        .mapa-home-mod-btn.ativa {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            border-color: var(--neon-cyan);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
+        }
+        .mapa-home-mod-btn.ativa small {
+            color: #bae6fd;
+        }
+        .mapa-home-mod-btn.sem-pend {
+            opacity: 0.55;
+        }
+        .mapa-home-mod-btn.sem-pend small {
+            color: #6ee7b7;
+        }
+        .mapa-home-mod-btn.sem-pend::after {
+            content: " ✓";
+            color: #6ee7b7;
+            font-weight: 900;
+        }
+        @media (max-width: 480px) {
+            .mapa-home-seletor { padding: 8px 10px; }
+            .mapa-home-mod-btn { min-width: 70px; padding: 7px 6px; font-size: 11px; }
+        }
+        /* ▲▲▲ FIM [02.42] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -3551,9 +3626,14 @@
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.1 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.2 · atual</span>
+                <h4 class="changelog-titulo">🎯 Foco Absoluto à prova de erro</h4>
+                <p class="changelog-descricao">Agora o card <strong>Mapa de Tabuadas</strong> mostra um seletor para você escolher em qual modalidade focar (📚 2-5 · 🎯 6-9 · ⭐ 1-10). Cada botão mostra <strong>quantas operações estão pendentes</strong> naquela modalidade. O sistema já <strong>pula automaticamente</strong> para a modalidade que tem pendências — mesmo que o seletor antigo estivesse em outra. Também ficou impossível cair no caso "escolhi a modalidade errada e o app disse que eu já domino tudo". Se uma modalidade está 100% verde, o botão fica apagado com um ✓.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.4.1</span>
                 <h4 class="changelog-titulo">🎯 Foco Absoluto: agora dá pra chegar aos 100%</h4>
-                <p class="changelog-descricao">Correção de um bug que atrapalhava quem estava chegando perto da maestria. Antes, o treino inteligente só ligava com <strong>3+ operações pendentes</strong> — quando sobravam 1 ou 2, ele desligava e você voltava ao modo aleatório. Agora ele liga a partir de 1 pendente, e se faltam <strong>até 5 operações</strong>, entra em <strong>FOCO ABSOLUTO</strong>: 92% das perguntas da partida vão para essas operações específicas. Também apareceu um botão direto no card <strong>Mapa de Tabuadas</strong> da Home: <em>"🎯 Foco absoluto: N operações"</em>. Destrava em 1-2 partidas o que antes dependia de sorte.</p>
+                <p class="changelog-descricao">Correção de um bug que atrapalhava quem estava chegando perto da maestria. Antes, o treino inteligente só ligava com <strong>3+ operações pendentes</strong> — quando sobravam 1 ou 2, ele desligava e você voltava ao modo aleatório. Agora ele liga a partir de 1 pendente, e se faltam <strong>até 5 operações</strong>, entra em <strong>FOCO ABSOLUTO</strong>: 92% das perguntas da partida vão para essas operações específicas.</p>
             </div>
             <div class="changelog-item">
                 <span class="changelog-versao">v10.4.0</span>
@@ -3884,7 +3964,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
 // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.4.1";
+const APP_VERSION = "10.4.2";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -4506,6 +4586,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // Backup do estado global (restaurado ao fechar)
     let modalMapaBackup = null;
 
+    // v10.4.2 — chave da modalidade escolhida no seletor do card
+    const STORAGE_FOCO_MOD = "copa_foco_mod";
+
     async function renderizarMapaHome() {
         const container = document.getElementById("mapa-home-container");
         if (!container) return;
@@ -4527,22 +4610,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => todasChaves.push(`${a}x${b}`)));
             const totalOps = todasChaves.length;
 
-            // % geral: mapa global agregado das 3 modalidades (mesma fonte do resto do jogo)
+            // Fonte global (mescla das 3 modalidades)
             const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
-            let totalDominadas = 0;
-            let totalPendentes = 0;
-            todasChaves.forEach(k => {
-                const h = normalizarHistoricoOperacao(mapaGlobal[k]);
-                const est = estadoDaOperacao(h);
-                if (est === "verde") totalDominadas++;
-                else totalPendentes++;
-            });
-            const pct = totalOps ? Math.round((totalDominadas / totalOps) * 100) : 0;
 
-            // Chips por modalidade — mostra quantas verdes dentro da faixa de cada modalidade
-            const iconesMod  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
-            const rotulosMod = { "2-5": "2-5", "6-9": "6-9", "0-10": "1-10" };
-            let chipsHtml = "";
+            // Conta dominadas/pendentes por modalidade
+            const pendentesPorMod = {};
+            const dominadasPorMod = {};
             for (const mod of Object.keys(MODALIDADES)) {
                 const ops = obterOperacoesDaModalidade(mod);
                 let dom = 0;
@@ -4550,18 +4623,69 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     const h = normalizarHistoricoOperacao(mapaGlobal[op]);
                     if (estadoDaOperacao(h) === "verde") dom++;
                 });
-                chipsHtml += `<span class="mapa-home-chip"><span class="icone">${iconesMod[mod] || "📖"}</span> ${rotulosMod[mod] || mod}: <strong>${dom}/${ops.length}</strong></span>`;
+                dominadasPorMod[mod] = dom;
+                pendentesPorMod[mod] = ops.length - dom;
             }
 
-            // v10.4.1 — Botão "Treinar focos": aparece só se houver pendentes.
-            // O texto se adapta: se faltam ≤5, é FOCO ABSOLUTO.
-            let botaoTreinoHtml = "";
+            // Contagem global
+            let totalDominadas = 0;
+            todasChaves.forEach(k => {
+                const h = normalizarHistoricoOperacao(mapaGlobal[k]);
+                if (estadoDaOperacao(h) === "verde") totalDominadas++;
+            });
+            const pct = totalOps ? Math.round((totalDominadas / totalOps) * 100) : 0;
+            const totalPendentes = totalOps - totalDominadas;
+
+            // Chips por modalidade
+            const iconesMod  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
+            const rotulosMod = { "2-5": "2-5", "6-9": "6-9", "0-10": "1-10" };
+            let chipsHtml = "";
+            for (const mod of Object.keys(MODALIDADES)) {
+                const ops = obterOperacoesDaModalidade(mod);
+                chipsHtml += `<span class="mapa-home-chip"><span class="icone">${iconesMod[mod] || "📖"}</span> ${rotulosMod[mod] || mod}: <strong>${dominadasPorMod[mod]}/${ops.length}</strong></span>`;
+            }
+
+            // v10.4.2 — Decide a modalidade ativa do seletor.
+            // Regra: usa a salva; se ela não tiver pendências mas outra tiver, migra para a que tem mais.
+            let modAtiva = localStorage.getItem(STORAGE_FOCO_MOD) || "0-10";
+            if (!MODALIDADES[modAtiva]) modAtiva = "0-10";
+            if (pendentesPorMod[modAtiva] === 0 && totalPendentes > 0) {
+                const comPend = Object.keys(pendentesPorMod)
+                    .filter(m => pendentesPorMod[m] > 0)
+                    .sort((a, b) => pendentesPorMod[b] - pendentesPorMod[a]);
+                if (comPend.length) modAtiva = comPend[0];
+            }
+
+            // Seletor de modalidade (aparece só se houver pendências em qualquer modalidade)
+            let seletorHtml = "";
             if (totalPendentes > 0) {
-                const ehFocoAbsoluto = totalPendentes <= 5;
+                const botoes = Object.keys(MODALIDADES).map(m => {
+                    const ativa = m === modAtiva;
+                    const temPend = pendentesPorMod[m] > 0;
+                    const rotulo = m === "2-5" ? "📚 2-5" : m === "6-9" ? "🎯 6-9" : "⭐ 1-10";
+                    const cls = `mapa-home-mod-btn ${ativa ? "ativa" : ""} ${!temPend ? "sem-pend" : ""}`;
+                    return `<button class="${cls}" onclick="escolherModFoco('${m}')" aria-pressed="${ativa}">${rotulo} <small>${pendentesPorMod[m]} pend.</small></button>`;
+                }).join("");
+                seletorHtml = `<div class="mapa-home-seletor">
+                    <div class="mapa-home-seletor-rotulo">🎯 Foco em qual modalidade?</div>
+                    <div class="mapa-home-seletor-btns">${botoes}</div>
+                </div>`;
+            }
+
+            // Botão de ação: contextual à modalidade escolhida
+            let botaoAcaoHtml = "";
+            const pendNaAtiva = pendentesPorMod[modAtiva] || 0;
+            if (pendNaAtiva > 0) {
+                const ehFocoAbsoluto = pendNaAtiva <= 5;
                 const label = ehFocoAbsoluto
-                    ? `🎯 Foco absoluto: ${totalPendentes} ${totalPendentes === 1 ? "operação" : "operações"}`
-                    : `🎯 Treinar ${totalPendentes} operações pendentes`;
-                botaoTreinoHtml = `<button class="home-btn-link" style="margin-top:2px;border-style:solid;border-color:${ehFocoAbsoluto ? "rgba(251,191,36,.7)" : "rgba(34,211,238,.4)"};color:${ehFocoAbsoluto ? "#fde68a" : "var(--neon-cyan)"};background:${ehFocoAbsoluto ? "rgba(251,191,36,.10)" : "transparent"};" onclick="iniciarFocoAbsolutoDaHome()">${label}</button>`;
+                    ? `🎯 Foco absoluto: ${pendNaAtiva} ${pendNaAtiva === 1 ? "operação" : "operações"} em ${rotulosMod[modAtiva]}`
+                    : `🎯 Treinar ${pendNaAtiva} operações pendentes em ${rotulosMod[modAtiva]}`;
+                const cor = ehFocoAbsoluto ? "#fde68a" : "var(--neon-cyan)";
+                const borda = ehFocoAbsoluto ? "rgba(251,191,36,.7)" : "rgba(34,211,238,.4)";
+                const fundo = ehFocoAbsoluto ? "rgba(251,191,36,.10)" : "transparent";
+                botaoAcaoHtml = `<button class="home-btn-link" style="margin-top:2px;border-style:solid;border-color:${borda};color:${cor};background:${fundo};" onclick="iniciarFocoAbsolutoDaHome('${modAtiva}')">${label}</button>`;
+            } else if (totalPendentes > 0) {
+                botaoAcaoHtml = `<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:6px 0;">✓ Você já domina tudo nesta modalidade. Escolha outra acima.</div>`;
             }
 
             container.innerHTML = `
@@ -4575,7 +4699,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         <div class="mapa-home-barra-fill" data-width="${pct}%" style="width:0%"></div>
                     </div>
                     <div class="mapa-home-chips">${chipsHtml}</div>
-                    ${botaoTreinoHtml}
+                    ${seletorHtml}
+                    ${botaoAcaoHtml}
                     <button class="home-btn-link" onclick="irParaMapaCompleto()">🗺️ Ver mapa completo →</button>
                 </div>
             `;
@@ -4593,6 +4718,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
+    // v10.4.2 — Troca a modalidade de foco e re-renderiza o card.
+    function escolherModFoco(mod) {
+        if (!MODALIDADES[mod]) return;
+        localStorage.setItem(STORAGE_FOCO_MOD, mod);
+        renderizarMapaHome();
+    }
+
     // ─── Modal do mapa completo (3 abas, fonte global) ─────────────────
     async function abrirMapaCompleto() {
         const modal = document.getElementById("modal-mapa-completo");
@@ -4602,7 +4734,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
 
-        // Sem identificação: mostra vazio no próprio modal
         if (!nome || !turma) {
             container.innerHTML = `<div class="mapa-home-vazio" style="padding:28px 12px;">
                 Você ainda não se identificou.<br>Jogue uma partida para liberar o mapa completo.
@@ -4612,13 +4743,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return;
         }
 
-        // Abre imediatamente com loading
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando seu mapa…</div>`;
         modal.classList.remove("hidden");
         setTimeout(() => document.querySelector("#modal-mapa-completo .modal-close")?.focus(), 80);
 
         try {
-            // Backup do estado global (será restaurado em fecharMapaCompleto)
             modalMapaBackup = {
                 mapaFonteAgregada,
                 mapaFonteUltima,
@@ -4630,11 +4759,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             turmaAtual = turma;
             treinoFocoOperacoes = null;
             treinoListaInteligente = null;
+            treinoFocoAbsoluto = null;
 
-            // Fonte GLOBAL — mescla 2-5 + 6-9 + 0-10, igual ao resto do jogo.
             modalMapaFonteAgregada = await obterDesempenhoOperacoesGlobal(nome, turma);
 
-            // Última partida (qualquer modalidade) para o toggle "🎯 Uma partida"
             try {
                 const partidas = await obterHistoricoAluno(nome, turma);
                 if (partidas && partidas.length && partidas[0].desempenhoOperacoes) {
@@ -4646,7 +4774,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 modalMapaFonteUltima = {};
             }
 
-            // Aplica aba padrão
             trocarModMapaCompleto("todas");
         } catch(e) {
             console.warn("Falha ao abrir mapa completo:", e);
@@ -4656,7 +4783,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // Renderiza as 3 abas + área do mapa
     function renderizarModalMapaCompleto() {
         const container = document.getElementById("modal-mapa-completo-conteudo");
         if (!container) return;
@@ -4678,12 +4804,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         `;
     }
 
-    // Troca a visão do modal. A fonte é SEMPRE global — a aba só muda as LINHAS exibidas.
     function trocarModMapaCompleto(mod) {
         if (mod !== "todas" && mod !== "2-5" && mod !== "6-9") return;
         modalMapaMod = mod;
 
-        // Fonte global sempre
         mapaFonteAgregada = modalMapaFonteAgregada;
         mapaFonteUltima    = modalMapaFonteUltima;
 
@@ -4699,7 +4823,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const modal = document.getElementById("modal-mapa-completo");
         if (modal) modal.classList.add("hidden");
 
-        // Restaura o estado global ao que era antes de abrir o modal
         if (modalMapaBackup) {
             mapaFonteAgregada   = modalMapaBackup.mapaFonteAgregada   ?? {};
             mapaFonteUltima     = modalMapaBackup.mapaFonteUltima     ?? {};
@@ -4709,7 +4832,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // Chamado pelo botão do card da Home — abre o modal imediatamente
     function irParaMapaCompleto() {
         abrirMapaCompleto();
     }
@@ -8136,15 +8258,21 @@ if (containerProg) {
         iniciarPartidaTreino();
     }
 
-    // v10.4.1 — Atalho da Home: dispara o treino de foco a partir do card do Mapa.
-    async function iniciarFocoAbsolutoDaHome() {
+    // v10.4.2 — Aceita a modalidade como parâmetro (vinda do seletor do card do Mapa).
+    // Se vier vazia, usa a modalidade salva; senão, cai na do seletor de cadastro.
+    async function iniciarFocoAbsolutoDaHome(mod) {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
-        const mod = obterModalidadeMetaAtual();
         if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
-        alunoAtual = nome; turmaAtual = turma; modalidadeAtual = mod;
+        let modalidade = mod;
+        if (!modalidade || !MODALIDADES[modalidade]) {
+            modalidade = localStorage.getItem("copa_foco_mod") || obterModalidadeMetaAtual() || "0-10";
+        }
+        alunoAtual = nome;
+        turmaAtual = turma;
+        modalidadeAtual = modalidade;
         treinoAnonimo = false;
-        await carregarFocoTreino(nome, turma, mod);
+        await carregarFocoTreino(nome, turma, modalidade);
         await iniciarTreinoInteligente();
     }
 
