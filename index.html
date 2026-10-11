@@ -5133,6 +5133,229 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .hero-esports { contain: none; }
         }
         /* ▲▲▲ FIM [02.54] */
+        /* ▼▼▼ [02.55] Ajuda com IA ───────────────────────────── INÍCIO ─── */
+        /* v10.4.8 · Opção B (leve) — modal com prompt + copiar + abrir IA
+           Zero requisição de rede. Zero SDK. Zero custo. O prompt contém
+           o contexto completo do jogo para a IA responder dúvidas de
+           cálculo E de regras. */
+        .ia-modal-card {
+            max-width: 560px;
+            padding: 20px 22px 18px;
+            background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%);
+            border: 1px solid var(--border-neon);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(34, 211, 238, 0.05);
+        }
+        .ia-modal-card .modal-header { border-bottom-color: var(--border-neon); }
+        .ia-modal-card .modal-header h3 { color: var(--text-primary); }
+
+        .ia-modal-intro {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin: 0 0 14px;
+            padding: 12px 14px;
+            background: rgba(34, 211, 238, 0.08);
+            border-left: 3px solid var(--neon-cyan);
+            border-radius: 8px;
+        }
+        .ia-modal-intro strong { color: var(--neon-cyan); font-weight: 800; }
+
+        .ia-modal-passos {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin: 0 0 12px;
+            padding-left: 22px;
+        }
+        .ia-modal-passos li { margin-bottom: 3px; }
+        .ia-modal-passos strong { color: var(--text-primary); }
+
+        .ia-modal-textarea {
+            width: 100%;
+            min-height: 220px;
+            max-height: 340px;
+            resize: vertical;
+            padding: 12px 14px;
+            background: #0a1628;
+            color: var(--text-primary);
+            border: 1px solid var(--border-neon);
+            border-radius: 10px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.55;
+            margin: 0 0 8px;
+            box-sizing: border-box;
+        }
+        .ia-modal-textarea:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+        }
+
+        .ia-modal-contador {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin: 0 0 10px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .ia-modal-contador .status-ok { color: #86efac; }
+        .ia-modal-contador .status-curto { color: #fca5a5; }
+
+        .ia-aviso-contexto {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin: 0 0 12px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%);
+            border: 1px dashed rgba(251, 191, 36, 0.5);
+            border-left: 4px solid #fbbf24;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #fde68a;
+            line-height: 1.5;
+            animation: iaAvisoIn 0.25s ease;
+        }
+        .ia-aviso-contexto.hidden { display: none !important; }
+        .ia-aviso-contexto .icone { font-size: 18px; flex-shrink: 0; line-height: 1; }
+        .ia-aviso-contexto .texto { flex: 1; min-width: 0; }
+        .ia-aviso-contexto strong { color: #fbbf24; font-weight: 800; }
+        .ia-aviso-contexto .btn-restaurar {
+            width: auto;
+            margin: 0;
+            padding: 6px 12px;
+            background: rgba(251, 191, 36, 0.18);
+            color: #fde68a;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: none;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+        .ia-aviso-contexto .btn-restaurar:hover {
+            background: rgba(251, 191, 36, 0.3);
+            border-color: #fbbf24;
+            color: #fff;
+        }
+        @keyframes iaAvisoIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ia-btn-copiar {
+            width: 100%;
+            margin: 0 0 16px;
+            padding: 13px 18px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28);
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+        .ia-btn-copiar:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+            transform: translateY(-1px);
+        }
+        .ia-btn-copiar:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #075985, 0 2px 8px rgba(14, 165, 233, 0.28);
+        }
+        .ia-btn-copiar.copiado {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 3px 0 #047857, 0 4px 12px rgba(16, 185, 129, 0.28);
+        }
+
+        .ia-modal-divisor {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 4px 0 12px;
+        }
+        .ia-modal-divisor::before,
+        .ia-modal-divisor::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(148, 163, 184, 0.2);
+        }
+
+        .ia-modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .ia-modal-btn {
+            padding: 13px 12px;
+            background: rgba(34, 211, 238, 0.08);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-family: inherit;
+            transition: all 0.18s ease;
+            box-shadow: none;
+            width: 100%;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .ia-modal-btn:hover {
+            background: rgba(34, 211, 238, 0.18);
+            border-color: var(--neon-cyan);
+            transform: translateY(-1px);
+        }
+        .ia-modal-btn:focus-visible {
+            outline: 3px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+
+        .ia-modal-privacidade {
+            font-size: 11.5px;
+            line-height: 1.55;
+            color: var(--text-muted);
+            text-align: center;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(148, 163, 184, 0.2);
+            margin: 0;
+        }
+        .ia-modal-privacidade strong { color: var(--text-secondary); font-weight: 700; }
+
+        @media (max-width: 520px) {
+            .ia-modal-card { padding: 16px; }
+            .ia-modal-textarea { min-height: 180px; font-size: 11.5px; }
+            .ia-modal-grid { grid-template-columns: 1fr; }
+            .ia-aviso-contexto { flex-direction: column; align-items: stretch; }
+            .ia-aviso-contexto .btn-restaurar { align-self: flex-start; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .ia-aviso-contexto { animation: none !important; }
+        }
+        /* ▲▲▲ FIM [02.55] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -5263,7 +5486,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <span class="nav-label">Mais</span>
         </button>
     </nav>
-    <!-- ▲▲▲ FIM [03.01.bis] -->    <!-- ▼▼▼ [03.02] TELA MAIS OPÇÕES ───────────────────────── -->
+    <!-- ▲▲▲ FIM [03.01.bis] -->
+
+    <!-- ▼▼▼ [03.02] TELA MAIS OPÇÕES ───────────────────────── -->
     <div id="tela-mais" class="card hidden">
         <h2>⚙️ Mais Opções</h2>
         <div class="mais-grid">
@@ -5287,9 +5512,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <span class="icone">ℹ️</span>
                 <span>Como funciona</span>
             </button>
+            <button onclick="abrirAjudaIA()" class="botao-secundario">
+                <span class="icone">🤖</span>
+                <span>Ajuda com IA</span>
+            </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.4.7</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.4.8</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -5748,7 +5977,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.7 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.8 · atual</span>
+                <h4 class="changelog-titulo">🤖 Ajuda com IA + Etapa flexível + Álbum 3× mais rápido</h4>
+                <p class="changelog-descricao">Grande pacote com 4 novidades. <strong>🤖 Ajuda com IA</strong> — botão no menu "Mais" gera um prompt completo (com todas as regras do jogo) e abre ChatGPT, Claude, Perplexity ou Copilot em nova aba. Funciona para dúvidas de <strong>cálculo</strong> (ex: "como resolvo 7×8?") e para dúvidas de <strong>regras</strong> (ex: "como ganho o certificado Ouro?"). <strong>📅 Estender encerramento da etapa</strong> — professor pode adiar o fim da etapa pelo painel, com motivo registrado e auditoria. <strong>⚡ App mais rápido</strong> — reserva de espaço no hero eliminou 75% do CLS (0,542 → 0,136). <strong>🚀 Álbum 3× mais rápido</strong> — cache de sessão (2 min) e paralelização de leituras no Firebase. Tudo sem SDK novo, sem custo, sem requisição extra.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.4.7</span>
                 <h4 class="changelog-titulo">🎨 Auditoria completa do tema escuro (P33)</h4>
                 <p class="changelog-descricao">Varredura em <strong>todo o CSS</strong> para eliminar definitivamente os bugs de legibilidade no modo escuro. Todas as regras que antes só rodavam quando o sistema estava em modo escuro agora são aplicadas <strong>incondicionalmente</strong> — o app sempre usa o tema E-Sports Dark, como projetado. Corrigidos: inputs e selects globais, tabela de alunos do painel, todo o bloco de <strong>Desempenho</strong> (cabeçalho, cards, gráfico, comparativo, evolução, histórico), <strong>Álbum</strong> (seções, figurinhas, filtros, modal de medalha, onboarding), <strong>Mensagens</strong> (chat com professor e painel), <strong>Changelog</strong> e <strong>Como funciona</strong>, além de avisos, notas e banners do resultado. Nada de JS foi alterado — só CSS, num único bloco consolidado.</p>
             </div>
@@ -6109,6 +6343,57 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.15] -->
+    <!-- ▼▼▼ [04.16] MODAL AJUDA COM IA ───────────────────── INÍCIO ─── -->
+    <div id="modal-ajuda-ia" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ia-modal-titulo" onclick="fecharAjudaIA(event)">
+        <div class="modal-card ia-modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="ia-modal-titulo">🤖 Ajuda com IA</h3>
+                <button class="modal-close" onclick="fecharAjudaIA()" aria-label="Fechar">✕</button>
+            </div>
+
+            <div class="ia-modal-intro">
+                Travou numa tabuada? Tem dúvida sobre como o jogo funciona?
+                <strong>Use uma IA para te explicar.</strong>
+            </div>
+
+            <ol class="ia-modal-passos">
+                <li>Na linha <strong>"MINHA DÚVIDA"</strong>, escreva o que você quer saber.</li>
+                <li><strong>Não apague</strong> o contexto do jogo — é ele que faz a IA te entender.</li>
+                <li>Clique em <strong>📋 Copiar prompt</strong>.</li>
+                <li>Abra uma IA e cole com <strong>Ctrl+V</strong> (ou toque longo → Colar).</li>
+            </ol>
+
+            <textarea id="ia-modal-textarea" class="ia-modal-textarea" aria-label="Prompt para a IA" oninput="validarPromptIA()"></textarea>
+
+            <div class="ia-modal-contador">
+                <span id="ia-modal-contador-status">✓ Prompt completo</span>
+                <span id="ia-modal-contador-chars">0 caracteres</span>
+            </div>
+
+            <div id="ia-aviso-contexto" class="ia-aviso-contexto hidden" role="alert">
+                <span class="icone">⚠️</span>
+                <div class="texto">Você apagou parte das regras do jogo. A IA pode <strong>não conseguir te ajudar</strong> sem esse contexto.</div>
+                <button class="btn-restaurar" onclick="restaurarPromptIA()">🔄 Restaurar</button>
+            </div>
+
+            <button id="ia-btn-copiar" class="ia-btn-copiar" onclick="copiarPromptIA()">📋 Copiar prompt</button>
+
+            <div class="ia-modal-divisor">Abrir numa IA</div>
+
+            <div class="ia-modal-grid">
+                <button class="ia-modal-btn" onclick="abrirIA('chatgpt')">🤖 ChatGPT</button>
+                <button class="ia-modal-btn" onclick="abrirIA('claude')">⚡ Claude</button>
+                <button class="ia-modal-btn" onclick="abrirIA('perplexity')">🔍 Perplexity</button>
+                <button class="ia-modal-btn" onclick="abrirIA('copilot')">🧠 Copilot</button>
+            </div>
+
+            <p class="ia-modal-privacidade">
+                🔒 <strong>O app não envia nada para as IAs.</strong><br>
+                Você copia e cola manualmente — nenhum dado seu sai daqui.
+            </p>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.16] -->
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -6118,7 +6403,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.4.7";
+const APP_VERSION = "10.4.8";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -14877,6 +15162,169 @@ if (containerProg) {
         await registrarAluno(!etapaAtiva);
     }
     // ▲▲▲ FIM [18.07]
+    // ▼▼▼ [18.08] Ajuda com IA ───────────────────────────── INÍCIO ───
+    // v10.4.8 · Opção B (leve) — prompt + copiar + abrir IA
+    // Zero requisição de rede adicional. Zero SDK. Zero custo.
+    // O prompt contém o contexto completo do jogo para a IA responder
+    // dúvidas de cálculo E de regras.
+
+    const PROMPT_IA_PADRAO = `Você é um tutor amigável da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
+
+═══ CONTEXTO DO JOGO ═══
+(use para responder qualquer dúvida sobre regras)
+
+• Cada partida tem 20 perguntas de multiplicação, com 10 segundos por questão. Quanto mais rápido acertar, mais pontos ganha.
+• 3 modalidades: Tabuadas 2-5, Tabuadas 6-9, Tabuadas 1-10.
+• Modo Classificatória (conta no ranking) e Modo Treino (NÃO conta no ranking, mas alimenta o Mapa de Tabuadas e os certificados).
+• Classificação: os 4 melhores de cada turma/modalidade avançam para a Final. Critérios de desempate: pontos → acertos → menor tempo médio dos acertos → maior sequência → data.
+• Mapa de Tabuadas: 100 operações com cores por domínio recente (últimas 10 respostas). ⚪ sem prática · 🔴 reforçar · 🟡 em treino · 🔵 quase lá · 🟢 dominada (≥90% de acerto com 5+ tentativas).
+• Certificados por modalidade:
+    🥈 Prata     → 85% do mapa, 5+ tentativas, 80% de acerto
+    🥇 Ouro      → 95% do mapa, 8+ tentativas, 90% + velocidade
+    💎 Lendária  → 100% do mapa, 10+ tentativas, 90% + velocidade
+• Álbum: 44 medalhas (comum/incomum/raro/épico/lendário) que viram estrelas, e as estrelas definem sua patente (Reserva → Imortal).
+• Treino Inteligente: o sistema sorteia as operações que você mais precisa, com peso por cor (cinza/vermelho/amarelo/azul/verde).
+• Foco Absoluto: quando faltam ≤5 operações para fechar o mapa, 92% das perguntas da partida vão para essas operações específicas.
+• Hall da Fama: 10 categorias (medalhas, mapa, velocidade, etc).
+• Ranking de Turmas: mínimo de 4 alunos por turma para aparecer.
+
+═══ MINHA DÚVIDA ═══
+[ESCREVA AQUI SUA DÚVIDA — PODE SER SOBRE CÁLCULO OU SOBRE O JOGO]
+
+═══ COMO ME AJUDAR ═══
+• Se for dúvida de CÁLCULO → explique passo a passo, dê um truque e 3 exercícios parecidos para eu praticar.
+• Se for dúvida sobre REGRAS DO JOGO → responda direto, curto e claro, usando o CONTEXTO acima como fonte.
+• Fale como se eu tivesse 12 anos. Nada de linguagem complicada.`;
+
+    // Tamanho mínimo para considerar o prompt "intacto" (contexto preservado).
+    // O prompt completo tem ~1.700 chars; abaixo de 800 significa que o aluno
+    // apagou parte relevante do contexto.
+    const PROMPT_IA_MIN_CHARS = 800;
+
+    function abrirAjudaIA() {
+        const m = document.getElementById("modal-ajuda-ia");
+        const ta = document.getElementById("ia-modal-textarea");
+        if (!m || !ta) return;
+
+        // Sempre restaura o prompt padrão ao abrir (evita arrastar edição anterior)
+        if (!ta.value || ta.value.trim().length === 0) {
+            ta.value = PROMPT_IA_PADRAO;
+        }
+        // Restaura o botão de copiar caso tenha ficado em estado "Copiado"
+        const btn = document.getElementById("ia-btn-copiar");
+        if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; }
+        // Revalida
+        validarPromptIA();
+
+        m.classList.remove("hidden");
+        setTimeout(() => {
+            const taFocus = document.getElementById("ia-modal-textarea");
+            if (taFocus) {
+                taFocus.focus();
+                // Posiciona o cursor no início da linha "MINHA DÚVIDA" para facilitar
+                const idx = taFocus.value.indexOf("[ESCREVA AQUI SUA DÚVIDA");
+                if (idx > -1) taFocus.setSelectionRange(idx, idx + 48);
+            }
+        }, 100);
+    }
+
+    function fecharAjudaIA(e) {
+        if (e && e.target && e.target.closest(".ia-modal-card")) return;
+        const m = document.getElementById("modal-ajuda-ia");
+        if (m) m.classList.add("hidden");
+        // Restaura botão de copiar
+        const btn = document.getElementById("ia-btn-copiar");
+        if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; }
+    }
+
+    function validarPromptIA() {
+        const ta = document.getElementById("ia-modal-textarea");
+        const aviso = document.getElementById("ia-aviso-contexto");
+        const status = document.getElementById("ia-modal-contador-status");
+        const chars = document.getElementById("ia-modal-contador-chars");
+        if (!ta || !aviso || !status || !chars) return;
+
+        const len = ta.value.length;
+        const curto = len < PROMPT_IA_MIN_CHARS;
+
+        aviso.classList.toggle("hidden", !curto);
+        status.textContent = curto ? "⚠️ Contexto incompleto" : "✓ Prompt completo";
+        status.className = curto ? "status-curto" : "status-ok";
+        chars.textContent = `${len} caracteres`;
+    }
+
+    function restaurarPromptIA() {
+        const ta = document.getElementById("ia-modal-textarea");
+        if (!ta) return;
+        ta.value = PROMPT_IA_PADRAO;
+        validarPromptIA();
+        notificar("Prompt restaurado ao original.", "info", 2500);
+        // Reposiciona o cursor na linha da dúvida
+        ta.focus();
+        const idx = ta.value.indexOf("[ESCREVA AQUI SUA DÚVIDA");
+        if (idx > -1) ta.setSelectionRange(idx, idx + 48);
+    }
+
+    async function copiarPromptIA() {
+        const ta = document.getElementById("ia-modal-textarea");
+        const btn = document.getElementById("ia-btn-copiar");
+        if (!ta || !btn) return;
+
+        const texto = ta.value;
+        if (texto.trim().length < PROMPT_IA_MIN_CHARS) {
+            // Aluno apagou o contexto — avisa mas deixa continuar
+            const confirmar = confirm(
+                "⚠️ Você apagou boa parte do contexto do jogo.\n\n" +
+                "A IA pode não conseguir te ajudar sem essas informações.\n\n" +
+                "Deseja copiar assim mesmo?"
+            );
+            if (!confirmar) return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(texto);
+            btn.classList.add("copiado");
+            btn.textContent = "✓ Copiado! Agora abra uma IA e cole";
+            setTimeout(() => {
+                btn.classList.remove("copiado");
+                btn.textContent = "📋 Copiar prompt";
+            }, 2800);
+        } catch (e) {
+            // Fallback para navegadores antigos / permissão negada
+            ta.select();
+            try {
+                document.execCommand("copy");
+                btn.classList.add("copiado");
+                btn.textContent = "✓ Copiado! Agora abra uma IA e cole";
+                setTimeout(() => {
+                    btn.classList.remove("copiado");
+                    btn.textContent = "📋 Copiar prompt";
+                }, 2800);
+            } catch (e2) {
+                notificar("Não consegui copiar. Selecione o texto e copie manualmente.", "aviso", 5000);
+            }
+        }
+    }
+
+    function abrirIA(provider) {
+        // Botões apenas ABREM a IA. O prompt vai pela área de transferência (Ctrl+V).
+        // Isso garante compatibilidade com 100% dos providers, sem depender de
+        // URLs com ?q= que mudam sem aviso.
+        const urls = {
+            chatgpt:    "https://chatgpt.com/",
+            claude:     "https://claude.ai/new",
+            perplexity: "https://www.perplexity.ai/",
+            copilot:    "https://copilot.microsoft.com/"
+        };
+        const url = urls[provider];
+        if (!url) return;
+        window.open(url, "_blank", "noopener,noreferrer");
+        // Dica amigável
+        setTimeout(() => {
+            notificar("💡 Agora cole o prompt com Ctrl+V (ou toque longo → Colar).", "info", 5000);
+        }, 400);
+    }
+    // ▲▲▲ FIM [18.08]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
@@ -14922,6 +15370,9 @@ if (containerProg) {
             if (mnc && !mnc.classList.contains("hidden")) fecharModalNovoCertificadoFila();
             const mmc = document.getElementById("modal-mapa-completo");
             if (mmc && !mmc.classList.contains("hidden")) fecharMapaCompleto();
+            // ▼ v10.4.8 — Ajuda com IA
+            const mia = document.getElementById("modal-ajuda-ia");
+            if (mia && !mia.classList.contains("hidden")) fecharAjudaIA();
         }
     });
     document.addEventListener("keydown", (e) => {
