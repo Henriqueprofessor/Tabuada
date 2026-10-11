@@ -6342,6 +6342,9 @@ let etapaEstadoCache = null;
 
     // ▼▼▼ [06.03] Estado do álbum ──────────────────────────────────────────
     let albumEstado = { nome: null, turma: null, persistidas: {}, dados: null, estrelas: 0, pronta: false };
+    // ▼ P36 — Cache de sessão do Álbum (evita recompilar tudo em cada abertura)
+    let albumSessaoCache = { chave: null, ts: 0, resultado: null };
+    const ALBUM_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [06.03]
 
     // ▼▼▼ [06.04] Estado das mensagens ─────────────────────────────────────
@@ -7314,9 +7317,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function obterDesempenhoOperacoesGlobal(nome, turma) {
+        // ▼ P36 — Paraleliza as 3 leituras de modalidade (antes: sequencial, 3× a latência)
+        const mods = Object.keys(MODALIDADES);
+        const resultados = await Promise.all(
+            mods.map(m => obterMapaFirebase(nome, turma, m).catch(() => null))
+        );
         const combinado = {};
-        for (const m of Object.keys(MODALIDADES)) {
-            let dados = await obterMapaFirebase(nome, turma, m);
+        mods.forEach((m, i) => {
+            let dados = resultados[i];
             if (!dados || !Object.keys(dados).length) dados = obterMapaLocal(nome, turma, m) || {};
             Object.entries(dados).forEach(([k, d]) => {
                 const h = normalizarHistoricoOperacao(d);
@@ -7325,7 +7333,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 if (combinado[k].historico.length > MAPA_JANELA_MAX)
                     combinado[k].historico = combinado[k].historico.slice(-MAPA_JANELA_MAX);
             });
-        }
+        });
         return combinado;
     }
     // ▲▲▲ FIM [09.03]
@@ -8364,9 +8372,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▼▼▼ [11.02] Compilação dos dados do aluno ─────────────────────────
     async function compilarDadosAluno(nome, turma) {
-        const partidas = await obterHistoricoAluno(nome, turma);
-        const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
-        const medalhasPersistidas = await obterMedalsFirebase(nome, turma);
+        // ▼ P36 — Paraleliza as 4 leituras base + lê o ranking uma única vez
+        const [partidas, mapaGlobal, medalhasPersistidas, rankingGeral] = await Promise.all([
+            obterHistoricoAluno(nome, turma),
+            obterDesempenhoOperacoesGlobal(nome, turma),
+            obterMedalsFirebase(nome, turma),
+            obterRanking().catch(() => [])
+        ]);
         const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
         const totalPartidas = partidas.length;
         const melhorPontuacao = partidas.length ? Math.max(...partidas.map(p => Number(p.pontos) || 0)) : 0;
@@ -8411,12 +8423,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         // Treinos focados = partidas que foram com treinoFocado
         const treinosFocados = partidas.filter(p => Array.isArray(p.treinoFocado) && p.treinoFocado.length > 0).length;
 
-        // Posições por modalidade
+        // ▼ P36 — Posições por modalidade: filtra do ranking já carregado (antes: 3 leituras Firebase)
         const posicoes = {};
         for (const mod of Object.keys(MODALIDADES)) {
             try {
-                const r = await obterRankingPorPontos(mod, turma);
-                const idx = r.findIndex(x => normalizarNome(x.nome) === normalizarNome(nome));
+                const f = rankingGeral.filter(r => r.modalidade === mod && r.turma === turma);
+                const m = new Map();
+                f.forEach(r => {
+                    const c = `${normalizarNome(r.nome)}|${r.turma}`;
+                    if (!m.has(c) || ehMelhorResultado(r, m.get(c))) m.set(c, r);
+                });
+                const listaOrdenada = Array.from(m.values()).sort(compararParaOrdenacao);
+                const idx = listaOrdenada.findIndex(x => normalizarNome(x.nome) === normalizarNome(nome));
                 posicoes[mod] = idx === -1 ? null : idx + 1;
             } catch(e) { posicoes[mod] = null; }
         }
@@ -8859,7 +8877,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (info) info.style.opacity = "0.4";
         albumEstado.pronta = false;
         try {
-            const resultado = await sincronizarMedalhas(nome, turma);
+            // ▼ P36 — Usa cache de sessão se estiver válido
+            const chaveCache = `${normalizarNome(nome)}|${turma}`;
+            const agora = Date.now();
+            const cacheValido = albumSessaoCache.chave === chaveCache
+                             && (agora - albumSessaoCache.ts) < ALBUM_CACHE_MS
+                             && albumSessaoCache.resultado;
+            const resultado = cacheValido
+                ? albumSessaoCache.resultado
+                : await sincronizarMedalhas(nome, turma);
+            if (!cacheValido) {
+                albumSessaoCache = { chave: chaveCache, ts: agora, resultado };
+            }
             const { persistidas, novas, dados, novasSecoes, estrelas, secoesCompletas } = resultado;
             const patenteAtual = calcularPatente(estrelas);
             const patenteVistaId = obterPatenteVista();
@@ -8873,8 +8902,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             renderizarCapa();
             const totalColadas = Object.keys(persistidas).length;
             marcarAlbumVisto(totalColadas);
-            if (novas && novas.length > 0) setTimeout(() => somColarFigurinha(), 250);
-            if (novasSecoes && novasSecoes.length > 0) setTimeout(() => mostrarPopupSecaoCompleta(novasSecoes, estrelas), 550);
+            // Só toca som / mostra popups quando é uma compilação nova (não em cache)
+            if (!cacheValido) {
+                if (novas && novas.length > 0) setTimeout(() => somColarFigurinha(), 250);
+                if (novasSecoes && novasSecoes.length > 0) setTimeout(() => mostrarPopupSecaoCompleta(novasSecoes, estrelas), 550);
+            }
         } catch(e) {
             console.error("Erro ao carregar álbum:", e);
             if (info) info.style.opacity = "1";
@@ -9562,6 +9594,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(l));
         try { await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).set(p); }
         catch(e) { console.warn("Partida salva apenas localmente", e); }
+        // ▼ P36 — Invalida o cache do Álbum (próxima abertura vai recompilar)
+        albumSessaoCache = { chave: null, ts: 0, resultado: null };
         return p;
     }
     async function salvarResultado(res) {
