@@ -1708,7 +1708,38 @@
         .mapa-celula.cinza-parcial::after { content: "?"; position: absolute; top: 1px; right: 3px; font-size: 9px; color: #0ea5e9; font-weight: 900; }
         .mapa-celula.azul { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important; color: #fff !important; box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4) !important; }
         .mapa-legenda .legenda-cor.parcial { background: #e2e8f0; border: 2px dashed #0ea5e9; }
-        .mapa-celula-badge-tent { position: absolute; bottom: 1px; right: 2px; font-size: 8px; font-weight: 800; background: rgba(0, 0, 0, 0.35); color: #fff; padding: 0 3px; border-radius: 3px; line-height: 1.2; }
+
+        /* ─── Badge do número de tentativas — sempre visível ─── */
+        /* Cada célula do mapa é o contexto de posicionamento do badge,
+           garantindo que ele fica sempre no canto inferior direito. */
+        .mapa-celula { position: relative; }
+        .mapa-celula-badge-tent {
+            position: absolute;
+            bottom: 2px;
+            right: 3px;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-radius: 8px;
+            line-height: 1.15;
+            min-width: 16px;
+            text-align: center;
+            pointer-events: none;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            transition: transform 0.15s ease;
+        }
+
+        /* Cor do badge por estado da célula — contraste máximo garantido */
+        .mapa-celula.verde .mapa-celula-badge-tent { background: rgba(255, 255, 255, 0.95); color: #14532d; }
+        .mapa-celula.amarelo .mapa-celula-badge-tent { background: rgba(0, 0, 0, 0.72); color: #fde047; }
+        .mapa-celula.vermelho .mapa-celula-badge-tent { background: rgba(255, 255, 255, 0.95); color: #7f1d1d; }
+        .mapa-celula.azul .mapa-celula-badge-tent { background: rgba(0, 0, 0, 0.72); color: #67e8f9; }
+        .mapa-celula.cinza-parcial .mapa-celula-badge-tent { background: rgba(3, 105, 161, 0.95); color: #fff; }
+        .mapa-celula.cinza .mapa-celula-badge-tent { background: rgba(0, 0, 0, 0.4); color: #94a3b8; }
+
+        /* Hover: pequeno destaque no badge junto com a célula */
+        .mapa-celula:hover .mapa-celula-badge-tent { transform: scale(1.12); }
+
         .mapa-certificados-resumo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
         .mapa-cert-badge { background: rgba(10, 22, 40, 0.55); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 10px; padding: 10px 8px; text-align: center; font-size: 11px; line-height: 1.35; color: var(--text-secondary); transition: all 0.2s ease; }
         .mapa-cert-badge.conquistado { background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(217, 119, 6, 0.12) 100%); border-color: rgba(251, 191, 36, 0.6); color: #fef3c7; box-shadow: 0 0 12px rgba(251, 191, 36, 0.25); }
