@@ -5133,12 +5133,79 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .hero-esports { contain: none; }
         }
         /* ▲▲▲ FIM [02.54] */
-        /* ▼▼▼ [02.55] Coach da Copa ─────────────────────────── INÍCIO ─── */
+        /* ▼▼▼ [02.55] Coach da Copa + FAB ───────────────────── INÍCIO ─── */
         /* v10.4.8 · Coach pessoal com IA — prompt read-only personalizado
-           com perfil completo do aluno (posições, mapa, tabuadas fracas,
-           velocidade, certificados, próximo alvo). A IA atua como um
-           treinador: diagnóstica, prescreve treinos e motiva.
+           com perfil COMPLETO do aluno. A IA atua como treinador:
+           diagnóstica, prescreve treinos e motiva.
+           Entradas: FAB flutuante (primária) + Menu Mais (backup).
            Zero requisição extra. Reusa albumSessaoCache quando válido. */
+
+        /* ─── FAB flutuante global ─── */
+        .coach-fab {
+            position: fixed;
+            right: 16px;
+            bottom: 84px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            color: #422006;
+            font-size: 26px;
+            line-height: 1;
+            border: 2px solid #fde68a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.45), 0 2px 0 #92400e;
+            z-index: 999;
+            padding: 0;
+            margin: 0;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            font-family: inherit;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .coach-fab.hidden { display: none !important; }
+        .coach-fab:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 26px rgba(251, 191, 36, 0.6), 0 2px 0 #92400e;
+        }
+        .coach-fab:active:not(:disabled) {
+            transform: translateY(0) scale(0.96);
+            box-shadow: 0 3px 10px rgba(251, 191, 36, 0.4), 0 2px 0 #92400e;
+        }
+        .coach-fab:focus-visible {
+            outline: 3px solid var(--neon-gold);
+            outline-offset: 3px;
+        }
+        .coach-fab.pulse {
+            animation: coachFabPulse 2.4s ease-in-out infinite;
+        }
+        @keyframes coachFabPulse {
+            0%, 100% {
+                box-shadow: 0 6px 20px rgba(251, 191, 36, 0.45), 0 2px 0 #92400e, 0 0 0 0 rgba(251, 191, 36, 0.55);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(251, 191, 36, 0.45), 0 2px 0 #92400e, 0 0 0 12px rgba(251, 191, 36, 0);
+            }
+        }
+        @media (max-width: 500px) {
+            .coach-fab {
+                width: 52px;
+                height: 52px;
+                font-size: 24px;
+                bottom: 80px;
+                right: 14px;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .coach-fab { transition: none !important; }
+            .coach-fab.pulse { animation: none !important; }
+            .coach-fab:hover:not(:disabled) { transform: none; }
+        }
+
+        /* ─── Modal do Coach ─── */
         .ia-modal-card {
             max-width: 580px;
             padding: 20px 22px 18px;
@@ -5185,10 +5252,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         .ia-modal-personalizado strong { color: #67e8f9; font-weight: 900; }
         .ia-modal-personalizado .sep { opacity: 0.5; padding: 0 2px; }
-        .ia-modal-personalizado .top4 {
-            color: #6ee7b7;
-            font-weight: 900;
-        }
+        .ia-modal-personalizado .top4 { color: #6ee7b7; font-weight: 900; }
         .ia-modal-personalizado.vazio {
             background: rgba(251, 191, 36, 0.10);
             border-color: rgba(251, 191, 36, 0.4);
@@ -5215,9 +5279,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             border-radius: 50%;
             animation: iaSpin 0.9s linear infinite;
         }
-        @keyframes iaSpin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes iaSpin { to { transform: rotate(360deg); } }
         .ia-modal-loading-txt {
             font-size: 13px;
             font-weight: 800;
@@ -6378,7 +6440,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.15] -->
-    <!-- ▼▼▼ [04.16] MODAL COACH DA COPA ───────────────────── INÍCIO ─── -->
+    <!-- ▼▼▼ [04.16] MODAL COACH DA COPA + FAB ─────────────────── INÍCIO ─── -->
     <div id="modal-ajuda-ia" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ia-modal-titulo" onclick="fecharAjudaIA(event)">
         <div class="modal-card ia-modal-card" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -6433,6 +6495,11 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </div>
     </div>
+
+    <!-- FAB flutuante do Coach — visível em todas as telas exceto Jogo, Cadastro, Preparação e Painel -->
+    <button id="coach-fab" class="coach-fab hidden" onclick="abrirAjudaIA()" aria-label="Abrir meu Coach da Copa" title="Seu Coach da Copa">
+        <span aria-hidden="true">🏆</span>
+    </button>
     <!-- ▲▲▲ FIM [04.16] -->
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -10912,6 +10979,10 @@ if (containerProg) {
         atualizarNavGlobal(id);
         // ▲▲▲
 
+        // ▼ v10.4.8 — FAB do Coach (visível em quase todas as telas, exceto Jogo/Cadastro/Preparação/Painel)
+        try { atualizarFABCoach(id); } catch(e) { console.warn("[FAB Coach] Falha:", e); }
+        // ▲
+
         if (id === "tela-inicial") {
             renderizarMetaPessoal();
             atualizarBadgeAluno();
@@ -15202,20 +15273,76 @@ if (containerProg) {
         await registrarAluno(!etapaAtiva);
     }
     // ▲▲▲ FIM [18.07]
-    // ▼▼▼ [18.08] Coach da Copa ──────────────────────────── INÍCIO ───
+    // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
     // v10.4.8 · Coach pessoal com IA — prompt read-only personalizado
-    // com perfil COMPLETO do aluno. A IA atua como um treinador:
-    // diagnóstica, prescreve treinos e motiva. Menu de 8 opções.
+    // com perfil COMPLETO do aluno. A IA atua como treinador.
+    // Entradas: FAB flutuante (primária) + Menu Mais (backup).
     // Zero requisição extra. Reusa albumSessaoCache quando válido.
 
     const IA_TIMEOUT_COLETA_MS = 4500;
+    const STORAGE_COACH_ABERTO = "copa_coach_aberto";
+
+    // Telas onde o FAB NÃO deve aparecer
+    const TELAS_SEM_COACH_FAB = new Set([
+        "tela-jogo",
+        "tela-single",
+        "tela-preparacao",
+        "tela-painel"
+    ]);
+
+    // ─────────────────────────────────────────────────────────────────
+    // FAB — visibilidade controlada por mostrarTela()
+    // ─────────────────────────────────────────────────────────────────
+    function atualizarFABCoach(idTela) {
+        const fab = document.getElementById("coach-fab");
+        if (!fab) return;
+
+        // Descobre a tela atual se não recebeu
+        if (!idTela) {
+            const candidatos = Array.from(document.querySelectorAll('[id^="tela-"]'));
+            const ativa = candidatos.find(t => !t.classList.contains("hidden"));
+            idTela = ativa ? ativa.id : null;
+        }
+
+        // Resultado: atrasa 3s para não competir com confetes
+        if (idTela === "tela-resultado") {
+            fab.classList.add("hidden");
+            setTimeout(() => {
+                const tela = document.getElementById("tela-resultado");
+                if (tela && !tela.classList.contains("hidden")) {
+                    fab.classList.remove("hidden");
+                    aplicarPulseCoach(fab);
+                }
+            }, 3000);
+            return;
+        }
+
+        const escondido = !idTela || TELAS_SEM_COACH_FAB.has(idTela);
+        fab.classList.toggle("hidden", escondido);
+        if (!escondido) aplicarPulseCoach(fab);
+    }
+
+    function aplicarPulseCoach(fab) {
+        try {
+            if (localStorage.getItem(STORAGE_COACH_ABERTO)) {
+                fab.classList.remove("pulse");
+            } else {
+                fab.classList.add("pulse");
+            }
+        } catch(e) { fab.classList.remove("pulse"); }
+    }
+
+    function marcarCoachAberto() {
+        try { localStorage.setItem(STORAGE_COACH_ABERTO, "1"); } catch(e) {}
+        const fab = document.getElementById("coach-fab");
+        if (fab) fab.classList.remove("pulse");
+    }
 
     // ─────────────────────────────────────────────────────────────────
     // Helper 1: análise por tabuada (fortes × fracas)
     // ─────────────────────────────────────────────────────────────────
     function analisarTabuadasDoAluno(mapaGlobal) {
         const resumo = {};
-        // Conta, para cada tabuada (2-9), quantas operações estão dominadas
         [2, 3, 4, 5, 6, 7, 8, 9].forEach(tab => {
             let dominadas = 0;
             let praticadas = 0;
@@ -15238,7 +15365,7 @@ if (containerProg) {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Helper 2: operações mais problemáticas (vermelhas + baixa precisão)
+    // Helper 2: operações mais problemáticas
     // ─────────────────────────────────────────────────────────────────
     function identificarOperacoesProblematicas(mapaGlobal, limite) {
         const problemas = [];
@@ -15248,7 +15375,7 @@ if (containerProg) {
                 const h = normalizarHistoricoOperacao(mapaGlobal[k]);
                 if (h.length === 0) return;
                 const s = statsDaOperacao(h);
-                if (s.taxa < 0.7) { // abaixo de 70% = problema real
+                if (s.taxa < 0.7) {
                     problemas.push({
                         op: `${a}x${b}`,
                         fA: a, fB: b,
@@ -15259,13 +15386,12 @@ if (containerProg) {
                 }
             });
         });
-        // Ordena: pior precisão primeiro; empate → mais tentativas primeiro
         problemas.sort((x, y) => x.taxa - y.taxa || y.tentativas - x.tentativas);
         return problemas.slice(0, limite || 8);
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Helper 3: gap para o Top 4 (pontos do 4º lugar − meus pontos)
+    // Helper 3: gap para o Top 4
     // ─────────────────────────────────────────────────────────────────
     function calcularGapTop4(rankingMod, nome, turma) {
         const filtro = rankingMod.filter(r => r.turma === turma);
@@ -15298,7 +15424,6 @@ if (containerProg) {
     async function coletarDadosParaPrompt(nome, turma) {
         const mods = Object.keys(MODALIDADES);
 
-        // Reusa cache do Álbum quando válido
         const chaveCache = `${normalizarNome(nome)}|${turma}`;
         const agora = Date.now();
         const cacheAlbumValido = typeof albumSessaoCache !== "undefined"
@@ -15321,14 +15446,11 @@ if (containerProg) {
             certificados = certs || {};
         }
 
-        // Mapa global (para análise por tabuada + operações problemáticas)
         let mapaGlobal = {};
         try { mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma) || {}; } catch(e) {}
 
-        // Ranking completo (uma única leitura)
         const rankingGeral = await obterRanking().catch(() => []);
 
-        // Posições nas 3 modalidades + gap para Top 4
         const posicoes = {};
         for (const mod of mods) {
             const rankingMod = rankingGeral.filter(r => r.modalidade === mod);
@@ -15341,7 +15463,6 @@ if (containerProg) {
             const listaT = Array.from(mT.values()).sort(compararParaOrdenacao);
             const idxT = listaT.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome));
 
-            // Posição no ranking geral
             const mG = new Map();
             rankingMod.forEach(r => {
                 const k = `${normalizarNome(r.nome)}|${r.turma}`;
@@ -15360,7 +15481,6 @@ if (containerProg) {
             };
         }
 
-        // Análise de tabuadas + operações problemáticas
         const porTabuada = analisarTabuadasDoAluno(mapaGlobal);
         const operacoesProblematicas = identificarOperacoesProblematicas(mapaGlobal, 8);
 
@@ -15378,7 +15498,6 @@ if (containerProg) {
         const porTab = (dados && dados.porTabuada) || {};
         const probs = (dados && dados.operacoesProblematicas) || [];
 
-        // ─── Competitivo por modalidade ───
         const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
         const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
         L.push("🏆 COMPETITIVO:");
@@ -15398,7 +15517,6 @@ if (containerProg) {
             L.push(`  ${icones[mod]} ${rotulos[mod]}: ${ptTxt} · ${pgTxt}${status}`);
         }
 
-        // ─── Perfil de jogo ───
         L.push("");
         L.push("📊 PERFIL DE JOGO:");
         if (p.totalPartidas) L.push(`  • Partidas oficiais: ${p.totalPartidas}`);
@@ -15410,13 +15528,11 @@ if (containerProg) {
         if (p.melhorTempoMedioPerfeito) L.push(`  • Melhor tempo médio em partida perfeita: ${Number(p.melhorTempoMedioPerfeito).toFixed(2)}s`);
         if (p.melhorTempoMedio) L.push(`  • Melhor tempo médio (≥10 acertos): ${Number(p.melhorTempoMedio).toFixed(2)}s`);
 
-        // ─── Mapa de tabuadas ───
         L.push("");
         const dominadas = Number(p.operacoesDominadas) || 0;
         const pct = Math.round((dominadas / 100) * 100);
         L.push(`🗺️ MAPA DE TABUADAS: ${dominadas}/100 dominadas (${pct}%)`);
 
-        // Tabuadas fortes (>=80% dominada)
         const fortes = Object.entries(porTab).filter(([, d]) => d.pct >= 80).map(([t]) => t);
         const fracas = Object.entries(porTab)
             .filter(([, d]) => d.pct < 70)
@@ -15433,7 +15549,6 @@ if (containerProg) {
             });
         }
 
-        // Operações problemáticas específicas
         if (probs.length) {
             L.push(`  🔴 Operações mais problemáticas:`);
             probs.slice(0, 6).forEach(op => {
@@ -15442,7 +15557,6 @@ if (containerProg) {
             });
         }
 
-        // ─── Certificados ───
         L.push("");
         const certsList = [];
         for (const mod of ["2-5", "6-9", "0-10"]) {
@@ -15465,27 +15579,22 @@ if (containerProg) {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Helper 6: descobrir próximo certificado + gap
+    // Helper 6: próximo certificado + gap
     // ─────────────────────────────────────────────────────────────────
     function identificarProximoCertificado(dados) {
         const certs = (dados && dados.certificados) || {};
-        const p = (dados && dados.perfil) || {};
         const mods = ["2-5", "6-9", "0-10"];
         const niveis = ["prata", "ouro", "lendaria"];
 
         for (const mod of mods) {
             const pMod = certs[mod] || {};
             for (const nivel of niveis) {
-                if (pMod[nivel]) continue; // já tem
-                // Calcula progresso atual para esse nível
+                if (pMod[nivel]) continue;
                 const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
                 const cfg = CERT_NIVEIS[nivel];
-                const dominadas = Number(p.operacoesDominadas) || 0;
-                // Aproximação: usa dominadas globais (ideal seria por modalidade)
                 const coberturaAtual = pctCoberturaPorMod(dados, mod);
                 const coberturaNecessaria = cfg.coberturaPct;
                 if (coberturaAtual >= coberturaNecessaria - 30) {
-                    // Está perto o suficiente para valer a pena
                     return {
                         nivel, cfg, mod,
                         nomeMod: rotulos[mod],
@@ -15497,7 +15606,6 @@ if (containerProg) {
         return null;
     }
 
-    // Helper auxiliar: % de cobertura do mapa por modalidade
     function pctCoberturaPorMod(dados, mod) {
         const porTab = (dados && dados.porTabuada) || {};
         const fatores = MODALIDADES[mod]?.fatores || [];
@@ -15508,7 +15616,7 @@ if (containerProg) {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Bloco principal: construção do prompt (persona de COACH)
+    // Construção do prompt (persona de COACH)
     // ─────────────────────────────────────────────────────────────────
     function construirPromptIA(nome, turma, dadosPerfil) {
         const temNome  = nome  && String(nome).trim().length  > 0;
@@ -15517,7 +15625,6 @@ if (containerProg) {
         const turmaLimpa = temTurma ? String(turma).trim() : "";
         const primeiroNome = temNome ? nomeLimpo.split(" ")[0] : "";
 
-        // Identificação
         let identificacao = "";
         if (temNome && temTurma) {
             identificacao = `O atleta se chama ${nomeLimpo} (turma ${turmaLimpa}).`;
@@ -15527,18 +15634,15 @@ if (containerProg) {
             identificacao = `O atleta ainda não se identificou. Use tratamento genérico.`;
         }
 
-        // Saudação personalizada
         const saudacao = temNome
             ? `Olá, ${primeiroNome}! Sou seu Coach da Copa da Tabuada. 🏆`
             : `Olá! Sou seu Coach da Copa da Tabuada. 🏆`;
 
-        // Bloco de perfil (só se tiver dados)
         const temDados = !!(dadosPerfil && dadosPerfil.perfil);
         const blocoPerfil = temDados
             ? `\n═══ PERFIL COMPLETO DO ATLETA ═══\n\n${montarBlocoPerfil(dadosPerfil)}\n`
             : "";
 
-        // Próximo certificado
         const proxCert = temDados ? identificarProximoCertificado(dadosPerfil) : null;
         let blocoProxCert = "";
         if (proxCert) {
@@ -15666,6 +15770,9 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const btn = document.getElementById("ia-btn-copiar");
         if (!m || !loading || !conteudo || !ta) return;
 
+        // Marca como aberto — para o FAB parar de pulsar
+        marcarCoachAberto();
+
         loading.classList.remove("hidden");
         conteudo.classList.add("hidden");
         if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; btn.disabled = true; }
@@ -15692,7 +15799,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
         ta.value = construirPromptIA(nome, turma, dadosPerfil);
 
-        // Badge
         if (badge) {
             if (temNome && temTurma) {
                 badge.classList.remove("vazio");
@@ -15769,7 +15875,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     function abrirIA(provider) {
-        // Botões apenas ABREM a IA. O prompt vai pela área de transferência (Ctrl+V).
         const urls = {
             chatgpt:    "https://chatgpt.com/",
             claude:     "https://claude.ai/new",
