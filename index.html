@@ -4374,6 +4374,88 @@
             .comparativo-barra-fill { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.49] */
+        /* ▼▼▼ [02.50] Comparativo — Hero "aguardando" + destaque do aluno ─ INÍCIO ─── */
+
+        /* ─── Variante do hero quando a turma do aluno ainda não está no ranking ─── */
+        .comparativo-hero.aguardando {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(217, 119, 6, 0.04) 100%);
+            border-color: rgba(251, 191, 36, 0.5);
+            border-left-color: var(--neon-gold);
+            box-shadow: 0 4px 14px rgba(251, 191, 36, 0.10);
+        }
+        .comparativo-hero.aguardando .comparativo-hero-titulo { color: #fde68a; }
+        .comparativo-hero.aguardando .comparativo-hero-posicao {
+            color: #fcd34d;
+            font-size: 14px;
+        }
+        .comparativo-hero.aguardando .comparativo-hero-posicao strong {
+            color: var(--neon-gold);
+            font-size: 15.5px;
+        }
+        .comparativo-hero.aguardando .comparativo-hero-submetricas {
+            border-top-color: rgba(251, 191, 36, 0.3);
+            color: #fde68a;
+        }
+        .comparativo-hero-cta {
+            margin-top: 8px;
+            align-self: flex-start;
+            padding: 8px 14px;
+            background: rgba(251, 191, 36, 0.14);
+            color: #fde68a;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+            box-shadow: none;
+            margin: 0;
+        }
+        .comparativo-hero-cta:hover:not(:disabled) {
+            background: rgba(251, 191, 36, 0.22);
+            border-color: var(--neon-gold);
+        }
+
+        /* ─── Destaque do aluno logado em QUALQUER ranking ─── */
+        /* Aplica a todos os modos: turma, global, precisão, velocidade */
+        table tbody tr.voce-linha td,
+        .tabela-container table tbody tr.voce-linha td {
+            background: linear-gradient(90deg, rgba(34, 211, 238, 0.22) 0%, rgba(34, 211, 238, 0.06) 100%) !important;
+            color: #e0f2fe !important;
+            font-weight: 700;
+            box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.35) !important;
+        }
+        table tbody tr.voce-linha td:first-child,
+        .tabela-container table tbody tr.voce-linha td:first-child {
+            border-left: 4px solid var(--neon-cyan) !important;
+            padding-left: 6px;
+        }
+        table tbody tr.voce-linha:hover td,
+        .tabela-container table tbody tr.voce-linha:hover td {
+            background: linear-gradient(90deg, rgba(34, 211, 238, 0.30) 0%, rgba(34, 211, 238, 0.10) 100%) !important;
+        }
+        /* Selo "← Você" ao lado do nome */
+        .ranking-voce-tag {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 8px;
+            background: rgba(34, 211, 238, 0.22);
+            color: #a5f3fc;
+            border: 1px solid rgba(34, 211, 238, 0.5);
+            border-radius: 10px;
+            font-size: 10.5px;
+            font-weight: 900;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 520px) {
+            .comparativo-hero-cta { font-size: 11.5px; padding: 7px 12px; }
+            .ranking-voce-tag { font-size: 10px; padding: 1px 6px; margin-left: 4px; }
+        }
+        /* ▲▲▲ FIM [02.50] */
 
     </style>
 </head>
@@ -9005,25 +9087,23 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     // ▼▼▼ [13.06.bis] Comparativo entre turmas (P21) ─────────────────────
-    // Agrega métricas por turma na modalidade escolhida:
-    //   • mediaPontos     → média dos pontos dos até 4 melhores alunos
-    //   • pctPrecisao     → média de acertos/20 da melhor partida (Top 4)
-    //   • mediaVelocidade → média do tempo médio dos acertos (Top 4)
-    //   • mediaPartidas   → partidas por aluno (engajamento da turma)
-    async function calcularMetricasComparativo(mod) {
+    // Agrega métricas por turma na modalidade escolhida.
+    // Por padrão filtra turmas com >= MIN_ALUNOS_RANKING_TURMA para o ranking.
+    // Com incluirTodas=true, retorna TODAS as turmas com pelo menos 1 aluno —
+    // usado para o fallback "Sua turma aguardando" quando a turma do aluno
+    // ainda não tem alunos suficientes para entrar no ranking.
+    async function calcularMetricasComparativo(mod, incluirTodas = false) {
         const [rankMod, partidas] = await Promise.all([
             obterRankingPorPontos(mod, null).catch(() => []),
             obterPartidas().catch(() => [])
         ]);
 
-        // Agrupa por turma (o obterRankingPorPontos já deduplica por aluno)
         const porTurma = new Map();
         rankMod.forEach(r => {
             if (!porTurma.has(r.turma)) porTurma.set(r.turma, []);
             porTurma.get(r.turma).push(r);
         });
 
-        // Conta partidas por turma para o engajamento
         const partidasStats = new Map();
         partidas.forEach(p => {
             if (p.modalidade !== mod) return;
@@ -9037,7 +9117,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         porTurma.forEach((lista, turma) => {
             const ordenada = [...lista].sort(compararParaOrdenacao);
             const totalAlunos = ordenada.length;
-            if (totalAlunos < MIN_ALUNOS_RANKING_TURMA) return; // fora do ranking
+            if (!incluirTodas && totalAlunos < MIN_ALUNOS_RANKING_TURMA) return;
 
             const top4 = ordenada.slice(0, 4);
 
@@ -9073,54 +9153,58 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         c.classList.remove("hidden");
 
         try {
-            const dados = await calcularMetricasComparativo(mod);
+            const todas = await calcularMetricasComparativo(mod, true);
             const turmaAluno = obterTurmaSalvaAluno();
             const modNome = MODALIDADES[mod]?.nome || mod;
 
-            // Consulta auxiliar: aviso de turma pequena (fora do ranking)
-            let r = null;
-            try { r = await calcularMediasTop4Turmas(mod); } catch(e) {}
+            // Ranking: só turmas com alunos suficientes
+            const noRanking = todas.filter(t => t.totalAlunos >= MIN_ALUNOS_RANKING_TURMA)
+                                    .sort((a, b) => b.mediaPontos - a.mediaPontos);
+            const minhaTurmaInfo = turmaAluno ? todas.find(t => t.turma === turmaAluno) : null;
+            const minhaNoRanking = minhaTurmaInfo && minhaTurmaInfo.totalAlunos >= MIN_ALUNOS_RANKING_TURMA;
 
-            // Nenhuma turma entrou no ranking
-            if (dados.length === 0) {
+            // ─── Nenhuma turma entrou no ranking ───
+            if (noRanking.length === 0) {
+                let extraFallback = "";
+                if (minhaTurmaInfo && !minhaNoRanking) {
+                    extraFallback = renderizarHeroAguardando(minhaTurmaInfo, mod);
+                }
                 c.innerHTML = `<h4>📊 Comparativo entre turmas</h4>
                     <p class="subtitulo-bloco">Métricas por turma na modalidade <strong>${escaparHtml(modNome)}</strong>. Só entram turmas com <strong>${MIN_ALUNOS_RANKING_TURMA}+</strong> alunos.</p>
+                    ${extraFallback}
                     <div class="medias-turmas-vazio">Nenhuma turma atingiu <strong>${MIN_ALUNOS_RANKING_TURMA} alunos</strong> nesta modalidade ainda.</div>
-                    ${r && r.minhaTurma ? renderizarAvisoTurmaFora(r.minhaTurma, mod) : ""}`;
+                    ${minhaTurmaInfo && minhaNoRanking ? "" : (minhaTurmaInfo ? renderizarMiniCardsSemPosicao(minhaTurmaInfo) : "")}`;
                 return;
             }
 
-            // Ordenações por métrica
-            const porPontos = [...dados].sort((a, b) => b.mediaPontos - a.mediaPontos);
-            const maxPontos = Math.max(...porPontos.map(t => t.mediaPontos), 1);
+            const maxPontos = Math.max(...noRanking.map(t => t.mediaPontos), 1);
 
-            const precisaoOrdenada = [...dados].sort((a, b) => b.pctPrecisao - a.pctPrecisao);
-            const velocidadeOrdenada = [...dados]
+            const precisaoOrdenada = [...noRanking].sort((a, b) => b.pctPrecisao - a.pctPrecisao);
+            const velocidadeOrdenada = [...noRanking]
                 .filter(t => Number.isFinite(t.mediaVelocidade) && t.mediaVelocidade > 0)
                 .sort((a, b) => a.mediaVelocidade - b.mediaVelocidade);
-            const engajamentoOrdenado = [...dados].sort((a, b) => b.mediaPartidas - a.mediaPartidas);
+            const engajamentoOrdenado = [...noRanking].sort((a, b) => b.mediaPartidas - a.mediaPartidas);
 
-            // Posições da turma do aluno em cada métrica
-            const idxPontos = turmaAluno ? porPontos.findIndex(t => t.turma === turmaAluno) : -1;
-            const pontosAluno = idxPontos >= 0 ? porPontos[idxPontos] : null;
-            const idxPrec = turmaAluno ? precisaoOrdenada.findIndex(t => t.turma === turmaAluno) : -1;
-            const idxVel  = turmaAluno ? velocidadeOrdenada.findIndex(t => t.turma === turmaAluno) : -1;
-            const idxEng  = turmaAluno ? engajamentoOrdenado.findIndex(t => t.turma === turmaAluno) : -1;
-
-            const total = dados.length;
+            const total = noRanking.length;
             const plural = total === 1 ? "turma" : "turmas";
 
             let h = `<h4>📊 Comparativo entre turmas</h4>
                 <p class="subtitulo-bloco">Métricas por turma na modalidade <strong>${escaparHtml(modNome)}</strong>. Cada turma é representada pelos <strong>até 4 melhores alunos</strong>. Só entram turmas com <strong>${MIN_ALUNOS_RANKING_TURMA}+</strong> alunos.</p>`;
 
-            // ── Hero: minha turma
-            if (pontosAluno) {
+            // ─── Hero: minha turma no ranking ───
+            if (minhaNoRanking) {
+                const idxPontos = noRanking.findIndex(t => t.turma === turmaAluno);
+                const idxPrec = precisaoOrdenada.findIndex(t => t.turma === turmaAluno);
+                const idxVel  = velocidadeOrdenada.findIndex(t => t.turma === turmaAluno);
+                const idxEng  = engajamentoOrdenado.findIndex(t => t.turma === turmaAluno);
+
                 const pos = idxPontos + 1;
                 const posTxt = `${pos}ª de ${total} ${plural}`;
                 const emojiPos = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : "";
                 const pPrec = idxPrec >= 0 ? `${idxPrec + 1}ª` : "—";
                 const pVel  = idxVel  >= 0 ? `${idxVel + 1}ª`  : "—";
                 const pEng  = idxEng  >= 0 ? `${idxEng + 1}ª`  : "—";
+
                 h += `<div class="comparativo-hero">
                     <div class="comparativo-hero-titulo">
                         <span class="emoji">🏫</span>
@@ -9135,13 +9219,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         <span>🎮 Engajamento: <strong>${pEng}</strong></span>
                     </div>
                 </div>`;
+            } else if (minhaTurmaInfo) {
+                // ─── Hero fallback: turma existe mas não está no ranking ───
+                h += renderizarHeroAguardando(minhaTurmaInfo, mod);
             }
 
-            // ── Ranking visual por pontos
+            // ─── Ranking visual ───
             h += `<div class="comparativo-ranking">
                 <div class="comparativo-ranking-titulo">🏆 Ranking por pontuação</div>
                 <div class="comparativo-lista">`;
-            porPontos.forEach((t, i) => {
+            noRanking.forEach((t, i) => {
                 const ehMinha = turmaAluno && t.turma === turmaAluno;
                 const pct = maxPontos > 0 ? Math.max(6, (t.mediaPontos / maxPontos) * 100) : 0;
                 const pos = i + 1;
@@ -9155,45 +9242,25 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             });
             h += `</div></div>`;
 
-            // ── Mini cards de métricas complementares
-            const cards = [];
-            if (idxPrec >= 0) {
-                const v = precisaoOrdenada[idxPrec];
-                cards.push(`<div class="comparativo-mini-card">
-                    <div class="comparativo-mini-rotulo">🎯 Precisão</div>
-                    <div class="comparativo-mini-posicao">${idxPrec + 1}ª de ${total}</div>
-                    <div class="comparativo-mini-valor">${v.pctPrecisao.toFixed(1)}%</div>
-                    <div class="comparativo-mini-sub">Média de acertos da melhor partida</div>
-                </div>`);
-            }
-            if (idxVel >= 0) {
-                const v = velocidadeOrdenada[idxVel];
-                cards.push(`<div class="comparativo-mini-card">
-                    <div class="comparativo-mini-rotulo">⚡ Velocidade</div>
-                    <div class="comparativo-mini-posicao">${idxVel + 1}ª de ${velocidadeOrdenada.length}</div>
-                    <div class="comparativo-mini-valor">${v.mediaVelocidade.toFixed(2)}s</div>
-                    <div class="comparativo-mini-sub">Tempo médio dos acertos</div>
-                </div>`);
-            }
-            if (idxEng >= 0) {
-                const v = engajamentoOrdenado[idxEng];
-                cards.push(`<div class="comparativo-mini-card">
-                    <div class="comparativo-mini-rotulo">🎮 Engajamento</div>
-                    <div class="comparativo-mini-posicao">${idxEng + 1}ª de ${total}</div>
-                    <div class="comparativo-mini-valor">${v.mediaPartidas.toFixed(1)}</div>
-                    <div class="comparativo-mini-sub">Partidas por aluno em média</div>
-                </div>`);
-            }
-            if (cards.length > 0) {
-                h += `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
+            // ─── Mini-cards: minha turma (com posição se está no ranking) ───
+            const dadosMini = minhaNoRanking ? minhaTurmaInfo : null;
+            if (dadosMini) {
+                const idxPrec = precisaoOrdenada.findIndex(t => t.turma === turmaAluno);
+                const idxVel  = velocidadeOrdenada.findIndex(t => t.turma === turmaAluno);
+                const idxEng  = engajamentoOrdenado.findIndex(t => t.turma === turmaAluno);
+                h += renderizarMiniCards(dadosMini, { idxPrec, idxVel, idxEng, total, totalVel: velocidadeOrdenada.length });
+            } else if (minhaTurmaInfo) {
+                // Turma está fora do ranking → mini-cards sem posição
+                h += renderizarMiniCardsSemPosicao(minhaTurmaInfo);
             }
 
-            // ── Aviso se a turma do aluno está fora do ranking
-            if (r && r.minhaTurma) h += renderizarAvisoTurmaFora(r.minhaTurma, mod);
+            // ─── Aviso amarelo extra para turma pequena (se aplicável) ───
+            if (minhaTurmaInfo && !minhaNoRanking) {
+                // O hero aguardando já cobre o aviso; não duplicamos
+            }
 
             c.innerHTML = h;
 
-            // Anima as barras
             requestAnimationFrame(() => {
                 c.querySelectorAll(".comparativo-barra-fill").forEach(el => {
                     const w = el.style.width;
@@ -9208,6 +9275,80 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
+    // ▼▼▼ [13.06.ter] Helpers do comparativo (hero fallback + mini-cards) ───
+    function renderizarHeroAguardando(info, mod) {
+        const faltam = Math.max(0, MIN_ALUNOS_RANKING_TURMA - info.totalAlunos);
+        const pluralFalta = faltam === 1 ? "colega" : "colegas";
+        const pluralAluno = info.totalAlunos === 1 ? "aluno" : "alunos";
+        const modNome = MODALIDADES[mod]?.nome || mod;
+
+        return `<div class="comparativo-hero aguardando">
+            <div class="comparativo-hero-titulo">
+                <span class="emoji">🏫</span>
+                <span>Sua turma · ${escaparHtml(info.turma)}</span>
+            </div>
+            <div class="comparativo-hero-posicao">
+                ⏳ Ainda não está no ranking de <strong>${escaparHtml(modNome)}</strong>
+            </div>
+            <div class="comparativo-hero-submetricas">
+                <span>Só <strong>${info.totalAlunos} ${pluralAluno}</strong> com resultado · faltam <strong>${faltam} ${pluralFalta}</strong> para entrar.</span>
+            </div>
+        </div>`;
+    }
+
+    function renderizarMiniCards(info, { idxPrec, idxVel, idxEng, total, totalVel }) {
+        const cards = [];
+        if (idxPrec >= 0) {
+            cards.push(`<div class="comparativo-mini-card">
+                <div class="comparativo-mini-rotulo">🎯 Precisão</div>
+                <div class="comparativo-mini-posicao">${idxPrec + 1}ª de ${total}</div>
+                <div class="comparativo-mini-valor">${info.pctPrecisao.toFixed(1)}%</div>
+                <div class="comparativo-mini-sub">Média de acertos da melhor partida</div>
+            </div>`);
+        }
+        if (idxVel >= 0) {
+            cards.push(`<div class="comparativo-mini-card">
+                <div class="comparativo-mini-rotulo">⚡ Velocidade</div>
+                <div class="comparativo-mini-posicao">${idxVel + 1}ª de ${totalVel}</div>
+                <div class="comparativo-mini-valor">${info.mediaVelocidade.toFixed(2)}s</div>
+                <div class="comparativo-mini-sub">Tempo médio dos acertos</div>
+            </div>`);
+        }
+        if (idxEng >= 0) {
+            cards.push(`<div class="comparativo-mini-card">
+                <div class="comparativo-mini-rotulo">🎮 Engajamento</div>
+                <div class="comparativo-mini-posicao">${idxEng + 1}ª de ${total}</div>
+                <div class="comparativo-mini-valor">${info.mediaPartidas.toFixed(1)}</div>
+                <div class="comparativo-mini-sub">Partidas por aluno em média</div>
+            </div>`);
+        }
+        if (cards.length === 0) return "";
+        return `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
+    }
+
+    function renderizarMiniCardsSemPosicao(info) {
+        const cards = [];
+        cards.push(`<div class="comparativo-mini-card">
+            <div class="comparativo-mini-rotulo">🎯 Precisão</div>
+            <div class="comparativo-mini-valor">${info.pctPrecisao.toFixed(1)}%</div>
+            <div class="comparativo-mini-sub">Média de acertos da melhor partida</div>
+        </div>`);
+        if (Number.isFinite(info.mediaVelocidade) && info.mediaVelocidade > 0) {
+            cards.push(`<div class="comparativo-mini-card">
+                <div class="comparativo-mini-rotulo">⚡ Velocidade</div>
+                <div class="comparativo-mini-valor">${info.mediaVelocidade.toFixed(2)}s</div>
+                <div class="comparativo-mini-sub">Tempo médio dos acertos</div>
+            </div>`);
+        }
+        cards.push(`<div class="comparativo-mini-card">
+            <div class="comparativo-mini-rotulo">🎮 Engajamento</div>
+            <div class="comparativo-mini-valor">${info.mediaPartidas.toFixed(1)}</div>
+            <div class="comparativo-mini-sub">Partidas por aluno em média</div>
+        </div>`);
+        return `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
+    }
+    // ▲▲▲ FIM [13.06.ter]
+
     async function renderizarRanking() {
         const th = document.getElementById("tabela-head-ranking");
         const tb = document.getElementById("tabela-ranking-body");
@@ -9219,6 +9360,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         let turma = document.getElementById("filtro-turma")?.value || "901";
         let rank = [], tit = "";
         const nomeA = obterNomeSalvoAluno();
+        const turmaA = obterTurmaSalvaAluno();
+
+        // Helper local: marca destaque do aluno logado em QUALQUER modo
+        function tagVoce(r) {
+            if (!nomeA) return "";
+            const mesmaPessoa = normalizarNome(r.nome) === normalizarNome(nomeA)
+                                && (!turmaA || r.turma === turmaA);
+            return mesmaPessoa ? ` <span class="ranking-voce-tag">← Você</span>` : "";
+        }
+        function ehVoce(r) {
+            if (!nomeA) return false;
+            return normalizarNome(r.nome) === normalizarNome(nomeA)
+                   && (!turmaA || r.turma === turmaA);
+        }
+
         if (tipoRankingAtual === "turma") {
             const ts = obterTurmaSalvaAluno();
             if (ts) { turma = ts; document.getElementById("filtro-turma").value = turma; }
@@ -9238,9 +9394,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 const j = mj.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
                 const pc = p <= 4 ? `podio-${p}` : "";
                 const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : p === 4 ? "🎫" : "";
-                const vc = nomeA && normalizarNome(r.nome) === normalizarNome(nomeA) && r.turma === (obterTurmaSalvaAluno() || turma);
+                const vc = ehVoce(r);
                 const cv = vc ? " voce-linha" : "";
-                h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${vc ? ' ← Você' : ''}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${j}</td><td style="text-align:center"><span class="tag ${sc}">${st}</span></td></tr>`;
+                h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${j}</td><td style="text-align:center"><span class="tag ${sc}">${st}</span></td></tr>`;
             }
             tb.innerHTML = h;
             document.getElementById("medias-turmas-container").classList.add("hidden");
@@ -9298,7 +9454,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         let h = "";
         for (let i = 0; i < rank.length; i++) {
             const r = rank[i], p = i + 1;
-            h += `<tr><td style="text-align:center">${p}º</td><td style="text-align:left">${escaparHtml(r.nome)}</td>`;
+            const vc = ehVoce(r);
+            const cv = vc ? " voce-linha" : "";
+            h += `<tr class="${cv}"><td style="text-align:center">${p}º</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td>`;
             if (tipoRankingAtual !== "velocidade-turma" && tipoRankingAtual !== "precisao-turma") h += `<td style="text-align:center">${r.turma}</td>`;
             if (tipoRankingAtual === "precisao-global" || tipoRankingAtual === "precisao-turma") h += `<td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td>`;
             else h += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
