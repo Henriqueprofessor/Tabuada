@@ -3713,6 +3713,112 @@
             }
         }
         /* ▲▲▲ FIM [02.46] */
+        /* ▼▼▼ [02.47] Home — Card "Seu Ritmo na Copa" ────────────── INÍCIO ─── */
+
+        .home-ritmo-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            text-align: left;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .home-ritmo-titulo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        .home-ritmo-numeros {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+        .home-ritmo-numeros .num {
+            color: var(--text-primary);
+            font-weight: 900;
+            font-size: 15px;
+        }
+        .home-ritmo-numeros .num.cyan { color: var(--neon-cyan); }
+        .home-ritmo-numeros .num.gold { color: var(--neon-gold); }
+
+        .home-ritmo-barra {
+            display: flex;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .home-ritmo-fill {
+            height: 100%;
+            transition: width 0.9s cubic-bezier(.22, 1, .36, 1);
+        }
+        .home-ritmo-fill.treinos {
+            background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+            box-shadow: inset 0 0 6px rgba(168, 85, 247, 0.5);
+        }
+        .home-ritmo-fill.oficiais {
+            background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
+            box-shadow: inset 0 0 6px rgba(34, 211, 238, 0.5);
+        }
+        .home-ritmo-legenda {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            line-height: 1.4;
+        }
+        .home-ritmo-legenda .pct {
+            color: var(--text-primary);
+            font-weight: 900;
+        }
+        .home-ritmo-frase {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0;
+            padding: 8px 12px;
+            background: rgba(34, 211, 238, 0.06);
+            border-left: 3px solid var(--neon-cyan);
+            border-radius: 8px;
+        }
+        .home-ritmo-frase strong { color: var(--text-primary); font-weight: 800; }
+
+        .home-ritmo-vazio {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 10px 0;
+            line-height: 1.5;
+        }
+        .home-ritmo-vazio strong { color: var(--text-secondary); }
+
+        @media (max-width: 520px) {
+            .home-ritmo-card { padding: 14px; }
+            .home-ritmo-numeros { font-size: 12.5px; gap: 12px; }
+            .home-ritmo-numeros .num { font-size: 14px; }
+            .home-ritmo-frase { font-size: 12px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .home-ritmo-fill { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.47] */
 
     </style>
 </head>
@@ -3755,26 +3861,27 @@
                 <div class="countdown-bloco"><span class="countdown-num" id="cd-seg">00</span><span class="countdown-label">seg</span></div>
             </div>
         </section>
+
         <section id="hero-classificatoria-normal" class="hero-esports" aria-labelledby="titulo-classificatoria">
             <div class="hero-esports-conteudo">
                 <h2 class="hero-esports-saudacao" id="titulo-classificatoria">
                     Olá, <span class="nome-destaque" id="hero-nome-destaque">Aluno</span>!
                 </h2>
                 <p class="hero-esports-sub" id="hero-sub-dinamica">
-                    Você está na <span class="posicao-num" id="hero-posicao-num">--ª</span> posição na turma <span id="hero-turma-atual">--</span>.
+                    Acompanhe sua jornada na Copa da Tabuada.
                 </p>
                 <div class="hero-esports-stats" id="hero-stats-competitivas">
                     <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo">🏫 Turma</div>
-                        <div class="hero-stat-valor cyan" id="hero-stat-turma">--º</div>
+                        <div class="hero-stat-rotulo">🎓 Certificados</div>
+                        <div class="hero-stat-valor" id="hero-stat-certificados">0<span class="unidade">de 9</span></div>
                     </div>
                     <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo">🌍 Ranking Geral</div>
-                        <div class="hero-stat-valor" id="hero-stat-global">--º</div>
+                        <div class="hero-stat-rotulo">🎯 Treinos</div>
+                        <div class="hero-stat-valor cyan" id="hero-stat-treinos">0</div>
                     </div>
                     <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo">⭐ Melhor</div>
-                        <div class="hero-stat-valor verde" id="hero-stat-melhor">0<span class="unidade">pts</span></div>
+                        <div class="hero-stat-rotulo">🎮 Oficiais</div>
+                        <div class="hero-stat-valor verde" id="hero-stat-oficiais">0</div>
                     </div>
                 </div>
             </div>
@@ -3782,21 +3889,20 @@
 
         <div id="acao-principal-container"></div>
 
+        <!-- ▼ v10.4.5 · Seu ritmo na Copa (treinos × oficiais) -->
+        <div id="home-ritmo-container"></div>
+
         <!-- ⚙️ L2 — Meta pessoal reposicionada: agora logo abaixo do CTA principal -->
         <div id="meta-pessoal-container"></div>
 
-        <!-- ▼ Desktop: Mapa de Tabuadas + Treino Inteligente lado a lado (mobile = empilhado) -->
-        <div class="home-duas-colunas">
+        <!-- ▼ NOVO: Mapa de Tabuadas na Home -->
+        <div id="mapa-home-container"></div>
 
-            <div id="mapa-home-container"></div>
-
-            <div class="home-card">
-                <div class="home-card-titulo">🎯 Treino Inteligente</div>
-                <div id="home-treino-inteligente-conteudo">
-                    <div class="home-empty-msg">Jogue uma partida para liberar o treino personalizado.</div>
-                </div>
+        <div class="home-card">
+            <div class="home-card-titulo">🎯 Treino Inteligente</div>
+            <div id="home-treino-inteligente-conteudo">
+                <div class="home-empty-msg">Jogue uma partida para liberar o treino personalizado.</div>
             </div>
-
         </div>
 
         <div class="home-card">
@@ -9283,13 +9389,26 @@ if (containerProg) {
 
             // Salva mapa (treino também alimenta o mapa — o certificado se baseia nele)
             try { await incrementarMapaAluno(alunoAtual, turmaAtual, modalidadeAtual, resultado.desempenhoOperacoes); } catch(e) {}
-            // Contabiliza treino focado/inteligente para o Hall da Fama
-            if (treinoFocoOperacoes || treinoListaInteligente || treinoFocoAbsoluto) {
+
+            // ─────────────────────────────────────────────────────────────
+            // v10.4.5 · Contador de treinos: conta QUALQUER treino identificado
+            // que tenha sido completado com as 20 perguntas — independente do
+            // tipo (livre identificado, inteligente, foco absoluto, variações).
+            // Treino interrompido (✕ Encerrar tentativa antes da Q20) NÃO conta.
+            //
+            // A chave do Firebase (CAMINHO_TREINOS_FOCADOS = "copa_treinos_focados")
+            // foi mantida intencionalmente para preservar o histórico de todos
+            // os alunos já registrados. Apenas o critério de incremento mudou.
+            // ─────────────────────────────────────────────────────────────
+            const treinoCompleto = (acertos + erros) === TOTAL_PERGUNTAS;
+            if (treinoCompleto) {
                 try {
                     const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
                     await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1);
-                } catch(e) { console.warn("Falha ao contabilizar treino focado:", e); }
+                } catch(e) { console.warn("Falha ao contabilizar treino:", e); }
             }
+            // ─────────────────────────────────────────────────────────────
+
             mapaFonteUltima = resultado.desempenhoOperacoes;
             mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(alunoAtual, turmaAtual);
             if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
@@ -11347,7 +11466,7 @@ if (containerProg) {
     // [18] JS-HOME · Home E-Sports + Hall da Fama + Detalhes da etapa
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [18.01] Home E-Sports ─────────────────────────────────────
+    // ▼▼▼ [18.01] Home E-Sports — Hero com métricas + Ritmo na Copa ─
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -11359,100 +11478,145 @@ if (containerProg) {
 
         const heroNome = document.getElementById("hero-nome-destaque");
         if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
-        const homeTurmaTitulo = document.getElementById("home-turma-titulo");
-        if (homeTurmaTitulo) homeTurmaTitulo.textContent = turma ? `Turma ${turma}` : "Turma --";
 
+        // Sem identificação: zera tudo, sem erro
         if (!nome || !turma) {
-            atualizarHomeValores(null);
-            atualizarRankingTurmasHome(null, null);
+            definirHeroStats({ certificados: 0, treinos: 0, oficiais: 0 });
+            atualizarFraseHero(null);
+            renderizarRitmoCopa(null);
             return;
         }
 
         try {
-            const partidas = await obterHistoricoAluno(nome, turma);
-            if (!partidas.length) {
-                atualizarHomeValores(null);
-                atualizarRankingTurmasHome(null, turma);
-                return;
-            }
+            // Roda em paralelo: partidas oficiais + certificados + treinos
+            const [partidas, certificados, snapTreinos] = await Promise.all([
+                obterHistoricoAluno(nome, turma).catch(() => []),
+                obterCertificadosFirebase(nome, turma).catch(() => ({})),
+                database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
+            ]);
 
-            const melhorPartida = partidas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a);
-            const melhorPontos = Math.max(...partidas.map(p => Number(p.pontos) || 0));
-            const modalidade = melhorPartida.modalidade;
+            const oficiais = partidas.length;
+            const treinos = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
 
-            const mods = Object.keys(MODALIDADES);
-            const ranks = await Promise.all(
-                mods.map(m => obterRankingPorPontos(m, turma).catch(() => []))
-            );
-
-            const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
-
-            const modalidadesInfo = mods.map((mod, i) => {
-                const rankingMod = ranks[i] || [];
-                const idxMod = rankingMod.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-                const minhasPartidasMod = partidas.filter(p => p.modalidade === mod);
-                const melhorMod = minhasPartidasMod.length
-                    ? minhasPartidasMod.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
-                    : null;
-                return {
-                    mod,
-                    nome: rotulosCurtos[mod] || MODALIDADES[mod].nome,
-                    posicao: idxMod === -1 ? null : idxMod + 1,
-                    total: rankingMod.length,
-                    pontos: melhorMod ? (Number(melhorMod.pontos) || 0) : 0,
-                    jogou: !!melhorMod
-                };
+            // Conta certificados conquistados (máx 9 = 3 modalidades × 3 níveis)
+            let certificadosCount = 0;
+            Object.keys(certificados || {}).forEach(mod => {
+                const pMod = certificados[mod] || {};
+                Object.keys(pMod).forEach(nivel => { if (CERT_NIVEIS[nivel]) certificadosCount++; });
             });
 
-            const rankingTurma = ranks[mods.indexOf(modalidade)] || [];
-            const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-            const posicao = idx === -1 ? null : idx + 1;
+            definirHeroStats({ certificados: certificadosCount, treinos, oficiais });
+            atualizarFraseHero({ oficiais, treinos });
+            renderizarRitmoCopa({ oficiais, treinos });
 
-            let posicaoGlobal = null;
-            try {
-                const rankingGlobal = await obterRankingPorPontos(modalidade, null);
-                const ig = rankingGlobal.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-                if (ig !== -1) posicaoGlobal = ig + 1;
-            } catch(e) {}
-
-            let turmaRankingInfo = null;
-            try {
-                const r = await calcularMediasTop4Turmas(modalidade);
-                const mediasTurmas = r.ranking;
-                const iTurma = mediasTurmas.findIndex(t => t.turma === turma);
-                turmaRankingInfo = {
-                    medias: mediasTurmas,
-                    posicao: iTurma === -1 ? null : iTurma + 1,
-                    total: mediasTurmas.length,
-                    minhaTurma: r.minhaTurma,
-                    minimo: r.minimo,
-                    modalidade
-                };
-            } catch(e) {}
-
-            const elTurma = document.getElementById("hero-stat-turma");
-            const elGlobal = document.getElementById("hero-stat-global");
-            const elMelhor = document.getElementById("hero-stat-melhor");
-            if (elTurma) elTurma.textContent = posicao ? `${posicao}º` : "--";
-            if (elGlobal) elGlobal.textContent = posicaoGlobal ? `${posicaoGlobal}º` : "--";
-            if (elMelhor) elMelhor.innerHTML = `${melhorPontos.toLocaleString("pt-BR")}<span class="unidade">pts</span>`;
-
-            const heroSub = document.getElementById("hero-sub-dinamica");
-            if (heroSub) {
-                const posTxt = posicao ? `<span class="posicao-num">${posicao}ª</span> posição na turma ${turma}` : `na turma ${turma}`;
-                const posGlobalTxt = posicaoGlobal ? ` · <strong>${posicaoGlobal}º</strong> no ranking geral` : "";
-                heroSub.innerHTML = `Você está na ${posTxt}${posGlobalTxt}.`;
-            }
-
-            atualizarHomeValores({ melhorPontos, posicao, ranking: rankingTurma, nome, turma, posicaoGlobal, modalidadesInfo });
-            atualizarRankingTurmasHome(turmaRankingInfo, turma);
         } catch (e) {
-            console.warn("Falha ao preencher home esports:", e);
-            atualizarHomeValores(null);
-            atualizarRankingTurmasHome(null, turma);
+            console.warn("[Home] Falha ao preencher hero:", e);
+            definirHeroStats({ certificados: 0, treinos: 0, oficiais: 0 });
+            atualizarFraseHero(null);
+            renderizarRitmoCopa(null);
         }
     }
 
+    // Atualiza os 3 cards do hero (Certificados · Treinos · Oficiais)
+    function definirHeroStats({ certificados, treinos, oficiais }) {
+        const elCert = document.getElementById("hero-stat-certificados");
+        const elTre  = document.getElementById("hero-stat-treinos");
+        const elOfi  = document.getElementById("hero-stat-oficiais");
+        if (elCert) elCert.innerHTML = `${certificados}<span class="unidade">de 9</span>`;
+        if (elTre)  elTre.textContent  = treinos.toLocaleString("pt-BR");
+        if (elOfi)  elOfi.textContent  = oficiais.toLocaleString("pt-BR");
+    }
+
+    // Atualiza o subtítulo do hero conforme a proporção treinos × oficiais
+    function atualizarFraseHero(dados) {
+        const el = document.getElementById("hero-sub-dinamica");
+        if (!el) return;
+
+        if (!dados || (dados.oficiais === 0 && dados.treinos === 0)) {
+            el.textContent = "Sua jornada na Copa começa na primeira partida oficial!";
+            return;
+        }
+        const { oficiais, treinos } = dados;
+        if (oficiais === 0) {
+            el.textContent = `Você já fez ${treinos} ${treinos === 1 ? "treino" : "treinos"} — hora de estrear numa partida oficial!`;
+            return;
+        }
+        if (treinos === 0) {
+            el.textContent = `Você já jogou ${oficiais} ${oficiais === 1 ? "partida oficial" : "partidas oficiais"} — comece a treinar para acelerar!`;
+            return;
+        }
+        const total = oficiais + treinos;
+        const pctOfi = Math.round((oficiais / total) * 100);
+        if (pctOfi >= 70)      el.textContent = "Você tem dado mais prioridade às partidas oficiais.";
+        else if (pctOfi <= 30) el.textContent = "Você tem dedicado mais tempo aos treinos.";
+        else                   el.textContent = "Você tem equilibrado treinos e partidas oficiais.";
+    }
+
+    // Card "Seu Ritmo na Copa" — barra treinos × oficiais + frase neutra
+    function renderizarRitmoCopa(dados) {
+        const ctn = document.getElementById("home-ritmo-container");
+        if (!ctn) return;
+
+        // Sem identificação
+        if (!dados) {
+            ctn.innerHTML = `<div class="home-ritmo-card">
+                <div class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</div>
+                <div class="home-ritmo-vazio">Identifique-se para acompanhar seu ritmo aqui.</div>
+            </div>`;
+            return;
+        }
+
+        const { oficiais, treinos } = dados;
+        const total = oficiais + treinos;
+
+        // Sem nenhuma partida (nem treino, nem oficial)
+        if (total === 0) {
+            ctn.innerHTML = `<div class="home-ritmo-card">
+                <div class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</div>
+                <div class="home-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
+            </div>`;
+            return;
+        }
+
+        const pctOfi = Math.round((oficiais / total) * 100);
+        const pctTre = 100 - pctOfi;
+
+        let frase;
+        if (oficiais === 0) {
+            frase = `Você já fez <strong>${treinos}</strong> ${treinos === 1 ? "treino" : "treinos"} e ainda não jogou nenhuma partida oficial.`;
+        } else if (treinos === 0) {
+            frase = `Você já jogou <strong>${oficiais}</strong> ${oficiais === 1 ? "partida oficial" : "partidas oficiais"} e ainda não fez nenhum treino.`;
+        } else if (pctOfi >= 70) {
+            frase = `Você tem dado mais prioridade às <strong>partidas oficiais</strong>.`;
+        } else if (pctTre >= 70) {
+            frase = `Você tem dedicado mais tempo aos <strong>treinos</strong>.`;
+        } else {
+            frase = `Você tem <strong>equilibrado</strong> treinos e partidas oficiais.`;
+        }
+
+        ctn.innerHTML = `<div class="home-ritmo-card">
+            <div class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</div>
+            <div class="home-ritmo-numeros">
+                <span><span class="num gold">${treinos.toLocaleString("pt-BR")}</span> ${treinos === 1 ? "treino" : "treinos"}</span>
+                <span><span class="num cyan">${oficiais.toLocaleString("pt-BR")}</span> ${oficiais === 1 ? "partida oficial" : "partidas oficiais"}</span>
+            </div>
+            <div class="home-ritmo-barra" role="img" aria-label="Proporção: ${pctTre}% treinos, ${pctOfi}% partidas oficiais">
+                <div class="home-ritmo-fill treinos" style="width: ${pctTre}%"></div>
+                <div class="home-ritmo-fill oficiais" style="width: ${pctOfi}%"></div>
+            </div>
+            <div class="home-ritmo-legenda">
+                <span>🎯 Treinos <span class="pct">${pctTre}%</span></span>
+                <span>🎮 Oficiais <span class="pct">${pctOfi}%</span></span>
+            </div>
+            <p class="home-ritmo-frase">${frase}</p>
+        </div>`;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Funções legadas mantidas para não quebrar dependências externas.
+    // Não são mais chamadas por preencherHomeEsports() desde a v10.4.5,
+    // mas continuam existindo com guardas internas seguras.
+    // ─────────────────────────────────────────────────────────────────────
     function classificarZonaHome(pos) {
         if (!pos) return { cls: "sem-dados", icone: "⚪", label: "Sem partida ainda" };
         if (pos <= 4) return { cls: "zona-top4", icone: "🎟️", label: "Zona de classificação" };
@@ -11460,8 +11624,6 @@ if (containerProg) {
         return { cls: "zona-disputa", icone: "🎯", label: "Em disputa" };
     }
 
-    // ⚙️ L2 — Removido bloco do card "Meu melhor resultado" (elemento foi tirado do HTML).
-    // Função agora só renderiza as posições por modalidade e limpa o container de distância.
     function atualizarHomeValores(dados) {
         const elRankingLista = document.getElementById("ranking-home-lista");
         const elDistancia = document.getElementById("home-distancia-container");
@@ -11473,7 +11635,6 @@ if (containerProg) {
         }
 
         const { modalidadesInfo } = dados;
-
         if (elRankingLista && modalidadesInfo && modalidadesInfo.length) {
             let html = "";
             modalidadesInfo.forEach((m) => {
@@ -11499,7 +11660,6 @@ if (containerProg) {
         const container = document.getElementById("ranking-turmas-lista");
         if (!container) return;
 
-        // Sem info: mensagem neutra
         if (!info || !info.medias) {
             container.innerHTML = `<div class="ranking-turmas-linha"><span class="ranking-turmas-pos">-</span><span class="ranking-turmas-nome" style="color:var(--text-muted);">Jogue para ver o ranking das turmas</span><span class="ranking-turmas-pontos">—</span></div>`;
             return;
@@ -11510,7 +11670,6 @@ if (containerProg) {
         const minimo = info.minimo || MIN_ALUNOS_RANKING_TURMA;
 
         let html = "";
-
         if (medias.length > 0) {
             const top4 = medias.slice(0, 4);
             const minhaEsta = top4.some(t => t.turma === turmaAluno);
@@ -11540,7 +11699,6 @@ if (containerProg) {
 
         container.innerHTML = html;
 
-        // Aviso (fora do container da lista, para não virar linha do ranking)
         const avisoContainerId = "home-aviso-turma-fora";
         let avisoEl = document.getElementById(avisoContainerId);
         if (!avisoEl) {
@@ -12580,4 +12738,4 @@ window.addEventListener("DOMContentLoaded", async () => {
 // ▲▲▲ FIM [19.03]
     </script>
 </body>
-</html>
+</html>23:20 10/10/2026
