@@ -3592,6 +3592,127 @@
             .home-modalidade-selo.nunca-jogou { animation: none !important; }
         }
         /* ▲▲▲ FIM [02.45] */
+        /* ▼▼▼ [02.46] Home em telas largas (desktop ≥ 900px) ─────────── INÍCIO ─── */
+        /* Aplica-se apenas a telas largas. Celulares e tablets pequenos       */
+        /* permanecem exatamente como estavam antes desta regra.               */
+        @media (min-width: 900px) {
+
+            /* ─── Área principal mais ampla, mantendo centralização ─── */
+            #tela-inicial.card {
+                max-width: 1180px !important;
+            }
+
+            /* ─── Cabeçalho e hero respiram melhor ─── */
+            .esports-header {
+                padding: 14px 20px;
+            }
+
+            .hero-esports {
+                padding: 26px 28px 24px;
+            }
+            .hero-esports-saudacao {
+                font-size: 34px;
+            }
+            .hero-esports-sub {
+                font-size: 15px;
+            }
+            .hero-stat-card {
+                padding: 12px 14px;
+            }
+            .hero-stat-valor {
+                font-size: 24px;
+            }
+
+            /* ─── Espaçamento consistente entre seções da Home ─── */
+            #tela-inicial > .home-card,
+            #tela-inicial > .home-modalidades-card,
+            #tela-inicial > .meta-compacta,
+            #tela-inicial > .mapa-home-card,
+            #tela-inicial > .home-duas-colunas {
+                margin-bottom: 16px;
+            }
+
+            /* ─── "Minhas Posições · Jogar/Treinar": 3 modalidades lado a lado ─── */
+            .home-modalidades-card {
+                padding: 18px;
+            }
+            .home-modalidades-titulo {
+                font-size: 14px;
+            }
+            .home-modalidades-lista {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .home-modalidade-linha {
+                padding: 14px 16px;
+                gap: 10px 12px;
+            }
+            .home-modalidade-nome { font-size: 14px; }
+            .home-modalidade-status { font-size: 12px; }
+            .home-modalidade-pos { font-size: 13.5px; }
+            .home-modalidade-pos small { font-size: 10.5px; }
+            .home-modalidade-pts { font-size: 12.5px; }
+            .home-modalidade-selo {
+                padding: 11px 14px;
+                font-size: 13px;
+            }
+
+            /* ─── Mapa de Tabuadas + Treino Inteligente em 2 colunas ─── */
+            .home-duas-colunas {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 16px;
+            }
+            .home-duas-colunas > #mapa-home-container {
+                display: flex;
+                flex-direction: column;
+            }
+            .home-duas-colunas > #mapa-home-container > .mapa-home-card {
+                margin-bottom: 0;
+                flex: 1 1 auto;
+            }
+            .home-duas-colunas > .home-card {
+                margin-bottom: 0;
+                box-sizing: border-box;
+            }
+
+            /* ─── Títulos de seção um pouco maiores para equilíbrio ─── */
+            .home-card-titulo {
+                font-size: 13.5px;
+            }
+            .mapa-home-titulo {
+                font-size: 13.5px;
+            }
+            .meta-compacta-titulo {
+                font-size: 12.5px;
+            }
+            .meta-compacta-mensagem {
+                font-size: 14.5px;
+            }
+
+            /* ─── Alvos clicáveis confortáveis (acessibilidade) ─── */
+            .home-modalidade-selo,
+            .home-btn-link,
+            .btn-treino-inteligente,
+            .progresso-mod-btn {
+                min-height: 40px;
+            }
+
+            /* ─── Foco visível consistente com o resto do app ─── */
+            #tela-inicial button:focus-visible,
+            #tela-inicial .home-modalidade-linha:focus-visible {
+                outline: 3px solid var(--neon-cyan);
+                outline-offset: 2px;
+                border-radius: 10px;
+            }
+
+            /* ─── Sem scroll horizontal ─── */
+            #tela-inicial {
+                overflow-x: hidden;
+            }
+        }
+        /* ▲▲▲ FIM [02.46] */
 
     </style>
 </head>
@@ -3664,14 +3785,18 @@
         <!-- ⚙️ L2 — Meta pessoal reposicionada: agora logo abaixo do CTA principal -->
         <div id="meta-pessoal-container"></div>
 
-        <!-- ▼ NOVO: Mapa de Tabuadas na Home -->
-        <div id="mapa-home-container"></div>
+        <!-- ▼ Desktop: Mapa de Tabuadas + Treino Inteligente lado a lado (mobile = empilhado) -->
+        <div class="home-duas-colunas">
 
-        <div class="home-card">
-            <div class="home-card-titulo">🎯 Treino Inteligente</div>
-            <div id="home-treino-inteligente-conteudo">
-                <div class="home-empty-msg">Jogue uma partida para liberar o treino personalizado.</div>
+            <div id="mapa-home-container"></div>
+
+            <div class="home-card">
+                <div class="home-card-titulo">🎯 Treino Inteligente</div>
+                <div id="home-treino-inteligente-conteudo">
+                    <div class="home-empty-msg">Jogue uma partida para liberar o treino personalizado.</div>
+                </div>
             </div>
+
         </div>
 
         <div class="home-card">
@@ -3681,7 +3806,8 @@
             </div>
         </div>
 
-    </div>    <!-- ▲▲▲ FIM [03.01] -->
+    </div>
+    <!-- ▲▲▲ FIM [03.01] -->
 
     <!-- ▼▼▼ [03.01.bis] NAVEGAÇÃO INFERIOR GLOBAL ─────────── INÍCIO ─── -->
     <nav id="bottom-nav-global" class="bottom-nav hidden" aria-label="Navegação principal">
