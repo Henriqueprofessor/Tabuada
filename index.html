@@ -5133,13 +5133,14 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .hero-esports { contain: none; }
         }
         /* ▲▲▲ FIM [02.54] */
-        /* ▼▼▼ [02.55] Ajuda com IA ───────────────────────────── INÍCIO ─── */
-        /* v10.4.8 · Opção B (leve) — modal com prompt + copiar + abrir IA
-           Zero requisição de rede. Zero SDK. Zero custo. O prompt contém
-           o contexto completo do jogo para a IA responder dúvidas de
-           cálculo E de regras. */
+        /* ▼▼▼ [02.55] Coach da Copa ─────────────────────────── INÍCIO ─── */
+        /* v10.4.8 · Coach pessoal com IA — prompt read-only personalizado
+           com perfil completo do aluno (posições, mapa, tabuadas fracas,
+           velocidade, certificados, próximo alvo). A IA atua como um
+           treinador: diagnóstica, prescreve treinos e motiva.
+           Zero requisição extra. Reusa albumSessaoCache quando válido. */
         .ia-modal-card {
-            max-width: 560px;
+            max-width: 580px;
             padding: 20px 22px 18px;
             background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%);
             border: 1px solid var(--border-neon);
@@ -5150,110 +5151,139 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         .ia-modal-intro {
             font-size: 13.5px;
-            line-height: 1.6;
+            line-height: 1.65;
             color: var(--text-secondary);
-            margin: 0 0 14px;
+            margin: 0 0 12px;
             padding: 12px 14px;
-            background: rgba(34, 211, 238, 0.08);
-            border-left: 3px solid var(--neon-cyan);
+            background: rgba(251, 191, 36, 0.10);
+            border-left: 3px solid var(--neon-gold);
             border-radius: 8px;
         }
-        .ia-modal-intro strong { color: var(--neon-cyan); font-weight: 800; }
-
-        .ia-modal-passos {
+        .ia-modal-intro strong { color: var(--neon-gold); font-weight: 800; }
+        .ia-modal-intro ol {
+            margin: 6px 0 0;
+            padding-left: 20px;
             font-size: 12.5px;
-            color: var(--text-secondary);
-            line-height: 1.7;
-            margin: 0 0 12px;
-            padding-left: 22px;
+            line-height: 1.65;
         }
-        .ia-modal-passos li { margin-bottom: 3px; }
-        .ia-modal-passos strong { color: var(--text-primary); }
+        .ia-modal-intro ol li { margin-bottom: 2px; }
+
+        .ia-modal-personalizado {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 7px 14px;
+            margin: 0 0 12px;
+            background: rgba(34, 211, 238, 0.10);
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #a5f3fc;
+            line-height: 1.4;
+        }
+        .ia-modal-personalizado strong { color: #67e8f9; font-weight: 900; }
+        .ia-modal-personalizado .sep { opacity: 0.5; padding: 0 2px; }
+        .ia-modal-personalizado .top4 {
+            color: #6ee7b7;
+            font-weight: 900;
+        }
+        .ia-modal-personalizado.vazio {
+            background: rgba(251, 191, 36, 0.10);
+            border-color: rgba(251, 191, 36, 0.4);
+            color: #fde68a;
+        }
+        .ia-modal-personalizado.vazio strong { color: #fbbf24; }
+
+        .ia-modal-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            min-height: 240px;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .ia-modal-loading.hidden { display: none !important; }
+        .ia-modal-loading-spinner {
+            width: 42px;
+            height: 42px;
+            border: 3px solid rgba(251, 191, 36, 0.18);
+            border-top-color: var(--neon-gold);
+            border-radius: 50%;
+            animation: iaSpin 0.9s linear infinite;
+        }
+        @keyframes iaSpin {
+            to { transform: rotate(360deg); }
+        }
+        .ia-modal-loading-txt {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--neon-gold);
+            letter-spacing: 0.2px;
+        }
+        .ia-modal-loading-sub {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            max-width: 340px;
+        }
+
+        .ia-modal-conteudo.hidden { display: none !important; }
+
+        .ia-modal-preview-rotulo {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 0 0 6px;
+        }
 
         .ia-modal-textarea {
             width: 100%;
-            min-height: 220px;
+            min-height: 240px;
             max-height: 340px;
-            resize: vertical;
+            resize: none;
             padding: 12px 14px;
             background: #0a1628;
             color: var(--text-primary);
             border: 1px solid var(--border-neon);
             border-radius: 10px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            font-size: 12px;
+            font-size: 11.5px;
             line-height: 1.55;
-            margin: 0 0 8px;
+            margin: 0 0 6px;
             box-sizing: border-box;
+            cursor: default;
+            user-select: text;
+            -webkit-user-select: text;
         }
         .ia-modal-textarea:focus {
             outline: none;
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+            border-color: var(--neon-gold);
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
         }
 
-        .ia-modal-contador {
+        .ia-modal-lock {
             display: flex;
-            justify-content: space-between;
-            font-size: 11px;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
             color: var(--text-muted);
-            margin: 0 0 10px;
+            margin: 0 0 14px;
             font-weight: 600;
             line-height: 1.4;
         }
-        .ia-modal-contador .status-ok { color: #86efac; }
-        .ia-modal-contador .status-curto { color: #fca5a5; }
-
-        .ia-aviso-contexto {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            margin: 0 0 12px;
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%);
-            border: 1px dashed rgba(251, 191, 36, 0.5);
-            border-left: 4px solid #fbbf24;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #fde68a;
-            line-height: 1.5;
-            animation: iaAvisoIn 0.25s ease;
-        }
-        .ia-aviso-contexto.hidden { display: none !important; }
-        .ia-aviso-contexto .icone { font-size: 18px; flex-shrink: 0; line-height: 1; }
-        .ia-aviso-contexto .texto { flex: 1; min-width: 0; }
-        .ia-aviso-contexto strong { color: #fbbf24; font-weight: 800; }
-        .ia-aviso-contexto .btn-restaurar {
-            width: auto;
-            margin: 0;
-            padding: 6px 12px;
-            background: rgba(251, 191, 36, 0.18);
-            color: #fde68a;
-            border: 1px solid rgba(251, 191, 36, 0.5);
-            border-radius: 6px;
-            font-size: 11.5px;
-            font-weight: 800;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: none;
-            font-family: inherit;
-            transition: all 0.15s ease;
-        }
-        .ia-aviso-contexto .btn-restaurar:hover {
-            background: rgba(251, 191, 36, 0.3);
-            border-color: #fbbf24;
-            color: #fff;
-        }
-        @keyframes iaAvisoIn {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .ia-modal-lock .icone { font-size: 13px; }
 
         .ia-btn-copiar {
             width: 100%;
             margin: 0 0 16px;
             padding: 13px 18px;
-            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
             color: #fff;
             border: none;
             border-radius: 10px;
@@ -5261,17 +5291,22 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             font-weight: 800;
             letter-spacing: 0.3px;
             cursor: pointer;
-            box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28);
+            box-shadow: 0 3px 0 #7c2d12, 0 4px 12px rgba(217, 119, 6, 0.32);
             font-family: inherit;
             transition: all 0.15s ease;
         }
         .ia-btn-copiar:hover:not(:disabled) {
-            background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             transform: translateY(-1px);
         }
         .ia-btn-copiar:active:not(:disabled) {
             transform: translateY(1px);
-            box-shadow: 0 1px 0 #075985, 0 2px 8px rgba(14, 165, 233, 0.28);
+            box-shadow: 0 1px 0 #7c2d12, 0 2px 8px rgba(217, 119, 6, 0.32);
+        }
+        .ia-btn-copiar:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
         }
         .ia-btn-copiar.copiado {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -5347,13 +5382,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         @media (max-width: 520px) {
             .ia-modal-card { padding: 16px; }
-            .ia-modal-textarea { min-height: 180px; font-size: 11.5px; }
+            .ia-modal-textarea { min-height: 200px; font-size: 11px; }
             .ia-modal-grid { grid-template-columns: 1fr; }
-            .ia-aviso-contexto { flex-direction: column; align-items: stretch; }
-            .ia-aviso-contexto .btn-restaurar { align-self: flex-start; }
+            .ia-modal-personalizado { font-size: 11px; padding: 6px 12px; }
+            .ia-modal-loading { min-height: 200px; padding: 24px 16px; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .ia-aviso-contexto { animation: none !important; }
+            .ia-modal-loading-spinner { animation: none; border-top-color: rgba(251, 191, 36, 0.5); }
         }
         /* ▲▲▲ FIM [02.55] */
     </style>
@@ -6343,54 +6378,59 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.15] -->
-    <!-- ▼▼▼ [04.16] MODAL AJUDA COM IA ───────────────────── INÍCIO ─── -->
+    <!-- ▼▼▼ [04.16] MODAL COACH DA COPA ───────────────────── INÍCIO ─── -->
     <div id="modal-ajuda-ia" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ia-modal-titulo" onclick="fecharAjudaIA(event)">
         <div class="modal-card ia-modal-card" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3 id="ia-modal-titulo">🤖 Ajuda com IA</h3>
+                <h3 id="ia-modal-titulo">🏆 Seu Coach da Copa</h3>
                 <button class="modal-close" onclick="fecharAjudaIA()" aria-label="Fechar">✕</button>
             </div>
 
-            <div class="ia-modal-intro">
-                Travou numa tabuada? Tem dúvida sobre como o jogo funciona?
-                <strong>Use uma IA para te explicar.</strong>
+            <!-- Estado 1: carregando dados do aluno -->
+            <div id="ia-modal-loading" class="ia-modal-loading">
+                <div class="ia-modal-loading-spinner" aria-hidden="true"></div>
+                <div class="ia-modal-loading-txt">🏆 Preparando seu coach pessoal…</div>
+                <div class="ia-modal-loading-sub">Analisando seu desempenho, seu mapa de tabuadas e sua posição no ranking.</div>
             </div>
 
-            <ol class="ia-modal-passos">
-                <li>Na linha <strong>"MINHA DÚVIDA"</strong>, escreva o que você quer saber.</li>
-                <li><strong>Não apague</strong> o contexto do jogo — é ele que faz a IA te entender.</li>
-                <li>Clique em <strong>📋 Copiar prompt</strong>.</li>
-                <li>Abra uma IA e cole com <strong>Ctrl+V</strong> (ou toque longo → Colar).</li>
-            </ol>
+            <!-- Estado 2: prompt pronto -->
+            <div id="ia-modal-conteudo" class="ia-modal-conteudo hidden">
+                <div class="ia-modal-intro">
+                    <strong>🏆 Seu coach pessoal vai:</strong>
+                    <ol>
+                        <li>Fazer um <strong>diagnóstico</strong> do seu desempenho.</li>
+                        <li>Oferecer um <strong>menu de ações</strong> (plano de treino, foco, ranking, certificado…).</li>
+                        <li><strong>Prescrever treinos específicos</strong> e te motivar.</li>
+                    </ol>
+                </div>
 
-            <textarea id="ia-modal-textarea" class="ia-modal-textarea" aria-label="Prompt para a IA" oninput="validarPromptIA()"></textarea>
+                <div id="ia-modal-personalizado-badge" class="ia-modal-personalizado">
+                    🎓 <strong id="ia-modal-nome-badge">—</strong>
+                </div>
 
-            <div class="ia-modal-contador">
-                <span id="ia-modal-contador-status">✓ Prompt completo</span>
-                <span id="ia-modal-contador-chars">0 caracteres</span>
+                <div class="ia-modal-preview-rotulo">Preview do que será enviado</div>
+                <textarea id="ia-modal-textarea" class="ia-modal-textarea" aria-label="Prompt completo para o coach" readonly spellcheck="false"></textarea>
+                <div class="ia-modal-lock">
+                    <span class="icone">🔒</span>
+                    <span>Texto fixo — não precisa editar. É só copiar e colar.</span>
+                </div>
+
+                <button id="ia-btn-copiar" class="ia-btn-copiar" onclick="copiarPromptIA()">📋 Copiar prompt</button>
+
+                <div class="ia-modal-divisor">Abrir numa IA</div>
+
+                <div class="ia-modal-grid">
+                    <button class="ia-modal-btn" onclick="abrirIA('chatgpt')">🤖 ChatGPT</button>
+                    <button class="ia-modal-btn" onclick="abrirIA('claude')">⚡ Claude</button>
+                    <button class="ia-modal-btn" onclick="abrirIA('perplexity')">🔍 Perplexity</button>
+                    <button class="ia-modal-btn" onclick="abrirIA('copilot')">🧠 Copilot</button>
+                </div>
+
+                <p class="ia-modal-privacidade">
+                    🔒 <strong>O app não envia nada para as IAs.</strong><br>
+                    Você copia e cola manualmente — nenhum dado seu sai daqui.
+                </p>
             </div>
-
-            <div id="ia-aviso-contexto" class="ia-aviso-contexto hidden" role="alert">
-                <span class="icone">⚠️</span>
-                <div class="texto">Você apagou parte das regras do jogo. A IA pode <strong>não conseguir te ajudar</strong> sem esse contexto.</div>
-                <button class="btn-restaurar" onclick="restaurarPromptIA()">🔄 Restaurar</button>
-            </div>
-
-            <button id="ia-btn-copiar" class="ia-btn-copiar" onclick="copiarPromptIA()">📋 Copiar prompt</button>
-
-            <div class="ia-modal-divisor">Abrir numa IA</div>
-
-            <div class="ia-modal-grid">
-                <button class="ia-modal-btn" onclick="abrirIA('chatgpt')">🤖 ChatGPT</button>
-                <button class="ia-modal-btn" onclick="abrirIA('claude')">⚡ Claude</button>
-                <button class="ia-modal-btn" onclick="abrirIA('perplexity')">🔍 Perplexity</button>
-                <button class="ia-modal-btn" onclick="abrirIA('copilot')">🧠 Copilot</button>
-            </div>
-
-            <p class="ia-modal-privacidade">
-                🔒 <strong>O app não envia nada para as IAs.</strong><br>
-                Você copia e cola manualmente — nenhum dado seu sai daqui.
-            </p>
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.16] -->
@@ -15162,16 +15202,429 @@ if (containerProg) {
         await registrarAluno(!etapaAtiva);
     }
     // ▲▲▲ FIM [18.07]
-    // ▼▼▼ [18.08] Ajuda com IA ───────────────────────────── INÍCIO ───
-    // v10.4.8 · Opção B (leve) — prompt + copiar + abrir IA
-    // Zero requisição de rede adicional. Zero SDK. Zero custo.
-    // O prompt contém o contexto completo do jogo para a IA responder
-    // dúvidas de cálculo E de regras.
+    // ▼▼▼ [18.08] Coach da Copa ──────────────────────────── INÍCIO ───
+    // v10.4.8 · Coach pessoal com IA — prompt read-only personalizado
+    // com perfil COMPLETO do aluno. A IA atua como um treinador:
+    // diagnóstica, prescreve treinos e motiva. Menu de 8 opções.
+    // Zero requisição extra. Reusa albumSessaoCache quando válido.
 
-    const PROMPT_IA_PADRAO = `Você é um tutor amigável da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
+    const IA_TIMEOUT_COLETA_MS = 4500;
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helper 1: análise por tabuada (fortes × fracas)
+    // ─────────────────────────────────────────────────────────────────
+    function analisarTabuadasDoAluno(mapaGlobal) {
+        const resumo = {};
+        // Conta, para cada tabuada (2-9), quantas operações estão dominadas
+        [2, 3, 4, 5, 6, 7, 8, 9].forEach(tab => {
+            let dominadas = 0;
+            let praticadas = 0;
+            let total = 10;
+            for (let b = 1; b <= 10; b++) {
+                const h = normalizarHistoricoOperacao(mapaGlobal[`${tab}x${b}`]);
+                if (h.length > 0) praticadas++;
+                if (dominadaParaNivel(h, { minTentativas: MAPA_MIN_TENT_PADRAO, minTaxa: 0.9 })) {
+                    dominadas++;
+                }
+            }
+            resumo[tab] = {
+                dominadas,
+                praticadas,
+                total,
+                pct: Math.round((dominadas / total) * 100)
+            };
+        });
+        return resumo;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helper 2: operações mais problemáticas (vermelhas + baixa precisão)
+    // ─────────────────────────────────────────────────────────────────
+    function identificarOperacoesProblematicas(mapaGlobal, limite) {
+        const problemas = [];
+        FATORES_MAPA.forEach(a => {
+            FATORES_MAPA.forEach(b => {
+                const k = `${a}x${b}`;
+                const h = normalizarHistoricoOperacao(mapaGlobal[k]);
+                if (h.length === 0) return;
+                const s = statsDaOperacao(h);
+                if (s.taxa < 0.7) { // abaixo de 70% = problema real
+                    problemas.push({
+                        op: `${a}x${b}`,
+                        fA: a, fB: b,
+                        taxa: s.taxa,
+                        tentativas: s.tentativas,
+                        acertos: s.acertos
+                    });
+                }
+            });
+        });
+        // Ordena: pior precisão primeiro; empate → mais tentativas primeiro
+        problemas.sort((x, y) => x.taxa - y.taxa || y.tentativas - x.tentativas);
+        return problemas.slice(0, limite || 8);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helper 3: gap para o Top 4 (pontos do 4º lugar − meus pontos)
+    // ─────────────────────────────────────────────────────────────────
+    function calcularGapTop4(rankingMod, nome, turma) {
+        const filtro = rankingMod.filter(r => r.turma === turma);
+        const porAluno = new Map();
+        filtro.forEach(r => {
+            const k = normalizarNome(r.nome);
+            if (!porAluno.has(k) || ehMelhorResultado(r, porAluno.get(k))) porAluno.set(k, r);
+        });
+        const ordenado = Array.from(porAluno.values()).sort(compararParaOrdenacao);
+        const idx = ordenado.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome));
+        if (idx === -1) return null;
+        const meu = ordenado[idx];
+        const posicao = idx + 1;
+        const q4 = ordenado[3];
+        const gap = q4 && q4.pontos > meu.pontos ? q4.pontos - meu.pontos : 0;
+        return {
+            posicao,
+            total: ordenado.length,
+            meusPontos: Number(meu.pontos) || 0,
+            q4Pontos: q4 ? Number(q4.pontos) || 0 : 0,
+            gapTop4: gap,
+            naZonaTop4: posicao <= 4,
+            naZonaReserva: posicao > 4 && posicao <= 6
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helper 4: coleta paralela de todos os dados
+    // ─────────────────────────────────────────────────────────────────
+    async function coletarDadosParaPrompt(nome, turma) {
+        const mods = Object.keys(MODALIDADES);
+
+        // Reusa cache do Álbum quando válido
+        const chaveCache = `${normalizarNome(nome)}|${turma}`;
+        const agora = Date.now();
+        const cacheAlbumValido = typeof albumSessaoCache !== "undefined"
+            && albumSessaoCache.chave === chaveCache
+            && (agora - albumSessaoCache.ts) < ALBUM_CACHE_MS
+            && albumSessaoCache.resultado;
+
+        let perfil = null;
+        let certificados = {};
+
+        if (cacheAlbumValido) {
+            perfil = albumSessaoCache.resultado.dados;
+            try { certificados = await obterCertificadosFirebase(nome, turma) || {}; } catch(e) {}
+        } else {
+            const [perfilCompilado, certs] = await Promise.all([
+                compilarDadosAluno(nome, turma).catch(() => null),
+                obterCertificadosFirebase(nome, turma).catch(() => ({}))
+            ]);
+            perfil = perfilCompilado;
+            certificados = certs || {};
+        }
+
+        // Mapa global (para análise por tabuada + operações problemáticas)
+        let mapaGlobal = {};
+        try { mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma) || {}; } catch(e) {}
+
+        // Ranking completo (uma única leitura)
+        const rankingGeral = await obterRanking().catch(() => []);
+
+        // Posições nas 3 modalidades + gap para Top 4
+        const posicoes = {};
+        for (const mod of mods) {
+            const rankingMod = rankingGeral.filter(r => r.modalidade === mod);
+            const daTurma = rankingMod.filter(r => r.turma === turma);
+            const mT = new Map();
+            daTurma.forEach(r => {
+                const k = normalizarNome(r.nome);
+                if (!mT.has(k) || ehMelhorResultado(r, mT.get(k))) mT.set(k, r);
+            });
+            const listaT = Array.from(mT.values()).sort(compararParaOrdenacao);
+            const idxT = listaT.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome));
+
+            // Posição no ranking geral
+            const mG = new Map();
+            rankingMod.forEach(r => {
+                const k = `${normalizarNome(r.nome)}|${r.turma}`;
+                if (!mG.has(k) || ehMelhorResultado(r, mG.get(k))) mG.set(k, r);
+            });
+            const listaG = Array.from(mG.values()).sort(compararParaOrdenacao);
+            const idxG = listaG.findIndex(r =>
+                normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
+            );
+
+            const gap = calcularGapTop4(rankingMod, nome, turma);
+            posicoes[mod] = {
+                turma: idxT === -1 ? null : { posicao: idxT + 1, total: listaT.length },
+                geral: idxG === -1 ? null : { posicao: idxG + 1, total: listaG.length },
+                gap
+            };
+        }
+
+        // Análise de tabuadas + operações problemáticas
+        const porTabuada = analisarTabuadasDoAluno(mapaGlobal);
+        const operacoesProblematicas = identificarOperacoesProblematicas(mapaGlobal, 8);
+
+        return { perfil, posicoes, certificados, porTabuada, operacoesProblematicas };
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helper 5: monta o bloco de perfil formatado
+    // ─────────────────────────────────────────────────────────────────
+    function montarBlocoPerfil(dados) {
+        const L = [];
+        const p = (dados && dados.perfil) || {};
+        const pos = (dados && dados.posicoes) || {};
+        const certs = (dados && dados.certificados) || {};
+        const porTab = (dados && dados.porTabuada) || {};
+        const probs = (dados && dados.operacoesProblematicas) || [];
+
+        // ─── Competitivo por modalidade ───
+        const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+        const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
+        L.push("🏆 COMPETITIVO:");
+        for (const mod of ["2-5", "6-9", "0-10"]) {
+            const info = pos[mod] || {};
+            const pt = info.turma;
+            const pg = info.geral;
+            const gap = info.gap;
+            const ptTxt = pt ? `${pt.posicao}º/${pt.total} na turma` : "sem partida";
+            const pgTxt = pg ? `${pg.posicao}º/${pg.total} no geral` : "—";
+            let status = "";
+            if (gap) {
+                if (gap.naZonaTop4) status = " 🎟️ TOP 4";
+                else if (gap.naZonaReserva) status = " 🔄 reserva";
+                else if (gap.gapTop4 > 0) status = ` · faltam ${gap.gapTop4.toLocaleString("pt-BR")} pts pro Top 4`;
+            }
+            L.push(`  ${icones[mod]} ${rotulos[mod]}: ${ptTxt} · ${pgTxt}${status}`);
+        }
+
+        // ─── Perfil de jogo ───
+        L.push("");
+        L.push("📊 PERFIL DE JOGO:");
+        if (p.totalPartidas) L.push(`  • Partidas oficiais: ${p.totalPartidas}`);
+        if (p.treinosFocados) L.push(`  • Treinos completados: ${p.treinosFocados}`);
+        if (p.diasDistintosJogados) L.push(`  • Dias distintos jogados: ${p.diasDistintosJogados}`);
+        if (p.melhorPontuacao) L.push(`  • Melhor pontuação: ${Number(p.melhorPontuacao).toLocaleString("pt-BR")} pts`);
+        if (p.partidasCom20Acertos) L.push(`  • Partidas perfeitas (20/20): ${p.partidasCom20Acertos}`);
+        if (p.maiorSequenciaMax) L.push(`  • Maior sequência: ${p.maiorSequenciaMax} acertos seguidos`);
+        if (p.melhorTempoMedioPerfeito) L.push(`  • Melhor tempo médio em partida perfeita: ${Number(p.melhorTempoMedioPerfeito).toFixed(2)}s`);
+        if (p.melhorTempoMedio) L.push(`  • Melhor tempo médio (≥10 acertos): ${Number(p.melhorTempoMedio).toFixed(2)}s`);
+
+        // ─── Mapa de tabuadas ───
+        L.push("");
+        const dominadas = Number(p.operacoesDominadas) || 0;
+        const pct = Math.round((dominadas / 100) * 100);
+        L.push(`🗺️ MAPA DE TABUADAS: ${dominadas}/100 dominadas (${pct}%)`);
+
+        // Tabuadas fortes (>=80% dominada)
+        const fortes = Object.entries(porTab).filter(([, d]) => d.pct >= 80).map(([t]) => t);
+        const fracas = Object.entries(porTab)
+            .filter(([, d]) => d.pct < 70)
+            .sort((a, b) => a[1].pct - b[1].pct)
+            .slice(0, 4);
+
+        if (fortes.length) {
+            L.push(`  ✅ Fortes: ${fortes.map(t => `Tab ${t} (${porTab[t].pct}%)`).join(", ")}`);
+        }
+        if (fracas.length) {
+            L.push(`  ⚠️ FRACAS (prioridade de treino):`);
+            fracas.forEach(([t, d]) => {
+                L.push(`     • Tabuada do ${t}: ${d.pct}% (${d.dominadas}/${d.total})`);
+            });
+        }
+
+        // Operações problemáticas específicas
+        if (probs.length) {
+            L.push(`  🔴 Operações mais problemáticas:`);
+            probs.slice(0, 6).forEach(op => {
+                const pctOp = Math.round(op.taxa * 100);
+                L.push(`     • ${op.op} — ${pctOp}% de acerto (${op.acertos}/${op.tentativas} tentativas)`);
+            });
+        }
+
+        // ─── Certificados ───
+        L.push("");
+        const certsList = [];
+        for (const mod of ["2-5", "6-9", "0-10"]) {
+            const pMod = certs[mod] || {};
+            for (const nivel of ["lendaria", "ouro", "prata"]) {
+                if (pMod[nivel] && CERT_NIVEIS[nivel]) {
+                    const cfg = CERT_NIVEIS[nivel];
+                    certsList.push(`${cfg.icone} ${cfg.nome} · ${rotulos[mod]}`);
+                }
+            }
+        }
+        if (certsList.length > 0) {
+            L.push("🎓 CERTIFICADOS CONQUISTADOS:");
+            certsList.forEach(c => L.push(`  • ${c}`));
+        } else {
+            L.push("🎓 CERTIFICADOS: nenhum ainda.");
+        }
+
+        return L.join("\n");
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helper 6: descobrir próximo certificado + gap
+    // ─────────────────────────────────────────────────────────────────
+    function identificarProximoCertificado(dados) {
+        const certs = (dados && dados.certificados) || {};
+        const p = (dados && dados.perfil) || {};
+        const mods = ["2-5", "6-9", "0-10"];
+        const niveis = ["prata", "ouro", "lendaria"];
+
+        for (const mod of mods) {
+            const pMod = certs[mod] || {};
+            for (const nivel of niveis) {
+                if (pMod[nivel]) continue; // já tem
+                // Calcula progresso atual para esse nível
+                const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+                const cfg = CERT_NIVEIS[nivel];
+                const dominadas = Number(p.operacoesDominadas) || 0;
+                // Aproximação: usa dominadas globais (ideal seria por modalidade)
+                const coberturaAtual = pctCoberturaPorMod(dados, mod);
+                const coberturaNecessaria = cfg.coberturaPct;
+                if (coberturaAtual >= coberturaNecessaria - 30) {
+                    // Está perto o suficiente para valer a pena
+                    return {
+                        nivel, cfg, mod,
+                        nomeMod: rotulos[mod],
+                        gapPct: Math.max(0, coberturaNecessaria - coberturaAtual)
+                    };
+                }
+            }
+        }
+        return null;
+    }
+
+    // Helper auxiliar: % de cobertura do mapa por modalidade
+    function pctCoberturaPorMod(dados, mod) {
+        const porTab = (dados && dados.porTabuada) || {};
+        const fatores = MODALIDADES[mod]?.fatores || [];
+        let dominadas = 0;
+        fatores.forEach(t => { dominadas += (porTab[t]?.dominadas || 0); });
+        const total = fatores.length * 10;
+        return total > 0 ? Math.round((dominadas / total) * 100) : 0;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Bloco principal: construção do prompt (persona de COACH)
+    // ─────────────────────────────────────────────────────────────────
+    function construirPromptIA(nome, turma, dadosPerfil) {
+        const temNome  = nome  && String(nome).trim().length  > 0;
+        const temTurma = turma && String(turma).trim().length > 0;
+        const nomeLimpo = temNome ? String(nome).trim() : "";
+        const turmaLimpa = temTurma ? String(turma).trim() : "";
+        const primeiroNome = temNome ? nomeLimpo.split(" ")[0] : "";
+
+        // Identificação
+        let identificacao = "";
+        if (temNome && temTurma) {
+            identificacao = `O atleta se chama ${nomeLimpo} (turma ${turmaLimpa}).`;
+        } else if (temNome) {
+            identificacao = `O atleta se chama ${nomeLimpo}.`;
+        } else {
+            identificacao = `O atleta ainda não se identificou. Use tratamento genérico.`;
+        }
+
+        // Saudação personalizada
+        const saudacao = temNome
+            ? `Olá, ${primeiroNome}! Sou seu Coach da Copa da Tabuada. 🏆`
+            : `Olá! Sou seu Coach da Copa da Tabuada. 🏆`;
+
+        // Bloco de perfil (só se tiver dados)
+        const temDados = !!(dadosPerfil && dadosPerfil.perfil);
+        const blocoPerfil = temDados
+            ? `\n═══ PERFIL COMPLETO DO ATLETA ═══\n\n${montarBlocoPerfil(dadosPerfil)}\n`
+            : "";
+
+        // Próximo certificado
+        const proxCert = temDados ? identificarProximoCertificado(dadosPerfil) : null;
+        let blocoProxCert = "";
+        if (proxCert) {
+            blocoProxCert = `\n🎯 PRÓXIMO ALVO — CERTIFICADO:\n  ${proxCert.cfg.icone} ${proxCert.cfg.nome} · ${proxCert.nomeMod}\n  → faltam ~${proxCert.gapPct}% do mapa dominado\n`;
+        }
+
+        return `Você é o COACH PESSOAL da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
+
+Sua função NÃO é só tirar dúvidas. Você atua como um TREINADOR de atleta:
+diagnostica pontos fortes e fracos, prescreve treinos específicos, define metas
+curtas e motiva o aluno a evoluir. Fale com energia de treinador e clareza de médico.
+
+${identificacao}
+${blocoPerfil}${blocoProxCert}
+═══ SUA MISSÃO — FLUXO OBRIGATÓRIO ═══
+
+Quando o aluno colar este prompt, sua PRIMEIRA resposta deve ter EXATAMENTE esta estrutura:
+
+1. Saudação personalizada (use o primeiro nome do aluno)
+2. DIAGNÓSTICO CURTO (3-4 linhas) — o que você vê nos dados:
+   • Ponto FORTE (cite número real)
+   • Ponto FRACO (cite número real)
+   • Destaque competitivo (posição real ou zona)
+3. MENU DE OPÇÕES (numeradas de 1 a 8, exatamente como abaixo)
+4. Instrução: "Digite o número da opção ou escreva sua pergunta!"
+
+O MENU DEVE SER SEMPRE ESTE:
+
+1️⃣ 📊 Análise completa do meu desempenho
+2️⃣ 🎯 Plano de treino personalizado
+3️⃣ 💡 Tirar uma dúvida específica (regra ou cálculo)
+4️⃣ 🔥 Focar nas minhas operações mais fracas
+5️⃣ 🏆 Como chegar ao Top 4 da minha turma
+6️⃣ ⚡ Como melhorar minha velocidade
+7️⃣ 🎓 Como conquistar o próximo certificado
+8️⃣ 💬 Outro assunto
+
+═══ PLAYBOOK — COMO RESPONDER A CADA OPÇÃO ═══
+
+1️⃣ ANÁLISE COMPLETA:
+   Apresente um "relatório de atleta": posições nas 3 modalidades, % do mapa,
+   tabuadas fortes/fracas, velocidade, sequência. Termine com UMA RECOMENDAÇÃO
+   específica ("seu foco agora é dominar a tabuada do 7").
+
+2️⃣ PLANO DE TREINO:
+   Prescreva um plano de 3 passos concretos:
+   • Passo 1: o que treinar hoje (modalidade + operações específicas)
+   • Passo 2: meta de curto prazo (ex: "dominar 5 operações da tabuada do 7")
+   • Passo 3: como medir sucesso (ex: "volte ao mapa e veja as células verdes")
+   Cite o botão real do app: "🎯 Focar agora" ou "Treino Inteligente".
+
+3️⃣ DÚVIDA ESPECÍFICA:
+   - Se for cálculo → explique passo a passo, dê um truque e 3 exercícios.
+   - Se for regra → responda direto, curto e claro, usando o CONTEXTO abaixo.
+
+4️⃣ OPERAÇÕES FRACAS:
+   Liste as 5 piores operações do bloco "Operações mais problemáticas" do perfil.
+   Para CADA uma, dê um truque rápido de memorização.
+   Termine prescrevendo: "Faça 2 partidas no Treino Focado com essas operações."
+
+5️⃣ TOP 4:
+   Use os gaps do bloco COMPETITIVO. Diga a posição atual, quanto falta de
+   pontos, e sugira foco na modalidade mais próxima do Top 4.
+   Se já está no Top 4, celebre e diga para MANTER ("não escorregue!").
+
+6️⃣ VELOCIDADE:
+   Compare o melhor tempo médio do aluno com as metas dos certificados
+   (2-5: 2,0s · 6-9: 2,5s · 1-10: 3,0s). Se está perto, diga quanto falta.
+   Se já bateu, celebre e proponha metas mais ambiciosas.
+
+7️⃣ PRÓXIMO CERTIFICADO:
+   Use o bloco "PRÓXIMO ALVO" no topo. Diga o nome do certificado, o que
+   falta (operações ou velocidade) e o caminho mais rápido para conquistar.
+
+8️⃣ OUTRO ASSUNTO:
+   Responda como coach — sempre conectando com o perfil do aluno.
+
+═══ TOM E ESTILO ═══
+• Fale como um treinador motivador, MAS com clareza de médico.
+• Use frases curtas. Exemplos: "Você está a 3 operações do Ouro." "Seu ponto forte é claro: Tabuada do 2."
+• Sempre CITE NÚMEROS REAIS do perfil. Nunca invente.
+• Celebre pequenas vitórias: "47% do mapa dominado — você está no caminho."
+• Fale como se o aluno tivesse 12 anos. Nada de jargão técnico.
 
 ═══ CONTEXTO DO JOGO ═══
-(use para responder qualquer dúvida sobre regras)
+(use como fonte para responder dúvidas sobre regras)
 
 • Cada partida tem 20 perguntas de multiplicação, com 10 segundos por questão. Quanto mais rápido acertar, mais pontos ganha.
 • 3 modalidades: Tabuadas 2-5, Tabuadas 6-9, Tabuadas 1-10.
@@ -15182,105 +15635,114 @@ if (containerProg) {
     🥈 Prata     → 85% do mapa, 5+ tentativas, 80% de acerto
     🥇 Ouro      → 95% do mapa, 8+ tentativas, 90% + velocidade
     💎 Lendária  → 100% do mapa, 10+ tentativas, 90% + velocidade
+  Velocidades ideais: 2-5 → 2,0s · 6-9 → 2,5s · 1-10 → 3,0s
 • Álbum: 44 medalhas (comum/incomum/raro/épico/lendário) que viram estrelas, e as estrelas definem sua patente (Reserva → Imortal).
 • Treino Inteligente: o sistema sorteia as operações que você mais precisa, com peso por cor (cinza/vermelho/amarelo/azul/verde).
-• Foco Absoluto: quando faltam ≤5 operações para fechar o mapa, 92% das perguntas da partida vão para essas operações específicas.
+• Foco Absoluto: quando faltam ≤5 operações para fechar o mapa, 92% das perguntas vão para essas operações específicas.
 • Hall da Fama: 10 categorias (medalhas, mapa, velocidade, etc).
 • Ranking de Turmas: mínimo de 4 alunos por turma para aparecer.
 
-═══ MINHA DÚVIDA ═══
-[ESCREVA AQUI SUA DÚVIDA — PODE SER SOBRE CÁLCULO OU SOBRE O JOGO]
+═══ REGRAS INVIOLÁVEIS ═══
+1. Sua PRIMEIRA resposta é SEMPRE: saudação + diagnóstico curto + menu de 8 opções + "Digite o número".
+2. NUNCA responda perguntas antes de apresentar o menu (a não ser que o aluno já tenha vindo direto com uma pergunta específica — nesse caso, responda e depois ofereça o menu).
+3. NUNCA invente números que não estão no PERFIL acima.
+4. SEMPRE termine suas respostas com uma pergunta ou uma ação concreta
+   (ex: "Quer que eu detalhe o plano de treino? Digite 2.").
+5. A saudação que você DEVE usar é exatamente esta (ajuste apenas o nome):
+   "${saudacao}"
 
-═══ COMO ME AJUDAR ═══
-• Se for dúvida de CÁLCULO → explique passo a passo, dê um truque e 3 exercícios parecidos para eu praticar.
-• Se for dúvida sobre REGRAS DO JOGO → responda direto, curto e claro, usando o CONTEXTO acima como fonte.
-• Fale como se eu tivesse 12 anos. Nada de linguagem complicada.`;
+Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regras Invioláveis.`;
+    }
 
-    // Tamanho mínimo para considerar o prompt "intacto" (contexto preservado).
-    // O prompt completo tem ~1.700 chars; abaixo de 800 significa que o aluno
-    // apagou parte relevante do contexto.
-    const PROMPT_IA_MIN_CHARS = 800;
-
-    function abrirAjudaIA() {
+    // ─────────────────────────────────────────────────────────────────
+    // Abertura do modal (loading → coleta → preenche)
+    // ─────────────────────────────────────────────────────────────────
+    async function abrirAjudaIA() {
         const m = document.getElementById("modal-ajuda-ia");
+        const loading = document.getElementById("ia-modal-loading");
+        const conteudo = document.getElementById("ia-modal-conteudo");
         const ta = document.getElementById("ia-modal-textarea");
-        if (!m || !ta) return;
-
-        // Sempre restaura o prompt padrão ao abrir (evita arrastar edição anterior)
-        if (!ta.value || ta.value.trim().length === 0) {
-            ta.value = PROMPT_IA_PADRAO;
-        }
-        // Restaura o botão de copiar caso tenha ficado em estado "Copiado"
+        const badge = document.getElementById("ia-modal-personalizado-badge");
         const btn = document.getElementById("ia-btn-copiar");
-        if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; }
-        // Revalida
-        validarPromptIA();
+        if (!m || !loading || !conteudo || !ta) return;
+
+        loading.classList.remove("hidden");
+        conteudo.classList.add("hidden");
+        if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; btn.disabled = true; }
 
         m.classList.remove("hidden");
-        setTimeout(() => {
-            const taFocus = document.getElementById("ia-modal-textarea");
-            if (taFocus) {
-                taFocus.focus();
-                // Posiciona o cursor no início da linha "MINHA DÚVIDA" para facilitar
-                const idx = taFocus.value.indexOf("[ESCREVA AQUI SUA DÚVIDA");
-                if (idx > -1) taFocus.setSelectionRange(idx, idx + 48);
+
+        const nome  = (typeof obterNomeSalvoAluno  === "function") ? obterNomeSalvoAluno()  : null;
+        const turma = (typeof obterTurmaSalvaAluno === "function") ? obterTurmaSalvaAluno() : null;
+        const temNome  = nome  && String(nome).trim().length  > 0;
+        const temTurma = turma && String(turma).trim().length > 0;
+
+        let dadosPerfil = null;
+        if (temNome && temTurma) {
+            try {
+                dadosPerfil = await Promise.race([
+                    coletarDadosParaPrompt(nome, turma),
+                    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), IA_TIMEOUT_COLETA_MS))
+                ]);
+            } catch(e) {
+                console.warn("[Coach IA] Coleta de perfil falhou ou estourou timeout:", e);
+                dadosPerfil = null;
             }
-        }, 100);
+        }
+
+        ta.value = construirPromptIA(nome, turma, dadosPerfil);
+
+        // Badge
+        if (badge) {
+            if (temNome && temTurma) {
+                badge.classList.remove("vazio");
+                const partes = [`🎓 <strong>${escaparHtml(nome)}</strong>`];
+                partes.push(`<span class="sep">·</span> Turma <strong>${escaparHtml(turma)}</strong>`);
+                if (dadosPerfil && dadosPerfil.perfil) {
+                    const dominadas = Number(dadosPerfil.perfil.operacoesDominadas) || 0;
+                    if (dominadas > 0) {
+                        const pct = Math.round((dominadas / 100) * 100);
+                        partes.push(`<span class="sep">·</span> <strong>${pct}%</strong> do mapa`);
+                    }
+                    const melhorPos = dadosPerfil.perfil.melhorPosicao;
+                    if (melhorPos && melhorPos <= 4) {
+                        partes.push(`<span class="sep">·</span> <span class="top4">🎟️ Top 4</span>`);
+                    }
+                }
+                badge.innerHTML = partes.join(" ");
+            } else if (temNome) {
+                badge.classList.remove("vazio");
+                badge.innerHTML = `🎓 Coach de <strong>${escaparHtml(nome)}</strong>`;
+            } else {
+                badge.classList.add("vazio");
+                badge.innerHTML = `⚠️ Identifique-se para o coach personalizar`;
+            }
+        }
+
+        loading.classList.add("hidden");
+        conteudo.classList.remove("hidden");
+        if (btn) btn.disabled = false;
+
+        setTimeout(() => {
+            const btnFocus = document.getElementById("ia-btn-copiar");
+            if (btnFocus) btnFocus.focus();
+        }, 80);
     }
 
     function fecharAjudaIA(e) {
         if (e && e.target && e.target.closest(".ia-modal-card")) return;
         const m = document.getElementById("modal-ajuda-ia");
         if (m) m.classList.add("hidden");
-        // Restaura botão de copiar
         const btn = document.getElementById("ia-btn-copiar");
-        if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; }
-    }
-
-    function validarPromptIA() {
-        const ta = document.getElementById("ia-modal-textarea");
-        const aviso = document.getElementById("ia-aviso-contexto");
-        const status = document.getElementById("ia-modal-contador-status");
-        const chars = document.getElementById("ia-modal-contador-chars");
-        if (!ta || !aviso || !status || !chars) return;
-
-        const len = ta.value.length;
-        const curto = len < PROMPT_IA_MIN_CHARS;
-
-        aviso.classList.toggle("hidden", !curto);
-        status.textContent = curto ? "⚠️ Contexto incompleto" : "✓ Prompt completo";
-        status.className = curto ? "status-curto" : "status-ok";
-        chars.textContent = `${len} caracteres`;
-    }
-
-    function restaurarPromptIA() {
-        const ta = document.getElementById("ia-modal-textarea");
-        if (!ta) return;
-        ta.value = PROMPT_IA_PADRAO;
-        validarPromptIA();
-        notificar("Prompt restaurado ao original.", "info", 2500);
-        // Reposiciona o cursor na linha da dúvida
-        ta.focus();
-        const idx = ta.value.indexOf("[ESCREVA AQUI SUA DÚVIDA");
-        if (idx > -1) ta.setSelectionRange(idx, idx + 48);
+        if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; btn.disabled = false; }
     }
 
     async function copiarPromptIA() {
         const ta = document.getElementById("ia-modal-textarea");
         const btn = document.getElementById("ia-btn-copiar");
-        if (!ta || !btn) return;
+        if (!ta || !btn || btn.disabled) return;
 
         const texto = ta.value;
-        if (texto.trim().length < PROMPT_IA_MIN_CHARS) {
-            // Aluno apagou o contexto — avisa mas deixa continuar
-            const confirmar = confirm(
-                "⚠️ Você apagou boa parte do contexto do jogo.\n\n" +
-                "A IA pode não conseguir te ajudar sem essas informações.\n\n" +
-                "Deseja copiar assim mesmo?"
-            );
-            if (!confirmar) return;
-        }
-
         try {
             await navigator.clipboard.writeText(texto);
             btn.classList.add("copiado");
@@ -15290,7 +15752,7 @@ if (containerProg) {
                 btn.textContent = "📋 Copiar prompt";
             }, 2800);
         } catch (e) {
-            // Fallback para navegadores antigos / permissão negada
+            ta.focus();
             ta.select();
             try {
                 document.execCommand("copy");
@@ -15308,8 +15770,6 @@ if (containerProg) {
 
     function abrirIA(provider) {
         // Botões apenas ABREM a IA. O prompt vai pela área de transferência (Ctrl+V).
-        // Isso garante compatibilidade com 100% dos providers, sem depender de
-        // URLs com ?q= que mudam sem aviso.
         const urls = {
             chatgpt:    "https://chatgpt.com/",
             claude:     "https://claude.ai/new",
@@ -15319,7 +15779,6 @@ if (containerProg) {
         const url = urls[provider];
         if (!url) return;
         window.open(url, "_blank", "noopener,noreferrer");
-        // Dica amigável
         setTimeout(() => {
             notificar("💡 Agora cole o prompt com Ctrl+V (ou toque longo → Colar).", "info", 5000);
         }, 400);
