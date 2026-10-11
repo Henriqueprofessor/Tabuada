@@ -12190,6 +12190,137 @@ if (containerProg) {
         if (m && !m.classList.contains("hidden")) fecharModalHallMestres();
     });
     // ▲▲▲ FIM [18.06]
+    // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
+
+    // Renderiza o card "🏆 Minhas Posições · Jogar/Treinar" dentro
+    // de #acao-principal-container. Decide o modo (jogar/treinar)
+    // conforme a fase atual da etapa.
+    async function renderizarModalidadesHome(fase) {
+        const ctn = document.getElementById("acao-principal-container");
+        if (!ctn) return;
+
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+
+        const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
+        const modo = etapaAtiva ? "jogar" : "treinar";
+        const tituloAcao = modo === "jogar" ? "Minhas Posições · Jogar" : "Minhas Posições · Treinar";
+        const subtitulo = modo === "jogar"
+            ? "Escolha uma modalidade para jogar a classificatória. Só o seu melhor resultado conta."
+            : "Escolha uma modalidade para treinar. Suas partidas alimentam o mapa e os certificados, mas não entram no ranking.";
+
+        // ─── Coleta de posições (só se identificado) ───
+        let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
+        if (nome && turma) {
+            try {
+                const [r25, r69, r010, partidas] = await Promise.all([
+                    obterRankingPorPontos("2-5", turma).catch(() => []),
+                    obterRankingPorPontos("6-9", turma).catch(() => []),
+                    obterRankingPorPontos("0-10", turma).catch(() => []),
+                    obterHistoricoAluno(nome, turma).catch(() => [])
+                ]);
+                const montar = (mod, ranking) => {
+                    const idx = ranking.findIndex(r =>
+                        normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
+                    );
+                    const minhas = partidas.filter(p => p.modalidade === mod);
+                    const melhor = minhas.length
+                        ? minhas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
+                        : null;
+                    return {
+                        posicao: idx === -1 ? null : idx + 1,
+                        total: ranking.length,
+                        pontos: melhor ? (Number(melhor.pontos) || 0) : 0,
+                        jogou: !!melhor
+                    };
+                };
+                dadosPorMod["2-5"]  = montar("2-5",  r25);
+                dadosPorMod["6-9"]  = montar("6-9",  r69);
+                dadosPorMod["0-10"] = montar("0-10", r010);
+            } catch(e) {
+                console.warn("[Home/Modalidades] Falha ao montar dados:", e);
+            }
+        }
+
+        const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
+        const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
+
+        let linhas = "";
+        ["2-5", "6-9", "0-10"].forEach(mod => {
+            const info = dadosPorMod[mod];
+            const jogou = info && info.jogou;
+            let zonaCls = "sem-dados";
+            let posTxt = "—";
+            let ptsTxt = "";
+            let statusTxt = "Sem partida ainda";
+
+            if (jogou) {
+                const pos = info.posicao;
+                if (pos && pos <= 4)      { zonaCls = "zona-top4";    statusTxt = "Zona de classificação"; }
+                else if (pos && pos <= 6) { zonaCls = "zona-reserva"; statusTxt = "Zona de reserva"; }
+                else if (pos)             { zonaCls = "";             statusTxt = "Em disputa"; }
+                else                      { zonaCls = "";             statusTxt = "Participando"; }
+                posTxt = pos
+                    ? `${pos}º <small style="opacity:.7;font-weight:700;">de ${info.total}</small>`
+                    : "—";
+                ptsTxt = `${info.pontos.toLocaleString("pt-BR")} pts`;
+            }
+
+            const seloClasse = modo === "jogar" ? "jogar" : "treinar";
+            const seloTexto  = modo === "jogar" ? "▶ Jogar" : "🎯 Treinar";
+            const seloPulse  = jogou ? "" : " nunca-jogou";
+            const ariaLabel  = `${modo === "jogar" ? "Jogar" : "Treinar"} modalidade ${rotulos[mod]}`;
+
+            linhas += `<button type="button" class="home-modalidade-linha ${zonaCls}" onclick="escolherModalidadeHome('${mod}')" aria-label="${escaparHtml(ariaLabel)}">
+                <span class="home-modalidade-info">
+                    <span class="home-modalidade-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
+                    <span class="home-modalidade-status">${escaparHtml(statusTxt)}</span>
+                </span>
+                <span class="home-modalidade-metricas">
+                    <span class="home-modalidade-pos">${posTxt}</span>
+                    <span class="home-modalidade-pts">${ptsTxt}</span>
+                </span>
+                <span class="home-modalidade-selo ${seloClasse}${seloPulse}">${seloTexto}</span>
+            </button>`;
+        });
+
+        ctn.innerHTML = `<div class="home-modalidades-card">
+            <div class="home-modalidades-titulo">🏆 ${escaparHtml(tituloAcao)}</div>
+            <div class="home-modalidades-sub">${subtitulo}</div>
+            <div class="home-modalidades-lista">${linhas}</div>
+            <div class="home-modalidades-rodape">⚠️ Classificação provisória · Top 4 de cada modalidade avança para a Final</div>
+        </div>`;
+    }
+
+    // Handler do clique numa modalidade do card da Home.
+    // - Não identificado → vai para tela-single com modalidade pré-selecionada
+    // - Identificado → reusa registrarAluno(), que cuida de vínculo, prep e treino
+    async function escolherModalidadeHome(mod) {
+        if (!MODALIDADES[mod]) return;
+
+        const selMod = document.getElementById("modalidade-tabuada");
+        if (selMod) selMod.value = mod;
+
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+
+        if (!nome || !turma) {
+            mostrarTela("tela-single");
+            return;
+        }
+
+        const inNome = document.getElementById("nome-aluno");
+        const selTurma = document.getElementById("turma-aluno");
+        if (inNome) inNome.value = nome;
+        if (selTurma) selTurma.value = turma;
+
+        const fase = await resolverFaseAtual();
+        const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
+
+        // registrarAluno(false) → classificatória | registrarAluno(true) → treino
+        await registrarAluno(!etapaAtiva);
+    }
+    // ▲▲▲ FIM [18.07]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
