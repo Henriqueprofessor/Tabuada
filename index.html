@@ -3819,6 +3819,363 @@
             .home-ritmo-fill { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.47] */
+        /* ▼▼▼ [02.48] Painel — Heatmap de Turma + Sugestões ───────── INÍCIO ─── */
+
+        .heatmap-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            text-align: left;
+        }
+
+        /* ─── Panorama 10×10 ─── */
+        .heatmap-panorama {
+            background: rgba(10, 22, 40, 0.5);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .heatmap-panorama-titulo {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .heatmap-panorama-grid {
+            display: grid;
+            grid-template-columns: 30px repeat(10, minmax(28px, 1fr));
+            gap: 3px;
+            max-width: 640px;
+            margin-bottom: 6px;
+        }
+        .heatmap-panorama-grid:last-child { margin-bottom: 0; }
+        .heatmap-panorama-cabecalho {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 4px 0;
+            line-height: 1;
+        }
+        .heatmap-panorama-celula {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            border: 2px solid transparent;
+            min-height: 28px;
+            font-family: inherit;
+            color: inherit;
+            background: #1e293b;
+            padding: 0;
+            margin: 0;
+            box-shadow: none;
+        }
+        .heatmap-panorama-celula:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border-color: var(--neon-cyan);
+        }
+        .heatmap-panorama-celula.todos-ok { background: #166534; color: #86efac; }
+        .heatmap-panorama-celula.quase   { background: #713f12; color: #fde047; }
+        .heatmap-panorama-celula.critico { background: #7f1d1d; color: #fca5a5; animation: heatmapPulse 2s ease-in-out infinite; }
+        .heatmap-panorama-celula.vazio   { background: #1e293b; color: var(--text-muted); }
+
+        @keyframes heatmapPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0); }
+        }
+
+        /* ─── Tabs de tabuada ─── */
+        .heatmap-tabs {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            padding: 4px;
+            background: rgba(10, 22, 40, 0.5);
+            border: 1px solid var(--border-neon);
+            border-radius: 10px;
+        }
+        .heatmap-tab {
+            flex: 1;
+            min-width: 40px;
+            padding: 8px 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+            margin: 0;
+            box-shadow: none;
+        }
+        .heatmap-tab:hover:not(.ativa) {
+            background: rgba(34, 211, 238, 0.08);
+            color: var(--text-primary);
+        }
+        .heatmap-tab.ativa {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+        }
+
+        /* ─── Grade detalhada ─── */
+        .heatmap-grid-wrap {
+            overflow-x: auto;
+            background: rgba(10, 22, 40, 0.5);
+            border: 1px solid var(--border-neon);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .heatmap-tabela {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 3px;
+            font-size: 12px;
+            min-width: 500px;
+        }
+        .heatmap-tabela th {
+            padding: 6px 8px;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            text-align: center;
+            background: transparent;
+            white-space: nowrap;
+        }
+        .heatmap-tabela th.aluno-col {
+            text-align: left;
+            min-width: 160px;
+            position: sticky;
+            left: 0;
+            background: #0f2340;
+            z-index: 2;
+        }
+        .heatmap-tabela td.aluno-col {
+            text-align: left;
+            padding: 8px 10px;
+            font-weight: 700;
+            color: var(--text-primary);
+            background: #0f2340;
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .heatmap-tabela td.aluno-col:hover {
+            color: var(--neon-cyan);
+            text-decoration: underline;
+        }
+        .heatmap-tabela tr.voce-linha td.aluno-col {
+            color: var(--neon-cyan);
+            border-left: 3px solid var(--neon-green);
+            padding-left: 7px;
+        }
+        .heatmap-tabela tr.sem-dados-linha td.aluno-col {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .heatmap-celula {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11px;
+            font-weight: 800;
+            border-radius: 6px;
+            cursor: help;
+            border: 2px solid transparent;
+            transition: transform 0.15s ease;
+        }
+        .heatmap-celula:hover {
+            transform: scale(1.08);
+            border-color: var(--neon-cyan);
+        }
+        .heatmap-celula.verde           { background: #22c55e; color: #fff; }
+        .heatmap-celula.cinza-parcial   { background: #e2e8f0; color: #0369a1; border: 2px dashed #0ea5e9; }
+        .heatmap-celula.azul            { background: #38bdf8; color: #fff; }
+        .heatmap-celula.amarelo         { background: #facc15; color: #422006; }
+        .heatmap-celula.vermelho        { background: #ef4444; color: #fff; }
+        .heatmap-celula.cinza           { background: #334155; color: var(--text-muted); }
+
+        /* ─── Filtros do heatmap ─── */
+        .heatmap-filtros-linha {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .heatmap-filtro-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0;
+        }
+        .heatmap-filtro-label input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        /* ─── Legenda ─── */
+        .heatmap-legenda {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            padding-top: 4px;
+        }
+        .heatmap-legenda .item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .heatmap-legenda .amostra {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        /* ─── Sugestões (P20) ─── */
+        .sugestoes-lista {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 10px;
+        }
+        .sugestao-card {
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.15s ease;
+        }
+        .sugestao-card:hover { transform: translateY(-1px); }
+        .sugestao-card.tipo-critica        { border-left-color: #ef4444; }
+        .sugestao-card.tipo-oportunidade   { border-left-color: #22c55e; }
+        .sugestao-card.tipo-atencao        { border-left-color: #facc15; }
+        .sugestao-card.tipo-info           { border-left-color: var(--neon-cyan); }
+
+        .sugestao-topo {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .sugestao-icone {
+            font-size: 22px;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .sugestao-titulo {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.3;
+            margin: 0 0 4px;
+        }
+        .sugestao-descricao {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0;
+        }
+        .sugestao-descricao strong { color: var(--text-primary); font-weight: 800; }
+
+        .sugestao-acao {
+            align-self: flex-start;
+            padding: 7px 12px;
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            margin: 0;
+            box-shadow: none;
+        }
+        .sugestao-acao:hover {
+            background: rgba(34, 211, 238, 0.18);
+            border-color: var(--neon-cyan);
+        }
+
+        .heatmap-loading, .heatmap-vazio {
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .sugestoes-vazio {
+            padding: 18px 14px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12.5px;
+            line-height: 1.5;
+            background: rgba(10, 22, 40, 0.4);
+            border: 1px dashed rgba(148, 163, 184, 0.28);
+            border-radius: 10px;
+        }
+        .sugestoes-vazio strong { color: var(--text-secondary); }
+
+        /* ─── Mobile ─── */
+        @media (max-width: 520px) {
+            .heatmap-panorama-grid {
+                grid-template-columns: 24px repeat(10, minmax(22px, 1fr));
+                gap: 2px;
+            }
+            .heatmap-panorama-celula { min-height: 22px; font-size: 10px; }
+            .heatmap-panorama-cabecalho { font-size: 10px; padding: 3px 0; }
+            .heatmap-celula { width: 32px; height: 32px; font-size: 10px; }
+            .heatmap-tabela { font-size: 11px; }
+            .heatmap-tabela td.aluno-col { max-width: 140px; font-size: 12px; padding: 6px 8px; }
+            .heatmap-tab { padding: 6px 6px; font-size: 12px; min-width: 34px; }
+            .sugestoes-lista { grid-template-columns: 1fr; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .heatmap-panorama-celula.critico { animation: none; }
+            .heatmap-panorama-celula,
+            .heatmap-celula,
+            .sugestao-card,
+            .sugestao-acao { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.48] */
 
     </style>
 </head>
@@ -4336,6 +4693,43 @@
                 </select>
                 <div id="destaques-painel-conteudo" style="margin-top:12px;"><div class="desempenho-loading">⏳ Carregando destaques…</div></div>
             </div>
+
+            <!-- ▼▼▼ [P18] Mapa da Turma — Heatmap de operações ───────────────── -->
+            <div class="senha-container" style="margin-bottom:16px;">
+                <h4 style="margin-top:0;">🗺️ Mapa da Turma</h4>
+                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Raio-X visual de quem domina o quê. Cada célula é uma operação (ex: 7×8). Clique numa célula do panorama para pular para a tabuada correspondente. Clique no nome do aluno para abrir o perfil completo dele.</p>
+
+                <label for="heatmap-filtro-turma" style="display:block;font-weight:600;font-size:12.5px;margin-bottom:4px;">Turma</label>
+                <select id="heatmap-filtro-turma" onchange="renderizarHeatmapTurma()">
+                    <option value="">Selecione uma turma</option>
+                    <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                    <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                    <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                </select>
+
+                <div class="heatmap-filtros-linha" style="margin-top:10px;">
+                    <label class="heatmap-filtro-label" for="heatmap-mostrar-sem-dados">
+                        <input type="checkbox" id="heatmap-mostrar-sem-dados" onchange="alternarMostrarSemDados()">
+                        Mostrar alunos sem dados
+                    </label>
+                </div>
+
+                <div id="heatmap-conteudo" style="margin-top:10px;">
+                    <div class="heatmap-vazio">🎯 Selecione uma turma acima para ver o mapa da turma.</div>
+                </div>
+            </div>
+            <!-- ▲▲▲ FIM [P18] -->
+
+            <!-- ▼▼▼ [P20] Sugestões de Intervenção ─────────────────────────── -->
+            <div class="senha-container" style="margin-bottom:16px;">
+                <h4 style="margin-top:0;">💡 Sugestões de Intervenção</h4>
+                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Análise automática do mapa da turma. Baseado nos dados do bloco <strong>Mapa da Turma</strong> acima — selecione uma turma lá primeiro.</p>
+                <div id="sugestoes-painel-conteudo">
+                    <div class="sugestoes-vazio">🎯 Selecione uma turma no bloco <strong>Mapa da Turma</strong> acima para ver as sugestões.</div>
+                </div>
+            </div>
+            <!-- ▲▲▲ FIM [P20] -->
+
             <div class="senha-container" style="margin-bottom:16px;">
                 <h4 style="margin-top:0;">🗳️ Votação da Etapa</h4>
                 <div id="painel-votacao-conteudo" style="font-size:13px;line-height:1.6;text-align:left;"></div>
@@ -4350,7 +4744,8 @@
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
-<!-- ▲▲▲ FIM [03.12] PAINEL PROFESSOR -->
+    <!-- ▲▲▲ FIM [03.12] PAINEL PROFESSOR -->
+
     <!-- ▼▼▼ [03.13] TELA MEU PROGRESSO ─────────────────────── -->
     <div id="tela-meu-progresso" class="card hidden">
         <h2 style="text-align:left;">📈 Meu Progresso</h2>
@@ -8966,7 +9361,7 @@ if (containerProg) {
             renderizarTreinoInteligenteHome();
         }
         if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
-        if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); }
+        if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); renderizarSugestoesIntervencao(); }
         if (id !== "tela-resultado") {
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -11461,6 +11856,445 @@ if (containerProg) {
         document.getElementById("modal-changelog").classList.add("hidden");
     }
     // ▲▲▲ FIM [17.07]
+    // ▼▼▼ [17.08] Painel — Heatmap de Turma (P18) ───────────────────────
+
+    const HEATMAP_TABUADAS = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    let heatmapEstado = {
+        turma: null,
+        dados: {},              // { chave: { nome, turma, operacoes: { "7x3": "verde", ... } } }
+        tabuadaAtiva: 7,
+        mostrarSemDados: false,
+        carregando: false
+    };
+
+    async function renderizarHeatmapTurma() {
+        const sel = document.getElementById("heatmap-filtro-turma");
+        const container = document.getElementById("heatmap-conteudo");
+        if (!sel || !container) return;
+
+        const turma = sel.value;
+        if (!turma) {
+            container.innerHTML = `<div class="heatmap-vazio">🎯 Selecione uma turma acima para ver o mapa da turma.</div>`;
+            heatmapEstado.turma = null;
+            heatmapEstado.dados = {};
+            renderizarSugestoesIntervencao();
+            return;
+        }
+
+        if (heatmapEstado.carregando) return;
+        heatmapEstado.carregando = true;
+        heatmapEstado.turma = turma;
+        container.innerHTML = `<div class="heatmap-loading">⏳ Carregando dados da turma ${escaparHtml(turma)}…</div>`;
+
+        try {
+            const dados = await carregarDadosHeatmap(turma);
+            heatmapEstado.dados = dados;
+            heatmapEstado.carregando = false;
+            renderizarHeatmapCompleto();
+            renderizarSugestoesIntervencao();
+        } catch(e) {
+            console.warn("[Heatmap] Falha ao carregar:", e);
+            heatmapEstado.carregando = false;
+            container.innerHTML = `<div class="heatmap-vazio">Não foi possível carregar os dados da turma agora.</div>`;
+        }
+    }
+
+    async function carregarDadosHeatmap(turma) {
+        // 1. Lista de alunos que jogaram a classificatória daquela turma
+        const alunos = await obterRankingPorPontos("0-10", turma).catch(() => []);
+
+        if (!alunos.length) return {};
+
+        // 2. Para cada aluno, lê o mapa de operações (global = as 3 modalidades somadas)
+        const promessas = alunos.map(async (aluno) => {
+            try {
+                const chave = chaveAlunoCopa(aluno.nome, aluno.turma);
+                const snap = await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chave}`).once("value");
+                const dadosMods = snap.val() || {};
+
+                // Combina as 3 modalidades no formato global
+                const combinado = {};
+                for (const m of Object.keys(MODALIDADES)) {
+                    const dadosMod = dadosMods[m] || {};
+                    Object.entries(dadosMod).forEach(([k, d]) => {
+                        const h = normalizarHistoricoOperacao(d);
+                        if (!combinado[k]) combinado[k] = { historico: [] };
+                        combinado[k].historico = combinado[k].historico.concat(h);
+                        if (combinado[k].historico.length > MAPA_JANELA_MAX) {
+                            combinado[k].historico = combinado[k].historico.slice(-MAPA_JANELA_MAX);
+                        }
+                    });
+                }
+
+                // Calcula a cor de cada uma das 100 operações
+                const operacoes = {};
+                FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
+                    const k = `${a}x${b}`;
+                    const h = normalizarHistoricoOperacao(combinado[k]);
+                    operacoes[k] = estadoDaOperacao(h);
+                }));
+
+                return { chave, nome: aluno.nome, turma: aluno.turma, operacoes };
+            } catch(e) {
+                console.warn("[Heatmap] Falha ao ler mapa de", aluno.nome, e);
+                return null;
+            }
+        });
+
+        const resultados = await Promise.all(promessas);
+        const dadosPorChave = {};
+        resultados.forEach(r => { if (r) dadosPorChave[r.chave] = r; });
+        return dadosPorChave;
+    }
+
+    function renderizarHeatmapCompleto() {
+        const container = document.getElementById("heatmap-conteudo");
+        if (!container) return;
+
+        const alunos = Object.values(heatmapEstado.dados);
+        if (alunos.length === 0) {
+            container.innerHTML = `<div class="heatmap-vazio">Nenhum aluno desta turma jogou ainda.<br>Quando algum aluno da turma jogar, ele aparecerá aqui.</div>`;
+            return;
+        }
+
+        let html = `<div class="heatmap-wrap">`;
+        html += renderizarPanoramaHeatmap();
+        html += renderizarTabsHeatmap();
+        html += renderizarGridHeatmap();
+        html += `
+            <div class="heatmap-legenda">
+                <span class="item"><span class="amostra" style="background:#22c55e;"></span> Dominada</span>
+                <span class="item"><span class="amostra" style="background:#e2e8f0;border:1px dashed #0ea5e9;"></span> A confirmar</span>
+                <span class="item"><span class="amostra" style="background:#38bdf8;"></span> Quase lá</span>
+                <span class="item"><span class="amostra" style="background:#facc15;"></span> Em treino</span>
+                <span class="item"><span class="amostra" style="background:#ef4444;"></span> Preciso reforçar</span>
+                <span class="item"><span class="amostra" style="background:#334155;"></span> Sem dados</span>
+            </div>
+        `;
+        html += `</div>`;
+        container.innerHTML = html;
+    }
+
+    function renderizarPanoramaHeatmap() {
+        const alunos = Object.values(heatmapEstado.dados);
+        if (alunos.length === 0) return "";
+
+        // Conta, por operação, quantos alunos estão em cada estado
+        const stats = {};
+        FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
+            stats[`${a}x${b}`] = { verde: 0, parcial: 0, azul: 0, amarelo: 0, vermelho: 0, cinza: 0, total: 0 };
+        }));
+
+        alunos.forEach(al => {
+            FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => {
+                const k = `${a}x${b}`;
+                const cor = al.operacoes[k] || "cinza";
+                const chave = cor === "cinza-parcial" ? "parcial" : cor;
+                stats[k][chave] = (stats[k][chave] || 0) + 1;
+                stats[k].total++;
+            }));
+        });
+
+        function classificar(s) {
+            if (s.total === 0) return "vazio";
+            if (s.vermelho === 0) return "todos-ok";
+            if (s.vermelho === 1) return "quase";
+            return "critico";
+        }
+
+        // Cabeçalho (coluna 1..10)
+        let html = `<div class="heatmap-panorama">
+            <div class="heatmap-panorama-titulo">🔥 Panorama da Turma · ${alunos.length} ${alunos.length === 1 ? "aluno" : "alunos"}</div>
+            <div class="heatmap-panorama-grid">
+                <div class="heatmap-panorama-cabecalho"></div>`;
+        for (let b = 1; b <= 10; b++) html += `<div class="heatmap-panorama-cabecalho">${b}</div>`;
+        html += `</div>`;
+
+        // Linhas 1..10
+        html += `<div class="heatmap-panorama-grid">`;
+        FATORES_MAPA.forEach(a => {
+            html += `<div class="heatmap-panorama-cabecalho">${a}</div>`;
+            for (let b = 1; b <= 10; b++) {
+                const k = `${a}x${b}`;
+                const s = stats[k];
+                const cls = classificar(s);
+                const ruins = s.vermelho;
+                const titulo = `${a}×${b} · ${ruins} ${ruins === 1 ? "aluno travado" : "alunos travados"}`;
+                html += `<button type="button" class="heatmap-panorama-celula ${cls}" onclick="abrirHeatmapOperacao(${a}, ${b})" title="${titulo}" aria-label="${titulo}">${a*b}</button>`;
+            }
+            html += `</div><div class="heatmap-panorama-grid">`;
+        });
+        // Remove último grid vazio
+        html = html.replace(/<div class="heatmap-panorama-grid">$/, "");
+        html += `</div>`;
+
+        return html;
+    }
+
+    function renderizarTabsHeatmap() {
+        let html = `<div class="heatmap-tabs" role="tablist" aria-label="Tabuada do heatmap">`;
+        HEATMAP_TABUADAS.forEach(tab => {
+            const ativa = heatmapEstado.tabuadaAtiva === tab;
+            html += `<button type="button" role="tab" aria-selected="${ativa}" class="heatmap-tab ${ativa ? "ativa" : ""}" onclick="mudarTabuadaHeatmap(${tab})">${tab}</button>`;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    function renderizarGridHeatmap() {
+        const alunos = Object.values(heatmapEstado.dados);
+        const tab = heatmapEstado.tabuadaAtiva;
+        const nomeAluno = obterNomeSalvoAluno();
+        const turmaAluno = obterTurmaSalvaAluno();
+
+        const comDados = alunos.filter(al => Object.values(al.operacoes || {}).some(c => c && c !== "cinza"));
+        const semDados = alunos.filter(al => !comDados.includes(al));
+        const lista = heatmapEstado.mostrarSemDados ? [...comDados, ...semDados] : comDados;
+
+        if (lista.length === 0) {
+            return `<div class="heatmap-vazio">Nenhum aluno com dados nesta turma.</div>`;
+        }
+
+        lista.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+
+        let html = `<div class="heatmap-grid-wrap"><table class="heatmap-tabela">
+            <thead><tr><th class="aluno-col">Aluno</th>`;
+        for (let b = 1; b <= 10; b++) html += `<th>×${b}</th>`;
+        html += `</tr></thead><tbody>`;
+
+        lista.forEach(al => {
+            const ehVoce = nomeAluno && turmaAluno
+                && normalizarNome(al.nome) === normalizarNome(nomeAluno)
+                && al.turma === turmaAluno;
+            const semDados = !comDados.includes(al);
+            const classesLinha = [ehVoce ? "voce-linha" : "", semDados ? "sem-dados-linha" : ""].filter(Boolean).join(" ");
+
+            const nomeEscapado = escaparHtml(al.nome).replace(/'/g, "\\'");
+            html += `<tr class="${classesLinha}">
+                <td class="aluno-col" onclick="abrirPerfilAlunoHeatmap('${nomeEscapado}','${al.turma}')" title="Clique para ver o perfil completo deste aluno">
+                    ${escaparHtml(al.nome)}${ehVoce ? ' <span style="color:var(--neon-green);">← Você</span>' : ''}${semDados ? ' <span style="font-size:10px;opacity:.7;">(sem dados)</span>' : ''}
+                </td>`;
+
+            for (let b = 1; b <= 10; b++) {
+                const k = `${tab}x${b}`;
+                const cor = al.operacoes[k] || "cinza";
+                const exibir = semDados ? "—" : `${tab}×${b}`;
+                html += `<td class="heatmap-celula ${cor}" title="${tab}×${b}">${exibir}</td>`;
+            }
+            html += `</tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+        return html;
+    }
+
+    function mudarTabuadaHeatmap(tab) {
+        if (!HEATMAP_TABUADAS.includes(tab)) return;
+        heatmapEstado.tabuadaAtiva = tab;
+        renderizarHeatmapCompleto();
+    }
+
+    function abrirHeatmapOperacao(a, b) {
+        // Troca para a aba do primeiro fator e rola até a grade
+        if (HEATMAP_TABUADAS.includes(a)) {
+            heatmapEstado.tabuadaAtiva = a;
+            renderizarHeatmapCompleto();
+            requestAnimationFrame(() => {
+                const wrap = document.querySelector("#heatmap-conteudo .heatmap-grid-wrap");
+                if (wrap) wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            });
+        }
+    }
+
+    function alternarMostrarSemDados() {
+        const cb = document.getElementById("heatmap-mostrar-sem-dados");
+        if (!cb) return;
+        heatmapEstado.mostrarSemDados = !!cb.checked;
+        renderizarHeatmapCompleto();
+    }
+
+    function abrirPerfilAlunoHeatmap(nome, turma) {
+        // Reaproveita a tela de perfil existente — abre com o aluno pré-preenchido
+        mostrarTela("tela-perfil");
+        const inNome = document.getElementById("perfil-nome");
+        const selTurma = document.getElementById("perfil-turma");
+        if (inNome) inNome.value = nome;
+        if (selTurma) selTurma.value = turma;
+        if (typeof carregarPerfil === "function") carregarPerfil();
+    }
+    // ▲▲▲ FIM [17.08]
+    // ▼▼▼ [17.09] Painel — Sugestões de Intervenção (P20) ───────────────
+
+    function renderizarSugestoesIntervencao() {
+        const container = document.getElementById("sugestoes-painel-conteudo");
+        if (!container) return;
+
+        if (!heatmapEstado.turma || !heatmapEstado.dados || Object.keys(heatmapEstado.dados).length === 0) {
+            container.innerHTML = `<div class="sugestoes-vazio">🎯 Selecione uma turma no bloco <strong>Mapa da Turma</strong> acima para ver as sugestões.</div>`;
+            return;
+        }
+
+        const alunos = Object.values(heatmapEstado.dados);
+        const sugestoes = analisarSugestoes(alunos);
+
+        if (sugestoes.length === 0) {
+            container.innerHTML = `<div class="sugestoes-vazio">✅ Nenhuma sugestão no momento — a turma está em bom ritmo.</div>`;
+            return;
+        }
+
+        let html = `<div class="sugestoes-lista">`;
+        sugestoes.forEach(s => { html += renderizarCardSugestao(s); });
+        html += `</div>`;
+        container.innerHTML = html;
+    }
+
+    function analisarSugestoes(alunos) {
+        const sugestoes = [];
+        const nomeCurto = (n) => escaparHtml(String(n).split(" ")[0]);
+
+        // ─── 1. Alunos travados (3+ operações vermelhas) ───
+        const travados = alunos.filter(al => {
+            const vermelhas = Object.values(al.operacoes || {}).filter(c => c === "vermelho").length;
+            return vermelhas >= 3;
+        });
+        if (travados.length > 0) {
+            const lista = travados.slice(0, 3).map(a => nomeCurto(a.nome)).join(", ");
+            const extra = travados.length > 3 ? ` e mais ${travados.length - 3}` : "";
+            sugestoes.push({
+                tipo: "critica",
+                icone: "🚨",
+                titulo: `${travados.length} ${travados.length === 1 ? "aluno precisa" : "alunos precisam"} de atenção`,
+                descricao: `<strong>${lista}</strong>${extra} ${travados.length === 1 ? "tem" : "têm"} 3 ou mais operações em vermelho. Sugira treino focado.`,
+                acao: null
+            });
+        }
+
+        // ─── 2. Operações críticas (4+ alunos vermelhos) ───
+        const statsOp = {};
+        FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => { statsOp[`${a}x${b}`] = 0; }));
+        alunos.forEach(al => {
+            Object.entries(al.operacoes || {}).forEach(([k, cor]) => {
+                if (cor === "vermelho" && statsOp[k] !== undefined) statsOp[k]++;
+            });
+        });
+        const opsCriticas = Object.entries(statsOp)
+            .filter(([k, n]) => n >= 4)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+        if (opsCriticas.length > 0) {
+            const lista = opsCriticas.map(([k, n]) => `${k} (${n})`).join(" · ");
+            sugestoes.push({
+                tipo: "critica",
+                icone: "🎯",
+                titulo: `${opsCriticas.length} ${opsCriticas.length === 1 ? "operação crítica" : "operações críticas"} na turma`,
+                descricao: `Mais de 4 alunos travados em: <strong>${lista}</strong>. Vale revisar em sala.`,
+                acao: null
+            });
+        }
+
+        // ─── 3. Tabuada mais fraca ───
+        const statsTab = {};
+        HEATMAP_TABUADAS.forEach(t => { statsTab[t] = { total: 0, vermelhas: 0 }; });
+        alunos.forEach(al => {
+            HEATMAP_TABUADAS.forEach(t => {
+                for (let b = 1; b <= 10; b++) {
+                    const cor = (al.operacoes || {})[`${t}x${b}`] || "cinza";
+                    statsTab[t].total++;
+                    if (cor === "vermelho") statsTab[t].vermelhas++;
+                }
+            });
+        });
+        const tabuadaPior = Object.entries(statsTab)
+            .map(([t, s]) => ({ t: Number(t), pct: s.total ? (s.vermelhas / s.total) * 100 : 0 }))
+            .filter(x => x.pct >= 15)
+            .sort((a, b) => b.pct - a.pct)[0];
+        if (tabuadaPior) {
+            sugestoes.push({
+                tipo: "atencao",
+                icone: "📚",
+                titulo: `Tabuada do ${tabuadaPior.t} está fraca`,
+                descricao: `<strong>${tabuadaPior.pct.toFixed(0)}%</strong> das operações avaliadas dessa tabuada estão em vermelho. Sugira treino focado nela.`,
+                acao: { label: "📊 Ver no mapa", onclick: `mudarTabuadaHeatmap(${tabuadaPior.t})` }
+            });
+        }
+
+        // ─── 4. Alunos prontos para a Final ───
+        const prontos = alunos.filter(al => {
+            const ops = Object.values(al.operacoes || {});
+            if (!ops.length) return false;
+            return ops.every(c => c === "verde");
+        });
+        if (prontos.length > 0) {
+            const lista = prontos.slice(0, 3).map(a => nomeCurto(a.nome)).join(", ");
+            const extra = prontos.length > 3 ? ` e mais ${prontos.length - 3}` : "";
+            sugestoes.push({
+                tipo: "oportunidade",
+                icone: "🏆",
+                titulo: `${prontos.length} ${prontos.length === 1 ? "aluno domina" : "alunos dominam"} 100% do mapa`,
+                descricao: `<strong>${lista}</strong>${extra} ${prontos.length === 1 ? "está pronto" : "estão prontos"} para a Final. Parabenize!`,
+                acao: null
+            });
+        }
+
+        // ─── 5. Alunos em boa evolução (≥50 verdes, <100) ───
+        const emEvolucao = alunos.filter(al => {
+            const verdes = Object.values(al.operacoes || {}).filter(c => c === "verde").length;
+            return verdes >= 50 && verdes < 100;
+        });
+        if (emEvolucao.length >= 3) {
+            sugestoes.push({
+                tipo: "info",
+                icone: "🚀",
+                titulo: `${emEvolucao.length} alunos em boa evolução`,
+                descricao: `Já dominam metade do mapa. Continuem o ritmo — a Final está próxima!`,
+                acao: null
+            });
+        }
+
+        // ─── 6. Distribuição geral da turma ───
+        const stats = { verde: 0, parcial: 0, azul: 0, amarelo: 0, vermelho: 0, cinza: 0, total: 0 };
+        alunos.forEach(al => {
+            Object.values(al.operacoes || {}).forEach(cor => {
+                const chave = cor === "cinza-parcial" ? "parcial" : cor;
+                stats[chave] = (stats[chave] || 0) + 1;
+                stats.total++;
+            });
+        });
+        if (stats.total > 0) {
+            const pctVerde = Math.round((stats.verde / stats.total) * 100);
+            sugestoes.push({
+                tipo: "info",
+                icone: "📊",
+                titulo: `Turma está com ${pctVerde}% do mapa dominado`,
+                descricao: `${stats.verde} de ${stats.total} operações-avaliadas estão verdes. ${stats.vermelho} ainda em vermelho.`,
+                acao: null
+            });
+        }
+
+        // Ordena: críticas primeiro, depois atenção, oportunidade, info
+        const ordem = { critica: 0, atencao: 1, oportunidade: 2, info: 3 };
+        sugestoes.sort((a, b) => (ordem[a.tipo] || 9) - (ordem[b.tipo] || 9));
+
+        return sugestoes;
+    }
+
+    function renderizarCardSugestao(s) {
+        const acaoHtml = s.acao
+            ? `<button type="button" class="sugestao-acao" onclick="${s.acao.onclick}">${escaparHtml(s.acao.label)}</button>`
+            : "";
+        return `<div class="sugestao-card tipo-${s.tipo}">
+            <div class="sugestao-topo">
+                <span class="sugestao-icone" aria-hidden="true">${s.icone}</span>
+                <div style="flex:1;min-width:0;">
+                    <h5 class="sugestao-titulo">${escaparHtml(s.titulo)}</h5>
+                    <p class="sugestao-descricao">${s.descricao}</p>
+                </div>
+            </div>
+            ${acaoHtml}
+        </div>`;
+    }
+    // ▲▲▲ FIM [17.09]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [18] JS-HOME · Home E-Sports + Hall da Fama + Detalhes da etapa
