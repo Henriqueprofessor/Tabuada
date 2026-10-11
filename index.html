@@ -5979,11 +5979,11 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     <!-- ▼▼▼ [03.10] DESEMPENHO ───────────────────────────────── -->
     <div id="tela-desempenho" class="card hidden">
-        <h2>📊 Meu Desempenho</h2>
-        <div id="desempenho-identificacao" class="hidden">
-            <p class="subtitulo" style="text-align:left;">Você ainda não se identificou neste aparelho. Digite seu nome para ver sua trajetória.</p>
+        <h2>📊 Desempenho</h2>
+        <div id="desempenho-identificacao">
+            <p class="subtitulo" style="text-align:left;" id="desempenho-identificacao-texto">Digite o nome do aluno para ver a trajetória:</p>
             <div class="autocomplete-wrap">
-                <input type="text" id="desempenho-nome" placeholder="Seu nome completo" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="desempenho-autocomplete">
+                <input type="text" id="desempenho-nome" placeholder="Nome do aluno" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="desempenho-autocomplete">
                 <div id="desempenho-autocomplete" class="autocomplete-lista hidden" role="listbox" aria-label="Sugestões de nomes de alunos"></div>
             </div>
             <select id="desempenho-turma">
@@ -5992,7 +5992,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
                 <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
             </select>
-            <button onclick="carregarMeuDesempenho()" class="botao-verde">🔍 Ver meu desempenho</button>
+            <button onclick="carregarMeuDesempenho()" class="botao-verde">🔍 Ver desempenho</button>
         </div>
         <div id="desempenho-conteudo" class="hidden">
             <div class="desempenho-cabecalho">
@@ -6018,35 +6018,35 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <button class="desempenho-filtro-btn" data-mod="6-9" onclick="mudarModalidadeDesempenho('6-9')">Tabuadas 6-9</button>
                 <button class="desempenho-filtro-btn" data-mod="0-10" onclick="mudarModalidadeDesempenho('0-10')">Tabuadas 1-10</button>
             </div>
-            <h3 class="desempenho-secao-titulo">📈 Suas estatísticas</h3>
+            <h3 class="desempenho-secao-titulo">📈 Estatísticas</h3>
             <div id="desempenho-stats" class="desempenho-stats-grid"></div>
-            <h3 class="desempenho-secao-titulo" style="margin-top:24px;">📈 Sua evolução</h3>
+            <h3 class="desempenho-secao-titulo" style="margin-top:24px;">📈 Evolução</h3>
             <div class="desempenho-chart-wrap">
                 <div id="desempenho-chart"></div>
                 <div id="desempenho-tooltip" class="desempenho-tooltip"></div>
                 <div class="desempenho-chart-legenda">
-                    <span class="legenda-item"><span class="legenda-cor azul"></span> Sua pontuação</span>
-                    <span class="legenda-item"><span class="legenda-cor tracejada"></span> Sua média</span>
+                    <span class="legenda-item"><span class="legenda-cor azul"></span> Pontuação</span>
+                    <span class="legenda-item"><span class="legenda-cor tracejada"></span> Média</span>
                     <span class="legenda-item"><span class="legenda-cor dourada"></span> Recorde pessoal</span>
                 </div>
             </div>
-            <h3 class="desempenho-secao-titulo" style="margin-top:24px;">🏫 Você na sua turma</h3>
-            <div id="desempenho-turma-container" class="desempenho-turma-wrap"><div class="desempenho-loading">⏳ Calculando sua posição na turma…</div></div>
+            <h3 class="desempenho-secao-titulo" style="margin-top:24px;">🏫 Posição na turma</h3>
+            <div id="desempenho-turma-container" class="desempenho-turma-wrap"><div class="desempenho-loading">⏳ Calculando posição na turma…</div></div>
             <h3 class="desempenho-secao-titulo" style="margin-top:24px;">🏁 Evolução no ranking</h3>
-            <div id="desempenho-evolucao" class="desempenho-evolucao-wrap"><div class="desempenho-loading">⏳ Calculando sua trajetória…</div></div>
+            <div id="desempenho-evolucao" class="desempenho-evolucao-wrap"><div class="desempenho-loading">⏳ Calculando trajetória…</div></div>
             <h3 class="desempenho-secao-titulo" style="margin-top:24px;">📋 Histórico completo</h3>
-            <div id="desempenho-historico" class="desempenho-historico-wrap"><div class="desempenho-loading">⏳ Carregando seu histórico…</div></div>
-            <p class="desempenho-nota-rodape">💡 Estas estatísticas consideram todas as suas partidas oficiais. A modalidade "Todas" soma o desempenho em 2-5, 6-9 e 1-10.</p>
+            <div id="desempenho-historico" class="desempenho-historico-wrap"><div class="desempenho-loading">⏳ Carregando histórico…</div></div>
+            <p class="desempenho-nota-rodape">💡 Estas estatísticas consideram todas as partidas oficiais. A modalidade "Todas" soma o desempenho em 2-5, 6-9 e 1-10.</p>
         </div>
         <div id="desempenho-vazio" class="hidden">
             <div class="desempenho-empty-state">
                 <span class="desempenho-empty-icone">🎯</span>
-                <h3>Você ainda não jogou nenhuma partida</h3>
-                <p>Que tal começar agora? Suas estatísticas vão aparecer aqui conforme você joga.</p>
-                <button onclick="mostrarTela('tela-single')" class="botao-verde">🏆 Começar a jogar</button>
+                <h3>Este aluno ainda não jogou nenhuma partida</h3>
+                <p>As estatísticas aparecem aqui conforme ele joga.</p>
+                <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar ao início</button>
             </div>
         </div>
-        <button onclick="abrirBuscarAlunoComMeusDados()" class="botao-link-cruzado">🗺️ Ver meu mapa de tabuadas e conquistas →</button>
+        <button onclick="abrirBuscarAlunoComMeusDados()" class="botao-link-cruzado">🗺️ Ver mapa de tabuadas e conquistas →</button>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Voltar ao início</button>
     </div>
     <!-- ▲▲▲ FIM [03.10] -->
@@ -12855,17 +12855,34 @@ if (containerProg) {
     function abrirMeuDesempenho() {
         mostrarTela("tela-desempenho");
         comparativoTurmaCache = null;
+
+        const campo = document.getElementById("desempenho-nome");
+        const selTurma = document.getElementById("desempenho-turma");
+        const texto = document.getElementById("desempenho-identificacao-texto");
+        const conteudo = document.getElementById("desempenho-conteudo");
+        const vazio = document.getElementById("desempenho-vazio");
+
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
-        if (!nome || !turma) {
-            document.getElementById("desempenho-identificacao").classList.remove("hidden");
-            document.getElementById("desempenho-conteudo").classList.add("hidden");
-            document.getElementById("desempenho-vazio").classList.add("hidden");
-            return;
+
+        // v10.4.9 · O formulário de busca SEMPRE fica visível.
+        // Se o aluno já está identificado, pré-preenche os campos e
+        // carrega automaticamente os próprios dados. Ele pode trocar
+        // o nome a qualquer momento para buscar outro aluno.
+        if (nome && turma) {
+            if (campo) campo.value = nome;
+            if (selTurma) selTurma.value = turma;
+            if (texto) texto.textContent = "Ver desempenho de:";
+            carregarMeuDesempenho(nome, turma);
+        } else {
+            if (campo) campo.value = "";
+            if (selTurma) selTurma.value = "";
+            if (texto) texto.textContent = "Você ainda não se identificou neste aparelho. Digite o nome do aluno para ver a trajetória:";
+            conteudo?.classList.add("hidden");
+            vazio?.classList.add("hidden");
         }
-        document.getElementById("desempenho-identificacao").classList.add("hidden");
-        carregarMeuDesempenho(nome, turma);
     }
+
     async function carregarMeuDesempenho(nomeForcado, turmaForcada) {
         let nome = nomeForcado;
         let turma = turmaForcada;
@@ -12877,7 +12894,6 @@ if (containerProg) {
             if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
             document.getElementById("desempenho-nome").value = nome;
         }
-        document.getElementById("desempenho-identificacao").classList.add("hidden");
         document.getElementById("desempenho-vazio").classList.add("hidden");
         document.getElementById("desempenho-conteudo").classList.remove("hidden");
         document.getElementById("desempenho-nome-curr").textContent = nome;
@@ -12907,6 +12923,7 @@ if (containerProg) {
         document.querySelectorAll(".desempenho-filtro-btn").forEach(b => { b.classList.toggle("ativa", b.dataset.mod === "todas"); });
         renderizarDesempenho();
     }
+
     function mudarModalidadeDesempenho(mod) {
         desempenhoModalidadeAtual = mod;
         document.querySelectorAll(".desempenho-filtro-btn").forEach(b => { b.classList.toggle("ativa", b.dataset.mod === mod); });
@@ -12916,6 +12933,7 @@ if (containerProg) {
         const turma = obterTurmaSalvaAluno();
         if (nome && turma) renderizarCertificadosDesempenho(nome, turma, mod);
     }
+
     function renderizarDesempenho() {
         renderizarMeuDestaque();
         renderizarEstatisticasDesempenho();
