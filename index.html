@@ -160,7 +160,15 @@
 </script>
 <!-- ▲▲▲ FIM [01.03] -->
 
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js"></script>
+    <!-- ▼ [P35] Preconnect: resolve DNS + TLS dos CDNs antes de precisar baixar -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://copa-tabuada-ceib-default-rtdb.firebaseio.com">
+
+    <!-- ▼ [P35] Scripts com defer: baixam em paralelo, sem bloquear a renderização -->
+    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
     <style>
 
         /* ▼▼▼ [02.01] Reset e base ──────────────────────────── */
@@ -5086,6 +5094,48 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .extensao-etapa-msg { transition: none !important; animation: none !important; }
         }
         /* ▲▲▲ FIM [02.53] */
+        /* ▼▼▼ [02.54] Otimização de performance — CLS do Hero (P35) ─── INÍCIO ─── */
+        /* Fix do Cumulative Layout Shift (CLS) medido no Lighthouse.
+           O hero da Home é preenchido por JS DEPOIS do primeiro paint
+           (nome do aluno, subtítulo dinâmico, contadores). Quando o
+           conteúdo muda de tamanho, empurra o layout abaixo → CLS alto.
+           Reservar espaço com min-height evita o salto visual. */
+
+        .hero-esports {
+            min-height: 260px;
+            contain: layout paint;
+        }
+
+        .hero-esports-stats {
+            min-height: 76px;
+        }
+
+        .hero-stat-valor {
+            min-width: 44px;
+            display: inline-block;
+        }
+
+        /* Reserva espaço do bloco de alerta foco e do banner modo teste,
+           que aparecem/desaparecem dinamicamente logo acima do hero */
+        #modo-teste-banner-container:empty { display: none; }
+        #alerta-foco-absoluto-container:empty { display: none; }
+
+        /* Reserva altura dos containers de CTA e ritmo (preenchidos por JS) */
+        #acao-principal-container { min-height: 200px; }
+        #home-ritmo-container { min-height: 150px; }
+        #mapa-home-container { min-height: 180px; }
+        #meta-pessoal-container { min-height: 80px; }
+
+        @media (max-width: 780px) {
+            .hero-esports { min-height: 320px; }
+            .hero-esports-stats { min-height: 240px; }
+            #acao-principal-container { min-height: 320px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero-esports { contain: none; }
+        }
+        /* ▲▲▲ FIM [02.54] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -6062,10 +6112,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.15] -->
-    <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-    <script>
+    <!-- ▼▼▼ [04.14] MAIN SCRIPT ───────────── -->
+    <script defer>
     // ═══════════════════════════════════════════════════════════════════════
     // [05] JS-CFG · Constantes e configuração global
     // ═══════════════════════════════════════════════════════════════════════
