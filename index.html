@@ -3198,6 +3198,161 @@
             .alerta-foco-absoluto, .alerta-foco-icone { animation: none !important; }
         }
         /* ▲▲▲ FIM [02.43] */
+        /* ▼▼▼ [02.44] Hall da Fama — Card Mapa Verde + Modal Ranking ─ INÍCIO ─── */
+
+        /* ─── Seções internas do card "Maior Mapa Verde" ─── */
+        .hall-secao-titulo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--neon-gold);
+            margin: 12px 0 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed rgba(251, 191, 36, 0.28);
+            line-height: 1.2;
+        }
+        .hall-secao-titulo:first-of-type { margin-top: 4px; }
+        .hall-secao-titulo .contagem {
+            color: var(--text-secondary);
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: none;
+            font-size: 11px;
+            margin-left: 2px;
+        }
+        .hall-secao-titulo.em-jornada {
+            color: var(--neon-cyan);
+            border-bottom-color: rgba(34, 211, 238, 0.28);
+        }
+
+        /* ─── Item mestre (100%) — destaque dourado ─── */
+        .hall-item.hall-item-mestre {
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.16), rgba(251, 191, 36, 0.03));
+            border-color: rgba(251, 191, 36, 0.45);
+        }
+        .hall-item.hall-item-mestre .hall-item-pos {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: #422006;
+            font-size: 14px;
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+        }
+        .hall-item.hall-item-mestre .hall-item-valor {
+            color: #fcd34d;
+            font-weight: 900;
+        }
+
+        /* ─── Botão "Ver ranking completo" ─── */
+        .hall-ver-ranking-btn {
+            width: 100%;
+            margin: 12px 0 0;
+            padding: 10px 14px;
+            background: transparent;
+            color: var(--neon-gold);
+            border: 1px dashed rgba(251, 191, 36, 0.5);
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+            box-shadow: none;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+        }
+        .hall-ver-ranking-btn:hover:not(:disabled) {
+            background: rgba(251, 191, 36, 0.10);
+            border-color: var(--neon-gold);
+            border-style: solid;
+            color: #fde68a;
+        }
+
+        /* ─── Modal Ranking Completo ─── */
+        .hall-mestres-modal-card {
+            max-width: 560px;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%);
+            border: 1px solid var(--border-neon);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(34, 211, 238, 0.05);
+        }
+        .hall-mestres-modal-card .modal-header {
+            border-bottom-color: var(--border-neon);
+        }
+        .hall-mestres-modal-card .modal-header h3 {
+            color: var(--text-primary);
+            font-size: 16px;
+            letter-spacing: 0.3px;
+        }
+        .hall-mestres-modal-card .modal-close {
+            color: var(--text-secondary);
+        }
+        .hall-mestres-modal-card .modal-close:hover {
+            background: rgba(34, 211, 238, 0.12);
+            color: var(--neon-cyan);
+        }
+
+        .hall-mestres-resumo {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: left;
+            line-height: 1.55;
+            padding: 10px 12px;
+            background: rgba(34, 211, 238, 0.08);
+            border-left: 3px solid var(--neon-cyan);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .hall-mestres-resumo strong { color: var(--neon-gold); font-weight: 900; }
+
+        .hall-mestres-lista {
+            list-style: none;
+            padding: 0 4px 0 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .hall-mestres-lista .hall-item { font-size: 13px; }
+        .hall-mestres-lista::-webkit-scrollbar { width: 6px; }
+        .hall-mestres-lista::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.35); border-radius: 3px; }
+
+        .hall-mestres-acoes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .hall-mestres-acoes button { margin: 0; }
+        .hall-mestres-acoes .btn-csv {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #fff;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+        .hall-mestres-acoes .btn-csv:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+        }
+
+        @media (max-width: 520px) {
+            .hall-mestres-modal-card { padding: 14px; }
+            .hall-mestres-lista { max-height: 55vh; }
+            .hall-mestres-acoes { grid-template-columns: 1fr; }
+            .hall-secao-titulo { font-size: 10.5px; }
+            .hall-secao-titulo .contagem { font-size: 10.5px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .hall-ver-ranking-btn { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.44] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -4118,7 +4273,23 @@
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.14.bis] -->
-
+    <!-- ▼▼▼ [04.15] MODAL HALL DA FAMA — RANKING DO MAPA ─────── -->
+    <div id="modal-hall-mestres" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="hall-mestres-titulo" onclick="fecharModalHallMestres(event)">
+        <div class="modal-card hall-mestres-modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="hall-mestres-titulo">🏆 Ranking Completo do Mapa</h3>
+                <button class="modal-close" onclick="fecharModalHallMestres()" aria-label="Fechar">✕</button>
+            </div>
+            <div id="hall-mestres-conteudo">
+                <div class="desempenho-loading">⏳ Carregando ranking…</div>
+            </div>
+            <div class="hall-mestres-acoes">
+                <button class="btn-csv" onclick="exportarCSVHallMestres()">📎 Exportar CSV</button>
+                <button class="botao-secundario" onclick="fecharModalHallMestres()">🔙 Fechar</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.15] -->
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -11251,11 +11422,17 @@ if (containerProg) {
                 console.warn("Falha ao calcular Turma de Elite:", e);
             }
 
+            // ▼▼▼ [18.02 · ajuste P32] Calcula mestres/em-jornada ANTES de cachear
+            const mestresEmJornada = await calcularMestresMapa(destaques.mapa);
+            // ▲▲▲
+
             hallFamaCache = {
                 medalhas:     destaques.medalhas.slice(0, 5),
                 estrelas:     destaques.estrelas.slice(0, 5),
                 album:        destaques.album.slice(0, 5),
-                mapa:         destaques.mapa.slice(0, 5),
+                mapa:         destaques.mapa.slice(0, 5), // mantido por compat; não mais usado no card
+                mestres:      mestresEmJornada.mestres,    // ▼ P32
+                emJornada:    mestresEmJornada.emJornada,  // ▼ P32
                 velocidade:   destaques.velocidade,
                 acertos:      destaques.acertos,
                 maratonista:  destaques.maratonista,
@@ -11328,7 +11505,10 @@ if (containerProg) {
         html += buildCard("Mais Medalhas", "Quem colecionou o maior número de medalhas no Álbum.", "🏅", dados.medalhas, "medalhas");
         html += buildCard("Mais Estrelas", "Quem acumulou mais estrelas — as medalhas raras valem mais.", "⭐", dados.estrelas, "estrelas");
         html += buildCard("Álbum de Elite", "Raridade das medalhas + bônus por seções completas. Lendárias valem 8, Épicas 5, Raras 3.", "💎", dados.album, "album");
-        html += buildCard("Maior Mapa Verde", "Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).", "🗺️", dados.mapa, "mapa");
+
+        // ▼▼▼ [18.02 · ajuste P32] Card 4 usa a nova função com seções internas
+        html += renderizarCardMaiorMapaVerde(dados);
+        // ▲▲▲
 
         html += buildCard("Mestre da Velocidade", "Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas abaixo de 0,8s.", "🏆", dados.velocidade, "velocidade");
         html += buildCard("Total de Acertos", "Soma de todos os acertos acumulados. Jogar muito é recompensado!", "✅", dados.acertos, "acertos");
@@ -11518,6 +11698,266 @@ if (containerProg) {
         disparar();
     }
     // ▲▲▲ FIM [18.04]
+    // ▼▼▼ [18.05] Hall da Fama — Card "Maior Mapa Verde" reformulado
+    //         · Detecta mestres (100% do mapa completo 1-10)
+    //         · Separa em "Mestres" (ordena por data de conquista, mais antigo no topo)
+    //           e "Em Jornada" (mantém ordem de dominadas decrescente)
+    //         · Renderiza card com limite de 5 linhas + botão opcional
+
+    const HALL_MAPA_LIMITE_CARD = 5;
+
+    // Retorna { mestres:[...], emJornada:[...] }
+    // Recebe lista no formato [{ nome, turma, dominadas, pctMapa }, ...] já ordenada
+    // por dominadas decrescente (vinda de destaques.mapa).
+    async function calcularMestresMapa(listaMapa) {
+        if (!Array.isArray(listaMapa) || listaMapa.length === 0) {
+            return { mestres: [], emJornada: [] };
+        }
+
+        // 1 query só: lê todos os certificados.
+        let todosCerts = {};
+        try {
+            const snap = await database.ref(CAMINHO_CERTIFICADOS).once("value");
+            todosCerts = snap.val() || {};
+        } catch(e) {
+            console.warn("[Hall/Mapa] Falha ao ler certificados:", e);
+        }
+
+        const mestres = [];
+        const emJornada = [];
+
+        for (const item of listaMapa) {
+            const chave = chaveAlbum(item.nome, item.turma);
+            const cert = todosCerts[chave] && todosCerts[chave]["0-10"] && todosCerts[chave]["0-10"].lendaria;
+            if (cert && cert.conquistadoEm) {
+                mestres.push({ ...item, conquistadoEm: cert.conquistadoEm });
+            } else {
+                emJornada.push(item);
+            }
+        }
+
+        // Mestres: ordem cronológica (mais antigo primeiro). Data NÃO é exibida.
+        mestres.sort((a, b) => new Date(a.conquistadoEm) - new Date(b.conquistadoEm));
+
+        // Em jornada: preserva ordem de dominadas decrescente (veio da listaMapa).
+        return { mestres, emJornada };
+    }
+
+    // Renderiza o card "Maior Mapa Verde" com as duas seções internas.
+    // `dados` é o objeto `hallFamaCache` que possui .mestres e .emJornada.
+    function renderizarCardMaiorMapaVerde(dados) {
+        const nomeAluno = obterNomeSalvoAluno();
+        const turmaAluno = obterTurmaSalvaAluno();
+        const LIMITE = HALL_MAPA_LIMITE_CARD;
+        const mestres = (dados && dados.mestres) || [];
+        const emJornada = (dados && dados.emJornada) || [];
+        const totalMestres = mestres.length;
+        const totalGeral = totalMestres + emJornada.length;
+
+        // Estado vazio
+        if (totalGeral === 0) {
+            return `<div class="hall-card">
+                <div class="hall-card-titulo"><span class="icone">🗺️</span> Maior Mapa Verde</div>
+                <div class="hall-card-sub">Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).</div>
+                <div class="hall-vazio">Nenhum aluno com operações dominadas ainda.<br>Seja o primeiro a colorir o mapa!</div>
+            </div>`;
+        }
+
+        // Decide o que exibir (mestres têm prioridade nas 5 linhas)
+        const mestresVisiveis = mestres.slice(0, LIMITE);
+        const espacoRestante = Math.max(0, LIMITE - mestresVisiveis.length);
+        const jornadaVisiveis = emJornada.slice(0, espacoRestante);
+
+        const ehVoceStyle = 'border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);';
+
+        let html = `<div class="hall-card">
+            <div class="hall-card-titulo"><span class="icone">🗺️</span> Maior Mapa Verde</div>
+            <div class="hall-card-sub">Quem dominou mais operações no mapa de tabuadas (≥90% de acerto).</div>`;
+
+        // ─── Seção MESTRES ───
+        if (mestresVisiveis.length > 0) {
+            const plural = totalMestres === 1 ? "aluno fechou 100%" : "alunos fecharam 100%";
+            html += `<div class="hall-secao-titulo">🏆 Mestres <span class="contagem">· ${totalMestres} ${plural}</span></div>`;
+            html += `<ul class="hall-lista">`;
+            mestresVisiveis.forEach((m) => {
+                const ehVoce = nomeAluno && turmaAluno
+                    && normalizarNome(m.nome) === normalizarNome(nomeAluno)
+                    && m.turma === turmaAluno;
+                html += `<li class="hall-item hall-item-mestre" ${ehVoce ? `style="${ehVoceStyle}"` : ""}>
+                    <span class="hall-item-pos">🏆</span>
+                    <span class="hall-item-nome">${escaparHtml(m.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>Turma ${escaparHtml(m.turma)}</small></span>
+                    <span class="hall-item-valor">100%</span>
+                </li>`;
+            });
+            html += `</ul>`;
+        }
+
+        // ─── Seção EM JORNADA ───
+        if (jornadaVisiveis.length > 0) {
+            html += `<div class="hall-secao-titulo em-jornada">📊 Em Jornada</div>`;
+            html += `<ul class="hall-lista">`;
+            jornadaVisiveis.forEach((item, i) => {
+                const pos = totalMestres + i + 1; // ordinal contínuo
+                const ehVoce = nomeAluno && turmaAluno
+                    && normalizarNome(item.nome) === normalizarNome(nomeAluno)
+                    && item.turma === turmaAluno;
+                const pct = Number.isFinite(item.pctMapa)
+                    ? item.pctMapa
+                    : Math.round(((item.dominadas || 0) / TOTAL_OPERACOES_MAPA) * 100);
+                html += `<li class="hall-item" ${ehVoce ? `style="${ehVoceStyle}"` : ""}>
+                    <span class="hall-item-pos">${pos}º</span>
+                    <span class="hall-item-nome">${escaparHtml(item.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>Turma ${escaparHtml(item.turma)}</small></span>
+                    <span class="hall-item-valor">${pct}% (${item.dominadas || 0}/${TOTAL_OPERACOES_MAPA})</span>
+                </li>`;
+            });
+            html += `</ul>`;
+        }
+
+        // ─── Botão "Ver ranking completo" ───
+        if (totalGeral > LIMITE) {
+            html += `<button class="hall-ver-ranking-btn" onclick="abrirModalHallMestres()">🏆 Ver ranking completo (${totalGeral}) →</button>`;
+        }
+
+        html += `</div>`;
+        return html;
+    }
+    // ▲▲▲ FIM [18.05]
+    // ▼▼▼ [18.06] Hall da Fama — Modal Ranking Completo + CSV
+
+    async function abrirModalHallMestres() {
+        const modal = document.getElementById("modal-hall-mestres");
+        if (!modal) return;
+        modal.classList.remove("hidden");
+        await renderizarModalHallMestres();
+        setTimeout(() => { document.querySelector("#modal-hall-mestres .modal-close")?.focus(); }, 80);
+    }
+
+    function fecharModalHallMestres(e) {
+        if (e && e.target && e.target.closest(".hall-mestres-modal-card")) return;
+        document.getElementById("modal-hall-mestres")?.classList.add("hidden");
+    }
+
+    async function renderizarModalHallMestres() {
+        const container = document.getElementById("hall-mestres-conteudo");
+        if (!container) return;
+
+        // Se o cache não tiver os campos novos, força recálculo.
+        if (!hallFamaCache || !Array.isArray(hallFamaCache.mestres) || !Array.isArray(hallFamaCache.emJornada)) {
+            container.innerHTML = `<div class="desempenho-loading">⏳ Carregando ranking…</div>`;
+            hallFamaCache = null;
+            hallFamaUltimaAtualizacao = 0;
+            try {
+                await renderizarHallDaFama(); // popula cache + repinta tela de fundo
+            } catch(e) {
+                console.warn("[Hall/Modal] Falha ao recalcular:", e);
+            }
+        }
+
+        const dados = hallFamaCache;
+        if (!dados || !Array.isArray(dados.mestres) || !Array.isArray(dados.emJornada)) {
+            container.innerHTML = `<div class="hall-vazio">Não foi possível carregar o ranking agora.<br>Tente novamente em instantes.</div>`;
+            return;
+        }
+
+        const nomeAluno = obterNomeSalvoAluno();
+        const turmaAluno = obterTurmaSalvaAluno();
+        const mestres = dados.mestres;
+        const emJornada = dados.emJornada;
+        const totalMestres = mestres.length;
+        const totalGeral = totalMestres + emJornada.length;
+
+        if (totalGeral === 0) {
+            container.innerHTML = `<div class="hall-vazio">Nenhum aluno com operações dominadas ainda.</div>`;
+            return;
+        }
+
+        const rotuloMestres = totalMestres === 1
+            ? "aluno já dominou"
+            : "alunos já dominaram";
+        const ehVoceStyle = 'border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);';
+
+        let html = `<div class="hall-mestres-resumo">
+            <strong>${totalMestres}</strong> ${rotuloMestres} <strong>100%</strong> do mapa (modalidade completa · 1 ao 10).<br>
+            Total no ranking: <strong>${totalGeral}</strong> ${totalGeral === 1 ? "aluno" : "alunos"}.
+        </div>`;
+
+        html += `<ul class="hall-mestres-lista">`;
+
+        mestres.forEach((m) => {
+            const ehVoce = nomeAluno && turmaAluno
+                && normalizarNome(m.nome) === normalizarNome(nomeAluno)
+                && m.turma === turmaAluno;
+            html += `<li class="hall-item hall-item-mestre" ${ehVoce ? `style="${ehVoceStyle}"` : ""}>
+                <span class="hall-item-pos">🏆</span>
+                <span class="hall-item-nome">${escaparHtml(m.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>Turma ${escaparHtml(m.turma)}</small></span>
+                <span class="hall-item-valor">100%</span>
+            </li>`;
+        });
+
+        emJornada.forEach((item, i) => {
+            const pos = totalMestres + i + 1;
+            const ehVoce = nomeAluno && turmaAluno
+                && normalizarNome(item.nome) === normalizarNome(nomeAluno)
+                && item.turma === turmaAluno;
+            const pct = Number.isFinite(item.pctMapa)
+                ? item.pctMapa
+                : Math.round(((item.dominadas || 0) / TOTAL_OPERACOES_MAPA) * 100);
+            html += `<li class="hall-item" ${ehVoce ? `style="${ehVoceStyle}"` : ""}>
+                <span class="hall-item-pos">${pos}º</span>
+                <span class="hall-item-nome">${escaparHtml(item.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>Turma ${escaparHtml(item.turma)}</small></span>
+                <span class="hall-item-valor">${pct}% (${item.dominadas || 0}/${TOTAL_OPERACOES_MAPA})</span>
+            </li>`;
+        });
+
+        html += `</ul>`;
+        container.innerHTML = html;
+    }
+
+    function exportarCSVHallMestres() {
+        const dados = hallFamaCache;
+        if (!dados || !Array.isArray(dados.mestres) || !Array.isArray(dados.emJornada)) {
+            notificar("Ranking ainda não carregado. Abra o modal primeiro.", "aviso");
+            return;
+        }
+        const mestres = dados.mestres;
+        const emJornada = dados.emJornada;
+
+        // Escapa aspas duplas conforme RFC 4180
+        const esc = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
+
+        let csv = "Posicao,Nome,Turma,Percentual\n";
+        mestres.forEach((m) => {
+            csv += `Mestre,${esc(m.nome)},${esc(m.turma)},100%\n`;
+        });
+        const totalMestres = mestres.length;
+        emJornada.forEach((item, i) => {
+            const pos = totalMestres + i + 1;
+            const pct = Number.isFinite(item.pctMapa)
+                ? item.pctMapa
+                : Math.round(((item.dominadas || 0) / TOTAL_OPERACOES_MAPA) * 100);
+            csv += `${pos},${esc(item.nome)},${esc(item.turma)},${pct}%\n`;
+        });
+
+        // BOM UTF-8 para Excel abrir com acentos corretos
+        const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `hall_mapa_verde_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        notificar("CSV exportado!", "sucesso");
+    }
+
+    // ESC fecha o modal (listener auto-contido, não conflita com [19.01])
+    document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        const m = document.getElementById("modal-hall-mestres");
+        if (m && !m.classList.contains("hidden")) fecharModalHallMestres();
+    });
+    // ▲▲▲ FIM [18.06]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
