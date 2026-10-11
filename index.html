@@ -4556,7 +4556,391 @@
             color: var(--text-secondary) !important;
         }
         /* ▲▲▲ FIM [02.51] */
+/* ▼▼▼ [02.52] Auditoria de tema escuro — Consolidado (P33) ─── INÍCIO ─── */
+/* O app roda SEMPRE no tema E-Sports Dark (forçado via !important no body
+   em [02.27]). Este bloco traz para o fluxo PRINCIPAL (sem @media) todas as
+   regras que antes só rodavam sob prefers-color-scheme: dark em [02.21], e
+   cobre componentes que escaparam das correções pontuais ([02.35], [02.39],
+   [02.51]). Aplicado uma única vez, resolve a dívida de uma vez por todas. */
 
+/* ─── [A] INPUTS, SELECTS E TEXTAREAS (global) ─── */
+input, select, textarea {
+    background: rgba(10, 22, 40, 0.55) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(148, 163, 184, 0.28) !important;
+}
+input::placeholder, textarea::placeholder { color: var(--text-muted) !important; }
+input:focus, select:focus, textarea:focus {
+    border-color: var(--neon-cyan) !important;
+    outline-color: rgba(34, 211, 238, 0.35) !important;
+}
+
+/* ─── [B] TIPOGRAFIA AUXILIAR ─── */
+.subtitulo { color: var(--text-secondary) !important; }
+.dica-nome { color: var(--text-muted) !important; }
+.info-sincronizacao { color: var(--text-muted) !important; }
+
+/* ─── [C] AVISOS E NOTAS ─── */
+.aviso-vinculo {
+    background: linear-gradient(135deg, rgba(56,189,248,.10) 0%, rgba(14,165,233,.05) 100%) !important;
+    border-color: rgba(56,189,248,.35) !important;
+    border-left-color: var(--neon-cyan) !important;
+    color: #a8c8e8 !important;
+}
+.aviso-vinculo strong { color: #a8c8e8 !important; }
+.aviso-nome {
+    background: linear-gradient(135deg, rgba(251,191,36,.12) 0%, rgba(217,119,6,.06) 100%) !important;
+    border-color: rgba(251,191,36,.35) !important;
+    border-left-color: var(--neon-gold) !important;
+    color: #fde68a !important;
+}
+.aviso-nome strong { color: #ffd166 !important; }
+.aviso-nome .exemplo {
+    background: rgba(10,22,40,.55) !important;
+    border-color: rgba(251,191,36,.35) !important;
+    color: #ffd166 !important;
+}
+.nota-provisoria {
+    background: linear-gradient(135deg, rgba(251,191,36,.12) 0%, rgba(217,119,6,.06) 100%) !important;
+    color: #fde68a !important;
+    border-color: rgba(251,191,36,.35) !important;
+}
+.nota-espontanea {
+    background: linear-gradient(135deg, rgba(56,189,248,.12) 0%, rgba(14,165,233,.06) 100%) !important;
+    border-color: rgba(56,189,248,.35) !important;
+    border-left-color: var(--neon-cyan) !important;
+    color: #a8c8e8 !important;
+}
+.nota-espontanea strong { color: #93c5fd !important; }
+.nota-calculadora {
+    background: linear-gradient(135deg, rgba(34,197,94,.14) 0%, rgba(22,163,74,.06) 100%) !important;
+    border-color: rgba(34,197,94,.4) !important;
+    color: #bbf7d0 !important;
+}
+.nota-calculadora strong { color: #86efac !important; }
+.observacao-ranking {
+    background: linear-gradient(135deg, rgba(251,191,36,.12) 0%, rgba(217,119,6,.06) 100%) !important;
+    color: #fde68a !important;
+    border-left-color: var(--neon-gold) !important;
+}
+.observacao-desempate {
+    background: linear-gradient(135deg, rgba(56,189,248,.10) 0%, rgba(14,165,233,.05) 100%) !important;
+    color: #a8c8e8 !important;
+    border-left-color: var(--neon-cyan) !important;
+}
+.nota-rankings {
+    background: linear-gradient(135deg, rgba(56,189,248,.10) 0%, rgba(14,165,233,.05) 100%) !important;
+    color: #a8c8e8 !important;
+    border-left-color: var(--neon-cyan) !important;
+}
+.nota-rankings strong { color: #93c5fd !important; }
+.hint-turma-aluno {
+    background: linear-gradient(135deg, rgba(251,191,36,.12) 0%, rgba(217,119,6,.06) 100%) !important;
+    color: #fde68a !important;
+    border-color: rgba(251,191,36,.35) !important;
+    border-left-color: var(--neon-gold) !important;
+}
+.hint-turma-aluno strong { color: #ffd166 !important; }
+.banner-posicao-global {
+    background: linear-gradient(135deg, rgba(56,189,248,.10) 0%, rgba(30,64,175,.06) 100%) !important;
+    border-color: rgba(56,189,248,.35) !important;
+    border-left-color: var(--neon-cyan) !important;
+    color: #a8c8e8 !important;
+}
+.banner-posicao-global strong { color: #a8c8e8 !important; }
+.banner-posicao-global .destaque-posicao { color: var(--neon-cyan) !important; }
+.banner-promocao {
+    background: linear-gradient(135deg, rgba(34,197,94,.18), rgba(22,163,74,.08)) !important;
+    border-color: #22c55e !important;
+    color: #bbf7d0 !important;
+}
+.banner-promocao .ops-destaque {
+    background: #1e293b !important;
+    color: #86efac !important;
+    border-color: #22c55e !important;
+}
+
+/* ─── [D] TABELAS GENÉRICAS ─── */
+table { color: var(--text-primary) !important; }
+table th { background: rgba(34, 211, 238, 0.10) !important; color: var(--neon-cyan) !important; }
+table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
+
+/* ─── [E] TOASTS, SKELETONS E JOGO ─── */
+.toast {
+    background: #1e293b !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+}
+.skeleton-line {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%) !important;
+    background-size: 200% 100% !important;
+}
+#barra-tempo { background: #1e293b !important; }
+.barra-progresso-perguntas .bloco-pergunta { background: #1e293b !important; }
+.rodape-jogo {
+    border-top-color: rgba(148, 163, 184, 0.15) !important;
+    color: var(--text-secondary) !important;
+}
+.jogo-titulo-turma { color: var(--text-secondary) !important; }
+.pergunta-info-destaque { color: var(--text-secondary) !important; }
+
+/* ─── [F] RANKING — blocos e botões especiais ─── */
+.toggle-rankings-especiais {
+    color: var(--text-secondary) !important;
+    border-color: rgba(148, 163, 184, 0.28) !important;
+}
+.toggle-rankings-especiais:hover {
+    background: rgba(34,211,238,.06) !important;
+    border-color: rgba(34,211,238,.4) !important;
+}
+.rankings-especiais { background: #1e293b !important; }
+.rankings-especiais .aba {
+    background: #0f2340 !important;
+    border-color: #334155 !important;
+    color: var(--text-secondary) !important;
+}
+.rankings-especiais .aba:hover { background: #334155 !important; color: var(--text-primary) !important; }
+.ranking-vazio { color: var(--text-muted) !important; }
+
+/* ─── [G] CONQUISTAS + RESULTADO ─── */
+.conquista-card { background: #1e293b !important; color: var(--text-primary) !important; }
+.conquista-card.desbloqueada { background: linear-gradient(135deg, #fbbf24, #d97706) !important; color: #422006 !important; }
+.mini-ranking { background: rgba(15, 23, 42, 0.92) !important; color: var(--text-primary) !important; }
+.mini-ranking-item { color: var(--text-primary) !important; }
+.mensagem-corte {
+    background: rgba(255,255,255,0.08) !important;
+    color: inherit !important;
+    border-color: rgba(255,255,255,0.15) !important;
+}
+
+/* ─── [H] DESEMPENHO ─── */
+.desempenho-cabecalho { background: #1e293b !important; border-color: #334155 !important; }
+.desempenho-aluno-nome { color: var(--text-primary) !important; }
+.desempenho-aluno-turma { color: var(--text-secondary) !important; }
+.desempenho-secao-titulo { color: var(--text-primary) !important; }
+.desempenho-filtro-btn { background: #1e293b !important; color: var(--text-secondary) !important; border-color: #334155 !important; }
+.desempenho-filtro-btn:hover:not(.ativa) { background: #334155 !important; color: var(--text-primary) !important; }
+.desempenho-filtro-btn.ativa { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; border-color: var(--neon-cyan) !important; color: #fff !important; }
+.desempenho-card { background: #1e293b !important; border-color: #334155 !important; }
+.desempenho-card:hover { border-color: var(--neon-cyan) !important; box-shadow: 0 6px 18px rgba(0,0,0,.4) !important; }
+.desempenho-card.destaque { background: linear-gradient(135deg, rgba(251,191,36,.18), rgba(217,119,6,.10)) !important; border-color: var(--neon-gold) !important; }
+.desempenho-card.destaque .desempenho-valor { color: var(--neon-gold) !important; }
+.desempenho-valor { color: var(--neon-cyan) !important; }
+.desempenho-rotulo { color: var(--text-secondary) !important; }
+.desempenho-nota-rodape { background: #1e293b !important; border-color: #334155 !important; color: var(--text-secondary) !important; }
+.desempenho-loading, .desempenho-empty-msg { color: var(--text-secondary) !important; }
+.desempenho-empty-msg { background: #1e293b !important; border-color: #334155 !important; }
+.desempenho-empty-state h3 { color: var(--text-primary) !important; }
+.desempenho-empty-state p { color: var(--text-secondary) !important; }
+.desempenho-chart-wrap { background: #132a47 !important; border-color: var(--border-neon) !important; }
+.desempenho-turma-wrap { background: #132a47 !important; border-color: var(--border-neon) !important; }
+.desempenho-evolucao-wrap { background: #132a47 !important; border-color: var(--border-neon) !important; }
+.desempenho-historico-wrap { background: #132a47 !important; border-color: var(--border-neon) !important; }
+.desempenho-turma-cabecalho { border-color: #334155 !important; color: var(--text-secondary) !important; }
+.desempenho-turma-cabecalho-txt strong { color: var(--text-primary) !important; }
+.desempenho-turma-metrica { border-color: #334155 !important; }
+.desempenho-turma-metrica-label { color: var(--text-primary) !important; }
+.desempenho-turma-metrica-valor { background: rgba(34,211,238,.15) !important; color: var(--neon-cyan) !important; }
+.desempenho-turma-barra { background: #334155 !important; }
+.desempenho-turma-metrica-sub { color: var(--text-secondary) !important; }
+.desempenho-turma-metrica-sub strong { color: var(--text-primary) !important; }
+.desempenho-evolucao-cabecalho { border-color: #334155 !important; color: var(--text-secondary) !important; }
+.evolucao-momento { color: var(--text-primary) !important; }
+.evolucao-posicao { color: var(--neon-cyan) !important; }
+.evolucao-posicao small { color: var(--text-secondary) !important; }
+.evolucao-linha.atual { background: linear-gradient(90deg, rgba(34,211,238,.12) 0%, rgba(34,211,238,.02) 100%) !important; box-shadow: 0 0 0 1px var(--border-neon) !important; }
+.evolucao-badge.subiu { background: rgba(22,163,74,.22) !important; color: #86efac !important; }
+.evolucao-badge.caiu  { background: rgba(220,38,38,.22) !important; color: #fca5a5 !important; }
+.evolucao-badge.neutro { background: #1e293b !important; color: var(--text-secondary) !important; }
+.desempenho-evolucao-fechamento {
+    background: linear-gradient(135deg, rgba(34,197,94,.18), rgba(22,163,74,.08)) !important;
+    border-left-color: #22c55e !important;
+    color: #bbf7d0 !important;
+}
+.desempenho-evolucao-fechamento strong { color: #86efac !important; }
+.desempenho-historico-cabecalho { border-color: #334155 !important; color: var(--text-secondary) !important; }
+.desempenho-historico-cabecalho-txt strong { color: var(--text-primary) !important; }
+.desempenho-historico-contagem { background: rgba(34,211,238,.15) !important; color: var(--neon-cyan) !important; }
+.desempenho-historico-tabela thead th { background: #1e293b !important; color: var(--text-secondary) !important; border-bottom-color: #334155 !important; }
+.desempenho-historico-tabela tbody td { border-bottom-color: #334155 !important; color: var(--text-secondary) !important; }
+.desempenho-historico-tabela tbody tr:hover { background: #1e293b !important; }
+.desempenho-historico-tabela tbody tr.linha-recorde { background: linear-gradient(90deg, rgba(251,191,36,.12) 0%, rgba(251,191,36,.02) 100%) !important; }
+.col-data { color: var(--text-primary) !important; }
+.col-data .hora { color: var(--text-muted) !important; }
+.col-modalidade { background: rgba(34,211,238,.15) !important; color: var(--neon-cyan) !important; }
+.col-pontos { color: var(--neon-cyan) !important; }
+.col-acertos { color: var(--text-secondary) !important; }
+.col-tempo { color: var(--text-secondary) !important; }
+.col-sequencia { color: var(--text-secondary) !important; }
+.desempenho-historico-nota { color: var(--text-muted) !important; }
+.desempenho-skeleton-linha, .desempenho-skeleton-card, .desempenho-historico-skeleton .linha-sk {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%) !important;
+    background-size: 200% 100% !important;
+}
+.desempenho-destaque-wrap { background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%) !important; border-color: var(--border-neon) !important; }
+.desempenho-destaque-titulo { color: var(--neon-cyan) !important; }
+.desempenho-destaque-card { background: #1e293b !important; border-color: #334155 !important; }
+.desempenho-destaque-valor { color: var(--text-primary) !important; }
+.desempenho-destaque-rotulo { color: var(--text-muted) !important; }
+.desempenho-destaque-frase { color: var(--text-secondary) !important; }
+.desempenho-destaque-frase strong { color: var(--text-primary) !important; }
+.desempenho-destaque-vazio { background: #1e293b !important; border-color: #334155 !important; color: var(--text-secondary) !important; }
+
+/* ─── [I] ÁLBUM ─── */
+.album-secao { background: #1e293b !important; border-color: #334155 !important; }
+.album-secao.completa { background: linear-gradient(180deg, rgba(251,191,36,.08) 0%, #1e293b 55%) !important; border-color: rgba(251,191,36,.5) !important; }
+.album-secao-nome { color: var(--text-primary) !important; }
+.album-secao-desc { color: var(--text-secondary) !important; }
+.album-secao-prog-num { background: rgba(34,211,238,.15) !important; color: var(--neon-cyan) !important; }
+.album-secao.completa .album-secao-prog-num { background: rgba(34,197,94,.18) !important; color: #86efac !important; }
+.album-secao-barra { background: #334155 !important; }
+.album-secao-msg-completa {
+    background: linear-gradient(135deg, rgba(34,197,94,.18), rgba(22,163,74,.08)) !important;
+    border-left-color: #22c55e !important;
+    color: #bbf7d0 !important;
+}
+.album-figurinha { background: #1e293b !important; border-color: #334155 !important; }
+.album-figurinha-nome { color: var(--text-primary) !important; }
+.album-figurinha-desc { color: var(--text-secondary) !important; }
+.album-figurinha-rodape { color: var(--text-secondary) !important; }
+.album-figurinha.vazia .album-figurinha-nome { color: var(--text-muted) !important; }
+.album-figurinha-requisito { background: #0f2340 !important; border-color: #334155 !important; color: var(--text-secondary) !important; }
+.album-figurinha.colada .album-figurinha-requisito { background: rgba(34,197,94,.10) !important; border-color: rgba(34,197,94,.4) !important; color: #86efac !important; }
+.album-figurinha-prog-trilha { background: #334155 !important; }
+.album-nota-rodape { background: #1e293b !important; border-color: #334155 !important; color: var(--text-secondary) !important; }
+.album-nota-rodape strong { color: var(--text-primary) !important; }
+.album-filtros { background: #132a47 !important; border-color: var(--border-neon) !important; }
+.album-filtro-linha + .album-filtro-linha { border-color: #334155 !important; }
+.album-filtro-rotulo { color: var(--text-muted) !important; }
+.album-chip { background: #0f2340 !important; border-color: #334155 !important; color: var(--text-secondary) !important; }
+.album-chip:hover:not(:disabled) { background: #334155 !important; border-color: #475569 !important; color: var(--text-primary) !important; }
+.album-chip.ativa { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; border-color: var(--neon-cyan) !important; color: #fff !important; }
+.album-chip-limpar { background: rgba(220,38,38,.15) !important; color: #fca5a5 !important; border-color: rgba(220,38,38,.4) !important; }
+.album-aviso-filtro { background: rgba(34,211,238,.08) !important; border-left-color: var(--neon-cyan) !important; color: #a8c8e8 !important; }
+.album-aviso-filtro strong { color: #93c5fd !important; }
+.album-link-limpar { color: var(--neon-cyan) !important; }
+.album-btn-voltar-capa { color: var(--text-secondary) !important; border-color: #334155 !important; }
+.album-btn-voltar-capa:hover:not(:disabled) { background: #1e293b !important; border-color: #475569 !important; color: var(--text-primary) !important; }
+.album-estado-vazio { background: #1e293b !important; border-color: #334155 !important; }
+.album-estado-vazio h3 { color: var(--text-primary) !important; }
+.album-estado-vazio p { color: var(--text-secondary) !important; }
+.album-medalha-modal { background: linear-gradient(170deg, #132a47 0%, #0a1628 100%) !important; }
+.album-medalha-modal-nome { color: var(--text-primary) !important; }
+.album-medalha-modal-sub { color: var(--text-secondary) !important; }
+.album-medalha-modal-secao { background: #1e293b !important; border-color: #334155 !important; }
+.album-medalha-modal-secao-rotulo { color: var(--text-secondary) !important; }
+.album-medalha-modal-requisito { color: var(--text-primary) !important; }
+.album-medalha-modal-prog-info { color: var(--text-secondary) !important; }
+.album-medalha-modal-prog-info .num { color: var(--neon-cyan) !important; }
+.album-medalha-modal-prog-barra { background: #334155 !important; }
+.album-medalha-modal-close { background: rgba(148,163,184,.15) !important; color: var(--text-secondary) !important; }
+.album-onboarding-modal { background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%) !important; border-color: var(--border-neon) !important; }
+.album-onboarding-titulo { color: var(--text-primary) !important; }
+.album-onboarding-sub { color: var(--neon-cyan) !important; }
+.album-onboarding-passo { background: rgba(10,22,40,.55) !important; border-color: var(--border-neon) !important; }
+.album-onboarding-passo-titulo { color: var(--text-primary) !important; }
+.album-onboarding-passo-desc { color: var(--text-secondary) !important; }
+.album-onboarding-passo-desc strong { color: var(--neon-cyan) !important; }
+
+/* ─── [J] MENSAGENS / CHAT ─── */
+.msg-contexto { background: #1e293b !important; border-color: #334155 !important; color: var(--text-secondary) !important; }
+.msg-contexto strong { color: var(--text-primary) !important; }
+.msg-categorias { background: #1e293b !important; }
+.msg-categorias-titulo { color: var(--text-muted) !important; }
+.msg-categoria-btn { background: #1e293b !important; color: var(--text-primary) !important; border-color: #334155 !important; }
+.msg-categoria-btn:hover:not(:disabled) { background: #334155 !important; border-color: #475569 !important; }
+.msg-categoria-btn.selecionada { background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%) !important; border-color: #a855f7 !important; color: #e9d5ff !important; }
+.msg-thread { background: #0f172a !important; }
+.msg-bolha.professor { background: #1e293b !important; color: var(--text-primary) !important; border-color: #334155 !important; }
+.msg-bolha.professor .msg-bolha-categoria { background: #4c1d95 !important; color: #ddd6fe !important; }
+.msg-form { background: #1e293b !important; border-color: #334155 !important; }
+.msg-campo-nome label { color: var(--text-secondary) !important; }
+.msg-textarea { background: #0f172a !important; color: var(--text-primary) !important; border-color: #334155 !important; }
+.msg-vazio { color: var(--text-muted) !important; }
+.msg-aviso-bloqueio { background: rgba(251,191,36,.12) !important; border-left-color: var(--neon-gold) !important; color: #fde68a !important; }
+.msg-rodape-aviso { color: #fca5a5 !important; }
+.msg-painel-thread { background: #1e293b !important; border-color: #334155 !important; }
+.msg-painel-thread-cabecalho { background: #1e293b !important; }
+.msg-painel-thread-cabecalho:hover { background: #334155 !important; }
+.msg-painel-thread-nome { color: var(--text-primary) !important; }
+.msg-painel-thread-corpo { background: #0f172a !important; border-color: #334155 !important; }
+.msg-painel-vazio { background: #1e293b !important; border-color: #334155 !important; color: var(--text-muted) !important; }
+
+/* ─── [K] TABELA DE ALUNOS (Gerenciar Alunos) ─── */
+.alunos-table { color: var(--text-primary) !important; }
+.alunos-table th, .alunos-table td {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    border-bottom-color: rgba(148,163,184,.18) !important;
+}
+.alunos-table thead th { background: rgba(34,211,238,.08) !important; color: var(--neon-cyan) !important; }
+.alunos-table tbody tr:hover { background: rgba(34,211,238,.05) !important; }
+.editar-nome {
+    background: rgba(10,22,40,.65) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(148,163,184,.28) !important;
+}
+
+/* ─── [L] CHIPS DE VARIAÇÃO + MODAIS GENÉRICOS ─── */
+.chip-variacao { background: rgba(34,211,238,.10) !important; color: var(--neon-cyan) !important; border-color: rgba(34,211,238,.35) !important; }
+.chip-variacao:hover:not(:disabled) { background: rgba(34,211,238,.18) !important; border-color: var(--neon-cyan) !important; color: #a5f3fc !important; }
+.chip-variacao.comutada { background: rgba(251,191,36,.12) !important; color: #fde68a !important; border-color: rgba(251,191,36,.4) !important; }
+.linha-chips .rotulo-chips { color: var(--text-secondary) !important; }
+.btn-voltar-chips { color: var(--text-secondary) !important; border-color: #334155 !important; }
+.btn-voltar-chips:hover:not(:disabled) { background: #1e293b !important; border-color: #475569 !important; color: var(--text-primary) !important; }
+.nota-sem-variacoes { background: #1e293b !important; border-color: #334155 !important; color: var(--text-secondary) !important; }
+.modal-card { background: #132a47 !important; color: var(--text-primary) !important; }
+.modal-header { border-bottom-color: var(--border-neon) !important; }
+.modal-header h3 { color: var(--text-primary) !important; }
+.modal-close { color: var(--text-secondary) !important; }
+.modal-close:hover { background: rgba(220,53,69,.15) !important; color: #fca5a5 !important; }
+.modal-stat { background: #1e293b !important; }
+.modal-stat .valor { color: var(--text-primary) !important; }
+.modal-stat.destaque .valor { color: var(--neon-cyan) !important; }
+.modal-dica { background: rgba(251,191,36,.12) !important; color: #fde68a !important; border-color: rgba(251,191,36,.35) !important; }
+.modal-dica strong { color: #ffd166 !important; }
+.modal-status.cinza { background: #1e293b !important; color: var(--text-secondary) !important; }
+.cert-modal-card { background: #1e293b !important; }
+.cert-modal-header { border-bottom-color: #334155 !important; }
+.cert-modal-header h3 { color: #fde68a !important; }
+
+/* ─── [M] INFO MODAL / CHANGELOG / COMO FUNCIONA ─── */
+.info-secao { border-color: #334155 !important; }
+.info-titulo { color: var(--text-primary) !important; }
+.info-texto { color: var(--text-secondary) !important; }
+.info-texto strong { color: var(--text-primary) !important; }
+.info-lista { color: var(--text-secondary) !important; }
+.info-destaque { background: linear-gradient(135deg, rgba(251,191,36,.14), rgba(217,119,6,.06)) !important; color: #fde68a !important; border-color: var(--neon-gold) !important; }
+.info-destaque strong { color: #ffd166 !important; }
+.info-destaque.azul { background: linear-gradient(135deg, rgba(56,189,248,.12), rgba(14,165,233,.05)) !important; color: #93c5fd !important; border-color: var(--neon-cyan) !important; }
+.info-destaque.azul strong { color: #93c5fd !important; }
+.info-destaque.verde { background: linear-gradient(135deg, rgba(34,197,94,.14), rgba(22,163,74,.06)) !important; color: #86efac !important; border-color: #22c55e !important; }
+.info-destaque.verde strong { color: #86efac !important; }
+.info-destaque.vermelho { background: linear-gradient(135deg, rgba(220,38,38,.14), rgba(153,27,27,.08)) !important; color: #fca5a5 !important; border-color: #ef4444 !important; }
+.info-destaque.vermelho strong { color: #fca5a5 !important; }
+.changelog-item { border-color: #334155 !important; }
+.changelog-versao { background: rgba(99,102,241,.22) !important; color: #c7d2fe !important; }
+.changelog-versao.atual { background: rgba(34,197,94,.22) !important; color: #86efac !important; }
+.changelog-titulo { color: var(--text-primary) !important; }
+.changelog-descricao { color: var(--text-secondary) !important; }
+
+/* ─── [N] DESTAQUES DO PAINEL (professor) ─── */
+.destaques-prof-bloco { background: #1e293b !important; border-color: #334155 !important; }
+.destaques-prof-cabecalho { color: var(--text-primary) !important; border-bottom-color: #334155 !important; }
+.destaques-prof-item + .destaques-prof-item { border-top-color: #334155 !important; }
+.destaques-prof-nome { color: var(--text-primary) !important; }
+.destaques-prof-turma { background: #334155 !important; color: var(--text-secondary) !important; }
+.destaques-prof-valor { color: #7dd3fc !important; }
+.destaques-prof-vazio { color: var(--text-muted) !important; }
+
+/* ─── [O] MISC — LINKS CRUZADOS E ATALHOS ─── */
+.botao-link-cruzado { color: var(--neon-cyan) !important; border-color: rgba(34,211,238,.35) !important; }
+.botao-link-cruzado:hover:not(:disabled) { background: rgba(34,211,238,.10) !important; border-color: var(--neon-cyan) !important; color: #a5f3fc !important; }
+.perfil-atalho-meu { background: linear-gradient(135deg, rgba(56,189,248,.12), rgba(14,165,233,.05)) !important; border-color: var(--border-neon) !important; }
+.changelog-trigger { color: var(--text-muted) !important; border-color: #334155 !important; }
+.changelog-trigger:hover:not(:disabled) { background: #1e293b !important; color: var(--text-secondary) !important; border-color: #475569 !important; }
+
+/* ▲▲▲ FIM [02.52] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -5538,7 +5922,7 @@
     // ═══════════════════════════════════════════════════════════════════════
 
 // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.4.6";
+const APP_VERSION = "10.4.7";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
