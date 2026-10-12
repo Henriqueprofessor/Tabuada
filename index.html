@@ -14475,7 +14475,17 @@ if (containerProg) {
 
     // ▼▼▼ [17.06] Reset + exportação + gerenciar alunos ─────────────
     async function limparAlbumPorFiltro(turma) {
-        const caminhos = [CAMINHO_MEDALS, CAMINHO_ESTRELAS, CAMINHO_SECOES_COMPLETAS, CAMINHO_POSICAO_BASELINE, CAMINHO_SNAPSHOT_DIARIO, CAMINHO_CERTIFICADOS];
+        // v10.4.9 · Inclui CAMINHO_TREINOS_FOCADOS — antes escapava do reset,
+        // deixando o contador de treinos persistido mesmo após limpar o ranking.
+        const caminhos = [
+            CAMINHO_MEDALS,
+            CAMINHO_ESTRELAS,
+            CAMINHO_SECOES_COMPLETAS,
+            CAMINHO_POSICAO_BASELINE,
+            CAMINHO_SNAPSHOT_DIARIO,
+            CAMINHO_CERTIFICADOS,
+            CAMINHO_TREINOS_FOCADOS
+        ];
         if (turma === "todas") {
             for (const c of caminhos) { try { await database.ref(c).remove(); } catch(e) { console.warn(`Erro ao limpar ${c}:`, e); } }
             try { localStorage.removeItem("copa_album_vistas_count"); } catch(e) {}
