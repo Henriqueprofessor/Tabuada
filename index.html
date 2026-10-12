@@ -6509,9 +6509,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <span id="rodape-acertos">✅ Acertos: 0</span>
                 <span id="rodape-sequencia">🔥 Sequência: <span class="seq-destaque">0</span></span>
             </div>
-            <button class="btn-encerrar-discreto" onclick="forcarFinalizacao()" title="Encerrar tentativa atual">✕ Encerrar tentativa</button>
+            <button id="btn-encerrar-tentativa" class="btn-encerrar-discreto hidden" onclick="forcarFinalizacao()" title="Encerrar tentativa atual">✕ Encerrar tentativa</button>
         </div>
     </div>
+    <!-- ▲▲▲ FIM [03.06] -->
 
     <!-- ▼▼▼ [03.07] RESULTADO ────────────────────────────────── -->
     <div id="tela-resultado" class="card hidden">
@@ -9616,12 +9617,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▼▼▼ [11.02] Compilação dos dados do aluno ─────────────────────────
     async function compilarDadosAluno(nome, turma) {
-        // ▼ P36 — Paraleliza as 4 leituras base + lê o ranking uma única vez
+        // ⚙️ [13] — Só partidas COMPLETAS (20 respostas) contam para medalhas,
+        // Hall da Fama e Álbum. Partidas parciais continuam no histórico,
+        // gráfico de desempenho e média — mas NÃO aqui.
+        const partidas = (await obterHistoricoAluno(nome, turma)).filter(ehPartidaCompleta);
+
+        // ▼ P36 — Paraleliza as leituras base + lê o ranking uma única vez
         // ▼ v10.4.9 · Correção (item 8): também lê o contador de treinos do
-        //    Firebase em paralelo. A fonte da verdade é copa_treinos_focados,
-        //    porque treinos puros NÃO geram partidas oficiais.
-        const [partidas, mapaGlobal, medalhasPersistidas, rankingGeral, snapTreinos] = await Promise.all([
-            obterHistoricoAluno(nome, turma),
+        //    Firebase em paralelo. A fonte da verdade é copa_treinos_focados.
+        const [mapaGlobal, medalhasPersistidas, rankingGeral, snapTreinos] = await Promise.all([
             obterDesempenhoOperacoesGlobal(nome, turma),
             obterMedalsFirebase(nome, turma),
             obterRanking().catch(() => []),
@@ -9669,12 +9673,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const operacoesExploradas = Object.values(mapaGlobal).filter(d => normalizarHistoricoOperacao(d).length > 0).length;
 
         // ▼ v10.4.9 · Correção (item 8): fonte correta do contador de treinos.
-        //    Antes, o código procurava o campo `treinoFocado` dentro de partidas
-        //    oficiais. Só que treinos puros NÃO geram partidas — eles apenas
-        //    incrementam `copa_treinos_focados`. A leitura agora vem da fonte
-        //    certa, alinhada ao que o Hero da Home já mostra.
         const treinosFocados = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
-        // ▲
 
         // ▼ P36 — Posições por modalidade: filtra do ranking já carregado (antes: 3 leituras Firebase)
         const posicoes = {};
@@ -10852,6 +10851,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return p;
     }
     async function salvarResultado(res) {
+        // ⚙️ [13] — Partidas PARCIAIS não entram no ranking oficial.
+        // Continuam no histórico e no mapa, mas não competem por posição.
+        if (!ehPartidaCompleta(res)) {
+            return null;
+        }
         const chave = criarChaveResultado(res);
         let melhor = res;
         try {
@@ -11001,6 +11005,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▼▼▼ [13.05] Helpers de ordenação e chaves ────────────────────────
     function ordenarPorDataDesc(a, b) { return new Date(b.data || 0) - new Date(a.data || 0); }
+
+    // ⚙️ [13] — Define se uma partida conta como COMPLETA (20 respostas).
+    //   · p.completa === true  → completa
+    //   · p.completa === false → parcial
+    //   · campo ausente (partidas antigas) → calcula por acertos + erros >= 20
+    function ehPartidaCompleta(p) {
+        if (!p) return false;
+        if (p.completa === true) return true;
+        if (p.completa === false) return false;
+        const respondidas = (Number(p.acertos) || 0) + (Number(p.erros) || 0);
+        return respondidas >= TOTAL_PERGUNTAS;
+    }
+
     function resultadoCombinaFiltro(r, t, m) {
         if (t !== "todas" && r.turma !== t) return false;
         if (m !== "todas" && r.modalidade !== m) return false;
@@ -11991,6 +12008,8 @@ if (containerProg) {
         else if (treinoListaInteligente && treinoListaInteligente.length) t = `🎯 TREINO INTELIGENTE — ${treinoListaInteligente.length} operações pendentes`;
         document.getElementById("cabecalho-turma").innerText = t;
         mostrarTela("tela-jogo");
+        // ⚙️ [13] — Treino sempre tem botão de cancelar
+        atualizarVisibilidadeBotaoCancelar();
         proximaPergunta();
     }
     function iniciarPartidaClassificatoria() {
@@ -12005,6 +12024,8 @@ if (containerProg) {
         reiniciarVariaveisJogo();
         document.getElementById("cabecalho-turma").innerText = `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
         mostrarTela("tela-jogo");
+        // ⚙️ [13] — Oficial: botão só aparece a partir da 2ª partida da modalidade
+        atualizarVisibilidadeBotaoCancelar();
         proximaPergunta();
     }
     function reiniciarVariaveisJogo() {
@@ -12200,8 +12221,38 @@ if (containerProg) {
         }
     }
     function alternarBotoes(d) { document.querySelectorAll(".btn-opcao").forEach(b => b.disabled = d); }
+
+    // ⚙️ [13] — NOVO: decide se o botão "✕ Encerrar tentativa" pode aparecer.
+    //   · Treino (anônimo, identificado, inteligente, foco, variações) → SEMPRE pode
+    //   · Oficial → SÓ a partir da 2ª partida oficial daquela modalidade
+    //     (ou seja: precisa ter pelo menos uma partida COMPLETA anterior)
+    async function podeCancelarPartidaAtual() {
+        if (treinoAnonimo) return true;
+        if (modoTreino) return true;
+        try {
+            const partidas = await obterHistoricoAluno(alunoAtual, turmaAtual, modalidadeAtual);
+            return (partidas || []).some(ehPartidaCompleta);
+        } catch(e) {
+            console.warn("Falha ao verificar permissão de cancelamento:", e);
+            return false; // em erro, mantém oculto (mais seguro)
+        }
+    }
+
+    // ⚙️ [13] — NOVO: aplica a visibilidade do botão. Fire-and-forget:
+    // chamada por iniciarPartidaTreino / iniciarPartidaClassificatoria.
+    async function atualizarVisibilidadeBotaoCancelar() {
+        const btn = document.getElementById("btn-encerrar-tentativa");
+        if (!btn) return;
+        const pode = await podeCancelarPartidaAtual();
+        btn.classList.toggle("hidden", !pode);
+    }
+
     function forcarFinalizacao() {
-        if (jogoAtivo && confirm("Encerrar tentativa atual? Suas respostas até aqui serão salvas.")) {
+        if (jogoAtivo && confirm(
+            "Encerrar agora?\n\n" +
+            "✅ Completando as 20 perguntas, a partida vale para medalhas, Hall da Fama e Álbum.\n\n" +
+            "⚠️ Encerrando antes, ela conta só no seu histórico, mapa e média."
+        )) {
             clearInterval(timerInterval); clearTimeout(timerTimeout); finalizarCircuito();
         }
     }
@@ -12243,12 +12294,17 @@ if (containerProg) {
             return;
         }
 
+        // ⚙️ [13] — Marca se a partida foi COMPLETA (20 respostas) ou PARCIAL
+        const respondidas = acertos + erros;
+        const partidaCompleta = respondidas >= TOTAL_PERGUNTAS;
+
         const resultado = {
             nome: alunoAtual, turma: turmaAtual, modalidade: modalidadeAtual,
             pontos: pontosAcumulados, acertos, erros, tempoMedio, maiorSequencia,
             desempenhoTabuadas, desempenhoOperacoes,
             data: new Date().toISOString(), idPartida: criarChavePartida({ nome: alunoAtual }),
             temposRapidos, acertouPrimeira,
+            completa: partidaCompleta,
             treinoFocado: treinoFocoOperacoes ? treinoFocoOperacoes.map(o => ({ fA: o.fA, fB: o.fB })) : null,
             treinoInteligente: treinoListaInteligente ? treinoListaInteligente.length : 0
         };
@@ -12280,31 +12336,18 @@ if (containerProg) {
             // ─────────────────────────────────────────────────────────────
             // v10.4.5 · Contador de treinos: conta QUALQUER treino identificado
             // que tenha sido completado com as 20 perguntas — independente do
-            // tipo (livre identificado, inteligente, foco absoluto, variações).
-            // Treino interrompido (✕ Encerrar tentativa antes da Q20) NÃO conta.
-            //
-            // A chave do Firebase (CAMINHO_TREINOS_FOCADOS = "copa_treinos_focados")
-            // foi mantida intencionalmente para preservar o histórico de todos
-            // os alunos já registrados. Apenas o critério de incremento mudou.
-            //
-            // ▼ v10.4.9 · Correção (item 8): invalida o cache do Álbum para
-            //    forçar recompilação na próxima abertura. Sem isso, a medalha
-            //    "Treinador de Elite" continuaria mostrando 0/5 até o cache de
-            //    2 minutos expirar por conta própria — causando a sensação de
-            //    que o contador "não subiu".
+            // tipo. Treino interrompido NÃO conta.
             // ─────────────────────────────────────────────────────────────
             const treinoCompleto = (acertos + erros) === TOTAL_PERGUNTAS;
             if (treinoCompleto) {
                 try {
                     const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
                     await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1);
-                    // Invalida o cache de sessão do Álbum para refletir a nova contagem
                     if (typeof albumSessaoCache !== "undefined") {
                         albumSessaoCache = { chave: null, ts: 0, resultado: null };
                     }
                 } catch(e) { console.warn("Falha ao contabilizar treino:", e); }
             }
-            // ─────────────────────────────────────────────────────────────
 
             mapaFonteUltima = resultado.desempenhoOperacoes;
             mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(alunoAtual, turmaAtual);
@@ -12312,23 +12355,17 @@ if (containerProg) {
             promocoesRecentes = await verificarPromocoes(alunoAtual, turmaAtual, modalidadeAtual, mapaFonteAgregada);
             document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
             if (promocoesRecentes.length > 0) { mostrarBannerPromocao(promocoesRecentes); dispararConfetes(); setTimeout(() => { promocoesRecentes = []; }, 6000); }
-            // ▼▼▼ [14.08-BUGFIX] Sincroniza Álbum/medalhas após treino completo ──── INÍCIO ───
             document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
             document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
             document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
             somConclusao();
-            // Verifica certificados mesmo no treino
             verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
-            // v10.4.10 · Item 7 — sincroniza medalhas e acende o badge do Álbum
-            // depois de um treino completo (antes, só partida oficial disparava isso).
-            // A própria função esconde o CTA se não houver medalha nova.
             verificarAlbumPosPartida(alunoAtual, turmaAtual);
             treinoFocoOperacoes = null; treinoListaInteligente = null; treinoFocoAbsoluto = null;
             mostrarTela("tela-resultado");
             return;
-            // ▲▲▲ FIM [14.08-BUGFIX]
         }
 
         // Classificatória oficial
@@ -12360,6 +12397,17 @@ if (containerProg) {
             }
 
             const melhor = await salvarResultado(resultado);
+
+            // ⚙️ [13] — Partida PARCIAL: salva só no histórico/mapa/média
+            if (melhor === null) {
+                await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
+                await preencherResultadoParcial(resultado);
+                somConclusao();
+                mostrarTela("tela-resultado");
+                return;
+            }
+
+            // Partida COMPLETA — fluxo normal
             await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
             const novo = melhor.data === resultado.data;
             if (novo && posicaoAntes !== null) somNovoRecorde(); else somConclusao();
@@ -12375,7 +12423,8 @@ if (containerProg) {
                 } else {
                     const melhor = await salvarResultado(resultado);
                     await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
-                    await preencherResultado(melhor, resultado, posicaoAntes);
+                    if (melhor === null) await preencherResultadoParcial(resultado);
+                    else await preencherResultado(melhor, resultado, posicaoAntes);
                 }
             } catch(e2) {
                 await preencherResultado(resultado, resultado, posicaoAntes);
@@ -12447,7 +12496,6 @@ if (containerProg) {
             const minha = r.minhaTurma;
             const minimo = r.minimo;
 
-            // Se não há ranking nem aviso, nada a mostrar
             if (!medias.length && !minha) return;
 
             let htmlLinhas = "";
@@ -12577,6 +12625,72 @@ if (containerProg) {
         try { verificarAlbumPosPartida(tent.nome, tent.turma); } catch(e) {}
         try { verificarMaestriaAbsoluta(tent.nome, tent.turma); } catch(e) {}
         try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
+    }
+
+    // ⚙️ [13] — NOVO: tela específica quando o aluno cancela antes das 20 perguntas.
+    //   · Alimenta histórico, mapa e média (já salvos antes de chamar esta função).
+    //   · NÃO alimenta medalhas, Hall da Fama, Álbum e ranking.
+    async function preencherResultadoParcial(tent) {
+        ultimoMelhorOficial = null;
+        ultimaTentativa = tent;
+
+        document.getElementById("resultado-titulo").innerHTML = "✕ Tentativa parcial";
+        document.getElementById("feedback-pontos").innerHTML =
+            `<strong>${escaparHtml(tent.nome)}</strong>, você encerrou antes das 20 perguntas.`;
+
+        document.getElementById("cards-comparacao-resultado").innerHTML = "";
+        document.getElementById("card-classificacao-container").innerHTML = `
+            <div class="card-classificacao fora-zona">
+                <h3>✕ Tentativa parcial</h3>
+                <div class="posicao-destaque" style="font-size:34px;">📋</div>
+                <p class="mensagem-corte">
+                    Esta tentativa <strong>conta para o seu histórico, mapa e média</strong>, mas
+                    <strong>não vale para medalhas, Hall da Fama nem Álbum</strong> — só partidas
+                    completas (com as 20 perguntas) contam para esses.
+                </p>
+                <p class="mensagem-rodape">💡 Da próxima vez, tente completar as 20 perguntas para valer em tudo!</p>
+            </div>`;
+
+        document.getElementById("resumo-turma").innerText = tent.turma;
+        document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[tent.modalidade]?.nome || tent.modalidade;
+        document.getElementById("resumo-acertos").innerText = `${tent.acertos}/20`;
+        document.getElementById("resumo-erros").innerText = tent.erros;
+        document.getElementById("resumo-tempo").innerText = `${tent.tempoMedio.toFixed(2)}s`;
+        document.getElementById("resumo-sequencia").innerText = tent.maiorSequencia;
+        document.getElementById("resumo-melhor-media").innerText = "--";
+        document.getElementById("resumo-media-turma").innerText = "--";
+        document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Parcial</span>`;
+
+        document.getElementById("feedback-ranking-container").innerHTML =
+            `<div class="feedback-ranking">
+                <strong>✕ Tentativa parcial</strong><br>
+                Sua tentativa foi registrada no histórico e no mapa. Mas só <strong>partidas completas (20/20)</strong> valem para medalhas, Hall da Fama e Álbum.
+            </div>`;
+
+        document.getElementById("ranking-turmas-resultado-container").innerHTML = "";
+        document.getElementById("album-cta-resultado")?.classList.add("hidden");
+        document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
+        document.getElementById("btn-compartilhar")?.classList.add("hidden");
+        document.getElementById("btn-jogar-novamente")?.classList.remove("hidden");
+        document.getElementById("btn-trocar-modalidade")?.classList.remove("hidden");
+
+        // Mapa (afetado por parciais)
+        if (tent.desempenhoTabuadas) desempenhoTabuadas = tent.desempenhoTabuadas;
+        mapaFonteUltima = tent.desempenhoOperacoes || {};
+        mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(tent.nome, tent.turma);
+        if (Object.keys(mapaFonteAgregada).length === 0) mapaFonteAgregada = mapaFonteUltima;
+        promocoesRecentes = await verificarPromocoes(tent.nome, tent.turma, tent.modalidade, mapaFonteAgregada);
+        document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
+        if (promocoesRecentes.length > 0) {
+            mostrarBannerPromocao(promocoesRecentes);
+            dispararConfetes();
+            setTimeout(() => { promocoesRecentes = []; }, 6000);
+        }
+
+        // Certificados (o mapa é afetado por parciais)
+        try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
+        // Álbum NÃO é atualizado (parcial não dá medalha)
+        document.getElementById("album-cta-resultado")?.classList.add("hidden");
     }
     // ▲▲▲ FIM [14.09]
     // ▼▼▼ [14.09.bis] Alerta de proximidade pós-partida ─────────
@@ -14247,7 +14361,8 @@ if (containerProg) {
         const cfg = await obterConfiguracao();
         const minVerdes = calcularMinVerdes(cfg.percentualMapa);
         try {
-            const partidas = await obterHistoricoAluno(nome, turma);
+            // ⚙️ [13] — Só partidas COMPLETAS contam para elegibilidade da votação
+            const partidas = (await obterHistoricoAluno(nome, turma)).filter(ehPartidaCompleta);
             const totalPartidas = partidas.length;
             // Conta operações dominadas no novo formato (via mapa)
             const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
@@ -15411,7 +15526,11 @@ if (containerProg) {
 
     // ▼▼▼ [18.02.bis] Métricas acumulativas do Hall da Fama
     async function calcularMetricasHallFama() {
-        const partidas = await obterPartidas();
+        // ⚙️ [13] — Só partidas COMPLETAS contam para o Hall da Fama.
+        // Partidas parciais não entram em Total de Acertos, Maratonista,
+        // Presença VIP nem Mestre da Velocidade.
+        const todasPartidas = await obterPartidas();
+        const partidas = todasPartidas.filter(ehPartidaCompleta);
         const porAluno = new Map();
 
         partidas.forEach(p => {
