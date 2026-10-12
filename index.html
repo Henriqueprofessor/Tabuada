@@ -5764,6 +5764,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <span class="icone">🗳️</span>
                 <span>Votação</span>
             </button>
+            <button onclick="abrirBuscarAluno()" class="botao-secundario">
+                <span class="icone">🗺️</span>
+                <span>Mapa de Tabuadas &amp; Conquistas</span>
+            </button>
             <button onclick="abrirComoFunciona()" class="botao-secundario">
                 <span class="icone">ℹ️</span>
                 <span>Como funciona</span>
@@ -5777,7 +5781,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.4.8</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.4.9</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -5951,7 +5955,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     <!-- ▼▼▼ [03.09] PERFIL ───────────────────────────────────── -->
     <div id="tela-perfil" class="card hidden">
-        <h2>🔍 Buscar Aluno</h2>
+        <h2>🔍 Pesquisar Aluno</h2>
         <div id="perfil-atalho-meu" class="perfil-atalho-meu hidden">
             <button onclick="preencherPerfilComMeusDados()" class="botao-atalho-perfil">✨ Ou veja direto o seu perfil →</button>
         </div>
@@ -5964,7 +5968,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
             <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
         </select>
-        <button onclick="carregarPerfil()" class="botao-verde">🔍 Buscar</button>
+        <button onclick="carregarPerfil()" class="botao-verde">🔍 Pesquisar</button>
         <div id="perfil-conteudo" class="hidden">
             <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo médio dos acertos:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
             <h3>🏅 Conquistas</h3>
@@ -6243,7 +6247,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.8 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.9 · atual</span>
+                <h4 class="changelog-titulo">🔍 Autocomplete de nomes + Busca sempre acessível</h4>
+                <p class="changelog-descricao">Pacote de melhorias de usabilidade nas telas de consulta. <strong>🔍 Autocomplete de nomes</strong> — ao digitar 2+ letras nos campos de busca (em "Desempenho" e "Pesquisar Aluno"), o sistema sugere automaticamente os alunos que já jogaram, mostrando as turmas. Ao escolher um nome, a turma é preenchida sozinha quando o aluno só tem uma. Funciona com <strong>setas ↑↓</strong>, <strong>Enter</strong>, <strong>Esc</strong> e toque em celular. <strong>📊 Tela "Desempenho" reformulada</strong> — antes, quando você já estava identificado, o formulário de busca ficava escondido e não dava para consultar outro colega. Agora o formulário fica <strong>sempre visível</strong> no topo, pré-preenchido com seu nome, mas você pode editá-lo livremente. <strong>🎯 "Buscar Aluno" virou "Pesquisar Aluno"</strong> — mais alinhado ao ambiente escolar. <strong>🗺️ Novo atalho "Mapa de Tabuadas &amp; Conquistas"</strong> no menu Mais, com acesso direto à tela de perfil. Tudo <strong>sem custo extra de rede</strong>: o autocomplete reutiliza o ranking já carregado, com cache de 60 segundos.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.4.8</span>
                 <h4 class="changelog-titulo">🤖 Ajuda com IA + Etapa flexível + Álbum 3× mais rápido</h4>
                 <p class="changelog-descricao">Grande pacote com 4 novidades. <strong>🤖 Ajuda com IA</strong> — botão no menu "Mais" gera um prompt completo (com todas as regras do jogo) e abre ChatGPT, Claude, Perplexity ou Copilot em nova aba. Funciona para dúvidas de <strong>cálculo</strong> (ex: "como resolvo 7×8?") e para dúvidas de <strong>regras</strong> (ex: "como ganho o certificado Ouro?"). <strong>📅 Estender encerramento da etapa</strong> — professor pode adiar o fim da etapa pelo painel, com motivo registrado e auditoria. <strong>⚡ App mais rápido</strong> — reserva de espaço no hero eliminou 75% do CLS (0,542 → 0,136). <strong>🚀 Álbum 3× mais rápido</strong> — cache de sessão (2 min) e paralelização de leituras no Firebase. Tudo sem SDK novo, sem custo, sem requisição extra.</p>
             </div>
@@ -6679,7 +6688,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.4.8";
+const APP_VERSION = "10.4.9";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -12965,7 +12974,7 @@ if (containerProg) {
         } catch(e) { console.warn("Falha ao verificar maestria:", e); }
     }
     // ▲▲▲ FIM [16.07]
-    // ▼▼▼ [16.08] Autocomplete de nomes — Meu Desempenho + Buscar Aluno ───
+    // ▼▼▼ [16.08] Autocomplete de nomes — Meu Desempenho + Pesquisar Aluno ───
     // v10.4.9 · Sugere nomes de alunos que já jogaram (extraídos do ranking).
     // Ao escolher um nome, auto-preenche a turma se houver apenas uma.
     // Cache de 60s para não bater no Firebase a cada tecla.
