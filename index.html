@@ -3752,49 +3752,59 @@
             }
         }
         /* ▲▲▲ FIM [02.46] */
-        /* ▼▼▼ [02.47] Home — Card "Seu Ritmo na Copa" ────────────── INÍCIO ─── */
+        /* ▼▼▼ [02.47] Home — Ritmo na Copa (dentro do hero) ─────── INÍCIO ─── */
+        /* v10.4.9 · Card separado foi incorporado dentro do hero-esports.
+           A frase interpretativa vive no subtítulo do hero (evita duplicação).
+           Aqui só ficam barra de proporção, números e legenda. */
 
-        .home-ritmo-card {
-            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
-            border: 1px solid var(--border-neon);
-            border-left: 4px solid var(--neon-cyan);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 14px;
-            text-align: left;
-            box-shadow: var(--shadow-card);
+        .hero-ritmo-bloco {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(34, 211, 238, 0.25);
             display: flex;
             flex-direction: column;
             gap: 10px;
+            animation: heroRitmoIn 0.35s ease;
         }
-        .home-ritmo-titulo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-            margin: 0;
+        @keyframes heroRitmoIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .home-ritmo-numeros {
+
+        .hero-ritmo-cabecalho {
             display: flex;
-            gap: 16px;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
             flex-wrap: wrap;
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 700;
         }
-        .home-ritmo-numeros .num {
-            color: var(--text-primary);
+        .hero-ritmo-titulo {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            line-height: 1.2;
+        }
+        .hero-ritmo-numeros {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 12.5px;
+            color: #cbd5e1;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .hero-ritmo-numeros .num {
             font-weight: 900;
             font-size: 15px;
+            letter-spacing: -0.3px;
+            margin-right: 2px;
         }
-        .home-ritmo-numeros .num.cyan { color: var(--neon-cyan); }
-        .home-ritmo-numeros .num.gold { color: var(--neon-gold); }
+        .hero-ritmo-numeros .num.cyan { color: var(--neon-cyan); }
+        .hero-ritmo-numeros .num.gold { color: var(--neon-gold); }
 
-        .home-ritmo-barra {
+        .hero-ritmo-barra {
             display: flex;
             height: 12px;
             background: rgba(0, 0, 0, 0.35);
@@ -3802,60 +3812,50 @@
             overflow: hidden;
             position: relative;
         }
-        .home-ritmo-fill {
+        .hero-ritmo-fill {
             height: 100%;
             transition: width 0.9s cubic-bezier(.22, 1, .36, 1);
         }
-        .home-ritmo-fill.treinos {
+        .hero-ritmo-fill.treinos {
             background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
             box-shadow: inset 0 0 6px rgba(168, 85, 247, 0.5);
         }
-        .home-ritmo-fill.oficiais {
+        .hero-ritmo-fill.oficiais {
             background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
             box-shadow: inset 0 0 6px rgba(34, 211, 238, 0.5);
         }
-        .home-ritmo-legenda {
+
+        .hero-ritmo-legenda {
             display: flex;
             justify-content: space-between;
             gap: 10px;
             font-size: 11.5px;
-            color: var(--text-secondary);
+            color: #cbd5e1;
             font-weight: 700;
             line-height: 1.4;
         }
-        .home-ritmo-legenda .pct {
-            color: var(--text-primary);
+        .hero-ritmo-legenda .pct {
+            color: #fff;
             font-weight: 900;
         }
-        .home-ritmo-frase {
-            font-size: 12.5px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin: 0;
-            padding: 8px 12px;
-            background: rgba(34, 211, 238, 0.06);
-            border-left: 3px solid var(--neon-cyan);
-            border-radius: 8px;
-        }
-        .home-ritmo-frase strong { color: var(--text-primary); font-weight: 800; }
 
-        .home-ritmo-vazio {
-            font-size: 13px;
-            color: var(--text-muted);
-            text-align: center;
-            padding: 10px 0;
+        .hero-ritmo-vazio {
+            font-size: 12.5px;
+            color: #94a3b8;
+            padding: 6px 0;
             line-height: 1.5;
         }
-        .home-ritmo-vazio strong { color: var(--text-secondary); }
+        .hero-ritmo-vazio strong { color: #cbd5e1; }
 
         @media (max-width: 520px) {
-            .home-ritmo-card { padding: 14px; }
-            .home-ritmo-numeros { font-size: 12.5px; gap: 12px; }
-            .home-ritmo-numeros .num { font-size: 14px; }
-            .home-ritmo-frase { font-size: 12px; }
+            .hero-ritmo-bloco { margin-top: 14px; padding-top: 12px; gap: 8px; }
+            .hero-ritmo-numeros { font-size: 12px; gap: 10px; }
+            .hero-ritmo-numeros .num { font-size: 14px; }
+            .hero-ritmo-legenda { font-size: 11px; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .home-ritmo-fill { transition: none !important; }
+            .hero-ritmo-bloco { animation: none; }
+            .hero-ritmo-fill { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.47] */
         /* ▼▼▼ [02.48] Painel — Heatmap de Turma + Sugestões ───────── INÍCIO ─── */
@@ -5128,12 +5128,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▼▼▼ [02.54] Otimização de performance — CLS do Hero (P35) ─── INÍCIO ─── */
         /* Fix do Cumulative Layout Shift (CLS) medido no Lighthouse.
            O hero da Home é preenchido por JS DEPOIS do primeiro paint
-           (nome do aluno, subtítulo dinâmico, contadores). Quando o
-           conteúdo muda de tamanho, empurra o layout abaixo → CLS alto.
+           (nome do aluno, subtítulo dinâmico, contadores).
+           Quando o conteúdo muda de tamanho, empurra o layout abaixo → CLS alto.
            Reservar espaço com min-height evita o salto visual. */
 
         .hero-esports {
-            min-height: 320px;
+            min-height: 420px;
             contain: layout paint;
         }
 
@@ -5146,19 +5146,22 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             display: inline-block;
         }
 
+        /* v10.4.9 · Ritmo na Copa foi movido para dentro do hero.
+           O container agora vive dentro de .hero-esports-conteudo,
+           então a reserva de espaço do hero já cobre esse conteúdo. */
+
         /* Reserva espaço do bloco de alerta foco e do banner modo teste,
            que aparecem/desaparecem dinamicamente logo acima do hero */
         #modo-teste-banner-container:empty { display: none; }
         #alerta-foco-absoluto-container:empty { display: none; }
 
-        /* Reserva altura dos containers de CTA e ritmo (preenchidos por JS) */
+        /* Reserva altura dos containers de CTA e meta (preenchidos por JS) */
         #acao-principal-container { min-height: 200px; }
-        #home-ritmo-container { min-height: 150px; }
         #mapa-home-container { min-height: 180px; }
         #meta-pessoal-container { min-height: 80px; }
 
         @media (max-width: 780px) {
-            .hero-esports { min-height: 380px; }
+            .hero-esports { min-height: 500px; }
             .hero-esports-stats { min-height: 240px; }
             #acao-principal-container { min-height: 320px; }
         }
@@ -5676,13 +5679,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                         <div class="hero-stat-valor verde" id="hero-stat-oficiais">0</div>
                     </div>
                 </div>
+                <!-- ▼ v10.4.9 · Ritmo na Copa (movido para dentro do hero) -->
+                <div id="hero-ritmo-container"></div>
             </div>
         </section>
 
         <div id="acao-principal-container"></div>
-
-        <!-- ▼ v10.4.5 · Seu ritmo na Copa (treinos × oficiais) -->
-        <div id="home-ritmo-container"></div>
 
         <!-- ⚙️ L2 — Meta pessoal reposicionada: agora logo abaixo do CTA principal -->
         <div id="meta-pessoal-container"></div>
@@ -14548,16 +14550,18 @@ if (containerProg) {
         else                   el.textContent = "Você tem equilibrado treinos e partidas oficiais.";
     }
 
-    // Card "Seu Ritmo na Copa" — barra treinos × oficiais + frase neutra
+    // v10.4.9 · Bloco de ritmo agora vive DENTRO do hero-esports.
+    // Mostra apenas a barra proporcional, os números e a legenda.
+    // A frase interpretativa é responsabilidade do subtítulo do hero
+    // (atualizarFraseHero) — evita duplicação de texto.
     function renderizarRitmoCopa(dados) {
-        const ctn = document.getElementById("home-ritmo-container");
+        const ctn = document.getElementById("hero-ritmo-container");
         if (!ctn) return;
 
         // Sem identificação
         if (!dados) {
-            ctn.innerHTML = `<div class="home-ritmo-card">
-                <div class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</div>
-                <div class="home-ritmo-vazio">Identifique-se para acompanhar seu ritmo aqui.</div>
+            ctn.innerHTML = `<div class="hero-ritmo-bloco">
+                <div class="hero-ritmo-vazio">Identifique-se para acompanhar seu ritmo aqui.</div>
             </div>`;
             return;
         }
@@ -14567,9 +14571,8 @@ if (containerProg) {
 
         // Sem nenhuma partida (nem treino, nem oficial)
         if (total === 0) {
-            ctn.innerHTML = `<div class="home-ritmo-card">
-                <div class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</div>
-                <div class="home-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
+            ctn.innerHTML = `<div class="hero-ritmo-bloco">
+                <div class="hero-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
             </div>`;
             return;
         }
@@ -14577,34 +14580,22 @@ if (containerProg) {
         const pctOfi = Math.round((oficiais / total) * 100);
         const pctTre = 100 - pctOfi;
 
-        let frase;
-        if (oficiais === 0) {
-            frase = `Você já fez <strong>${treinos}</strong> ${treinos === 1 ? "treino" : "treinos"} e ainda não jogou nenhuma partida oficial.`;
-        } else if (treinos === 0) {
-            frase = `Você já jogou <strong>${oficiais}</strong> ${oficiais === 1 ? "partida oficial" : "partidas oficiais"} e ainda não fez nenhum treino.`;
-        } else if (pctOfi >= 70) {
-            frase = `Você tem dado mais prioridade às <strong>partidas oficiais</strong>.`;
-        } else if (pctTre >= 70) {
-            frase = `Você tem dedicado mais tempo aos <strong>treinos</strong>.`;
-        } else {
-            frase = `Você tem <strong>equilibrado</strong> treinos e partidas oficiais.`;
-        }
-
-        ctn.innerHTML = `<div class="home-ritmo-card">
-            <div class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</div>
-            <div class="home-ritmo-numeros">
-                <span><span class="num gold">${treinos.toLocaleString("pt-BR")}</span> ${treinos === 1 ? "treino" : "treinos"}</span>
-                <span><span class="num cyan">${oficiais.toLocaleString("pt-BR")}</span> ${oficiais === 1 ? "partida oficial" : "partidas oficiais"}</span>
+        ctn.innerHTML = `<div class="hero-ritmo-bloco">
+            <div class="hero-ritmo-cabecalho">
+                <span class="hero-ritmo-titulo">🎯 Seu Ritmo na Copa</span>
+                <span class="hero-ritmo-numeros">
+                    <span><span class="num gold">${treinos.toLocaleString("pt-BR")}</span>${treinos === 1 ? "treino" : "treinos"}</span>
+                    <span><span class="num cyan">${oficiais.toLocaleString("pt-BR")}</span>${oficiais === 1 ? "partida oficial" : "partidas oficiais"}</span>
+                </span>
             </div>
-            <div class="home-ritmo-barra" role="img" aria-label="Proporção: ${pctTre}% treinos, ${pctOfi}% partidas oficiais">
-                <div class="home-ritmo-fill treinos" style="width: ${pctTre}%"></div>
-                <div class="home-ritmo-fill oficiais" style="width: ${pctOfi}%"></div>
+            <div class="hero-ritmo-barra" role="img" aria-label="Proporção: ${pctTre}% treinos, ${pctOfi}% partidas oficiais">
+                <div class="hero-ritmo-fill treinos" style="width: ${pctTre}%"></div>
+                <div class="hero-ritmo-fill oficiais" style="width: ${pctOfi}%"></div>
             </div>
-            <div class="home-ritmo-legenda">
+            <div class="hero-ritmo-legenda">
                 <span>🎯 Treinos <span class="pct">${pctTre}%</span></span>
                 <span>🎮 Oficiais <span class="pct">${pctOfi}%</span></span>
             </div>
-            <p class="home-ritmo-frase">${frase}</p>
         </div>`;
     }
 
