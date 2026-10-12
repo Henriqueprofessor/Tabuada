@@ -5832,6 +5832,101 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .logo-versao.versao-desatualizada { animation: none; }
         }
         /* ▲▲▲ FIM [02.58] */
+        /* ▼▼▼ [02.59] Botão "Verificar versão" no cabeçalho ─────── INÍCIO ─── */
+        /* v10.4.9 · Botão ao lado do badge da versão. Consulta o Firebase
+           sob demanda e, se encontrar versão mais nova, recarrega o app.
+           4 estados: idle (🔄), verificando (gira), ok (✓ verde), erro (⚠ âmbar). */
+
+        .logo-verificar {
+            /* Reset de botão */
+            appearance: none;
+            -webkit-appearance: none;
+            font-family: inherit;
+
+            /* Layout */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 22px;
+            padding: 0;
+            margin-left: 3px;
+            align-self: center;
+
+            /* Visual padrão (idle) */
+            background: rgba(34, 211, 238, 0.10);
+            border: 1px solid rgba(34, 211, 238, 0.32);
+            border-radius: 8px;
+            color: var(--neon-cyan);
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.18s ease, border-color 0.18s ease,
+                        color 0.18s ease, transform 0.15s ease;
+        }
+
+        .logo-verificar:hover:not(:disabled) {
+            background: rgba(34, 211, 238, 0.20);
+            border-color: var(--neon-cyan);
+            color: #a5f3fc;
+            transform: translateY(-1px);
+        }
+        .logo-verificar:active:not(:disabled) {
+            transform: translateY(0);
+            background: rgba(34, 211, 238, 0.14);
+        }
+        .logo-verificar:focus-visible {
+            outline: 3px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+        .logo-verificar:disabled {
+            cursor: wait;
+            opacity: 0.85;
+        }
+
+        /* ─── Estado VERIFICANDO: gira o ícone ─── */
+        .logo-verificar.verificando {
+            cursor: wait;
+        }
+        .logo-verificar.verificando > span {
+            display: inline-block;
+            animation: logoVerificarSpin 0.9s linear infinite;
+        }
+        @keyframes logoVerificarSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ─── Estado OK: última versão ─── */
+        .logo-verificar.ok {
+            background: rgba(16, 185, 129, 0.16);
+            border-color: rgba(16, 185, 129, 0.55);
+            color: #6ee7b7;
+        }
+
+        /* ─── Estado ERRO / DESATUALIZADO ─── */
+        .logo-verificar.erro {
+            background: rgba(251, 191, 36, 0.16);
+            border-color: rgba(251, 191, 36, 0.55);
+            color: #fde68a;
+        }
+
+        @media (max-width: 520px) {
+            .logo-verificar {
+                width: 24px;
+                height: 20px;
+                font-size: 11px;
+                margin-left: 2px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .logo-verificar { transition: none !important; }
+            .logo-verificar:hover:not(:disabled) { transform: none; }
+            .logo-verificar.verificando > span { animation: none; }
+        }
+        /* ▲▲▲ FIM [02.59] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -5856,6 +5951,15 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
                 >v10.4.9</button>
+                <!-- ▼ v10.4.9 · Botão "Verificar versão" — consulta o Firebase sob demanda -->
+                <button
+                    type="button"
+                    class="logo-verificar"
+                    id="btn-verificar-versao"
+                    onclick="aoClicarVerificarVersao()"
+                    aria-label="Verificar se há atualizações disponíveis"
+                    title="Verificar atualizações"
+                ><span aria-hidden="true">🔄</span></button>
             </div>
             <div class="esports-acoes-header">
                 <div class="esports-perfil-pill" id="perfil-pill-aluno">
@@ -16717,6 +16821,107 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (typeof abrirChangelog === "function") abrirChangelog();
     }
     // ▲▲▲ FIM [19.04]
+    // ▼▼▼ [19.05] Botão "Verificar versão" — consulta sob demanda ─────
+    // v10.4.9 · Handler do botão 🔄 ao lado do badge.
+    // Fluxo:
+    //   1) Marca o botão como "verificando" (ícone gira, disabled)
+    //   2) Consulta config/ultimaVersao no Firebase
+    //   3) Compara com APP_VERSION local
+    //   4) Aplica estado visual + toast + ação:
+    //       · OK               → ✓ verde + toast "você está atualizado" (2,4s)
+    //       · Desatualizado    → ⬆ âmbar + toast + reload com cache-bust
+    //       · Erro de leitura  → ⚠ âmbar + toast "tente em instantes"
+    //   5) Após 2,4s, volta ao estado neutro (🔄)
+    //
+    // Delay mínimo de 600ms para o usuário VER o spinner — sem isso, a
+    // resposta instantânea do Firebase (cache local) faz o botão piscar.
+
+    async function aoClicarVerificarVersao() {
+        const btn = document.getElementById("btn-verificar-versao");
+        if (!btn || btn.disabled) return;
+
+        btn.disabled = true;
+        btn.classList.remove("ok", "erro");
+        btn.classList.add("verificando");
+        btn.title = "Verificando atualizações…";
+        btn.setAttribute("aria-label", "Verificando atualizações…");
+
+        const inicio = Date.now();
+        let resultado = "ok"; // "ok" | "desatualizado" | "erro"
+        let versaoPublicada = "";
+
+        try {
+            const snap = await database.ref(CAMINHO_ULTIMA_VERSAO).once("value");
+            versaoPublicada = normalizarVersao(snap.val());
+
+            if (versaoPublicada) {
+                const local = normalizarVersao(APP_VERSION);
+                if (compararVersoes(local, versaoPublicada) < 0) {
+                    resultado = "desatualizado";
+                }
+            }
+            // se não há versão publicada → resultado fica "ok"
+        } catch (e) {
+            console.warn("[Verificar versão] Falha:", e && e.message);
+            resultado = "erro";
+        }
+
+        // Delay mínimo de 600ms (UX: usuário precisa ver o giro do ícone)
+        const decorrido = Date.now() - inicio;
+        if (decorrido < 600) {
+            await new Promise(r => setTimeout(r, 600 - decorrido));
+        }
+
+        btn.classList.remove("verificando");
+
+        // ─── Caso 1: desatualizado → recarrega ───
+        if (resultado === "desatualizado") {
+            btn.classList.add("erro");
+            btn.textContent = "⬆";
+            btn.title = `Atualizando para v${versaoPublicada}…`;
+            try {
+                notificar(`🚀 Nova versão encontrada (v${versaoPublicada})! Recarregando…`, "info", 2500);
+            } catch(e) {}
+            setTimeout(() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set("v", Date.now().toString(36));
+                window.location.replace(url.toString());
+            }, 700);
+            return;
+        }
+
+        // ─── Caso 2: erro de leitura ───
+        if (resultado === "erro") {
+            btn.classList.add("erro");
+            btn.textContent = "⚠";
+            btn.title = "Não foi possível verificar agora";
+            try {
+                notificar("Não foi possível verificar agora. Tente em instantes.", "aviso", 3500);
+            } catch(e) {}
+        }
+
+        // ─── Caso 3: já está atualizado ───
+        else {
+            btn.classList.add("ok");
+            btn.textContent = "✓";
+            btn.title = "Você está na última versão";
+            try {
+                notificar("✅ Você está na última versão!", "sucesso", 2400);
+            } catch(e) {}
+            // Revalida o badge também — pode ter mudado desde o boot
+            try { verificarVersaoPublicada(); } catch(e) {}
+        }
+
+        // ─── Volta ao estado neutro após 2,4s ───
+        setTimeout(() => {
+            btn.classList.remove("ok", "erro");
+            btn.innerHTML = `<span aria-hidden="true">🔄</span>`;
+            btn.disabled = false;
+            btn.title = "Verificar atualizações";
+            btn.setAttribute("aria-label", "Verificar se há atualizações disponíveis");
+        }, 2400);
+    }
+    // ▲▲▲ FIM [19.05]
     </script>
 </body>
 </html>
