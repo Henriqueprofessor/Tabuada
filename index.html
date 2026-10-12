@@ -5616,10 +5616,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .autocomplete-item { transition: none; }
         }
         /* ▲▲▲ FIM [02.56] */
-        /* ▼▼▼ [02.57] Crédito de autoria (modais Como funciona + Changelog) ─ INÍCIO ─── */
-        /* v10.4.9 · Assinatura discreta do autor no rodapé dos modais informativos.
-           Estilo sóbrio, sem competir com o conteúdo principal. */
+        /* ▼▼▼ [02.57] Crédito de autoria (Changelog topo + Como funciona rodapé) ─ INÍCIO ─── */
+        /* v10.4.9 · Assinatura discreta do autor nos modais informativos.
+           · Changelog → crédito no TOPO (masthead de documento)
+           · Como funciona → crédito no RODAPÉ (fecho de instruções) */
 
+        /* ─── Variante RODAPÉ (modal "Como funciona") ─── */
         .info-credito-autoria {
             margin: 20px 0 0;
             padding: 14px 16px 4px;
@@ -5650,43 +5652,186 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             color: var(--text-secondary);
             letter-spacing: 0.2px;
         }
-        .info-credito-autoria .info-credito-ano {
-            display: block;
-            font-size: 10.5px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            letter-spacing: 0.3px;
-        }
 
-        .changelog-credito-autoria {
-            margin-top: 20px;
-            padding: 14px 4px 4px;
-            border-top: 1px dashed rgba(148, 163, 184, 0.2);
-            text-align: center;
-            line-height: 1.55;
-            color: var(--text-muted);
-            font-size: 11.5px;
+        /* ─── Variante TOPO (modal Changelog) ─── */
+        .changelog-credito-topo {
+            margin: 0 0 14px;
+            padding: 12px 14px 13px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(217, 119, 6, 0.04) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            border-left: 4px solid var(--neon-gold);
+            border-radius: 10px;
+            text-align: left;
+            line-height: 1.5;
         }
-        .changelog-credito-autoria strong {
-            display: block;
-            color: var(--text-secondary);
+        .changelog-credito-topo .changelog-credito-titulo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
             font-weight: 800;
-            margin-bottom: 3px;
-            font-size: 12px;
-            letter-spacing: 0.2px;
+            color: #fde68a;
+            letter-spacing: 0.3px;
+            margin-bottom: 4px;
+            line-height: 1.2;
         }
-        .changelog-credito-autoria .changelog-credito-autor {
-            color: var(--neon-gold);
+        .changelog-credito-topo .changelog-credito-titulo .icone {
+            font-size: 15px;
+            line-height: 1;
+            filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.45));
+        }
+        .changelog-credito-topo .changelog-credito-autor {
+            display: block;
+            font-size: 12.5px;
             font-weight: 700;
+            color: #fef3c7;
+            line-height: 1.35;
+            margin-bottom: 2px;
+        }
+        .changelog-credito-topo .changelog-credito-autor strong {
+            font-weight: 900;
+            color: var(--neon-gold);
+        }
+        .changelog-credito-topo .changelog-credito-escola {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 0.2px;
+            line-height: 1.4;
         }
 
         @media (max-width: 520px) {
             .info-credito-autoria { padding: 12px 12px 4px; font-size: 11px; }
             .info-credito-autoria .info-credito-titulo { font-size: 12px; }
             .info-credito-autoria .info-credito-autor { font-size: 11.5px; }
-            .changelog-credito-autoria { font-size: 11px; }
+
+            .changelog-credito-topo { padding: 10px 12px 11px; margin-bottom: 12px; }
+            .changelog-credito-topo .changelog-credito-titulo { font-size: 11.5px; }
+            .changelog-credito-topo .changelog-credito-autor { font-size: 11.5px; }
+            .changelog-credito-topo .changelog-credito-escola { font-size: 10.5px; }
         }
         /* ▲▲▲ FIM [02.57] */
+        /* ▼▼▼ [02.58] Badge de versão no cabeçalho (clicável + verificação) ─ INÍCIO ─── */
+        /* v10.4.9 · Mostra a versão atual ao lado do logo "Copa da Tabuada".
+           · Ciano (padrão)  → estado neutro ou verificação falhou
+           · Verde (✓)       → está na última versão publicada
+           · Âmbar (⚠ + pulso) → versão publicada é mais nova; clique recarrega */
+
+        .logo-versao {
+            /* Reset de botão */
+            appearance: none;
+            -webkit-appearance: none;
+            font-family: inherit;
+
+            /* Layout */
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            margin-left: 2px;
+            align-self: center;
+
+            /* Visual — estado padrão (ciano, neutro) */
+            background: rgba(34, 211, 238, 0.10);
+            border: 1px solid rgba(34, 211, 238, 0.32);
+            border-radius: 10px;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            color: var(--neon-cyan);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            text-shadow: none;
+            cursor: pointer;
+            user-select: none;
+            transition:
+                background 0.18s ease,
+                border-color 0.18s ease,
+                transform 0.15s ease,
+                color 0.18s ease,
+                box-shadow 0.3s ease;
+        }
+
+        .logo-versao:hover:not(:disabled) {
+            background: rgba(34, 211, 238, 0.20);
+            border-color: var(--neon-cyan);
+            color: #a5f3fc;
+            transform: translateY(-1px);
+        }
+        .logo-versao:active:not(:disabled) {
+            transform: translateY(0);
+            background: rgba(34, 211, 238, 0.14);
+        }
+        .logo-versao:focus-visible {
+            outline: 3px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+
+        /* ─── Estado VERDE: está na última versão ─── */
+        .logo-versao.versao-ok {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.45);
+            color: #6ee7b7;
+        }
+        .logo-versao.versao-ok:hover:not(:disabled) {
+            background: rgba(16, 185, 129, 0.22);
+            border-color: #10b981;
+            color: #a7f3d0;
+        }
+        .logo-versao.versao-ok::before {
+            content: "✓";
+            font-size: 11px;
+            font-weight: 900;
+            color: #10b981;
+            line-height: 1;
+        }
+
+        /* ─── Estado ÂMBAR: versão publicada é mais nova ─── */
+        .logo-versao.versao-desatualizada {
+            background: rgba(251, 191, 36, 0.14);
+            border-color: rgba(251, 191, 36, 0.55);
+            color: #fde68a;
+            animation: logoVersaoPulse 2.2s ease-in-out infinite;
+        }
+        .logo-versao.versao-desatualizada:hover:not(:disabled) {
+            background: rgba(251, 191, 36, 0.26);
+            border-color: var(--neon-gold);
+            color: #fef3c7;
+            transform: translateY(-1px);
+            animation-play-state: paused;
+        }
+        .logo-versao.versao-desatualizada::before {
+            content: "⚠";
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--neon-gold);
+            line-height: 1;
+        }
+        @keyframes logoVersaoPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.45); }
+            50%      { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
+        }
+
+        @media (max-width: 520px) {
+            .logo-versao {
+                font-size: 9.5px;
+                padding: 2px 7px;
+                letter-spacing: 0.2px;
+                margin-left: 0;
+                gap: 3px;
+            }
+            .logo-versao.versao-ok::before,
+            .logo-versao.versao-desatualizada::before {
+                font-size: 10px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .logo-versao { transition: none !important; }
+            .logo-versao:hover:not(:disabled) { transform: none; }
+            .logo-versao.versao-desatualizada { animation: none; }
+        }
+        /* ▲▲▲ FIM [02.58] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -5701,6 +5846,16 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <div class="esports-logo" id="titulo-secreto">
                 <span class="emoji-logo">🏆</span>
                 <span>Copa da Tabuada</span>
+                <!-- ▼ v10.4.9 · Badge com a versão atual — clique abre o Changelog
+                     (ou recarrega, se estiver desatualizado) -->
+                <button
+                    type="button"
+                    class="logo-versao"
+                    id="header-versao-atual"
+                    onclick="aoClicarBadgeVersao()"
+                    aria-label="Ver novidades da versão"
+                    title="Versão atual · Clique para ver o histórico de versões"
+                >v10.4.9</button>
             </div>
             <div class="esports-acoes-header">
                 <div class="esports-perfil-pill" id="perfil-pill-aluno">
@@ -5751,7 +5906,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                         <div class="hero-stat-valor verde" id="hero-stat-oficiais">0</div>
                     </div>
                 </div>
-                <!-- ▼ v10.4.9 · Ritmo na Copa (movido para dentro do hero) -->
+                <!-- ▼ v10.4.9 · Ritmo na Copa (dentro do hero) -->
                 <div id="hero-ritmo-container"></div>
             </div>
         </section>
@@ -6327,6 +6482,18 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 <div id="modal-changelog" class="modal-overlay hidden" onclick="fecharChangelog(event)">
     <div class="modal-card changelog-modal-card" onclick="event.stopPropagation()">
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
+
+        <!-- ▼ v10.4.9 · Crédito de autoria (masthead no topo) -->
+        <div class="changelog-credito-topo">
+            <div class="changelog-credito-titulo">
+                <span class="icone" aria-hidden="true">🏫</span>
+                <span>Copa da Tabuada CEIB 2026</span>
+            </div>
+            <span class="changelog-credito-autor">Idealizado e desenvolvido por <strong>Prof. Henrique Angelo da Silva</strong></span>
+            <span class="changelog-credito-escola">Professor de Matemática · Colégio Estadual Ismael Branco</span>
+        </div>
+        <!-- ▲ -->
+
         <div class="changelog-lista">
             <div class="changelog-item">
                 <span class="changelog-versao atual" id="changelog-versao-atual">v10.4.9 · atual</span>
@@ -6403,14 +6570,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <h4 class="changelog-titulo">🏆 Home Competitiva + Hall da Fama + Ranking de Turmas</h4>
                 <p class="changelog-descricao">Redesign completo da Home. Novo card "Ranking de Turmas" (Top 4 + sua turma), indicador de distância para o próximo colocado, meta pessoal compacta e alerta de Modo Teste. Nova tela "Hall da Fama".</p>
             </div>
-
-            <!-- ▼ v10.4.9 · Crédito de autoria (rodapé do changelog) -->
-            <div class="changelog-credito-autoria">
-                <strong>🏫 Copa da Tabuada CEIB 2026</strong>
-                Idealizado e desenvolvido por <span class="changelog-credito-autor">Prof. Henrique Angelo da Silva</span><br>
-                Professor de Matemática · Colégio Estadual Ismael Branco
-            </div>
-            <!-- ▲ -->
         </div>
     </div>
 </div>
@@ -16393,10 +16552,22 @@ window.addEventListener("DOMContentLoaded", async () => {
     atualizarAcessoSeConhecido();
     try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
     try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
+
+    // ─── v10.4.9 · Popula versão em 3 lugares ───
+    // 1) Badge no cabeçalho (visível no topo)
+    const elVHeader = document.getElementById("header-versao-atual");
+    if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
+    // 2) Changelog (entrada do topo)
     const elV = document.getElementById("changelog-versao-atual");
     if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
+    // 3) Botão "Novidades" no menu Mais
     const elVMenu = document.getElementById("mais-versao-atual");
     if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
+
+    // ─── v10.4.9 · Verifica assincronamente se há versão mais nova publicada
+    //     no Firebase. Não bloqueia o boot (roda em background). ───
+    verificarVersaoPublicada().catch(() => {});
+
     iniciarListenerMsgAluno();
 
     try {
@@ -16429,6 +16600,95 @@ window.addEventListener("DOMContentLoaded", async () => {
     setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
 });
 // ▲▲▲ FIM [19.03]
+    // ▼▼▼ [19.04] Verificação de versão publicada + clique no badge ────
+    // v10.4.9 · Consulta o campo "ultimaVersao" no Firebase (config/ultimaVersao)
+    // e ajusta o badge do cabeçalho:
+    //   · ciano (padrão)      → sem dados publicados ou verificação falhou
+    //   · verde (✓)           → está na última versão publicada
+    //   · âmbar (⚠ + pulso)   → versão publicada é mais nova
+    //
+    // Comportamento do clique no badge:
+    //   · se está em âmbar (desatualizado) → recarrega a página (cache-bust via ?v=)
+    //   · caso contrário                   → abre o modal de Novidades (Changelog)
+    //
+    // COMO PUBLICAR UMA NOVA VERSÃO (professor):
+    //   1) No Firebase Console → RTDB → nó "config", criar campo "ultimaVersao"
+    //   2) Definir o valor como a nova versão (ex: "10.4.10")
+    //   3) Todos os clientes em versões antigas verão o badge âmbar no próximo boot
+    //
+    // Nota: se o campo não existir, o badge fica neutro (ciano) — sem erro.
+
+    const CAMINHO_ULTIMA_VERSAO = "config/ultimaVersao";
+
+    // Compara duas strings "x.y.z" (ignorando sufixos após espaço, hífen ou ·).
+    // Retorna -1 se a < b, 0 se iguais, 1 se a > b.
+    function compararVersoes(a, b) {
+        const limpar = (v) => String(v || "")
+            .trim()
+            .split(/[\s\-;·]/)[0]
+            .split(".")
+            .map(n => parseInt(n, 10) || 0);
+        const pa = limpar(a);
+        const pb = limpar(b);
+        const len = Math.max(pa.length, pb.length);
+        for (let i = 0; i < len; i++) {
+            const x = pa[i] || 0;
+            const y = pb[i] || 0;
+            if (x < y) return -1;
+            if (x > y) return 1;
+        }
+        return 0;
+    }
+
+    async function verificarVersaoPublicada() {
+        const badge = document.getElementById("header-versao-atual");
+        if (!badge) return;
+        try {
+            const snap = await database.ref(CAMINHO_ULTIMA_VERSAO).once("value");
+            const publicada = String(snap.val() || "").trim();
+
+            // Sem dado publicado → mantém estado neutro (ciano)
+            if (!publicada) {
+                badge.classList.remove("versao-ok", "versao-desatualizada");
+                return;
+            }
+
+            const cmp = compararVersoes(APP_VERSION, publicada);
+
+            if (cmp < 0) {
+                // Versão local é antiga → âmbar + oferta de recarregar
+                badge.classList.remove("versao-ok");
+                badge.classList.add("versao-desatualizada");
+                badge.title = `Nova versão disponível (v${publicada}) — clique para recarregar`;
+                badge.setAttribute("aria-label", `Nova versão disponível (v${publicada}). Clique para recarregar.`);
+            } else {
+                // Está na última versão (ou à frente) → verde
+                badge.classList.remove("versao-desatualizada");
+                badge.classList.add("versao-ok");
+                badge.title = "Você está na última versão · Clique para ver o histórico de versões";
+                badge.setAttribute("aria-label", "Você está na última versão. Clique para ver o histórico de versões.");
+            }
+        } catch (e) {
+            // Falha na consulta → mantém estado neutro (ciano). Silencioso.
+            console.info("[Versão] Não foi possível verificar a versão publicada:", e && e.message);
+        }
+    }
+
+    function aoClicarBadgeVersao() {
+        const badge = document.getElementById("header-versao-atual");
+
+        // Se está no estado âmbar (desatualizado), recarrega com cache-bust
+        if (badge && badge.classList.contains("versao-desatualizada")) {
+            const url = new URL(window.location.href);
+            url.searchParams.set("v", Date.now().toString(36));
+            window.location.replace(url.toString());
+            return;
+        }
+
+        // Caso padrão: abre o Changelog (mesma tela do menu Mais → Novidades)
+        if (typeof abrirChangelog === "function") abrirChangelog();
+    }
+    // ▲▲▲ FIM [19.04]
     </script>
 </body>
 </html>
