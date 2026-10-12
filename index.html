@@ -9617,11 +9617,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▼▼▼ [11.02] Compilação dos dados do aluno ─────────────────────────
     async function compilarDadosAluno(nome, turma) {
         // ▼ P36 — Paraleliza as 4 leituras base + lê o ranking uma única vez
-        const [partidas, mapaGlobal, medalhasPersistidas, rankingGeral] = await Promise.all([
+        // ▼ v10.4.9 · Correção (item 8): também lê o contador de treinos do
+        //    Firebase em paralelo. A fonte da verdade é copa_treinos_focados,
+        //    porque treinos puros NÃO geram partidas oficiais.
+        const [partidas, mapaGlobal, medalhasPersistidas, rankingGeral, snapTreinos] = await Promise.all([
             obterHistoricoAluno(nome, turma),
             obterDesempenhoOperacoesGlobal(nome, turma),
             obterMedalsFirebase(nome, turma),
-            obterRanking().catch(() => [])
+            obterRanking().catch(() => []),
+            database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
         ]);
         const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
         const totalPartidas = partidas.length;
@@ -9664,8 +9668,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         // Contagem de operações exploradas / dominadas (formato novo — janela)
         const operacoesExploradas = Object.values(mapaGlobal).filter(d => normalizarHistoricoOperacao(d).length > 0).length;
 
-        // Treinos focados = partidas que foram com treinoFocado
-        const treinosFocados = partidas.filter(p => Array.isArray(p.treinoFocado) && p.treinoFocado.length > 0).length;
+        // ▼ v10.4.9 · Correção (item 8): fonte correta do contador de treinos.
+        //    Antes, o código procurava o campo `treinoFocado` dentro de partidas
+        //    oficiais. Só que treinos puros NÃO geram partidas — eles apenas
+        //    incrementam `copa_treinos_focados`. A leitura agora vem da fonte
+        //    certa, alinhada ao que o Hero da Home já mostra.
+        const treinosFocados = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
+        // ▲
 
         // ▼ P36 — Posições por modalidade: filtra do ranking já carregado (antes: 3 leituras Firebase)
         const posicoes = {};
@@ -12277,12 +12286,22 @@ if (containerProg) {
             // A chave do Firebase (CAMINHO_TREINOS_FOCADOS = "copa_treinos_focados")
             // foi mantida intencionalmente para preservar o histórico de todos
             // os alunos já registrados. Apenas o critério de incremento mudou.
+            //
+            // ▼ v10.4.9 · Correção (item 8): invalida o cache do Álbum para
+            //    forçar recompilação na próxima abertura. Sem isso, a medalha
+            //    "Treinador de Elite" continuaria mostrando 0/5 até o cache de
+            //    2 minutos expirar por conta própria — causando a sensação de
+            //    que o contador "não subiu".
             // ─────────────────────────────────────────────────────────────
             const treinoCompleto = (acertos + erros) === TOTAL_PERGUNTAS;
             if (treinoCompleto) {
                 try {
                     const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
                     await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1);
+                    // Invalida o cache de sessão do Álbum para refletir a nova contagem
+                    if (typeof albumSessaoCache !== "undefined") {
+                        albumSessaoCache = { chave: null, ts: 0, resultado: null };
+                    }
                 } catch(e) { console.warn("Falha ao contabilizar treino:", e); }
             }
             // ─────────────────────────────────────────────────────────────
