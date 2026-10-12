@@ -16607,29 +16607,55 @@ window.addEventListener("DOMContentLoaded", async () => {
     //   · verde (✓)           → está na última versão publicada
     //   · âmbar (⚠ + pulso)   → versão publicada é mais nova
     //
+    // O parser é TOLERANTE a aspas: aceita "10.4.9", '10.4.9', ""10.4.9"",
+    // espaços extras, etc. — sempre extrai a versão limpa.
+    //
     // Comportamento do clique no badge:
     //   · se está em âmbar (desatualizado) → recarrega a página (cache-bust via ?v=)
     //   · caso contrário                   → abre o modal de Novidades (Changelog)
     //
     // COMO PUBLICAR UMA NOVA VERSÃO (professor):
-    //   1) No Firebase Console → RTDB → nó "config", criar campo "ultimaVersao"
-    //   2) Definir o valor como a nova versão (ex: "10.4.10")
+    //   1) Firebase Console → RTDB → nó "config" → campo "ultimaVersao"
+    //   2) Valor: 10.4.10  (idealmente sem aspas, mas o código aceita com)
     //   3) Todos os clientes em versões antigas verão o badge âmbar no próximo boot
-    //
-    // Nota: se o campo não existir, o badge fica neutro (ciano) — sem erro.
 
     const CAMINHO_ULTIMA_VERSAO = "config/ultimaVersao";
 
-    // Compara duas strings "x.y.z" (ignorando sufixos após espaço, hífen ou ·).
-    // Retorna -1 se a < b, 0 se iguais, 1 se a > b.
+    // Normaliza uma string de versão, removendo:
+    //   - Aspas duplas/simples (todas as que envolvem)
+    //   - Aspas escapadas (\")
+    //   - Espaços em branco nas pontas
+    //   - Sufixos textuais (ex: "10.4.9 - hotfix", "10.4.9·atual")
+    // Retorna apenas o núcleo "x.y.z" ou "" se vazio.
+    function normalizarVersao(v) {
+        let s = String(v == null ? "" : v).trim();
+
+        // Remove aspas simples/duplas no início e fim (repetidamente, caso esteja em camadas)
+        let anterior;
+        do {
+            anterior = s;
+            // Aspas duplas
+            if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1);
+            // Aspas simples
+            if (s.length >= 2 && s.startsWith("'") && s.endsWith("'")) s = s.slice(1, -1);
+            // Remove escapes \" e \'
+            s = s.replace(/\\"/g, '"').replace(/\\'/g, "'");
+            s = s.trim();
+        } while (s !== anterior);
+
+        // Corta qualquer sufixo após espaço, hífen, ponto-e-vírgula, ·, etc.
+        s = s.split(/[\s\-;·]/)[0].trim();
+
+        return s;
+    }
+
+    // Compara duas strings "x.y.z" — retorna -1 (a<b), 0 (a==b), 1 (a>b).
     function compararVersoes(a, b) {
-        const limpar = (v) => String(v || "")
-            .trim()
-            .split(/[\s\-;·]/)[0]
+        const parse = (v) => normalizarVersao(v)
             .split(".")
             .map(n => parseInt(n, 10) || 0);
-        const pa = limpar(a);
-        const pb = limpar(b);
+        const pa = parse(a);
+        const pb = parse(b);
         const len = Math.max(pa.length, pb.length);
         for (let i = 0; i < len; i++) {
             const x = pa[i] || 0;
@@ -16645,15 +16671,17 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (!badge) return;
         try {
             const snap = await database.ref(CAMINHO_ULTIMA_VERSAO).once("value");
-            const publicada = String(snap.val() || "").trim();
+            const publicadaRaw = snap.val();
+            const publicada = normalizarVersao(publicadaRaw);
 
-            // Sem dado publicado → mantém estado neutro (ciano)
+            // Sem dado publicado (ou vazio após limpeza) → mantém estado neutro (ciano)
             if (!publicada) {
                 badge.classList.remove("versao-ok", "versao-desatualizada");
                 return;
             }
 
-            const cmp = compararVersoes(APP_VERSION, publicada);
+            const local = normalizarVersao(APP_VERSION);
+            const cmp = compararVersoes(local, publicada);
 
             if (cmp < 0) {
                 // Versão local é antiga → âmbar + oferta de recarregar
