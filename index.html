@@ -12312,18 +12312,23 @@ if (containerProg) {
             promocoesRecentes = await verificarPromocoes(alunoAtual, turmaAtual, modalidadeAtual, mapaFonteAgregada);
             document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
             if (promocoesRecentes.length > 0) { mostrarBannerPromocao(promocoesRecentes); dispararConfetes(); setTimeout(() => { promocoesRecentes = []; }, 6000); }
+            // ▼▼▼ [14.08-BUGFIX] Sincroniza Álbum/medalhas após treino completo ──── INÍCIO ───
             document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
             document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
             document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
-            document.getElementById("album-cta-resultado")?.classList.add("hidden");
             somConclusao();
             // Verifica certificados mesmo no treino
             verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
+            // v10.4.10 · Item 7 — sincroniza medalhas e acende o badge do Álbum
+            // depois de um treino completo (antes, só partida oficial disparava isso).
+            // A própria função esconde o CTA se não houver medalha nova.
+            verificarAlbumPosPartida(alunoAtual, turmaAtual);
             treinoFocoOperacoes = null; treinoListaInteligente = null; treinoFocoAbsoluto = null;
             mostrarTela("tela-resultado");
             return;
+            // ▲▲▲ FIM [14.08-BUGFIX]
         }
 
         // Classificatória oficial
