@@ -6564,9 +6564,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <button class="aba" id="aba-velocidade-turma" onclick="mudarTipoRanking('velocidade-turma')">⚡ Velocidade Turma</button>
             <button class="aba" id="aba-precisao-global" onclick="mudarTipoRanking('precisao-global')">🎯 Precisão Global</button>
             <button class="aba" id="aba-velocidade-global" onclick="mudarTipoRanking('velocidade-global')">⚡ Velocidade Global</button>
-            <button class="aba" id="aba-media-25" onclick="mudarTipoRanking('media-25')">🏅 Média 2-5</button>
-            <button class="aba" id="aba-media-69" onclick="mudarTipoRanking('media-69')">🏅 Média 6-9</button>
-            <button class="aba" id="aba-media-010" onclick="mudarTipoRanking('media-010')">🏅 Média 1-10</button>
+            <button class="aba" id="aba-media-turma" onclick="mudarTipoRanking('media-turma')">🏅 Média Turma</button>
+            <button class="aba" id="aba-media-global" onclick="mudarTipoRanking('media-global')">🏅 Média Global</button>
         </div>
         <div id="hint-turma-aluno" class="hint-turma-aluno hidden">
             ℹ️ <strong>Escolha sua turma no filtro abaixo</strong> para ver sua classificação. Depois de jogar, o sistema lembrará da sua turma automaticamente.
@@ -6589,34 +6588,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <h3 id="titulo-ranking">Ranking</h3>
         <div class="tabela-container"><table><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
         <div id="medias-turmas-container" class="medias-turmas hidden"></div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
-    </div>
-
-    <!-- ▼▼▼ [03.09] PERFIL ───────────────────────────────────── -->
-    <div id="tela-perfil" class="card hidden">
-        <h2>🔍 Pesquisar Aluno</h2>
-        <div id="perfil-atalho-meu" class="perfil-atalho-meu hidden">
-            <button onclick="preencherPerfilComMeusDados()" class="botao-atalho-perfil">✨ Ou veja direto o seu perfil →</button>
-        </div>
-        <div class="autocomplete-wrap">
-            <input type="text" id="perfil-nome" placeholder="Nome do aluno" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="perfil-autocomplete">
-            <div id="perfil-autocomplete" class="autocomplete-lista hidden" role="listbox" aria-label="Sugestões de nomes de alunos"></div>
-        </div>
-        <select id="perfil-turma">
-            <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
-            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
-            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
-        </select>
-        <button onclick="carregarPerfil()" class="botao-verde">🔍 Pesquisar</button>
-        <div id="perfil-conteudo" class="hidden">
-            <hr><div class="resumo-resultado"><div><strong>Melhor pontuação:</strong> <span id="perfil-melhor-pontos">-</span></div><div><strong>Média acertos:</strong> <span id="perfil-media-acertos">-</span></div><div><strong>Melhor tempo médio dos acertos:</strong> <span id="perfil-melhor-tempo">-</span></div><div><strong>Total partidas:</strong> <span id="perfil-total-partidas">-</span></div><div><strong>Maior sequência:</strong> <span id="perfil-melhor-sequencia">-</span></div><div><strong>Melhor status:</strong> <span id="perfil-melhor-status">-</span></div></div>
-            <h3>🏅 Conquistas</h3>
-<div id="perfil-conquistas" class="conquistas-grid"></div>
-
-<h3 style="margin-top:18px;">🎯 Em progresso</h3>
-<div id="perfil-conquistas-progresso" class="conquistas-grid"></div>
-            <h3>🗺️ Mapa de Tabuadas</h3><div id="perfil-mapa"></div>
-        </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
     </div>
 
@@ -10953,27 +10924,51 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.03]
 
 
-    // ▼▼▼ [13.03.bis] Médias Gerais — ranking por modalidade ──────────
-    // ⚙️ Retorna a lista de alunos ordenada pela média de pontos naquela
-    // modalidade. Conta partidas oficiais COMPLETAS + PARCIAIS (o aluno
-    // que cancela muito é naturalmente penalizado). Só entra quem tem
-    // pelo menos MEDIA_MIN_PARTIDAS (5) partidas oficiais na modalidade.
-    async function obterRankingMediaGeral(mod, turma = null) {
+    // ▼▼▼ [13.03.bis] Médias Gerais — ranking combinado (3 modalidades) ───
+    // ⚙️ Retorna a lista de alunos ordenada pela média geral combinada
+    // (média das 3 médias). Conta partidas oficiais COMPLETAS + PARCIAIS
+    // (o aluno que cancela muito é naturalmente penalizado).
+    // Só entra quem tem pelo menos MEDIA_MIN_PARTIDAS (5) partidas
+    // oficiais em CADA uma das 3 modalidades.
+    async function obterRankingMediaGeralCombinada(turma = null) {
         const partidas = await obterPartidas();
-        let filtro = partidas.filter(p => p.modalidade === mod);
-        if (turma) filtro = filtro.filter(p => p.turma === turma);
+        const filtro = turma ? partidas.filter(p => p.turma === turma) : partidas;
         const porAluno = new Map();
+
         filtro.forEach(p => {
             const k = `${normalizarNome(p.nome)}|${p.turma}`;
-            if (!porAluno.has(k)) porAluno.set(k, { nome: p.nome, turma: p.turma, total: 0, soma: 0 });
+            if (!porAluno.has(k)) {
+                porAluno.set(k, {
+                    nome: p.nome,
+                    turma: p.turma,
+                    porMod: { "2-5": { t: 0, s: 0 }, "6-9": { t: 0, s: 0 }, "0-10": { t: 0, s: 0 } }
+                });
+            }
             const a = porAluno.get(k);
-            a.total++;
-            a.soma += Number(p.pontos) || 0;
+            if (a.porMod[p.modalidade]) {
+                a.porMod[p.modalidade].t++;
+                a.porMod[p.modalidade].s += Number(p.pontos) || 0;
+            }
         });
+
         return Array.from(porAluno.values())
-            .map(a => ({ ...a, media: a.total > 0 ? a.soma / a.total : 0 }))
-            .filter(a => a.total >= MEDIA_MIN_PARTIDAS)
-            .sort((x, y) => y.media - x.media || y.total - x.total);
+            .filter(a => ["2-5","6-9","0-10"].every(m => a.porMod[m].t >= MEDIA_MIN_PARTIDAS))
+            .map(a => {
+                const m25  = a.porMod["2-5"].s  / a.porMod["2-5"].t;
+                const m69  = a.porMod["6-9"].s  / a.porMod["6-9"].t;
+                const m010 = a.porMod["0-10"].s / a.porMod["0-10"].t;
+                const total = a.porMod["2-5"].t + a.porMod["6-9"].t + a.porMod["0-10"].t;
+                return {
+                    nome: a.nome, turma: a.turma,
+                    totalPartidas: total,
+                    qtd25: a.porMod["2-5"].t,
+                    qtd69: a.porMod["6-9"].t,
+                    qtd010: a.porMod["0-10"].t,
+                    media25: m25, media69: m69, media010: m010,
+                    mediaGeral: (m25 + m69 + m010) / 3
+                };
+            })
+            .sort((x, y) => y.mediaGeral - x.mediaGeral || y.totalPartidas - x.totalPartidas);
     }
     // ▲▲▲ FIM [13.03.bis]
 
@@ -11421,22 +11416,26 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
             document.getElementById("banner-posicao-global").classList.add("hidden");
             document.getElementById("medias-turmas-container").classList.add("hidden");
-        } else if (tipoRankingAtual === "media-25" || tipoRankingAtual === "media-69" || tipoRankingAtual === "media-010") {
-            // ⚙️ Média Geral — 3 abas por modalidade
-            const modAlvo = tipoRankingAtual === "media-25" ? "2-5"
-                          : tipoRankingAtual === "media-69" ? "6-9"
-                          : "0-10";
-            const ts = obterTurmaSalvaAluno();
-            if (ts) { turma = ts; document.getElementById("filtro-turma").value = turma; }
-            rank = await obterRankingMediaGeral(modAlvo, turma);
-            tit = `🏅 Média Geral — Turma ${turma} · ${MODALIDADES[modAlvo]?.nome}`;
+        } else if (tipoRankingAtual === "media-turma" || tipoRankingAtual === "media-global") {
+            // ⚙️ Média Geral — tabela combinada (as 3 modalidades numa linha)
+            const ehGlobal = tipoRankingAtual === "media-global";
+            let turmaFiltro = null;
+            if (!ehGlobal) {
+                const ts = obterTurmaSalvaAluno();
+                if (ts) { turma = ts; document.getElementById("filtro-turma").value = turma; }
+                turmaFiltro = turma;
+            }
+            rank = await obterRankingMediaGeralCombinada(turmaFiltro);
+            tit = ehGlobal
+                ? `🏅 Média Global — todas as turmas`
+                : `🏅 Média Turma — Turma ${turma}`;
             ti.innerText = tit;
-            th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Partidas oficiais</th><th>Total de pontos</th><th>Média</th>`;
+            th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>📚 2-5</th><th>🎯 6-9</th><th>⭐ 1-10</th><th>Média Geral</th>`;
             document.getElementById("banner-posicao-global").classList.add("hidden");
             document.getElementById("medias-turmas-container").classList.add("hidden");
 
             if (!rank.length) {
-                tb.innerHTML = `<tr><td colspan="6"><div class="ranking-vazio"><span class="emoji-vazio">🏅</span>Nenhum aluno com <strong>${MEDIA_MIN_PARTIDAS} partidas oficiais</strong> nesta modalidade ainda.<br>Jogue mais para entrar!</div></td></tr>`;
+                tb.innerHTML = `<tr><td colspan="7"><div class="ranking-vazio"><span class="emoji-vazio">🏅</span>Nenhum aluno com <strong>${MEDIA_MIN_PARTIDAS} partidas oficiais</strong> em <strong>cada uma das 3 modalidades</strong> ainda.<br>Jogue mais para entrar!</div></td></tr>`;
                 return;
             }
             let h = "";
@@ -11446,7 +11445,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : "";
                 const vc = ehVoce(r);
                 const cv = vc ? " voce-linha" : "";
-                h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.total}</td><td style="text-align:center">${r.soma.toLocaleString("pt-BR")}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${Math.round(r.media).toLocaleString("pt-BR")}</td></tr>`;
+                h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${Math.round(r.media25).toLocaleString("pt-BR")}</td><td style="text-align:center">${Math.round(r.media69).toLocaleString("pt-BR")}</td><td style="text-align:center">${Math.round(r.media010).toLocaleString("pt-BR")}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${Math.round(r.mediaGeral).toLocaleString("pt-BR")}</td></tr>`;
             }
             tb.innerHTML = h;
             return;
@@ -11484,11 +11483,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function mudarTipoRanking(tp) {
         tipoRankingAtual = tp;
         document.getElementById("aba-turma")?.classList.toggle("ativa", tp === "turma");
-        const ids = ["aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma","aba-media-25","aba-media-69","aba-media-010"];
+        const ids = ["aba-global","aba-precisao-global","aba-precisao-turma","aba-velocidade-global","aba-velocidade-turma","aba-media-turma","aba-media-global"];
         ids.forEach(id => { document.getElementById(id)?.classList.toggle("ativa", id.replace("aba-", "") === tp); });
         if (tp !== "turma") { document.getElementById("rankings-especiais")?.classList.remove("hidden"); document.getElementById("toggle-rankings-especiais")?.classList.add("aberto"); }
-        if (tp === "turma" || tp === "precisao-turma" || tp === "velocidade-turma" || tp.startsWith("media-")) aplicarTurmaSalvaNoFiltro();
-        const g = (tp === "global" || tp === "precisao-global" || tp === "velocidade-global");
+        if (tp === "turma" || tp === "precisao-turma" || tp === "velocidade-turma" || tp === "media-turma") aplicarTurmaSalvaNoFiltro();
+        const g = (tp === "global" || tp === "precisao-global" || tp === "velocidade-global" || tp === "media-global");
         document.getElementById("filtro-modalidade").classList.toggle("hidden", false);
         document.getElementById("filtro-turma").classList.toggle("hidden", g);
         document.getElementById("observacao-velocidade").classList.toggle("hidden", !(tp === "velocidade-global" || tp === "velocidade-turma"));
@@ -16084,6 +16083,145 @@ if (containerProg) {
         if (m && !m.classList.contains("hidden")) fecharModalHallCategoria();
     });
     // ▲▲▲ FIM [18.02]
+
+
+    // ▼▼▼ [18.02.bis] Métricas acumulativas do Hall da Fama
+    async function calcularMetricasHallFama() {
+        // ⚙️ [13] — Só partidas COMPLETAS contam para o Hall da Fama.
+        const todasPartidas = await obterPartidas();
+        const partidas = todasPartidas.filter(ehPartidaCompleta);
+        const porAluno = new Map();
+
+        partidas.forEach(p => {
+            const k = `${normalizarNome(p.nome)}|${p.turma}`;
+            if (!porAluno.has(k)) {
+                porAluno.set(k, {
+                    nome: p.nome,
+                    turma: p.turma,
+                    totalAcertos: 0,
+                    totalPartidas: 0,
+                    somaPontos: 0,
+                    partidasPerfeitas: 0,
+                    maxTemposRapidosPerfeito: 0,
+                    melhorTempoPerfeito: Infinity,
+                    diasSet: new Set(),
+                    treinosFocados: 0
+                });
+            }
+            const a = porAluno.get(k);
+            const acertos = Number(p.acertos) || 0;
+            const pontos  = Number(p.pontos)  || 0;
+            const tm      = Number(p.tempoMedio) || 0;
+            const tr      = Number(p.temposRapidos) || 0;
+
+            a.totalAcertos += acertos;
+            a.totalPartidas++;
+            a.somaPontos += pontos;
+
+            if (acertos === 20) {
+                a.partidasPerfeitas++;
+                if (tr > a.maxTemposRapidosPerfeito) {
+                    a.maxTemposRapidosPerfeito = tr;
+                    a.melhorTempoPerfeito = tm;
+                } else if (tr === a.maxTemposRapidosPerfeito && tm > 0 && tm < a.melhorTempoPerfeito) {
+                    a.melhorTempoPerfeito = tm;
+                }
+            }
+
+            if (p.data) {
+                const d = new Date(p.data);
+                a.diasSet.add(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
+            }
+        });
+
+        try {
+            const snapTreinos = await database.ref(CAMINHO_TREINOS_FOCADOS).once("value");
+            const treinosFirebase = snapTreinos.val() || {};
+            porAluno.forEach((a) => {
+                const chave = chaveAlbum(a.nome, a.turma);
+                if (treinosFirebase[chave]) a.treinosFocados = Number(treinosFirebase[chave]) || 0;
+            });
+        } catch(e) {
+            console.warn("Falha ao ler contador de treinos:", e);
+        }
+
+        const lista = Array.from(porAluno.values()).map(a => ({
+            ...a,
+            diasDistintos: a.diasSet.size,
+            mediaPontos: a.totalPartidas > 0 ? a.somaPontos / a.totalPartidas : 0
+        }));
+
+        // ⚙️ Média Geral (combinada) — usa TODAS as partidas oficiais (completas + parciais).
+        // Só entra quem tem ≥ 5 partidas oficiais em CADA uma das 3 modalidades.
+        const mapaMedia = new Map();
+        todasPartidas.forEach(p => {
+            const k = `${normalizarNome(p.nome)}|${p.turma}`;
+            if (!mapaMedia.has(k)) {
+                mapaMedia.set(k, {
+                    nome: p.nome,
+                    turma: p.turma,
+                    porMod: { "2-5": { t: 0, s: 0 }, "6-9": { t: 0, s: 0 }, "0-10": { t: 0, s: 0 } }
+                });
+            }
+            const a = mapaMedia.get(k);
+            if (a.porMod[p.modalidade]) {
+                a.porMod[p.modalidade].t++;
+                a.porMod[p.modalidade].s += Number(p.pontos) || 0;
+            }
+        });
+
+        const listaMedia = Array.from(mapaMedia.values())
+            .filter(a => ["2-5","6-9","0-10"].every(m => a.porMod[m].t >= MEDIA_MIN_PARTIDAS))
+            .map(a => {
+                const m25  = a.porMod["2-5"].s  / a.porMod["2-5"].t;
+                const m69  = a.porMod["6-9"].s  / a.porMod["6-9"].t;
+                const m010 = a.porMod["0-10"].s / a.porMod["0-10"].t;
+                const total = a.porMod["2-5"].t + a.porMod["6-9"].t + a.porMod["0-10"].t;
+                return {
+                    nome: a.nome, turma: a.turma,
+                    media25: m25, media69: m69, media010: m010,
+                    totalPartidas: total,
+                    mediaGeral: (m25 + m69 + m010) / 3
+                };
+            })
+            .sort((x, y) => y.mediaGeral - x.mediaGeral);
+
+        return {
+            velocidade: [...lista]
+                .filter(a => a.partidasPerfeitas >= 1)
+                .sort((a, b) =>
+                    b.maxTemposRapidosPerfeito - a.maxTemposRapidosPerfeito ||
+                    a.melhorTempoPerfeito - b.melhorTempoPerfeito ||
+                    b.partidasPerfeitas - a.partidasPerfeitas
+                ),
+            acertos: [...lista]
+                .sort((a, b) =>
+                    b.totalAcertos - a.totalAcertos ||
+                    b.totalPartidas - a.totalPartidas
+                ),
+            maratonista: [...lista]
+                .sort((a, b) =>
+                    b.totalPartidas - a.totalPartidas ||
+                    b.mediaPontos - a.mediaPontos
+                ),
+            presenca: [...lista]
+                .sort((a, b) =>
+                    b.diasDistintos - a.diasDistintos ||
+                    b.totalPartidas - a.totalPartidas ||
+                    b.mediaPontos - a.mediaPontos
+                ),
+            treino: [...lista]
+                .filter(a => a.treinosFocados > 0)
+                .sort((a, b) =>
+                    b.treinosFocados - a.treinosFocados ||
+                    b.totalAcertos - a.totalAcertos
+                ),
+            // ⚙️ NOVO: Média Consistente
+            media: listaMedia
+        };
+    }
+    // ▲▲▲ FIM [18.02.bis]
+
 
     // ▼▼▼ [18.03] Detalhes da etapa (modal) ─────────────────────────
     async function abrirDetalhesEtapa() {
