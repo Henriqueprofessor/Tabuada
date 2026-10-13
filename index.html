@@ -12154,6 +12154,72 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [13.06]
 
+    // ▼▼▼ [13.06.bis] Métricas do comparativo entre turmas ───────────
+    // v10.5.2 · Corrige ReferenceError pré-existente: a função
+    // calcularMetricasComparativo() era chamada por renderizarMediasTurmas()
+    // mas nunca havia sido definida no arquivo. Também é usada pela aba
+    // "Desafio entre turmas" (renderizarRanking → ramo "global").
+    // Retorna uma lista de objetos, um por turma, com as métricas usadas
+    // pelo comparativo: pontuação, precisão, velocidade e engajamento.
+
+    async function calcularMetricasComparativo(mod, apenasCompletas) {
+        const partidas = await obterPartidas();
+        const filtradas = (apenasCompletas
+            ? partidas.filter(p => p.modalidade === mod && ehPartidaCompleta(p))
+            : partidas.filter(p => p.modalidade === mod)
+        );
+
+        // Agrupa por turma → por aluno → melhor resultado
+        const porTurma = new Map();
+        filtradas.forEach(p => {
+            if (!porTurma.has(p.turma)) porTurma.set(p.turma, new Map());
+            const c = normalizarNome(p.nome);
+            const m = porTurma.get(p.turma);
+            if (!m.has(c) || ehMelhorResultado(p, m.get(c))) m.set(c, p);
+        });
+
+        const resultado = [];
+        porTurma.forEach((mapaAlunos, turma) => {
+            const lista = Array.from(mapaAlunos.values()).sort(compararParaOrdenacao);
+            const top4 = lista.slice(0, 4);
+            if (!top4.length) return;
+
+            // Pontuação: média dos pontos dos 4 melhores
+            const mediaPontos = top4.reduce((s, a) => s + (Number(a.pontos) || 0), 0) / top4.length;
+
+            // Precisão: média de acertos dos 4 melhores (em %)
+            const pctPrecisao = top4.reduce((s, a) => s + (Number(a.acertos) || 0), 0) / top4.length / 20 * 100;
+
+            // Velocidade: média do tempo médio dos acertos dos 4 melhores
+            // (Infinity se nenhum tem tempo válido — o chamador filtra)
+            const velocidades = top4
+                .map(a => Number(a.tempoMedio))
+                .filter(t => Number.isFinite(t) && t > 0);
+            const mediaVelocidade = velocidades.length
+                ? velocidades.reduce((s, v) => s + v, 0) / velocidades.length
+                : Infinity;
+
+            // Engajamento: média de partidas por aluno na turma
+            const totalPartidasTurma = filtradas.filter(p => p.turma === turma).length;
+            const totalAlunosTurma = mapaAlunos.size;
+            const mediaPartidas = totalAlunosTurma > 0 ? totalPartidasTurma / totalAlunosTurma : 0;
+
+            resultado.push({
+                turma,
+                totalAlunos: totalAlunosTurma,
+                totalJogadores: top4.length,
+                mediaPontos: Math.round(mediaPontos),
+                pctPrecisao,
+                mediaVelocidade,
+                mediaPartidas,
+                melhorAluno: top4[0]
+            });
+        });
+
+        return resultado;
+    }
+    // ▲▲▲ FIM [13.06.bis]
+
     // ▼▼▼ [13.07] Controle de filtros e abas ──────────────────────────
     function toggleRankingsEspeciais() {
         const c = document.getElementById("rankings-especiais"), t = document.getElementById("toggle-rankings-especiais");
