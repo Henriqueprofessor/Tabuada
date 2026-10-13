@@ -6229,6 +6229,283 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .hall-categoria-item, .hall-categoria-nav-btn { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.60] */
+
+/* ▼▼▼ [02.62] P4 — Voo da medalha até o card (opção C) ─── INÍCIO ─── */
+/* v10.5.1 · Quando o aluno ganha uma medalha nova, a medalha aparece
+   no centro da tela, brilha, e voa até o card .album-cta-resultado
+   que já existe na tela de resultado. Ao chegar, o card pulsa e os
+   chips das medalhas entram em sequência.
+   Respeita prefers-reduced-motion. */
+
+/* ─── Medalha voadora ─── */
+.medalha-voadora-p4 {
+    position: fixed;
+    left: 50%; top: 50%;
+    width: 120px; height: 120px;
+    margin-left: -60px; margin-top: -60px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 84px; line-height: 1;
+    z-index: 9000;
+    pointer-events: none;
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,.55));
+    will-change: transform, opacity;
+}
+.medalha-voadora-p4.visivel { opacity: 1; }
+
+.medalha-voadora-p4.fase-aparece {
+    animation: p4MedAparece 0.75s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes p4MedAparece {
+    0%   { transform: translate(0, 0) scale(0.3) rotate(-40deg); opacity: 0; }
+    50%  { transform: translate(0, -20px) scale(1.3) rotate(10deg); opacity: 1; }
+    75%  { transform: translate(0, -6px) scale(1.15) rotate(-4deg); opacity: 1; }
+    100% { transform: translate(0, 0) scale(1.25) rotate(0deg); opacity: 1; }
+}
+
+.medalha-voadora-p4.fase-brilha {
+    animation: p4MedBrilha 0.9s ease-in-out forwards;
+}
+@keyframes p4MedBrilha {
+    0%, 100% {
+        transform: translate(0, 0) scale(1.25) rotate(0deg);
+        filter: drop-shadow(0 8px 24px rgba(0,0,0,.55)) drop-shadow(0 0 20px rgba(251,191,36,.7));
+    }
+    50% {
+        transform: translate(0, -10px) scale(1.35) rotate(0deg);
+        filter: drop-shadow(0 8px 24px rgba(0,0,0,.55)) drop-shadow(0 0 40px rgba(251,191,36,1)) drop-shadow(0 0 70px rgba(251,191,36,.5));
+    }
+}
+
+/* ─── Rastro dourado no caminho ─── */
+.p4-rastro {
+    position: fixed;
+    z-index: 8999;
+    pointer-events: none;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fde68a 0%, #fbbf24 45%, transparent 75%);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: p4RastroFade 0.7s ease-out forwards;
+    will-change: transform, opacity;
+}
+@keyframes p4RastroFade {
+    0%   { opacity: 0.95; transform: translate(-50%,-50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
+}
+
+/* ─── Flash dourado central ─── */
+.p4-flash-central {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at center, rgba(251,191,36,.55) 0%, rgba(251,191,36,.15) 25%, transparent 55%);
+    z-index: 8998; pointer-events: none;
+    opacity: 0;
+    animation: p4FlashCentral 0.9s ease-out forwards;
+}
+@keyframes p4FlashCentral {
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ─── Título flutuante "Nova medalha!" ─── */
+.p4-titulo-nova-medalha {
+    position: fixed;
+    left: 50%; top: calc(50% - 110px);
+    transform: translateX(-50%) translateY(0);
+    z-index: 9001;
+    pointer-events: none;
+    text-align: center;
+    opacity: 0;
+    animation: p4TituloMed 2s ease-out forwards;
+    width: 90vw; max-width: 400px;
+}
+@keyframes p4TituloMed {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(14px) scale(0.85); }
+    20%  { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    75%  { opacity: 1; }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+.p4-titulo-nova-medalha .kicker {
+    font-size: 11.5px; font-weight: 900; letter-spacing: 2px;
+    color: var(--neon-gold, #fbbf24); text-transform: uppercase;
+    text-shadow: 0 2px 10px rgba(251,191,36,.65);
+}
+.p4-titulo-nova-medalha .nome {
+    font-size: 22px; font-weight: 900; color: #fff;
+    margin-top: 4px; letter-spacing: 0.3px;
+    text-shadow: 0 2px 12px rgba(0,0,0,.7);
+}
+
+/* ─── Flash breve no destino (card) ─── */
+.p4-destino-flash {
+    position: fixed; pointer-events: none; z-index: 8999;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(251,191,36,.95) 0%, rgba(251,191,36,.35) 45%, transparent 75%);
+    animation: p4DestinoFlash 0.7s ease-out forwards;
+    will-change: transform, opacity;
+}
+@keyframes p4DestinoFlash {
+    0%   { transform: scale(0.3); opacity: 1; }
+    70%  { transform: scale(1.3); opacity: 0.7; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* ─── Card recebendo (pulso) ─── */
+.album-cta-resultado.recebendo-medalha {
+    animation: p4CardRecebe 1s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes p4CardRecebe {
+    0%   { transform: scale(1); }
+    25%  { transform: scale(1.05); border-color: #fbbf24; box-shadow: 0 0 30px rgba(251,191,36,.55); }
+    60%  { transform: scale(1.02); box-shadow: 0 0 18px rgba(251,191,36,.35); }
+    100% { transform: scale(1); }
+}
+
+/* ─── Chip novo entrando em cascata ─── */
+.album-cta-chip-nova {
+    animation: p4ChipPop 0.5s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+@keyframes p4ChipPop {
+    0%   { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+    60%  { transform: scale(1.15) rotate(3deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* ─── Estados de acessibilidade ─── */
+@media (prefers-reduced-motion: reduce) {
+    .medalha-voadora-p4,
+    .medalha-voadora-p4.fase-aparece,
+    .medalha-voadora-p4.fase-brilha,
+    .p4-titulo-nova-medalha,
+    .p4-flash-central,
+    .p4-destino-flash,
+    .album-cta-resultado.recebendo-medalha,
+    .album-cta-chip-nova {
+        animation: none !important;
+    }
+    .medalha-voadora-p4 { opacity: 1; transform: translate(0,0) scale(1); }
+    .album-cta-chip-nova { opacity: 1; transform: none; }
+}
+/* ▲▲▲ FIM [02.62] */
+
+/* ▼▼▼ [02.63] P16 — Figurinhas animadas do Álbum ─── INÍCIO ─── */
+/* v10.5.1 · Cada emoji de medalha CONQUISTADA recebe uma animação
+   própria conforme sua "personalidade":
+     · 🏆 troféus  → brilho dourado pulsante
+     · ⚡ raios    → flash branco/ciano ocasional
+     · 🎯 alvos    → rotação suave ±8°
+     · 🔥 fogo     → tremulação + brilho crescente
+     · 💎 cristais → cintilação dupla
+     · 🌱 plantas  → bounce vertical
+     · 👑 coroas   → balanço lateral
+     · 🚀 foguetes → vibração horizontal rápida
+     · 🛡️ escudos  → pulsação de escala
+   Figurinhas VAZIAS ficam estáticas (contraste).
+   Respeita prefers-reduced-motion. */
+
+/* ─── 🏆 Glow: brilho dourado pulsante ─── */
+.album-figurinha.colada.anim-glow .album-figurinha-icone {
+    animation: albumAnimGlow 2.2s ease-in-out infinite;
+}
+@keyframes albumAnimGlow {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(251,191,36,.45)); transform: scale(1); }
+    50%      { filter: drop-shadow(0 0 14px rgba(251,191,36,.95)); transform: scale(1.06); }
+}
+
+/* ─── ⚡ Flash: brilho intermitente ─── */
+.album-figurinha.colada.anim-flash .album-figurinha-icone {
+    animation: albumAnimFlash 1.8s ease-in-out infinite;
+}
+@keyframes albumAnimFlash {
+    0%, 88%, 100% { filter: brightness(1) drop-shadow(0 0 0 transparent); }
+    92%, 96%      { filter: brightness(1.9) drop-shadow(0 0 12px rgba(56,189,248,.9)); }
+}
+
+/* ─── 🎯 Girar: rotação suave ─── */
+.album-figurinha.colada.anim-girar .album-figurinha-icone {
+    animation: albumAnimGirar 3.4s ease-in-out infinite;
+}
+@keyframes albumAnimGirar {
+    0%, 100% { transform: rotate(-8deg); }
+    50%      { transform: rotate(8deg); }
+}
+
+/* ─── 🔥 Fogo: tremulação ─── */
+.album-figurinha.colada.anim-fogo .album-figurinha-icone {
+    animation: albumAnimFogo 0.9s ease-in-out infinite;
+}
+@keyframes albumAnimFogo {
+    0%, 100% { transform: scale(1) translateY(0); filter: brightness(1); }
+    50%      { transform: scale(1.08) translateY(-2px); filter: brightness(1.18); }
+}
+
+/* ─── 💎 Cintilar: brilho cintilante ─── */
+.album-figurinha.colada.anim-cintilar .album-figurinha-icone {
+    animation: albumAnimCintilar 2.4s ease-in-out infinite;
+}
+@keyframes albumAnimCintilar {
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(255,255,255,.5)); }
+    50%      { filter: drop-shadow(0 0 12px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(168,85,247,.55)); }
+}
+
+/* ─── 🌱 Bounce: pulo vertical ─── */
+.album-figurinha.colada.anim-bounce .album-figurinha-icone {
+    animation: albumAnimBounce 2.6s ease-in-out infinite;
+}
+@keyframes albumAnimBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-6px) scale(1.04); }
+}
+
+/* ─── 👑 Balanço: rotação lateral ─── */
+.album-figurinha.colada.anim-balanco .album-figurinha-icone {
+    animation: albumAnimBalanco 3.2s ease-in-out infinite;
+}
+@keyframes albumAnimBalanco {
+    0%, 100% { transform: rotate(-5deg); }
+    50%      { transform: rotate(5deg); }
+}
+
+/* ─── 🚀 Vibrar: vibração horizontal ─── */
+.album-figurinha.colada.anim-vibrar .album-figurinha-icone {
+    animation: albumAnimVibrar 1.6s ease-in-out infinite;
+}
+@keyframes albumAnimVibrar {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    20%      { transform: translateX(-2px) translateY(-1px); }
+    40%      { transform: translateX(2px) translateY(0); }
+    60%      { transform: translateX(-1px) translateY(-1px); }
+    80%      { transform: translateX(1px) translateY(0); }
+}
+
+/* ─── 🛡️ Pulse: escala pulsante ─── */
+.album-figurinha.colada.anim-pulse .album-figurinha-icone {
+    animation: albumAnimPulse 2.0s ease-in-out infinite;
+}
+@keyframes albumAnimPulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50%      { transform: scale(1.1); filter: brightness(1.15); }
+}
+
+/* ─── Acessibilidade: sem movimento ─── */
+@media (prefers-reduced-motion: reduce) {
+    .album-figurinha.colada.anim-glow .album-figurinha-icone,
+    .album-figurinha.colada.anim-flash .album-figurinha-icone,
+    .album-figurinha.colada.anim-girar .album-figurinha-icone,
+    .album-figurinha.colada.anim-fogo .album-figurinha-icone,
+    .album-figurinha.colada.anim-cintilar .album-figurinha-icone,
+    .album-figurinha.colada.anim-bounce .album-figurinha-icone,
+    .album-figurinha.colada.anim-balanco .album-figurinha-icone,
+    .album-figurinha.colada.anim-vibrar .album-figurinha-icone,
+    .album-figurinha.colada.anim-pulse .album-figurinha-icone {
+        animation: none !important;
+    }
+}
+/* ▲▲▲ FIM [02.63] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -10050,6 +10327,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.06]
 
     // ▼▼▼ [11.07] Badge + CTA pós-partida ─────────────────────────────
+    // v10.5.1 · Voo C: ao ganhar medalha nova, a medalha aparece no centro
+    // da tela, brilha e voa até o card .album-cta-resultado. Ao chegar, o
+    // card pulsa e os chips entram em cascata.
+    // Respeita prefers-reduced-motion (pula o voo e revela direto).
     async function verificarBadgeAlbum() {
         const badge = document.getElementById("album-badge");
         if (!badge) return;
@@ -10068,6 +10349,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         try { localStorage.setItem(STORAGE_ALBUM_VISTAS, String(quantidade || 0)); } catch(e) {}
         document.getElementById("album-badge")?.classList.add("hidden");
     }
+
+    // Verifica se há medalhas novas após uma partida. Se houver, injeta
+    // o CTA na tela de resultado e dispara a animação do voo.
     async function verificarAlbumPosPartida(nome, turma) {
         if (!nome || !turma) return;
         try {
@@ -10078,22 +10362,224 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             else document.getElementById("album-cta-resultado")?.classList.add("hidden");
         } catch(e) { console.warn("Falha ao verificar álbum pós-partida:", e); }
     }
-    function injetarCTAAlbumResultado(idsNovas) {
+
+    // Renderiza o card CTA e dispara a animação do voo.
+    async function injetarCTAAlbumResultado(idsNovas) {
         const container = document.getElementById("album-cta-resultado");
         if (!container) return;
-        if (!idsNovas || idsNovas.length === 0) { container.classList.add("hidden"); return; }
+        if (!idsNovas || idsNovas.length === 0) {
+            container.classList.add("hidden");
+            return;
+        }
         const medalhas = idsNovas.map(id => MEDALS_POR_ID[id]).filter(Boolean);
-        if (medalhas.length === 0) { container.classList.add("hidden"); return; }
+        if (medalhas.length === 0) {
+            container.classList.add("hidden");
+            return;
+        }
+
         const total = medalhas.length;
         const plural = total === 1 ? "medalha" : "medalhas";
-        const chips = medalhas.slice(0, 6).map(m => {
-            const r = RARIDADES[m.raridade];
-            return `<span class="nome-medalha" title="${r.nome}">${m.icone} ${escaparHtml(m.nome)}</span>`;
-        }).join("");
-        const extra = total > 6 ? `<span class="nome-medalha">+${total - 6}…</span>` : "";
-        container.innerHTML = `<div class="album-cta-resultado"><div class="album-cta-resultado-topo"><span class="album-cta-resultado-icone">🏆</span><div class="album-cta-resultado-titulo">🎉 Você descolou <strong>${total} ${plural}</strong> no Álbum!</div></div><div class="album-cta-resultado-lista">${chips}${extra}</div><button class="album-cta-resultado-botao" onclick="abrirAlbum()" aria-label="Abrir o Álbum de Conquistas">📖 Ver no Álbum →</button><div class="album-cta-resultado-rodape">Colecione medalhas e complete seções para ganhar estrelas ⭐</div></div>`;
+
+        // Escolhe a medalha mais rara para o voo (maior impacto visual)
+        const ordemRar = { lendario: 0, epico: 1, raro: 2, incomum: 3, comum: 4 };
+        const medalhaVoo = [...medalhas].sort((a, b) =>
+            (ordemRar[a.raridade] ?? 9) - (ordemRar[b.raridade] ?? 9)
+        )[0];
+
+        // Renderiza o card com título preenchido mas lista VAZIA.
+        // Os chips entram quando a medalha chegar.
+        container.innerHTML = `
+            <div class="album-cta-resultado" id="album-cta-card">
+                <div class="album-cta-resultado-topo">
+                    <span class="album-cta-resultado-icone" id="album-cta-icone-destino">🏆</span>
+                    <div class="album-cta-resultado-titulo">🎉 Você descolou <strong>${total} ${plural}</strong> no Álbum!</div>
+                </div>
+                <div class="album-cta-resultado-lista" id="album-cta-lista"></div>
+                <button class="album-cta-resultado-botao" onclick="abrirAlbum()" aria-label="Abrir o Álbum de Conquistas">📖 Ver no Álbum →</button>
+                <div class="album-cta-resultado-rodape">Colecione medalhas e complete seções para ganhar estrelas ⭐</div>
+            </div>
+        `;
         container.classList.remove("hidden");
-        setTimeout(() => { somColarFigurinha(); dispararConfetes(); }, 300);
+
+        // Verifica preferência de movimento reduzido
+        const reduzirMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        if (reduzirMovimento) {
+            // Pula animação — revela direto e mantém o feedback sonoro leve
+            revelarChipsDoCard(medalhas, 0);
+            setTimeout(() => { try { somColarFigurinha(); dispararConfetes(); } catch(e) {} }, 200);
+            return;
+        }
+
+        // Aguarda 2 frames para o navegador calcular a posição do card
+        await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+
+        // Delay curto para o aluno VER o card aparecer antes do voo
+        setTimeout(() => {
+            dispararVooMedalhaP4(medalhaVoo, medalhas);
+        }, 350);
+    }
+
+    // Revela os chips de medalha dentro do card, em cascata
+    function revelarChipsDoCard(medalhas, delayInicial) {
+        const lista = document.getElementById("album-cta-lista");
+        if (!lista) return;
+        lista.innerHTML = "";
+        const delayBase = delayInicial || 0;
+
+        medalhas.slice(0, 6).forEach((m, i) => {
+            const chip = document.createElement("span");
+            const rar = RARIDADES[m.raridade];
+            chip.className = "nome-medalha album-cta-chip-nova";
+            chip.style.animationDelay = `${delayBase + i * 120}ms`;
+            chip.title = rar ? rar.nome : "";
+            chip.textContent = `${m.icone} ${m.nome}`;
+            lista.appendChild(chip);
+        });
+
+        if (medalhas.length > 6) {
+            const extra = document.createElement("span");
+            extra.className = "nome-medalha album-cta-chip-nova";
+            extra.style.animationDelay = `${delayBase + 6 * 120}ms`;
+            extra.textContent = `+${medalhas.length - 6}…`;
+            lista.appendChild(extra);
+        }
+    }
+
+    // Dispara a animação completa do voo:
+    // 1) Título flutuante "Nova medalha!" + flash central
+    // 2) Medalha aparece no centro e brilha
+    // 3) Voa em direção ao ícone do card .album-cta-resultado
+    // 4) Ao chegar, card pulsa e chips entram em cascata
+    function dispararVooMedalhaP4(medalhaVoo, todasMedalhas) {
+        // ─── 1) Título flutuante ───
+        const titulo = document.createElement("div");
+        titulo.className = "p4-titulo-nova-medalha";
+        titulo.innerHTML = `
+            <div class="kicker">🎉 Nova medalha!</div>
+            <div class="nome">${escaparHtml(medalhaVoo.nome)}</div>
+        `;
+        document.body.appendChild(titulo);
+        setTimeout(() => titulo.remove(), 2200);
+
+        // ─── 2) Flash central ───
+        const flash = document.createElement("div");
+        flash.className = "p4-flash-central";
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 1000);
+
+        // ─── 3) Medalha voadora ───
+        const el = document.createElement("div");
+        el.className = "medalha-voadora-p4";
+        el.textContent = medalhaVoo.icone;
+        document.body.appendChild(el);
+
+        requestAnimationFrame(() => {
+            el.classList.add("visivel", "fase-aparece");
+
+            // Após 0,75s: para o aparecimento, começa o brilho
+            setTimeout(() => {
+                el.classList.remove("fase-aparece");
+                el.classList.add("fase-brilha");
+
+                // Após 0,9s: termina o brilho, começa o voo
+                setTimeout(() => {
+                    el.classList.remove("fase-brilha");
+                    executarVooP4(el, todasMedalhas);
+                }, 900);
+            }, 750);
+        });
+    }
+
+    // Executa o voo propriamente dito: calcula o destino (ícone do card)
+    // e move a medalha até lá com rastro dourado.
+    function executarVooP4(el, todasMedalhas) {
+        // Posição atual (centro)
+        const rect = el.getBoundingClientRect();
+        const startX = rect.left + rect.width / 2;
+        const startY = rect.top + rect.height / 2;
+
+        // Destino: ícone 🏆 dentro do card CTA
+        const iconeDestino = document.getElementById("album-cta-icone-destino");
+        if (!iconeDestino) { el.remove(); return; }
+        const destRect = iconeDestino.getBoundingClientRect();
+        const endX = destRect.left + destRect.width / 2;
+        const endY = destRect.top + destRect.height / 2;
+
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const duracao = 900;
+
+        // Rastro dourado no caminho
+        iniciarRastroVooP4(startX, startY, dx, dy, duracao);
+
+        // Move a medalha via transition
+        el.style.transition = `transform ${duracao}ms cubic-bezier(.5,.05,.35,1), opacity ${duracao}ms cubic-bezier(.5,.05,.35,1)`;
+        el.style.transform = `translate(${dx}px, ${dy}px) scale(0.14) rotate(280deg)`;
+        el.style.opacity = "0";
+        el.style.filter = "drop-shadow(0 0 24px rgba(251,191,36,1))";
+
+        // Ao chegar no destino
+        setTimeout(() => {
+            el.remove();
+
+            // Flash dourado no ícone do card
+            const flashDestino = document.createElement("div");
+            flashDestino.className = "p4-destino-flash";
+            flashDestino.style.left = (endX - 60) + "px";
+            flashDestino.style.top  = (endY - 60) + "px";
+            flashDestino.style.width = "120px";
+            flashDestino.style.height = "120px";
+            document.body.appendChild(flashDestino);
+            setTimeout(() => flashDestino.remove(), 800);
+
+            // Card pulsa
+            const card = document.getElementById("album-cta-card");
+            if (card) card.classList.add("recebendo-medalha");
+
+            // Chips entram em cascata
+            revelarChipsDoCard(todasMedalhas, 150);
+
+            // Som + confetes
+            setTimeout(() => {
+                try { somColarFigurinha(); dispararConfetes(); } catch(e) {}
+            }, 350);
+
+            // Remove a classe do pulso após a animação
+            setTimeout(() => {
+                if (card) card.classList.remove("recebendo-medalha");
+            }, 1400);
+        }, duracao);
+    }
+
+    // Emite partículas douradas ao longo do trajeto da medalha
+    function iniciarRastroVooP4(startX, startY, dx, dy, duracao) {
+        const inicioTs = performance.now();
+        let ultimoRastro = 0;
+
+        function criarParticula(x, y) {
+            const r = document.createElement("div");
+            r.className = "p4-rastro";
+            r.style.left = x + "px";
+            r.style.top = y + "px";
+            document.body.appendChild(r);
+            setTimeout(() => r.remove(), 800);
+        }
+
+        function tick(agora) {
+            const t = Math.min((agora - inicioTs) / duracao, 1);
+            // ease in-out quadrática para acompanhar o movimento
+            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            const px = startX + dx * eased;
+            const py = startY + dy * eased;
+
+            if (agora - ultimoRastro > 28) {
+                criarParticula(px, py);
+                ultimoRastro = agora;
+            }
+            if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
     }
     // ▲▲▲ FIM [11.07]
 
@@ -10340,6 +10826,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.09]
 
     // ▼▼▼ [11.10] Corpo do álbum + figurinhas ────────────────────────
+    // v10.5.1 · P16: cada figurinha CONQUISTADA recebe uma classe
+    // de animação conforme o emoji, dando "vida própria" ao ícone.
+    // Figurinhas vazias permanecem estáticas para contraste.
+
     function renderizarCorpoAlbum() {
         const c = document.getElementById("album-conteudo");
         if (!c) return;
@@ -10388,12 +10878,53 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
+    // v10.5.1 · P16: mapeia emoji → classe de animação CSS.
+    // Retorna "" para emojis sem animação específica (figurinha fica estática).
+    function obterAnimacaoDaMedalha(icone) {
+        const mapa = {
+            // Glow (brilho dourado)
+            "🏆": "anim-glow", "🏅": "anim-glow", "🎖️": "anim-glow",
+            "🥇": "anim-glow", "🥈": "anim-glow", "🥉": "anim-glow",
+            "⭐": "anim-glow", "🆕": "anim-glow",
+            // Flash (relâmpago)
+            "⚡": "anim-flash", "🌩️": "anim-flash",
+            // Girar (rotação suave)
+            "🎯": "anim-girar", "🎲": "anim-girar", "🌐": "anim-girar",
+            "🌀": "anim-girar", "🗺️": "anim-girar", "🎟️": "anim-girar",
+            // Fogo (tremulação)
+            "🔥": "anim-fogo",
+            // Cintilar (brilho cintilante)
+            "💎": "anim-cintilar", "☄️": "anim-cintilar", "🔬": "anim-cintilar",
+            // Bounce (pulo)
+            "🌱": "anim-bounce", "💪": "anim-bounce",
+            "📈": "anim-bounce", "📚": "anim-bounce",
+            // Balanço (rotação lateral)
+            "👑": "anim-balanco", "🎓": "anim-balanco", "⚔️": "anim-balanco",
+            "🕰️": "anim-balanco", "📅": "anim-balanco",
+            // Vibrar (vibração horizontal)
+            "🚀": "anim-vibrar", "💨": "anim-vibrar",
+            "🏃": "anim-vibrar", "🚶": "anim-vibrar",
+            // Pulse (pulsação de escala)
+            "🛡️": "anim-pulse", "🍀": "anim-pulse",
+            "🌅": "anim-pulse", "🧱": "anim-pulse"
+        };
+        return mapa[icone] || "";
+    }
+
     function renderizarFigurinhaAlbum(medalha, persistida) {
         const colada = !!persistida;
         const rar = RARIDADES[medalha.raridade];
         const ehNova = !!(albumEstado.novasMedalhas && albumEstado.novasMedalhas.includes(medalha.id));
         const classes = ["album-figurinha", colada ? "colada" : "vazia", `r-${medalha.raridade}`];
         if (ehNova) classes.push("recem-colada");
+
+        // v10.5.1 · P16: adiciona classe de animação SÓ se a medalha está
+        // colada. Figurinhas vazias permanecem com o ícone cinza estático.
+        if (colada) {
+            const classeAnim = obterAnimacaoDaMedalha(medalha.icone);
+            if (classeAnim) classes.push(classeAnim);
+        }
+
         const icone = colada ? medalha.icone : "❓";
         const nome = medalha.nome;
         const requisito = medalha.requisito || medalha.descricao;
