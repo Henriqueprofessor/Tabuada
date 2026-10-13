@@ -9360,10 +9360,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 const pMod = persistidos[mod] || {};
 
                 let certAtual = null;
-                for (const nivel of CERT_ORDEM) {
-                    if (pMod[nivel]) { certAtual = { nivel, dados: pMod[nivel], cfg: CERT_NIVEIS[nivel] }; break; }
-                }
-                if (certAtual) totalConquistados++;
+let certsNestaMod = 0;
+for (const nivel of CERT_ORDEM) {
+    if (pMod[nivel]) {
+        if (!certAtual) certAtual = { nivel, dados: pMod[nivel], cfg: CERT_NIVEIS[nivel] };
+        certsNestaMod++;
+    }
+}
+totalConquistados += certsNestaMod;   // ← conta TODOS os certificados
 
                 let proxNivel = null;
                 for (const nivel of ["prata", "ouro", "lendaria"]) {
