@@ -16764,11 +16764,11 @@ if (containerProg) {
         await registrarAluno(!etapaAtiva);
     }
     // ▲▲▲ FIM [18.07]
+
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
-    // v10.4.8 · Coach pessoal com IA — prompt read-only personalizado
-    // com perfil COMPLETO do aluno. A IA atua como treinador.
-    // Entradas: FAB flutuante (primária) + Menu Mais (backup).
-    // Zero requisição extra. Reusa albumSessaoCache quando válido.
+    // v10.4.10 · Coach pessoal com IA — atualizado com Média Geral,
+    //            medalhas de Consistência, votação, patentes, bloqueio,
+    //            tempo esgotado, ✕ Encerrar e canal de mensagens.
 
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
@@ -16788,14 +16788,12 @@ if (containerProg) {
         const fab = document.getElementById("coach-fab");
         if (!fab) return;
 
-        // Descobre a tela atual se não recebeu
         if (!idTela) {
             const candidatos = Array.from(document.querySelectorAll('[id^="tela-"]'));
             const ativa = candidatos.find(t => !t.classList.contains("hidden"));
             idTela = ativa ? ativa.id : null;
         }
 
-        // Resultado: atrasa 3s para não competir com confetes
         if (idTela === "tela-resultado") {
             fab.classList.add("hidden");
             setTimeout(() => {
@@ -17048,6 +17046,35 @@ if (containerProg) {
             });
         }
 
+        // ⚙️ NOVO — MÉDIA GERAL (dados vêm do compilarDadosAluno via perfil)
+        L.push("");
+        L.push("📊 MÉDIA GERAL (só partidas oficiais — completas + parciais):");
+        const m25  = Number(p.media25)  || 0;
+        const m69  = Number(p.media69)  || 0;
+        const m010 = Number(p.media010) || 0;
+        L.push(`  • 📚 2-5:  ${m25  > 0 ? Math.round(m25).toLocaleString("pt-BR") + " pts" : "sem partidas oficiais"}`);
+        L.push(`  • 🎯 6-9:  ${m69  > 0 ? Math.round(m69).toLocaleString("pt-BR") + " pts" : "sem partidas oficiais"}`);
+        L.push(`  • ⭐ 1-10: ${m010 > 0 ? Math.round(m010).toLocaleString("pt-BR") + " pts" : "sem partidas oficiais"}`);
+        const jogou3 = [m25, m69, m010].filter(v => v > 0).length;
+        if (jogou3 === 3) {
+            const mediaCombinada = (m25 + m69 + m010) / 3;
+            L.push(`  • 🏅 MÉDIA GERAL COMBINADA: ${Math.round(mediaCombinada).toLocaleString("pt-BR")} pts`);
+        } else {
+            L.push(`  • 🏅 MÉDIA GERAL COMBINADA: aguardando jogar todas as 3 modalidades (${jogou3}/3)`);
+        }
+        const persistidasMedia = p._medalhasPersistidas || {};
+        const medalhasConsist = [];
+        if (persistidasMedia.primeira_media)    medalhasConsist.push("🏅 Primeira Média");
+        if (persistidasMedia.consistente_media) medalhasConsist.push("🎖️ Consistente");
+        if (persistidasMedia.regular_media)     medalhasConsist.push("🏆 Regular");
+        if (persistidasMedia.elite_media)       medalhasConsist.push("💎 Elite");
+        if (persistidasMedia.lenda_media)       medalhasConsist.push("👑 Lenda da Média");
+        if (medalhasConsist.length) {
+            L.push(`  • Medalhas de Consistência: ${medalhasConsist.join(", ")}`);
+        } else {
+            L.push(`  • Medalhas de Consistência: nenhuma ainda`);
+        }
+
         L.push("");
         const certsList = [];
         for (const mod of ["2-5", "6-9", "0-10"]) {
@@ -17107,6 +17134,33 @@ if (containerProg) {
     }
 
     // ─────────────────────────────────────────────────────────────────
+    // Helper 7: próxima medalha de Consistência + gap
+    // ─────────────────────────────────────────────────────────────────
+    function identificarProximaMedalhaConsistencia(dados) {
+        const p = (dados && dados.perfil) || {};
+        const persistidas = p._medalhasPersistidas || {};
+        const maxMedia = Math.max(Number(p.media25) || 0, Number(p.media69) || 0, Number(p.media010) || 0);
+        const com17k = Number(p.modalidadesCom17k) || 0;
+
+        if (!persistidas.primeira_media && maxMedia < 8000) {
+            return { id: "primeira_media", nome: "Primeira Média", icone: "🏅", alvo: 8000, maxMedia, gap: 8000 - maxMedia };
+        }
+        if (!persistidas.consistente_media && maxMedia < 12000) {
+            return { id: "consistente_media", nome: "Consistente", icone: "🎖️", alvo: 12000, maxMedia, gap: 12000 - maxMedia };
+        }
+        if (!persistidas.regular_media && maxMedia < 15000) {
+            return { id: "regular_media", nome: "Regular", icone: "🏆", alvo: 15000, maxMedia, gap: 15000 - maxMedia };
+        }
+        if (!persistidas.elite_media && maxMedia < 17000) {
+            return { id: "elite_media", nome: "Elite", icone: "💎", alvo: 17000, maxMedia, gap: 17000 - maxMedia };
+        }
+        if (!persistidas.lenda_media && com17k < 3) {
+            return { id: "lenda_media", nome: "Lenda da Média", icone: "👑", alvo: 17000, com17k, maxMedia, gap: 3 - com17k, especial: true };
+        }
+        return null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
     // Construção do prompt (persona de COACH)
     // ─────────────────────────────────────────────────────────────────
     function construirPromptIA(nome, turma, dadosPerfil) {
@@ -17134,10 +17188,28 @@ if (containerProg) {
             ? `\n═══ PERFIL COMPLETO DO ATLETA ═══\n\n${montarBlocoPerfil(dadosPerfil)}\n`
             : "";
 
+        // ─── PRÓXIMO ALVO (Opção C: certificado + medalha de consistência) ───
         const proxCert = temDados ? identificarProximoCertificado(dadosPerfil) : null;
-        let blocoProxCert = "";
-        if (proxCert) {
-            blocoProxCert = `\n🎯 PRÓXIMO ALVO — CERTIFICADO:\n  ${proxCert.cfg.icone} ${proxCert.cfg.nome} · ${proxCert.nomeMod}\n  → faltam ~${proxCert.gapPct}% do mapa dominado\n`;
+        const proxMedalha = temDados ? identificarProximaMedalhaConsistencia(dadosPerfil) : null;
+
+        let blocoProxAlvo = "";
+        if (proxCert || proxMedalha) {
+            blocoProxAlvo = `\n🎯 PRÓXIMOS ALVOS (os mais próximos de conquistar):\n`;
+            if (proxCert) {
+                blocoProxAlvo += `  [CERTIFICADO] ${proxCert.cfg.icone} ${proxCert.cfg.nome} · ${proxCert.nomeMod}\n`;
+                blocoProxAlvo += `     → faltam ~${proxCert.gapPct}% do mapa dominado\n`;
+            }
+            if (proxMedalha) {
+                blocoProxAlvo += `  [MEDALHA DE CONSISTÊNCIA] ${proxMedalha.icone} ${proxMedalha.nome}\n`;
+                if (proxMedalha.especial) {
+                    blocoProxAlvo += `     → média ≥ 17.000 pts nas 3 modalidades ao mesmo tempo\n`;
+                    blocoProxAlvo += `     → já tem ${proxMedalha.com17k}/3 modalidades com 17k+ — faltam ${proxMedalha.gap}\n`;
+                } else {
+                    blocoProxAlvo += `     → alcançar média ≥ ${proxMedalha.alvo.toLocaleString("pt-BR")} pts em qualquer modalidade\n`;
+                    blocoProxAlvo += `     → maior média atual: ${Math.round(proxMedalha.maxMedia).toLocaleString("pt-BR")} pts — faltam ${Math.round(proxMedalha.gap).toLocaleString("pt-BR")}\n`;
+                }
+            }
+            blocoProxAlvo += `\n`;
         }
 
         return `Você é o COACH PESSOAL da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
@@ -17147,7 +17219,7 @@ diagnostica pontos fortes e fracos, prescreve treinos específicos, define metas
 curtas e motiva o aluno a evoluir. Fale com energia de treinador e clareza de médico.
 
 ${identificacao}
-${blocoPerfil}${blocoProxCert}
+${blocoPerfil}${blocoProxAlvo}
 ═══ SUA MISSÃO — FLUXO OBRIGATÓRIO ═══
 
 Quando o aluno colar este prompt, sua PRIMEIRA resposta deve ter EXATAMENTE esta estrutura:
@@ -17157,7 +17229,7 @@ Quando o aluno colar este prompt, sua PRIMEIRA resposta deve ter EXATAMENTE esta
    • Ponto FORTE (cite número real)
    • Ponto FRACO (cite número real)
    • Destaque competitivo (posição real ou zona)
-3. MENU DE OPÇÕES (numeradas de 1 a 8, exatamente como abaixo)
+3. MENU DE OPÇÕES (numeradas de 1 a 9, exatamente como abaixo)
 4. Instrução: "Digite o número da opção ou escreva sua pergunta!"
 
 O MENU DEVE SER SEMPRE ESTE:
@@ -17170,13 +17242,14 @@ O MENU DEVE SER SEMPRE ESTE:
 6️⃣ ⚡ Como melhorar minha velocidade
 7️⃣ 🎓 Como conquistar o próximo certificado
 8️⃣ 💬 Outro assunto
+9️⃣ 🏅 Como subir minha média geral
 
 ═══ PLAYBOOK — COMO RESPONDER A CADA OPÇÃO ═══
 
 1️⃣ ANÁLISE COMPLETA:
    Apresente um "relatório de atleta": posições nas 3 modalidades, % do mapa,
-   tabuadas fortes/fracas, velocidade, sequência. Termine com UMA RECOMENDAÇÃO
-   específica ("seu foco agora é dominar a tabuada do 7").
+   tabuadas fortes/fracas, velocidade, sequência, MÉDIA GERAL por modalidade.
+   Termine com UMA RECOMENDAÇÃO específica ("seu foco agora é dominar a tabuada do 7").
 
 2️⃣ PLANO DE TREINO:
    Prescreva um plano de 3 passos concretos:
@@ -17205,11 +17278,22 @@ O MENU DEVE SER SEMPRE ESTE:
    Se já bateu, celebre e proponha metas mais ambiciosas.
 
 7️⃣ PRÓXIMO CERTIFICADO:
-   Use o bloco "PRÓXIMO ALVO" no topo. Diga o nome do certificado, o que
+   Use o bloco "PRÓXIMOS ALVOS" no topo. Diga o nome do certificado, o que
    falta (operações ou velocidade) e o caminho mais rápido para conquistar.
 
 8️⃣ OUTRO ASSUNTO:
    Responda como coach — sempre conectando com o perfil do aluno.
+
+9️⃣ MÉDIA GERAL:
+   Use a seção "📊 MÉDIA GERAL" do perfil. Explique:
+   • O que é média geral (média de pontos das partidas oficiais em cada modalidade)
+   • Que partidas canceladas (✕) DERRUBAM a média — desincentive cancelar
+   • Que só partidas oficiais contam (treinos NÃO entram na média)
+   • Mostre a média de cada modalidade e a média combinada (se jogou as 3)
+   • Explique as 5 medalhas de Consistência (Primeira Média, Consistente, Regular, Elite, Lenda da Média)
+   • Se o aluno está perto de alguma faixa, diga exatamente quanto falta
+   • Se ele ainda não jogou todas as 3 modalidades, incentive a experimentar
+   Termine com uma ação concreta: "Jogue X partidas em [modalidade] mantendo Y de média."
 
 ═══ TOM E ESTILO ═══
 • Fale como um treinador motivador, MAS com clareza de médico.
@@ -17221,24 +17305,78 @@ O MENU DEVE SER SEMPRE ESTE:
 ═══ CONTEXTO DO JOGO ═══
 (use como fonte para responder dúvidas sobre regras)
 
+▸ ESTRUTURA BÁSICA
 • Cada partida tem 20 perguntas de multiplicação, com 10 segundos por questão. Quanto mais rápido acertar, mais pontos ganha.
 • 3 modalidades: Tabuadas 2-5, Tabuadas 6-9, Tabuadas 1-10.
 • Modo Classificatória (conta no ranking) e Modo Treino (NÃO conta no ranking, mas alimenta o Mapa de Tabuadas e os certificados).
 • Classificação: os 4 melhores de cada turma/modalidade avançam para a Final. Critérios de desempate: pontos → acertos → menor tempo médio dos acertos → maior sequência → data.
-• Mapa de Tabuadas: 100 operações com cores por domínio recente (últimas 10 respostas). ⚪ sem prática · 🔴 reforçar · 🟡 em treino · 🔵 quase lá · 🟢 dominada (≥90% de acerto com 5+ tentativas).
-• Certificados por modalidade:
-    🥈 Prata     → 85% do mapa, 5+ tentativas, 80% de acerto
-    🥇 Ouro      → 95% do mapa, 8+ tentativas, 90% + velocidade
-    💎 Lendária  → 100% do mapa, 10+ tentativas, 90% + velocidade
-  Velocidades ideais: 2-5 → 2,0s · 6-9 → 2,5s · 1-10 → 3,0s
-• Álbum: 44 medalhas (comum/incomum/raro/épico/lendário) que viram estrelas, e as estrelas definem sua patente (Reserva → Imortal).
-• Treino Inteligente: o sistema sorteia as operações que você mais precisa, com peso por cor (cinza/vermelho/amarelo/azul/verde).
+
+▸ TEMPO ESGOTADO E ✕ ENCERRAR TENTATIVA
+• Se o tempo de 10s esgotar, a pergunta CONTA COMO ERRADA. Não deixe em branco — é melhor chutar do que esperar o tempo acabar.
+• O botão "✕ Encerrar tentativa" só aparece a partir da 2ª partida oficial da modalidade (a 1ª precisa ser completada).
+• Ao clicar em ✕, a partida é salva como PARCIAL:
+     → Continua contando no histórico, no mapa e NA MÉDIA (derruba a média se foi ruim).
+     → NÃO conta para medalhas, Hall da Fama nem Álbum.
+• Fechar o navegador durante a partida = nada é salvo (perde tudo).
+
+▸ MAPA DE TABUADAS
+• 100 operações com cores por domínio recente (últimas 10 respostas): ⚪ sem prática · 🔴 reforçar · 🟡 em treino · 🔵 quase lá · 🟢 dominada (≥90% de acerto com 5+ tentativas).
+• Treinos e parciais alimentam o mapa. Mas só partidas completas contam para medalhas.
+
+▸ CERTIFICADOS (por modalidade — 9 no total)
+• São 3 níveis × 3 modalidades = 9 certificados possíveis. Aluno pode ter Ouro em 2-5 e Prata em 1-10 ao mesmo tempo.
+• 🥈 Prata     → 85% do mapa, 5+ tentativas, 80% de acerto
+• 🥇 Ouro      → 95% do mapa, 8+ tentativas, 90% + velocidade
+• 💎 Lendária  → 100% do mapa, 10+ tentativas, 90% + velocidade
+• Velocidades ideais: 2-5 → 2,0s · 6-9 → 2,5s · 1-10 → 3,0s
+• Depois de conquistado, o certificado NÃO é perdido — é uma conquista histórica.
+
+▸ MÉDIA GERAL (novidade)
+• É a MÉDIA DE PONTOS das partidas oficiais em cada modalidade (soma dos pontos ÷ número de partidas).
+• Só partidas OFICIAIS contam. Treinos NÃO entram na média.
+• Partidas canceladas (✕) ENTRAM na média — cancelar muito DERRUBA a média.
+• O ranking de Média Geral exige mínimo de 5 partidas oficiais em CADA uma das 3 modalidades. Quem cancela muito pode não conseguir entrar.
+• Existe a aba "🏅 Média Turma" e "🏅 Média Global" nos Rankings especiais.
+• Hall da Fama tem o card "📊 Média Consistente".
+• Álbum tem a seção "🏅 Consistência" com 5 medalhas:
+     🏅 Primeira Média   → média ≥ 8.000 pts em qualquer modalidade
+     🎖️ Consistente      → média ≥ 12.000 pts em qualquer modalidade
+     🏆 Regular          → média ≥ 15.000 pts em qualquer modalidade
+     💎 Elite            → média ≥ 17.000 pts em qualquer modalidade
+     👑 Lenda da Média   → média ≥ 17.000 pts nas 3 modalidades AO MESMO TEMPO
+
+▸ ÁLBUM E PATENTES
+• Álbum: medalhas (comum/incomum/raro/épico/lendário) → viram estrelas → definem a patente.
+• Patentes (nomes exatos): Reserva → Titular → Destaque → Craque → Ídolo → Imortal.
+• Quanto mais rara a medalha, mais estrelas vale.
+
+▸ TREINO INTELIGENTE E FOCO ABSOLUTO
+• Treino Inteligente: sorteia as operações que você mais precisa, com peso por cor (cinza/vermelho/amarelo/azul/verde).
 • Foco Absoluto: quando faltam ≤5 operações para fechar o mapa, 92% das perguntas vão para essas operações específicas.
-• Hall da Fama: 10 categorias (medalhas, mapa, velocidade, etc).
+
+▸ VOTAÇÃO DA ETAPA
+• Os alunos decidem a duração da etapa (7 ou 14 dias).
+• Para votar, é preciso ter no mínimo 10 partidas oficiais COMPLETAS e 30% do mapa dominado.
+• Partidas canceladas NÃO contam para o critério de votação.
+• A votação fica aberta por 4 dias e fecha automaticamente.
+
+▸ BLOQUEIO DE VÍNCULO (48h)
+• Cada nome fica vinculado ao primeiro celular que usou.
+• Trocar de celular sem avisar = bloqueio de 48h. Só o professor pode liberar antes disso.
+• Solução: o aluno usa o botão "💬 Falar com o professor" no menu Mais, escolhe a categoria "🔓 Estou bloqueado em outro aparelho" e envia.
+
+▸ CANAL DE MENSAGENS COM O PROFESSOR
+• Existe um canal direto no app: menu "Mais" → "💬 Falar com o professor".
+• Serve para problemas de nome errado, bloqueio de vínculo, bugs ou qualquer dúvida fora do jogo.
+• Limite: 1 mensagem a cada 5 minutos por aluno.
+
+▸ HALL DA FAMA E RANKINGS
+• Hall da Fama: 11 categorias (medalhas, estrelas, mapa, velocidade, acertos, maratonista, presença, treino, média, Turma de Elite).
 • Ranking de Turmas: mínimo de 4 alunos por turma para aparecer.
+• Média Geral: mínimo de 5 partidas por modalidade.
 
 ═══ REGRAS INVIOLÁVEIS ═══
-1. Sua PRIMEIRA resposta é SEMPRE: saudação + diagnóstico curto + menu de 8 opções + "Digite o número".
+1. Sua PRIMEIRA resposta é SEMPRE: saudação + diagnóstico curto + menu de 9 opções + "Digite o número".
 2. NUNCA responda perguntas antes de apresentar o menu (a não ser que o aluno já tenha vindo direto com uma pergunta específica — nesse caso, responda e depois ofereça o menu).
 3. NUNCA invente números que não estão no PERFIL acima.
 4. SEMPRE termine suas respostas com uma pergunta ou uma ação concreta
@@ -17261,7 +17399,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const btn = document.getElementById("ia-btn-copiar");
         if (!m || !loading || !conteudo || !ta) return;
 
-        // Marca como aberto — para o FAB parar de pulsar
         marcarCoachAberto();
 
         loading.classList.remove("hidden");
@@ -17300,6 +17437,15 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                     if (dominadas > 0) {
                         const pct = Math.round((dominadas / 100) * 100);
                         partes.push(`<span class="sep">·</span> <strong>${pct}%</strong> do mapa`);
+                    }
+                    // ⚙️ NOVO: média geral combinada quando existe
+                    const m25 = Number(dadosPerfil.perfil.media25) || 0;
+                    const m69 = Number(dadosPerfil.perfil.media69) || 0;
+                    const m010 = Number(dadosPerfil.perfil.media010) || 0;
+                    const jogou3 = [m25, m69, m010].filter(v => v > 0).length;
+                    if (jogou3 === 3) {
+                        const mediaComb = Math.round((m25 + m69 + m010) / 3);
+                        partes.push(`<span class="sep">·</span> 🏅 <strong>${mediaComb.toLocaleString("pt-BR")}</strong> de média`);
                     }
                     const melhorPos = dadosPerfil.perfil.melhorPosicao;
                     if (melhorPos && melhorPos <= 4) {
