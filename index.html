@@ -6718,6 +6718,14 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <div id="painel-etapa-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
             </div>
 
+            <!-- ▼ v10.5.0 · Publicação de versão -->
+            <div class="senha-container" style="margin-bottom:16px;">
+                <h4 style="margin-top:0;">📤 Publicação de versão</h4>
+                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Controle qual versão do app os alunos devem usar. Quando o app deles abrir, vai comparar a versão que estão rodando com a publicada aqui. <strong>Suba sempre o HTML novo antes de publicar</strong> — senão os alunos podem recarregar para uma versão que ainda não está no ar.</p>
+                <div id="painel-versao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+            </div>
+            <!-- ▲ -->
+
             <div class="senha-container" style="margin-bottom:16px;">
                 <h4 style="margin-top:0;">⚙️ Critérios de Participação na Votação</h4>
                 <div id="painel-config-conteudo" style="font-size:13px;line-height:1.6;text-align:left;">
@@ -11893,7 +11901,7 @@ if (containerProg) {
             renderizarTreinoInteligenteHome();
         }
         if (id === "tela-ranking") { atualizarDisplayUltimaSincronizacao(); aplicarTurmaSalvaNoFiltro(); atualizarBotaoMinhaTurma(); }
-        if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); renderizarSugestoesIntervencao(); }
+        if (id === "tela-painel") { renderizarPainelEtapa(); renderizarPainelVersao(); renderizarPainelVotacao(); renderizarPainelConfig(); renderizarDestaquesPainel(); carregarMensagensPainel(); renderizarSugestoesIntervencao(); }
         if (id !== "tela-resultado") {
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -11959,10 +11967,6 @@ if (containerProg) {
     }
 
     // v10.4.1 — Escolhe o modo de treino conforme quantidade de operações pendentes.
-    //  0 pendentes → nada (já dominou tudo)
-    //  1-5 pendentes → FOCO ABSOLUTO (92% das perguntas vão para essas)
-    //  6-15 pendentes → treino inteligente normal
-    //  >15 pendentes → treino inteligente normal (lista completa)
     async function iniciarTreinoInteligente() {
         const lista = await montarListaTreinoInteligente(alunoAtual, turmaAtual, modalidadeAtual);
         const pendentes = lista.filter(i => i.peso > 1);
@@ -11985,7 +11989,6 @@ if (containerProg) {
     }
 
     // v10.4.2 — Aceita a modalidade como parâmetro (vinda do seletor do card do Mapa).
-    // Se vier vazia, usa a modalidade salva; senão, cai na do seletor de cadastro.
     async function iniciarFocoAbsolutoDaHome(mod) {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -13957,6 +13960,7 @@ if (containerProg) {
             document.getElementById("painel-conteudo").classList.remove("hidden");
             notificar("Acesso concedido!", "sucesso");
             await renderizarPainelEtapa();
+            await renderizarPainelVersao();
             await renderizarPainelVotacao();
             await renderizarPainelConfig();
             await renderizarDestaquesPainel();
@@ -15303,6 +15307,211 @@ if (containerProg) {
         </div>`;
     }
     // ▲▲▲ FIM [17.09]
+
+
+    // ▼▼▼ [17.10] Painel — Publicação de versão ───────────────────────
+    const CAMINHO_ULTIMA_VERSAO_PAINEL = "config/ultimaVersao";
+    const CAMINHO_VERSAO_META_PAINEL = "config/ultimaVersaoMeta";
+
+    async function renderizarPainelVersao() {
+        const container = document.getElementById("painel-versao-conteudo");
+        if (!container) return;
+        container.innerHTML = `<div class="desempenho-loading">⏳ Carregando…</div>`;
+
+        try {
+            const snap = await database.ref(CAMINHO_ULTIMA_VERSAO_PAINEL).once("value");
+            const publicadaRaw = snap.val();
+            const publicada = normalizarVersao(publicadaRaw);
+
+            let metaVal = null;
+            try {
+                const meta = await database.ref(CAMINHO_VERSAO_META_PAINEL).once("value");
+                metaVal = meta.val();
+            } catch(e) { metaVal = null; }
+
+            const versaoLocal = normalizarVersao(APP_VERSION);
+            const fmtData = (ts) => ts ? new Date(ts).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+
+            let linhaPublicada;
+            if (publicada) {
+                linhaPublicada = `<span style="color: var(--neon-cyan); font-weight: 800;">${escaparHtml(publicada)}</span>`;
+            } else {
+                linhaPublicada = `<span style="color: var(--text-muted); font-style: italic;">— (não publicada)</span>`;
+            }
+
+            // Aviso contextual de status
+            let avisoStatus = "";
+            if (publicada) {
+                const cmp = compararVersoes(publicada, versaoLocal);
+                if (cmp < 0) {
+                    avisoStatus = `<div style="font-size:11.5px;color:#fde68a;padding-top:8px;border-top:1px dashed rgba(148,163,184,.2);margin-top:10px;line-height:1.5;">⚠️ Existe uma versão mais nova rodando (v${escaparHtml(versaoLocal)}). Publique quando quiser avisar os alunos.</div>`;
+                } else if (cmp === 0) {
+                    avisoStatus = `<div style="font-size:11.5px;color:#86efac;padding-top:8px;border-top:1px dashed rgba(148,163,184,.2);margin-top:10px;line-height:1.5;">✓ Tudo em dia — a versão publicada é igual à que você está rodando.</div>`;
+                } else {
+                    avisoStatus = `<div style="font-size:11.5px;color:#93c5fd;padding-top:8px;border-top:1px dashed rgba(148,163,184,.2);margin-top:10px;line-height:1.5;">ℹ️ A versão publicada é mais nova que a sua. Verifique se o deploy do HTML foi feito corretamente.</div>`;
+                }
+            }
+
+            const dataTxt = (metaVal && metaVal.publicadaEm) ? fmtData(metaVal.publicadaEm) : "—";
+
+            container.innerHTML = `
+                <div class="painel-etapa-linha">
+                    <span class="painel-etapa-rotulo">📱 Rodando agora (neste navegador)</span>
+                    <span class="painel-etapa-valor" style="font-weight:800;color:var(--neon-gold);">v${escaparHtml(versaoLocal)}</span>
+                </div>
+                <div class="painel-etapa-linha">
+                    <span class="painel-etapa-rotulo">☁️ Publicada no Firebase</span>
+                    <span class="painel-etapa-valor">${linhaPublicada}</span>
+                </div>
+                <div class="painel-etapa-linha">
+                    <span class="painel-etapa-rotulo">📅 Última publicação</span>
+                    <span class="painel-etapa-valor">${dataTxt}</span>
+                </div>
+                ${avisoStatus}
+                <div class="painel-etapa-acoes" style="margin-top:14px;">
+                    <button onclick="publicarVersaoAtual()" class="botao-verde">📤 Publicar minha versão atual (v${escaparHtml(versaoLocal)})</button>
+                    <button onclick="digitarOutraVersaoParaPublicar()" class="botao-secundario">✏️ Digitar outra versão</button>
+                    ${publicada ? `<button onclick="desativarVerificacaoVersao()" class="botao-forcar">🗑️ Desativar verificação</button>` : ""}
+                </div>
+            `;
+        } catch(e) {
+            console.warn("[Painel Versão] Falha ao carregar:", e);
+            container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o estado da versão agora. Verifique a conexão.</div>`;
+        }
+    }
+
+    async function publicarVersaoAtual() {
+        if (!exigirProfessorAutenticado()) return;
+
+        const versaoLocal = normalizarVersao(APP_VERSION);
+
+        let publicada = "";
+        try {
+            const snap = await database.ref(CAMINHO_ULTIMA_VERSAO_PAINEL).once("value");
+            publicada = normalizarVersao(snap.val());
+        } catch(e) {
+            notificar("❌ Não foi possível ler o estado atual. Verifique a conexão.", "erro", 5000);
+            return;
+        }
+
+        // ─── Confirmações específicas por cenário ───
+        if (publicada === versaoLocal) {
+            const ok = confirm(
+                `📤 Reforçar a publicação da versão v${versaoLocal}?\n\n` +
+                `A versão já está publicada com esse mesmo número.\n` +
+                `Isso apenas atualiza a data de publicação.`
+            );
+            if (!ok) return;
+
+        } else if (publicada && compararVersoes(publicada, versaoLocal) > 0) {
+            const ok = confirm(
+                `⚠️ ATENÇÃO — Publicar uma versão MAIS ANTIGA\n\n` +
+                `Versão publicada agora: v${publicada}\n` +
+                `Versão que você vai publicar: v${versaoLocal}\n\n` +
+                `Os alunos serão convidados a "atualizar" para uma versão antiga.\n\n` +
+                `Tem certeza que quer continuar?`
+            );
+            if (!ok) return;
+
+        } else {
+            const ok = confirm(
+                `📤 Publicar a versão v${versaoLocal} como oficial?\n\n` +
+                `Os alunos que estiverem em versões anteriores vão ver o badge âmbar no cabeçalho e serão convidados a recarregar.\n\n` +
+                `Confirme que o HTML novo já está no ar.`
+            );
+            if (!ok) return;
+        }
+
+        try {
+            await database.ref(CAMINHO_ULTIMA_VERSAO_PAINEL).set(versaoLocal);
+            await database.ref(CAMINHO_VERSAO_META_PAINEL).set({ publicadaEm: Date.now() });
+            notificar(`✅ Versão v${versaoLocal} publicada com sucesso!`, "sucesso", 4000);
+            await renderizarPainelVersao();
+            try { verificarVersaoPublicada(); } catch(e) {}
+            try { somNovoRecorde(); } catch(e) {}
+        } catch(e) {
+            console.warn("[Painel Versão] Falha ao publicar:", e);
+            notificar("❌ Não foi possível publicar. Verifique a conexão.", "erro", 5000);
+        }
+    }
+
+    async function digitarOutraVersaoParaPublicar() {
+        if (!exigirProfessorAutenticado()) return;
+
+        let atualPublicada = "";
+        try {
+            const snap = await database.ref(CAMINHO_ULTIMA_VERSAO_PAINEL).once("value");
+            atualPublicada = normalizarVersao(snap.val());
+        } catch(e) { atualPublicada = ""; }
+
+        const sugestao = atualPublicada || normalizarVersao(APP_VERSION);
+        const resposta = prompt("✏️ Digite a versão a publicar (ex.: 10.5.1):", sugestao);
+        if (resposta === null) return;
+
+        const versaoNova = normalizarVersao(resposta);
+        if (!versaoNova) {
+            notificar("Versão inválida. Use um formato como 10.5.1.", "aviso", 5000);
+            return;
+        }
+
+        // Formato incomum → confirma
+        if (!/^\d+(\.\d+){1,3}$/.test(versaoNova)) {
+            const ok = confirm(
+                `⚠️ A versão "${versaoNova}" tem formato incomum.\n\n` +
+                `O padrão recomendado é algo como "10.5.0".\n\n` +
+                `Publicar mesmo assim?`
+            );
+            if (!ok) return;
+        }
+
+        // Publicando mais antiga → confirma
+        if (atualPublicada && compararVersoes(versaoNova, atualPublicada) < 0) {
+            const ok = confirm(
+                `⚠️ ATENÇÃO — Publicar uma versão MAIS ANTIGA\n\n` +
+                `Versão publicada agora: v${atualPublicada}\n` +
+                `Versão que você vai publicar: v${versaoNova}\n\n` +
+                `Tem certeza?`
+            );
+            if (!ok) return;
+        }
+
+        try {
+            await database.ref(CAMINHO_ULTIMA_VERSAO_PAINEL).set(versaoNova);
+            await database.ref(CAMINHO_VERSAO_META_PAINEL).set({ publicadaEm: Date.now() });
+            notificar(`✅ Versão v${versaoNova} publicada!`, "sucesso", 4000);
+            await renderizarPainelVersao();
+            try { verificarVersaoPublicada(); } catch(e) {}
+        } catch(e) {
+            console.warn("[Painel Versão] Falha ao publicar:", e);
+            notificar("❌ Não foi possível publicar. Verifique a conexão.", "erro", 5000);
+        }
+    }
+
+    async function desativarVerificacaoVersao() {
+        if (!exigirProfessorAutenticado()) return;
+
+        const ok = confirm(
+            `🗑️ Desativar a verificação de versão?\n\n` +
+            `• Os alunos deixarão de ver o aviso de "nova versão disponível".\n` +
+            `• Nada quebra — o app continua funcionando normalmente.\n` +
+            `• Você pode reativar publicando uma versão de novo.\n\n` +
+            `Confirmar?`
+        );
+        if (!ok) return;
+
+        try {
+            await database.ref(CAMINHO_ULTIMA_VERSAO_PAINEL).remove();
+            try { await database.ref(CAMINHO_VERSAO_META_PAINEL).remove(); } catch(e) {}
+            notificar("Verificação de versão desativada.", "info", 4000);
+            await renderizarPainelVersao();
+            try { verificarVersaoPublicada(); } catch(e) {}
+        } catch(e) {
+            console.warn("[Painel Versão] Falha ao desativar:", e);
+            notificar("❌ Não foi possível desativar. Verifique a conexão.", "erro", 5000);
+        }
+    }
+    // ▲▲▲ FIM [17.10]
+
 
     // ═══════════════════════════════════════════════════════════════════════
     // [18] JS-HOME · Home E-Sports + Hall da Fama + Detalhes da etapa
