@@ -9314,6 +9314,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // da tela de Desempenho (professor consultando outro aluno), usa os
     // dados consultados. Sem parâmetros, cai no aluno logado no aparelho.
     // Também exibe o nome do aluno consultado no hero da tela.
+    // v10.5.1b · Ajuste: contador do hero agora soma TODOS os certificados
+    // conquistados (antes contava 1 por modalidade, mesmo com 2+ certificados).
+    // v10.5.1c · Opção A: botões "Treinar" só aparecem quando a tela está
+    // mostrando o aluno logado neste aparelho. Quando o professor consulta
+    // outro aluno, os botões são ocultados para evitar treino no nome errado.
 
     function abrirMeuProgresso() {
         // Prioriza os dados preenchidos na tela de Desempenho.
@@ -9342,6 +9347,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return;
         }
 
+        // v10.5.1c · Detecta se a tela está mostrando o aluno logado neste
+        // aparelho. Se sim, os botões "Treinar" aparecem. Se não (professor
+        // consultando outro aluno), os botões são ocultados.
+        const nomeLogado  = obterNomeSalvoAluno();
+        const turmaLogada = obterTurmaSalvaAluno();
+        const ehProprioAluno = !!(nomeLogado && turmaLogada
+            && normalizarNome(nome) === normalizarNome(nomeLogado)
+            && turma === turmaLogada);
+
         container.innerHTML = `<div class="desempenho-loading" style="padding:40px 20px;text-align:center;color:var(--text-muted);">⏳ Carregando seu progresso…</div>`;
 
         try {
@@ -9359,15 +9373,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 const progPorNivel = resumoCertificadosModalidade(mapaMod, mod);
                 const pMod = persistidos[mod] || {};
 
+                // certAtual = certificado mais alto conquistado nesta modalidade
+                // (usado para exibir no card da modalidade)
                 let certAtual = null;
-let certsNestaMod = 0;
-for (const nivel of CERT_ORDEM) {
-    if (pMod[nivel]) {
-        if (!certAtual) certAtual = { nivel, dados: pMod[nivel], cfg: CERT_NIVEIS[nivel] };
-        certsNestaMod++;
-    }
-}
-totalConquistados += certsNestaMod;   // ← conta TODOS os certificados
+                // certsNestaMod = TODOS os certificados conquistados nesta modalidade
+                // (usado no contador do hero, para bater com a timeline)
+                let certsNestaMod = 0;
+                for (const nivel of CERT_ORDEM) {
+                    if (pMod[nivel]) {
+                        if (!certAtual) certAtual = { nivel, dados: pMod[nivel], cfg: CERT_NIVEIS[nivel] };
+                        certsNestaMod++;
+                    }
+                }
+                totalConquistados += certsNestaMod;
 
                 let proxNivel = null;
                 for (const nivel of ["prata", "ouro", "lendaria"]) {
@@ -9408,11 +9426,11 @@ totalConquistados += certsNestaMod;   // ← conta TODOS os certificados
                     melhorAlvo = { mod, nivel: info.proxNivel, prog, prioridade, semVel };
                 }
             }
-            const proximoHtml = melhorAlvo ? renderizarProximoPassoProgresso(melhorAlvo) : "";
+            const proximoHtml = melhorAlvo ? renderizarProximoPassoProgresso(melhorAlvo, ehProprioAluno) : "";
 
             let cardsHtml = "";
             for (const mod of Object.keys(MODALIDADES)) {
-                cardsHtml += renderizarCardProgressoMod(mod, dadosMods[mod], rotulosCurtos[mod], icones[mod]);
+                cardsHtml += renderizarCardProgressoMod(mod, dadosMods[mod], rotulosCurtos[mod], icones[mod], ehProprioAluno);
             }
 
             const timelineHtml = renderizarTimelineProgresso(persistidos, rotulosCurtos);
@@ -9431,7 +9449,7 @@ totalConquistados += certsNestaMod;   // ← conta TODOS os certificados
         }
     }
 
-    function renderizarCardProgressoMod(mod, info, nomeMod, icone) {
+    function renderizarCardProgressoMod(mod, info, nomeMod, icone, podeTreinar) {
         const { certAtual, proxNivel, progPorNivel } = info;
         const modCls = mod === "2-5" ? "mod-2-5" : mod === "6-9" ? "mod-6-9" : "mod-0-10";
 
@@ -9480,15 +9498,20 @@ totalConquistados += certsNestaMod;   // ← conta TODOS os certificados
             proxHtml = `<div class="progresso-mod-prox" style="color:#86efac;font-weight:800;">🏆 Você conquistou todos os certificados desta modalidade!</div>`;
         }
 
+        // v10.5.1c · Botão "Treinar" só aparece quando é o próprio aluno logado.
+        const botaoTreinar = podeTreinar
+            ? `<button class="progresso-mod-btn" onclick="treinarModalidadeProgresso('${mod}')">🎯 Treinar essa modalidade</button>`
+            : "";
+
         return `<div class="progresso-mod-card ${modCls}">
             <div class="progresso-mod-titulo"><span class="icone">${icone}</span>${escaparHtml(nomeMod)}</div>
             ${certHtml}
             ${proxHtml}
-            <button class="progresso-mod-btn" onclick="treinarModalidadeProgresso('${mod}')">🎯 Treinar essa modalidade</button>
+            ${botaoTreinar}
         </div>`;
     }
 
-    function renderizarProximoPassoProgresso(alvo) {
+    function renderizarProximoPassoProgresso(alvo, podeTreinar) {
         const { mod, nivel, prog, semVel } = alvo;
         const cfg = CERT_NIVEIS[nivel];
         const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
@@ -9507,6 +9530,11 @@ totalConquistados += certsNestaMod;   // ← conta TODOS os certificados
 
         const pct = prog.exigido > 0 ? Math.min(100, Math.round((prog.dominadas / prog.exigido) * 100)) : 0;
 
+        // v10.5.1c · Botão "Treinar agora" só aparece quando é o próprio aluno logado.
+        const botaoTreinar = podeTreinar
+            ? `<button class="progresso-mod-btn" style="margin-top:12px;" onclick="treinarModalidadeProgresso('${mod}')">🎯 Treinar ${escaparHtml(rotulos[mod])} agora</button>`
+            : "";
+
         return `<div class="alerta-proximidade">
             <div class="alerta-prox-topo">
                 <span class="alerta-prox-icone">${icone}</span>
@@ -9520,7 +9548,7 @@ totalConquistados += certsNestaMod;   // ← conta TODOS os certificados
                 <span>${prog.dominadas} de ${prog.exigido} operações</span>
                 <span class="pct">${pct}%</span>
             </div>
-            <button class="progresso-mod-btn" style="margin-top:12px;" onclick="treinarModalidadeProgresso('${mod}')">🎯 Treinar ${escaparHtml(rotulos[mod])} agora</button>
+            ${botaoTreinar}
         </div>`;
     }
 
