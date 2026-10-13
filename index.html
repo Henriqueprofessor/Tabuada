@@ -17850,9 +17850,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     const elVMenu = document.getElementById("mais-versao-atual");
     if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
 
-    // ─── v10.4.9 · Verifica assincronamente se há versão mais nova publicada
-    //     no Firebase. Não bloqueia o boot (roda em background). ───
+    // ─── v10.4.9 · Verifica se há versão mais nova publicada no Firebase
+    //     (consulta única no boot). Não bloqueia o resto do boot. ───
     verificarVersaoPublicada().catch(() => {});
+
+    // ─── v10.5.0 · Inicia listener em tempo real. O badge do cabeçalho
+    //     reage no mesmo segundo em que o professor publica uma versão. ───
+    try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
 
     iniciarListenerMsgAluno();
 
@@ -17886,12 +17890,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
 });
 // ▲▲▲ FIM [19.03]
+
     // ▼▼▼ [19.04] Verificação de versão publicada + clique no badge ────
     // v10.4.9 · Consulta o campo "ultimaVersao" no Firebase (config/ultimaVersao)
     // e ajusta o badge do cabeçalho:
     //   · ciano (padrão)      → sem dados publicados ou verificação falhou
     //   · verde (✓)           → está na última versão publicada
     //   · âmbar (⚠ + pulso)   → versão publicada é mais nova
+    //
+    // v10.5.0 · Adicionado LISTENER em tempo real. O badge reage no mesmo
+    // segundo em que o professor publica uma versão nova — sem precisar
+    // recarregar a página nem clicar em nada.
     //
     // O parser é TOLERANTE a aspas: aceita "10.4.9", '10.4.9', ""10.4.9"",
     // espaços extras, etc. — sempre extrai a versão limpa.
@@ -17901,9 +17910,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     //   · caso contrário                   → abre o modal de Novidades (Changelog)
     //
     // COMO PUBLICAR UMA NOVA VERSÃO (professor):
-    //   1) Firebase Console → RTDB → nó "config" → campo "ultimaVersao"
-    //   2) Valor: 10.4.10  (idealmente sem aspas, mas o código aceita com)
-    //   3) Todos os clientes em versões antigas verão o badge âmbar no próximo boot
+    //   1) Painel do Professor → bloco "📤 Publicação de versão"
+    //      OU Firebase Console → RTDB → nó "config" → campo "ultimaVersao"
+    //   2) Valor: 10.5.1  (idealmente sem aspas, mas o código aceita com)
+    //   3) Todos os clientes ativos verão o badge âmbar IMEDIATAMENTE
+    //      (e os que abrirem depois verão no boot)
 
     const CAMINHO_ULTIMA_VERSAO = "config/ultimaVersao";
 
@@ -17952,39 +17963,97 @@ window.addEventListener("DOMContentLoaded", async () => {
         return 0;
     }
 
-    async function verificarVersaoPublicada() {
+    // ─── Estado interno do listener de versão ───
+    let _listenerVersaoRef = null;      // { ref, handler } do listener ativo
+    let _ultimoEstadoVersao = null;     // "ok" | "desatualizada" | "neutro"
+    let _jaAvisouDesatualizado = false; // evita toast repetido
+
+    // Aplica o estado visual ao badge do cabeçalho
+    function _aplicarEstadoBadgeVersao(publicada) {
         const badge = document.getElementById("header-versao-atual");
         if (!badge) return;
+
+        if (!publicada) {
+            // Sem versão publicada → estado neutro (ciano)
+            badge.classList.remove("versao-ok", "versao-desatualizada");
+            badge.title = "Versão atual · Clique para ver o histórico de versões";
+            badge.setAttribute("aria-label", "Ver versão atual. Clique para ver o histórico.");
+            _ultimoEstadoVersao = "neutro";
+            return;
+        }
+
+        const local = normalizarVersao(APP_VERSION);
+        const cmp = compararVersoes(local, publicada);
+
+        if (cmp < 0) {
+            // Versão local é antiga → âmbar + oferta de recarregar
+            badge.classList.remove("versao-ok");
+            badge.classList.add("versao-desatualizada");
+            badge.title = `Nova versão disponível (v${publicada}) — clique para recarregar`;
+            badge.setAttribute("aria-label", `Nova versão disponível (v${publicada}). Clique para recarregar.`);
+            _ultimoEstadoVersao = "desatualizada";
+        } else {
+            // Está na última versão (ou à frente) → verde
+            badge.classList.remove("versao-desatualizada");
+            badge.classList.add("versao-ok");
+            badge.title = "Você está na última versão · Clique para ver o histórico de versões";
+            badge.setAttribute("aria-label", "Você está na última versão. Clique para ver o histórico.");
+            _ultimoEstadoVersao = "ok";
+        }
+    }
+
+    // Consulta única (usada no boot e no botão "Verificar versão")
+    async function verificarVersaoPublicada() {
         try {
             const snap = await database.ref(CAMINHO_ULTIMA_VERSAO).once("value");
-            const publicadaRaw = snap.val();
-            const publicada = normalizarVersao(publicadaRaw);
-
-            // Sem dado publicado (ou vazio após limpeza) → mantém estado neutro (ciano)
-            if (!publicada) {
-                badge.classList.remove("versao-ok", "versao-desatualizada");
-                return;
-            }
-
-            const local = normalizarVersao(APP_VERSION);
-            const cmp = compararVersoes(local, publicada);
-
-            if (cmp < 0) {
-                // Versão local é antiga → âmbar + oferta de recarregar
-                badge.classList.remove("versao-ok");
-                badge.classList.add("versao-desatualizada");
-                badge.title = `Nova versão disponível (v${publicada}) — clique para recarregar`;
-                badge.setAttribute("aria-label", `Nova versão disponível (v${publicada}). Clique para recarregar.`);
-            } else {
-                // Está na última versão (ou à frente) → verde
-                badge.classList.remove("versao-desatualizada");
-                badge.classList.add("versao-ok");
-                badge.title = "Você está na última versão · Clique para ver o histórico de versões";
-                badge.setAttribute("aria-label", "Você está na última versão. Clique para ver o histórico de versões.");
-            }
+            const publicada = normalizarVersao(snap.val());
+            _aplicarEstadoBadgeVersao(publicada);
         } catch (e) {
-            // Falha na consulta → mantém estado neutro (ciano). Silencioso.
+            // Falha na consulta → mantém estado atual. Silencioso.
             console.info("[Versão] Não foi possível verificar a versão publicada:", e && e.message);
+        }
+    }
+
+    // Listener em tempo real — reage no segundo em que o professor publica
+    // uma nova versão. Como `config/ultimaVersao` muda raríssimo (1x por
+    // deploy), o custo no Firebase é praticamente 1 leitura no boot + 1
+    // quando o valor muda.
+    function iniciarListenerVersao() {
+        // Evita múltiplos listeners ativos (proteção contra chamada dupla)
+        if (_listenerVersaoRef) return;
+
+        try {
+            const ref = database.ref(CAMINHO_ULTIMA_VERSAO);
+            const handler = (snap) => {
+                const publicada = normalizarVersao(snap.val());
+                const estadoAntes = _ultimoEstadoVersao;
+
+                _aplicarEstadoBadgeVersao(publicada);
+
+                // Se ficou desatualizada AGORA (antes não estava), dá um toast leve.
+                // Só uma vez por versão publicada — sem encher o aluno de avisos.
+                if (_ultimoEstadoVersao === "desatualizada" && estadoAntes !== "desatualizada") {
+                    if (!_jaAvisouDesatualizado) {
+                        _jaAvisouDesatualizado = true;
+                        try {
+                            notificar(`🚀 Nova versão disponível (v${publicada})! Clique no badge do topo para atualizar.`, "info", 6000);
+                        } catch(e) {}
+                    }
+                }
+
+                // Se voltou a ok/neutro, libera o aviso para o futuro
+                if (_ultimoEstadoVersao !== "desatualizada") {
+                    _jaAvisouDesatualizado = false;
+                }
+            };
+
+            ref.on("value", handler, (err) => {
+                console.info("[Versão] Listener indisponível:", err && err.message);
+            });
+
+            _listenerVersaoRef = { ref, handler };
+        } catch (e) {
+            console.info("[Versão] Não foi possível iniciar listener:", e && e.message);
         }
     }
 
@@ -18003,6 +18072,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (typeof abrirChangelog === "function") abrirChangelog();
     }
     // ▲▲▲ FIM [19.04]
+
     // ▼▼▼ [19.05] Botão "Verificar versão" — consulta sob demanda ─────
     // v10.4.9 · Handler do botão 🔄 ao lado do badge.
     // Fluxo:
