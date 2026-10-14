@@ -6591,7 +6591,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 /* ▼▼▼ [02.65] Ranking em 2 níveis (escopo → métrica) ──── INÍCIO ─── */
 /* v10.5.2 · Reformulação do layout do Ranking.
    Nível 1 (escopo): 2 botões grandes, um ativo com destaque verde.
-   Nível 2 (métrica): sub-abas pequenas, ativa com destaque ciano. */
+   Nível 2 (métrica): sub-abas pequenas, ativa com destaque ciano.
+   v10.5.2-fix: ".rankings-especiais.hidden" garante que o display:none
+   vença o display:grid da classe original do layout antigo. */
 .ranking-escopo {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -6615,6 +6617,14 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     border-color: var(--neon-cyan);
     transform: translateY(-1px);
 }
+
+/* ─── FIX: .rankings-especiais tem display:grid em [02.08] e estava
+   vencendo o .hidden (mesma especificidade, definida depois no arquivo).
+   Esta regra restaura o comportamento esperado do hidden. ─── */
+.rankings-especiais.hidden {
+    display: none !important;
+}
+
 /* Destaque reforçado das sub-abas ativas */
 .rankings-especiais .aba.ativa {
     background: linear-gradient(135deg, #0891b2 0%, #0369a1 100%) !important;
