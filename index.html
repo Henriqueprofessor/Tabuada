@@ -11921,8 +11921,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.05]
 
     // ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
-    // v10.5.2 · Reformulação: combina escopo (turma/global) × métrica
-    //          + dropdown de turma consultável (sem "todas")
+    // v10.5.2 · Combina escopo (turma/global) × métrica:
+    //   turma  → pontos · velocidade · media
+    //   global → pontos · velocidade · media · desafio
+    // A métrica "precisao" foi removida em v10.5.2.
+
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
         const n = obterNomeSalvoAluno(), t = obterTurmaSalvaAluno();
@@ -12193,7 +12196,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const turmaAluno = obterTurmaSalvaAluno();
         const nomeA = obterNomeSalvoAluno();
 
-        // Se o aluno consultou outra turma, ele vê a turma consultada — mas o "← Você" só aparece quando é a dele
         const turma = (tipoRankingAtual === "turma") ? turmaSelecionada : null;
 
         function tagVoce(r) {
@@ -12291,20 +12293,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             }
         }
 
-        // ─── Precisão ───
-        else if (metricaRankingAtual === "precisao") {
-            if (tipoRankingAtual === "turma") {
-                rank = await obterRankingPorPrecisao(mod, turma);
-                tit = `🎯 Precisão · Turma ${turma} — ${MODALIDADES[mod]?.nome}`;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo médio dos acertos</th>`;
-            } else {
-                rank = await obterRankingPorPrecisao(mod, null);
-                tit = `🎯 Precisão Global — ${MODALIDADES[mod]?.nome}`;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo médio dos acertos</th>`;
-            }
-            ti.innerText = tit;
-        }
-
         // ─── Velocidade ───
         else if (metricaRankingAtual === "velocidade") {
             if (tipoRankingAtual === "turma") {
@@ -12354,7 +12342,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return;
         }
 
-        // ═══ Renderização genérica (Pontos global · Precisão · Velocidade) ═══
+        // ═══ Renderização genérica (Pontos global · Velocidade) ═══
         if (!rank.length) {
             tb.innerHTML = `<tr><td colspan="6"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`;
             return;
@@ -12370,11 +12358,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const cv = vc ? " voce-linha" : "";
             h += `<tr class="${cv}"><td style="text-align:center">${p}º</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td>`;
             if (mostrarTurmaNaLinha) h += `<td style="text-align:center">${r.turma}</td>`;
-            if (metricaRankingAtual === "precisao") {
-                h += `<td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${r.pontos}</td>`;
-            } else {
-                h += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
-            }
+            h += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
             h += `<td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td></tr>`;
         }
         tb.innerHTML = h;
