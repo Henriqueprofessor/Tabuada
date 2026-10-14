@@ -3395,10 +3395,13 @@
         /* ▲▲▲ FIM [02.44] */
 
         /* ▼▼▼ [02.45] Home — Card "Minhas Posições · Jogar/Treinar" ─ INÍCIO ─── */
-        /* v10.5.3 · Reformulado: cada linha de modalidade agora exibe uma barra
-           de proporção treinos × oficiais daquela modalidade. O botão de ação
-           ficou mais baixo para dar destaque à barra. O sufixo "· N partidas"
-           foi removido do status (o número aparece na legenda da barra). */
+        /* v10.5.3 · Cada linha de modalidade exibe uma barra de proporção
+           treinos × oficiais.
+           v10.5.4 · O botão único "Jogar/Treinar" virou DOIS botões
+           independentes (Jogar · Treinar). O wrapper da linha deixou de
+           ser clicável no meio — só os botões levam a algum lugar.
+           Jogar fica esmaecido quando a etapa não está aberta, mas ainda
+           clicável: o handler mostra um toast explicando. */
 
         .home-modalidades-card {
             background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%);
@@ -3439,7 +3442,7 @@
             gap: 8px;
         }
 
-        /* ─── Linha de modalidade ─── */
+        /* ─── Linha de modalidade (agora é <div>, sem clique no meio) ─── */
         .home-modalidade-linha {
             display: flex;
             flex-direction: column;
@@ -3453,44 +3456,21 @@
             text-align: left;
             width: 100%;
             box-sizing: border-box;
-            transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+            transition: border-color 0.2s ease, background 0.2s ease;
         }
-        .home-modalidade-linha:hover:not(:disabled) {
-            background: rgba(34, 211, 238, 0.06);
-            border-color: rgba(34, 211, 238, 0.5);
-            transform: translateY(-1px);
-        }
-        .home-modalidade-linha:focus-visible {
-            outline: 3px solid var(--neon-cyan);
-            outline-offset: 2px;
-        }
-        .home-modalidade-linha:active:not(:disabled) { transform: translateY(0); }
 
         .home-modalidade-linha.zona-top4 {
             background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.04));
             border-color: rgba(16, 185, 129, 0.5);
         }
-        .home-modalidade-linha.zona-top4:hover:not(:disabled) {
-            background: linear-gradient(90deg, rgba(16, 185, 129, 0.28), rgba(16, 185, 129, 0.10));
-            border-color: rgba(16, 185, 129, 0.85);
-        }
         .home-modalidade-linha.zona-reserva {
             background: linear-gradient(90deg, rgba(251, 191, 36, 0.14), rgba(251, 191, 36, 0.04));
             border-color: rgba(251, 191, 36, 0.42);
-        }
-        .home-modalidade-linha.zona-reserva:hover:not(:disabled) {
-            background: linear-gradient(90deg, rgba(251, 191, 36, 0.22), rgba(251, 191, 36, 0.08));
-            border-color: rgba(251, 191, 36, 0.7);
         }
         .home-modalidade-linha.sem-dados {
             background: rgba(10, 22, 40, 0.35);
             border-style: dashed;
             border-color: rgba(148, 163, 184, 0.28);
-        }
-        .home-modalidade-linha.sem-dados:hover:not(:disabled) {
-            background: rgba(34, 211, 238, 0.06);
-            border-style: solid;
-            border-color: rgba(34, 211, 238, 0.4);
         }
 
         /* ─── Linha 1: nome + posição ─── */
@@ -3616,39 +3596,85 @@
             font-weight: 600;
         }
 
-        /* ─── Linha 4: botão de ação (compacto) ─── */
+        /* ─── Linha 4: dois botões de ação (Jogar · Treinar) ─── */
+        .home-mod-acoes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
         .home-mod-btn {
             width: 100%;
             margin: 0;
-            padding: 7px 12px;
+            padding: 8px 10px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%);
             color: #fff;
             font-size: 12.5px;
             font-weight: 800;
             letter-spacing: 0.4px;
             cursor: pointer;
-            box-shadow: 0 2px 0 #07583d;
             font-family: inherit;
-            transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+            transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s ease;
             line-height: 1.2;
+            box-sizing: border-box;
         }
-        .home-mod-btn:hover:not(:disabled) {
+
+        /* Jogar — verde (cor oficial do app para ação de jogo) */
+        .home-mod-btn.jogar {
+            background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%);
+            box-shadow: 0 2px 0 #07583d;
+        }
+        .home-mod-btn.jogar:hover:not(:disabled) {
             background: linear-gradient(135deg, #0fa572 0%, #0a885e 100%);
         }
-        .home-mod-btn:active:not(:disabled) {
+        .home-mod-btn.jogar:active:not(:disabled) {
             transform: translateY(1px);
             box-shadow: 0 1px 0 #07583d;
         }
-        .home-modalidade-linha.sem-dados .home-mod-btn {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            box-shadow: 0 2px 0 #3730a3;
+        .home-mod-btn.jogar:focus-visible {
+            outline: 3px solid #6ee7b7;
+            outline-offset: 2px;
         }
-        .home-modalidade-linha.sem-dados .home-mod-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+
+        /* Jogar esmaecido — etapa fechada. Ainda clicável: o handler
+           mostra um toast explicando por que não dá para jogar agora. */
+        .home-mod-btn.jogar.desabilitado {
+            opacity: 0.42;
+            cursor: not-allowed;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
         }
-        .home-modalidade-linha.sem-dados .home-mod-btn.pulse-selo {
+        .home-mod-btn.jogar.desabilitado:hover {
+            background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%);
+            transform: none;
+        }
+        .home-mod-btn.jogar.desabilitado:active {
+            transform: none;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        /* Treinar — roxo (mesma paleta da barra de treinos e dos botões
+           de treino do app). Sempre ativo, nunca esmaece. */
+        .home-mod-btn.treinar {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            box-shadow: 0 2px 0 #4c1d95;
+        }
+        .home-mod-btn.treinar:hover:not(:disabled) {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        .home-mod-btn.treinar:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #4c1d95;
+        }
+        .home-mod-btn.treinar:focus-visible {
+            outline: 3px solid #d8b4fe;
+            outline-offset: 2px;
+        }
+
+        /* Pulso dourado no botão Jogar quando o aluno nunca jogou nesta
+           modalidade (convite visual — para quem ainda não começou). */
+        .home-mod-btn.jogar.convite {
             animation: homePulseSelo 2s ease-in-out infinite;
         }
         @keyframes homePulseSelo {
@@ -3676,7 +3702,8 @@
             .home-mod-pts { font-size: 11.5px; }
             .home-mod-barra-legenda { font-size: 10.5px; }
             .home-mod-barra-legenda .numeros { gap: 10px; }
-            .home-mod-btn { font-size: 12px; padding: 7px 10px; }
+            .home-mod-acoes { gap: 6px; }
+            .home-mod-btn { font-size: 12px; padding: 8px 8px; }
             .home-modalidades-rodape { font-size: 10.5px; }
         }
 
@@ -3684,8 +3711,9 @@
             .home-modalidade-linha,
             .home-mod-barra-fill,
             .home-mod-btn { transition: none !important; }
-            .home-modalidade-linha:hover:not(:disabled) { transform: none; }
-            .home-modalidade-linha.sem-dados .home-mod-btn.pulse-selo { animation: none !important; }
+            .home-mod-btn.jogar.convite { animation: none !important; }
+            .home-mod-btn.jogar:active:not(:disabled),
+            .home-mod-btn.treinar:active:not(:disabled) { transform: none; }
         }
         /* ▲▲▲ FIM [02.45] */
 
@@ -18181,10 +18209,12 @@ if (containerProg) {
     // ▲▲▲ FIM [18.06]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.5.3 · Cada linha agora exibe uma barra de proporção treinos × oficiais
-    // daquela modalidade específica. A barra geral ("Seu Ritmo na Copa") continua
-    // no hero. Fonte dos treinos por modalidade: CAMINHO_TREINOS_POR_MOD
-    // (contador incrementado em finalizarCircuito() desde v10.5.3).
+    // v10.5.3 · Cada linha exibe barra de proporção treinos × oficiais.
+    // v10.5.4 · A linha virou <div> com DOIS botões independentes:
+    //   · ▶ Jogar    (verde) — só abre quando a etapa está ativa;
+    //                          se não está, esmaece mas continua clicável
+    //                          (mostra toast explicando).
+    //   · 🎯 Treinar (roxo)  — sempre disponível.
 
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
@@ -18194,11 +18224,10 @@ if (containerProg) {
         const turma = obterTurmaSalvaAluno();
 
         const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
-        const modo = etapaAtiva ? "jogar" : "treinar";
-        const tituloAcao = modo === "jogar" ? "Minhas Posições · Jogar" : "Minhas Posições · Treinar";
-        const subtitulo = modo === "jogar"
-            ? "Escolha uma modalidade para jogar a classificatória. Só o seu melhor resultado conta."
-            : "Escolha uma modalidade para treinar. Suas partidas alimentam o mapa e os certificados, mas não entram no ranking.";
+        const tituloAcao = "Minhas Posições";
+        const subtitulo = etapaAtiva
+            ? "Escolha uma modalidade para jogar a classificatória ou para treinar. Só o seu melhor resultado oficial conta."
+            : "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
 
         // ─── Coleta de dados em paralelo (só se identificado) ───
         let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
@@ -18297,25 +18326,31 @@ if (containerProg) {
                     </div>`;
             }
 
-            // ─── Botão ───
-            const seloTexto = modo === "jogar" ? "▶ Jogar" : "🎯 Treinar";
-            const pulseCls = (!jogou && treinos === 0) ? " pulse-selo" : "";
-            const ariaLabel = `${modo === "jogar" ? "Jogar" : "Treinar"} modalidade ${rotulos[mod]}${jogou ? ` — ${statusTxt.toLowerCase()}` : ""}`;
+            // ─── Dois botões ───
+            const jogarCls = etapaAtiva ? "jogar" : "jogar desabilitado";
+            const conviteCls = (!jogou && treinos === 0 && etapaAtiva) ? " convite" : "";
+            const jogarAria = etapaAtiva
+                ? `Jogar modalidade ${rotulos[mod]}${jogou ? ` — ${statusTxt.toLowerCase()}` : ""}`
+                : `Jogar modalidade ${rotulos[mod]} — indisponível agora, a etapa não está aberta`;
+            const treinarAria = `Treinar modalidade ${rotulos[mod]}`;
 
-            linhas += `<button type="button" class="home-modalidade-linha ${zonaCls}" onclick="escolherModalidadeHome('${mod}')" aria-label="${escaparHtml(ariaLabel)}">
-                <span class="home-mod-l1">
+            linhas += `<div class="home-modalidade-linha ${zonaCls}">
+                <div class="home-mod-l1">
                     <span class="home-mod-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
                     <span class="home-mod-pos">${posTxt}</span>
-                </span>
-                <span class="home-mod-l2">
+                </div>
+                <div class="home-mod-l2">
                     <span class="home-mod-status">${escaparHtml(statusTxt)}</span>
                     <span class="home-mod-pts">${ptsTxt}</span>
-                </span>
-                <span class="home-mod-barra-bloco">
+                </div>
+                <div class="home-mod-barra-bloco">
                     ${barraHtml}
-                </span>
-                <span class="home-mod-btn${pulseCls}">${seloTexto}</span>
-            </button>`;
+                </div>
+                <div class="home-mod-acoes">
+                    <button type="button" class="home-mod-btn ${jogarCls}${conviteCls}" onclick="jogarModalidadeHome('${mod}')" aria-label="${escaparHtml(jogarAria)}"${etapaAtiva ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
+                    <button type="button" class="home-mod-btn treinar" onclick="treinarModalidadeHome('${mod}')" aria-label="${escaparHtml(treinarAria)}">🎯 Treinar</button>
+                </div>
+            </div>`;
         });
 
         ctn.innerHTML = `<div class="home-modalidades-card">
@@ -18326,16 +18361,21 @@ if (containerProg) {
         </div>`;
     }
 
-    // Handler do clique numa modalidade do card da Home.
-    // - Não identificado → vai para tela-single com modalidade pré-selecionada
-    // - Identificado → reusa registrarAluno(), que cuida de vínculo, prep e treino
-    async function escolherModalidadeHome(mod) {
+    // ─────────────────────────────────────────────────────────────────
+    // Handlers dos dois botões
+    // ─────────────────────────────────────────────────────────────────
+
+    // ▶ Jogar — só funciona quando a etapa está ativa.
+    // Se o botão estiver esmaecido (.desabilitado), ainda assim pode ser
+    // clicado: aqui dentro confirmamos a fase e mostramos um toast
+    // explicando por que não dá para jogar agora.
+    async function jogarModalidadeHome(mod) {
         if (!MODALIDADES[mod]) return;
 
         const selMod = document.getElementById("modalidade-tabuada");
         if (selMod) selMod.value = mod;
 
-        const nome = obterNomeSalvoAluno();
+        const nome  = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
 
         if (!nome || !turma) {
@@ -18343,18 +18383,47 @@ if (containerProg) {
             return;
         }
 
-        const inNome = document.getElementById("nome-aluno");
-        const selTurma = document.getElementById("turma-aluno");
-        if (inNome) inNome.value = nome;
-        if (selTurma) selTurma.value = turma;
-
         const fase = await resolverFaseAtual();
         const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
 
-        // registrarAluno(false) → classificatória | registrarAluno(true) → treino
-        await registrarAluno(!etapaAtiva);
+        if (!etapaAtiva) {
+            notificar("⏸️ A etapa classificatória não está aberta agora. Use o botão Treinar para aquecer!", "aviso", 5000);
+            return;
+        }
+
+        const inNome   = document.getElementById("nome-aluno");
+        const selTurma = document.getElementById("turma-aluno");
+        if (inNome)   inNome.value   = nome;
+        if (selTurma) selTurma.value = turma;
+
+        await registrarAluno(false);
+    }
+
+    // 🎯 Treinar — sempre disponível. O treino alimenta o mapa e os
+    // certificados, mas não entra no ranking.
+    async function treinarModalidadeHome(mod) {
+        if (!MODALIDADES[mod]) return;
+
+        const selMod = document.getElementById("modalidade-tabuada");
+        if (selMod) selMod.value = mod;
+
+        const nome  = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+
+        if (!nome || !turma) {
+            mostrarTela("tela-single");
+            return;
+        }
+
+        const inNome   = document.getElementById("nome-aluno");
+        const selTurma = document.getElementById("turma-aluno");
+        if (inNome)   inNome.value   = nome;
+        if (selTurma) selTurma.value = turma;
+
+        await registrarAluno(true);
     }
     // ▲▲▲ FIM [18.07]
+
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
     // v10.4.10 · Coach pessoal com IA — atualizado com Média Geral,
     //            medalhas de Consistência, votação, patentes, bloqueio,
