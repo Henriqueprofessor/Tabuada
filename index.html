@@ -5203,14 +5203,19 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
            (nome do aluno, subtítulo dinâmico). Quando o conteúdo muda de
            tamanho, empurra o layout abaixo → CLS alto.
            Reservar espaço com min-height evita o salto visual.
+
            v10.5.3 · Os 3 cards (Certificados/Treinos/Oficiais) foram
            removidos do hero.
            v10.5.4 · O bloco "Seu Ritmo na Copa" migrou para um card
-           autônomo (#ritmo-copa-container). O hero perdeu essa altura,
-           mas ganhamos uma reserva nova para o card do Ritmo. */
+           autônomo (#ritmo-copa-container).
+           v10.5.4b · O min-height do hero foi recalibrado: como o hero
+           só contém saudação + subtítulo, o valor antigo (240px / 280px)
+           deixava um vazio grande. Novo valor cobre o pior caso do
+           conteúdo atual (subtítulo quebrando em 3 linhas no celular)
+           sem sobrar espaço morto. */
 
         .hero-esports {
-            min-height: 240px;
+            min-height: 130px;
             contain: layout paint;
         }
 
@@ -5231,7 +5236,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         #meta-pessoal-container    { min-height: 80px; }
 
         @media (max-width: 780px) {
-            .hero-esports            { min-height: 280px; }
+            /* No celular o subtítulo pode quebrar em 2-3 linhas →
+               reserva um pouco maior que o desktop. */
+            .hero-esports             { min-height: 150px; }
             #acao-principal-container { min-height: 340px; }
             #ritmo-copa-container     { min-height: 140px; }
         }
