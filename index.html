@@ -6984,7 +6984,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <!-- Nível 2A · Sub-abas do escopo "Minha Turma" -->
     <div class="rankings-especiais" id="sub-abas-turma">
         <button type="button" class="aba ativa" id="sub-turma-pontos"     onclick="mudarMetricaRanking('pontos')">🏆 Pontos</button>
-        <button type="button" class="aba"       id="sub-turma-precisao"   onclick="mudarMetricaRanking('precisao')">🎯 Precisão</button>
         <button type="button" class="aba"       id="sub-turma-velocidade" onclick="mudarMetricaRanking('velocidade')">⚡ Velocidade</button>
         <button type="button" class="aba"       id="sub-turma-media"      onclick="mudarMetricaRanking('media')">🏅 Média</button>
     </div>
@@ -6992,7 +6991,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <!-- Nível 2B · Sub-abas do escopo "Global" -->
     <div class="rankings-especiais hidden" id="sub-abas-global">
         <button type="button" class="aba ativa" id="sub-global-pontos"     onclick="mudarMetricaRanking('pontos')">🌍 Ranking Geral</button>
-        <button type="button" class="aba"       id="sub-global-precisao"   onclick="mudarMetricaRanking('precisao')">🎯 Precisão</button>
         <button type="button" class="aba"       id="sub-global-velocidade" onclick="mudarMetricaRanking('velocidade')">⚡ Velocidade</button>
         <button type="button" class="aba"       id="sub-global-media"      onclick="mudarMetricaRanking('media')">🏅 Média</button>
         <button type="button" class="aba"       id="sub-global-desafio"    onclick="mudarMetricaRanking('desafio')">🏫 Desafio entre Turmas</button>
@@ -12452,8 +12450,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
     // v10.5.2 · Reformulação: 2 níveis de abas + dropdown de turma
     //   Nível 1 (escopo)  → tipoRankingAtual = "turma" | "global"
-    //   Nível 2 (métrica) → metricaRankingAtual = "pontos" | "precisao"
-    //                                             | "velocidade" | "media" | "desafio"
+    //   Nível 2 (métrica) → metricaRankingAtual = "pontos" | "velocidade"
+    //                                             | "media" | "desafio"
+    // NOTA: a métrica "precisao" foi removida em v10.5.2 — a função
+    // obterRankingPorPrecisao() permanece no código, mas não é mais usada.
     let metricaRankingAtual = "pontos";
 
     function mudarEscopoRanking(escopo) {
@@ -12479,8 +12479,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         // Se a métrica atual não existe no novo escopo, cai em "pontos"
         const metricasValidas = escopo === "turma"
-            ? ["pontos", "precisao", "velocidade", "media"]
-            : ["pontos", "precisao", "velocidade", "media", "desafio"];
+            ? ["pontos", "velocidade", "media"]
+            : ["pontos", "velocidade", "media", "desafio"];
         if (!metricasValidas.includes(metricaRankingAtual)) {
             metricaRankingAtual = "pontos";
         }
@@ -12499,11 +12499,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // Marca visualmente as sub-abas ativas dentro do escopo atual
     function _atualizarSubAbaAtiva() {
-        ["pontos", "precisao", "velocidade", "media"].forEach(m => {
+        ["pontos", "velocidade", "media"].forEach(m => {
             document.getElementById(`sub-turma-${m}`)?.classList.toggle("ativa",
                 tipoRankingAtual === "turma" && metricaRankingAtual === m);
         });
-        ["pontos", "precisao", "velocidade", "media", "desafio"].forEach(m => {
+        ["pontos", "velocidade", "media", "desafio"].forEach(m => {
             document.getElementById(`sub-global-${m}`)?.classList.toggle("ativa",
                 tipoRankingAtual === "global" && metricaRankingAtual === m);
         });
@@ -12536,14 +12536,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         h.classList.toggle("hidden", !mostra);
     }
 
-    // Função legada — redireciona para a nova API quando algum código antigo chamar
+    // Função legada — redireciona para a nova API quando algum código antigo chamar.
+    // "precisao" foi removida: cai em "pontos" (não quebra chamadas antigas).
     function mudarTipoRanking(tp) {
         if (tp === "turma" || tp === "global") { mudarEscopoRanking(tp); return; }
-        if (tp === "precisao" || tp === "velocidade" || tp === "media" || tp === "desafio") {
+        if (tp === "velocidade" || tp === "media" || tp === "desafio") {
             mudarEscopoRanking("global");
             mudarMetricaRanking(tp);
             return;
         }
+        // "precisao" ou qualquer outro valor → cai em "pontos"
+        mudarEscopoRanking("global");
+        mudarMetricaRanking("pontos");
     }
     // ▲▲▲ FIM [13.07]
 
