@@ -17764,6 +17764,7 @@ if (containerProg) {
         if (m && !m.classList.contains("hidden")) fecharModalHallMestres();
     });
     // ▲▲▲ FIM [18.06]
+
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
 
     // Renderiza o card "🏆 Minhas Posições · Jogar/Treinar" dentro
@@ -17805,6 +17806,7 @@ if (containerProg) {
                         posicao: idx === -1 ? null : idx + 1,
                         total: ranking.length,
                         pontos: melhor ? (Number(melhor.pontos) || 0) : 0,
+                        partidasCount: minhas.length,
                         jogou: !!melhor
                     };
                 };
@@ -17838,12 +17840,17 @@ if (containerProg) {
                     ? `${pos}º <small style="opacity:.7;font-weight:700;">de ${info.total}</small>`
                     : "—";
                 ptsTxt = `${info.pontos.toLocaleString("pt-BR")} pts`;
+                // Sufixo de partidas oficiais (só quando há pelo menos 1)
+                const n = info.partidasCount || 0;
+                if (n > 0) {
+                    statusTxt += ` · ${n} ${n === 1 ? "partida" : "partidas"}`;
+                }
             }
 
             const seloClasse = modo === "jogar" ? "jogar" : "treinar";
             const seloTexto  = modo === "jogar" ? "▶ Jogar" : "🎯 Treinar";
             const seloPulse  = jogou ? "" : " nunca-jogou";
-            const ariaLabel  = `${modo === "jogar" ? "Jogar" : "Treinar"} modalidade ${rotulos[mod]}`;
+            const ariaLabel  = `${modo === "jogar" ? "Jogar" : "Treinar"} modalidade ${rotulos[mod]}${jogou ? ` — ${statusTxt.toLowerCase()}` : ""}`;
 
             linhas += `<button type="button" class="home-modalidade-linha ${zonaCls}" onclick="escolherModalidadeHome('${mod}')" aria-label="${escaparHtml(ariaLabel)}">
                 <span class="home-modalidade-info">
