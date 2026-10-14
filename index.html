@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <!-- ═══════════════════════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════════════════════
      📑 ÍNDICE — Ctrl+F pelo código para pular direto
      [01] HEAD · [02] CSS · [03] HTML telas · [04] HTML modais · [05]-[19] JS
      Blocos recentes:
@@ -10,12 +11,18 @@
        [02.53]      CSS  · Painel — Estender encerramento da etapa (P34)
        [02.54]      CSS  · Otimização de performance — CLS do Hero (P35)
        [02.55]      CSS  · Coach da Copa — FAB + Modal (v10.4.8)
+       [02.66]      CSS  · Descrições dos Rankings (P38 · v10.5.3)
        [03.02]      HTML · Tela Mais (botão "Meu Coach")
+       [03.08]      HTML · Ranking (2 níveis + descrição P38 · v10.5.3)
        [04.16]      HTML · Modal Coach + FAB flutuante
+       [13.06]      JS   · Renderização do ranking (descrições P38 · v10.5.3)
+       [13.07]      JS   · Controle de escopo/métrica do ranking
        [14.04]      JS   · Navegação e registro (+ atualizarFABCoach)
        [17.02]      JS   · Ciclo da etapa (+ P34: extensão de prazo)
+       [18.01]      JS   · Home E-Sports (hero reduzido · v10.5.3)
+       [18.07]      JS   · Home — Card de modalidades (barra por mod · v10.5.3)
        [18.08]      JS   · Coach da Copa — 6 helpers + construirPromptIA + FAB
-     Versão: 10.5.1 — Bugfix Meu Progresso + P4 Voo C + P16 Figurinhas animadas
+     Versão: 10.5.3 — P38 (descrições dos rankings) + Home reformulada
      ═══════════════════════════════════════════════════════════════════════ -->
 <head>
     <meta charset="UTF-8">
@@ -1486,15 +1493,8 @@
         .hero-esports-conteudo { position: relative; z-index: 1; }
         .hero-esports-saudacao { font-size: clamp(22px, 4.5vw, 30px); font-weight: 900; color: #fff; margin: 0 0 8px; line-height: 1.1; letter-spacing: -0.5px; }
         .hero-esports-saudacao .nome-destaque { color: var(--neon-gold); text-shadow: 0 2px 12px rgba(251, 191, 36, 0.5); }
-        .hero-esports-sub { font-size: 14px; color: #cbd5e1; line-height: 1.5; margin: 0 0 16px; max-width: 560px; }
+        .hero-esports-sub { font-size: 14px; color: #cbd5e1; line-height: 1.5; margin: 0; max-width: 560px; }
         .hero-esports-sub .posicao-num { color: var(--neon-cyan); font-weight: 900; font-size: 16px; }
-        .hero-esports-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-        .hero-stat-card { background: rgba(10, 22, 40, 0.65); border: 1px solid var(--border-neon); border-radius: 12px; padding: 10px 12px; text-align: left; backdrop-filter: blur(8px); }
-        .hero-stat-rotulo { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .hero-stat-valor { font-size: clamp(18px, 3.5vw, 22px); font-weight: 900; color: var(--neon-gold); line-height: 1; letter-spacing: -0.5px; }
-        .hero-stat-valor .unidade { font-size: 11px; color: var(--text-secondary); font-weight: 700; margin-left: 2px; }
-        .hero-stat-valor.cyan { color: var(--neon-cyan); }
-        .hero-stat-valor.verde { color: var(--neon-green); }
         .home-card { background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%); border: 1px solid var(--border-neon); border-radius: 14px; padding: 16px; margin-bottom: 14px; text-align: left; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 10px; }
         .home-card-titulo { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.3px; text-transform: uppercase; }
         .home-btn-link { background: transparent; color: var(--neon-cyan); border: 1px dashed rgba(34, 211, 238, 0.4); border-radius: 8px; padding: 10px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer; text-align: center; width: 100%; margin: 0; transition: all 0.2s ease; }
@@ -3692,6 +3692,9 @@
         /* ▼▼▼ [02.46] Home em telas largas (desktop ≥ 900px) ─────────── INÍCIO ─── */
         /* Aplica-se apenas a telas largas. Celulares e tablets pequenos       */
         /* permanecem exatamente como estavam antes desta regra.               */
+        /* v10.5.3 · Alinhado à nova estrutura do card Minhas Posições (barra  */
+        /* por modalidade). Classes antigas do card foram renomeadas para      */
+        /* .home-mod-* (ver [02.45]). Regras órfãs de .hero-stat-* removidas.  */
         @media (min-width: 900px) {
 
             /* ─── Área principal mais ampla, mantendo centralização ─── */
@@ -3712,12 +3715,6 @@
             }
             .hero-esports-sub {
                 font-size: 15px;
-            }
-            .hero-stat-card {
-                padding: 12px 14px;
-            }
-            .hero-stat-valor {
-                font-size: 24px;
             }
 
             /* ─── Espaçamento consistente entre seções da Home ─── */
@@ -3743,15 +3740,16 @@
             }
             .home-modalidade-linha {
                 padding: 14px 16px;
-                gap: 10px 12px;
+                gap: 10px;
             }
-            .home-modalidade-nome { font-size: 14px; }
-            .home-modalidade-status { font-size: 12px; }
-            .home-modalidade-pos { font-size: 13.5px; }
-            .home-modalidade-pos small { font-size: 10.5px; }
-            .home-modalidade-pts { font-size: 12.5px; }
-            .home-modalidade-selo {
-                padding: 11px 14px;
+            .home-mod-nome { font-size: 14px; }
+            .home-mod-status { font-size: 12px; }
+            .home-mod-pos { font-size: 13.5px; }
+            .home-mod-pos small { font-size: 10.5px; }
+            .home-mod-pts { font-size: 12.5px; }
+            .home-mod-barra-legenda { font-size: 11.5px; }
+            .home-mod-btn {
+                padding: 8px 14px;
                 font-size: 13px;
             }
 
@@ -3789,7 +3787,7 @@
             }
 
             /* ─── Alvos clicáveis confortáveis (acessibilidade) ─── */
-            .home-modalidade-selo,
+            .home-mod-btn,
             .home-btn-link,
             .btn-treino-inteligente,
             .progresso-mod-btn {
@@ -6555,88 +6553,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 }
 /* ▲▲▲ FIM [02.63] */
 
-/* ▼▼▼ [02.64] Explicação do Ranking de Média ─────────── INÍCIO ─── */
-.media-explicacao {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.10) 0%, rgba(217, 119, 6, 0.05) 100%);
-    border: 1px solid rgba(251, 191, 36, 0.45);
-    border-left: 4px solid var(--neon-gold);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin: 0 0 16px;
-    text-align: left;
-    font-size: 13px;
-    line-height: 1.55;
-    color: #fde68a;
-    animation: mediaExpFadeIn 0.3s ease;
-}
-@keyframes mediaExpFadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-.media-explicacao .media-exp-titulo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 900;
-    color: var(--neon-gold);
-    letter-spacing: 0.3px;
-    margin: 0 0 8px;
-    line-height: 1.2;
-}
-.media-explicacao .media-exp-subtitulo {
-    font-size: 11.5px;
-    font-weight: 800;
-    color: #fbbf24;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin: 12px 0 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    line-height: 1.2;
-}
-.media-explicacao .media-exp-subtitulo:first-of-type { margin-top: 4px; }
-.media-explicacao p {
-    margin: 0 0 8px;
-    font-size: 12.5px;
-    color: #fef3c7;
-    line-height: 1.55;
-}
-.media-explicacao p:last-child { margin-bottom: 0; }
-.media-explicacao ul {
-    margin: 0 0 8px;
-    padding-left: 18px;
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: #fef3c7;
-}
-.media-explicacao ul:last-child { margin-bottom: 0; }
-.media-explicacao ul li { margin-bottom: 3px; }
-.media-explicacao ul li strong { color: #fff; font-weight: 800; }
-.media-explicacao .media-exp-dica {
-    background: rgba(0, 0, 0, 0.22);
-    border-left: 3px solid var(--neon-gold);
-    border-radius: 8px;
-    padding: 9px 12px;
-    margin-top: 10px;
-    font-size: 12.5px;
-    color: #fef3c7;
-    line-height: 1.55;
-}
-.media-explicacao .media-exp-dica strong { color: #fff; font-weight: 800; }
-@media (max-width: 520px) {
-    .media-explicacao { padding: 12px 14px; }
-    .media-explicacao .media-exp-titulo { font-size: 13px; }
-    .media-explicacao p,
-    .media-explicacao ul,
-    .media-explicacao .media-exp-dica { font-size: 12px; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .media-explicacao { animation: none !important; }
-}
-/* ▲▲▲ FIM [02.64] */
-
 /* ▼▼▼ [02.65] Ranking em 2 níveis (escopo → métrica) ──── INÍCIO ─── */
 /* v10.5.2 · Reformulação do layout do Ranking.
    Nível 1 (escopo): 2 botões grandes, um ativo com destaque verde.
@@ -6817,7 +6733,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.5.2</button>
+                >v10.5.3</button>
                 <!-- ▼ v10.5.1 · Botão "Verificar versão" — consulta o Firebase sob demanda -->
                 <button
                     type="button"
@@ -6968,7 +6884,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.5.2</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.5.3</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -7523,7 +7439,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.5.2 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.5.3 · atual</span>
+                <h4 class="changelog-titulo">📖 Explicações dos rankings + Home mais limpa</h4>
+                <p class="changelog-descricao">Cada ranking agora tem uma <strong>explicação própria</strong>, exibida no final da tela — depois da tabela e antes do botão Voltar. Você passa a entender o critério antes de se frustrar ou se vangloriar por uma posição. São <strong>4 textos distintos</strong>: Pontos, Velocidade, Média e Desafio entre Turmas. As antigas faixas de "critérios de desempate" e "ranking só de 20/20" (que ficavam soltas no topo) foram absorvidas pelas explicações — o topo da tela ficou mais limpo. Na aba <strong>Global</strong>, o Desafio entre Turmas virou a <strong>primeira sub-aba</strong> (era a última), refletindo o fato de ser a métrica padrão ao entrar. No ranking de Pontos, a coluna "Pontos" foi movida para entre "Jogos" e "Status", deixando as colunas mais próximas do nome do aluno. A <strong>Home</strong> ganhou um hero mais enxuto: saíram os três cards de Certificados, Treinos e Oficiais — o Ritmo na Copa continua lá, como panorama geral. E cada linha de modalidade do card <strong>Minhas Posições</strong> agora mostra uma <strong>barra proporcional treinos × oficiais</strong> daquela modalidade específica, com contagem em cada lado. Assim dá pra ver de relance onde você está treinando mais e onde está jogando mais.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.5.2</span>
                 <h4 class="changelog-titulo">🏆 Ranking reformulado + Coach com cara de robô + mais partidas visíveis</h4>
                 <p class="changelog-descricao">A tela de Classificação foi repensada para ficar mais simples de entender. Agora, ao abrir o Ranking, você vê <strong>duas opções</strong>: <strong>🏆 Turmas</strong> e <strong>🌍 Global</strong>. Em <strong>Turmas</strong> você acompanha a classificação da sua sala nas abas Pontos, Velocidade e Média — e pode consultar outras turmas pelo seletor. Em <strong>Global</strong> você compara seu desempenho com todo o colégio nas abas Velocidade, Média e no Desafio entre Turmas. As abas antigas de "Precisão" e "Ranking Geral" foram removidas para eliminar duplicação. A aba <strong>Média</strong> agora traz um card explicando como funciona, como é calculada e quais os requisitos para entrar. O <strong>Coach da Copa</strong> ganhou um ícone de robô 🤖 no botão flutuante, no menu "Mais" e no modal — para deixar claro que ele é um assistente de IA. E na Home, cada modalidade do card "Minhas Posições" agora mostra quantas <strong>partidas oficiais</strong> você já jogou nela.</p>
             </div>
@@ -7998,7 +7919,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.5.2";
+const APP_VERSION = "10.5.3";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
