@@ -6506,6 +6506,88 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 }
 /* ▲▲▲ FIM [02.63] */
 
+/* ▼▼▼ [02.64] Explicação do Ranking de Média ─────────── INÍCIO ─── */
+.media-explicacao {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.10) 0%, rgba(217, 119, 6, 0.05) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    border-left: 4px solid var(--neon-gold);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 0 0 16px;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #fde68a;
+    animation: mediaExpFadeIn 0.3s ease;
+}
+@keyframes mediaExpFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.media-explicacao .media-exp-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--neon-gold);
+    letter-spacing: 0.3px;
+    margin: 0 0 8px;
+    line-height: 1.2;
+}
+.media-explicacao .media-exp-subtitulo {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #fbbf24;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin: 12px 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
+}
+.media-explicacao .media-exp-subtitulo:first-of-type { margin-top: 4px; }
+.media-explicacao p {
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    color: #fef3c7;
+    line-height: 1.55;
+}
+.media-explicacao p:last-child { margin-bottom: 0; }
+.media-explicacao ul {
+    margin: 0 0 8px;
+    padding-left: 18px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #fef3c7;
+}
+.media-explicacao ul:last-child { margin-bottom: 0; }
+.media-explicacao ul li { margin-bottom: 3px; }
+.media-explicacao ul li strong { color: #fff; font-weight: 800; }
+.media-explicacao .media-exp-dica {
+    background: rgba(0, 0, 0, 0.22);
+    border-left: 3px solid var(--neon-gold);
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: #fef3c7;
+    line-height: 1.55;
+}
+.media-explicacao .media-exp-dica strong { color: #fff; font-weight: 800; }
+@media (max-width: 520px) {
+    .media-explicacao { padding: 12px 14px; }
+    .media-explicacao .media-exp-titulo { font-size: 13px; }
+    .media-explicacao p,
+    .media-explicacao ul,
+    .media-explicacao .media-exp-dica { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .media-explicacao { animation: none !important; }
+}
+/* ▲▲▲ FIM [02.64] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -6845,7 +6927,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         ℹ️ <strong>Escolha sua turma no filtro abaixo</strong> para ver sua classificação. Depois de jogar, o sistema lembrará da sua turma automaticamente.
     </div>
     <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
-    <div class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.<br>ℹ️ O <strong>tempo médio dos acertos</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</div>
+    <div id="observacao-desempate" class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.<br>ℹ️ O <strong>tempo médio dos acertos</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</div>
     <select id="filtro-modalidade" onchange="renderizarRanking()">
         <option value="2-5">Tabuadas 2-5</option>
         <option value="6-9">Tabuadas 6-9</option>
@@ -6860,6 +6942,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
     <div id="ultima-sincronizacao" class="info-sincronizacao">Última atualização: --</div>
     <div id="banner-posicao-global" class="banner-posicao-global hidden"></div>
+    <div id="media-explicacao" class="media-explicacao hidden"></div>
     <h3 id="titulo-ranking">Ranking</h3>
     <div class="tabela-container"><table><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
     <div id="medias-turmas-container" class="medias-turmas hidden"></div>
@@ -11981,11 +12064,48 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
     }
 
+    function renderizarExplicacaoMedia() {
+        return `
+            <div class="media-exp-titulo"><span aria-hidden="true">🏅</span> Como funciona o Ranking de Média</div>
+
+            <div class="media-exp-subtitulo">📊 O que é</div>
+            <p>Mostra a <strong>média de pontos</strong> que cada aluno conquista nas partidas oficiais. É o ranking da <strong>consistência</strong> — não basta uma partida excepcional isolada; é preciso manter um bom desempenho no conjunto.</p>
+
+            <div class="media-exp-subtitulo">🧮 Como é calculada</div>
+            <ul>
+                <li>Em cada modalidade: <strong>soma dos pontos das partidas oficiais ÷ número de partidas oficiais</strong>.</li>
+                <li>A coluna <strong>Média Geral</strong> é a média das três modalidades (📚 2-5 · 🎯 6-9 · ⭐ 1-10).</li>
+            </ul>
+
+            <div class="media-exp-subtitulo">📋 Regras importantes</div>
+            <ul>
+                <li>Só <strong>partidas oficiais</strong> contam. Treinos <strong>NÃO</strong> entram na média.</li>
+                <li>Partidas <strong>canceladas (✕)</strong> contam — cancelar muito <strong>derruba</strong> sua média.</li>
+                <li>Tempo esgotado conta como resposta errada e também reduz a média.</li>
+            </ul>
+
+            <div class="media-exp-subtitulo">✅ Requisitos para entrar no ranking</div>
+            <ul>
+                <li>Mínimo de <strong>5 partidas oficiais em CADA uma das três modalidades</strong>.</li>
+                <li>Enquanto você não tiver as três modalidades com 5+ partidas, você não aparece na lista.</li>
+            </ul>
+
+            <div class="media-exp-dica"><strong>💡 Dica:</strong> quanto mais partidas com bom desempenho, mais estável fica sua média. Evite cancelar tentativas — elas puxam a média para baixo.</div>
+        `;
+    }
+
     async function renderizarRanking() {
         const th = document.getElementById("tabela-head-ranking");
         const tb = document.getElementById("tabela-ranking-body");
         const ti = document.getElementById("titulo-ranking");
         if (!tb || !ti) return;
+
+        // Esconde explicações contextuais por padrão
+        const mediaExpEl = document.getElementById("media-explicacao");
+        if (mediaExpEl) mediaExpEl.classList.add("hidden");
+        const obsDesempateEl = document.getElementById("observacao-desempate");
+        if (obsDesempateEl) obsDesempateEl.classList.remove("hidden");
+
         mostrarSkeletonRanking(8);
         atualizarHintTurmaAluno();
         let mod = document.getElementById("filtro-modalidade")?.value || "0-10";
@@ -12053,39 +12173,27 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await renderizarMediasTurmas(mod);
         }
 
-        // ═══ Precisão (turma específica OU todas) ═══
+        // ═══ Precisão — sempre por turma específica ═══
         else if (tipoRankingAtual === "precisao") {
-            const todas = (turma === "todas");
-            const filtroTurma = todas ? null : turma;
-            rank = await obterRankingPorPrecisao(mod, filtroTurma);
-            tit = todas
-                ? `🎯 Precisão Global — ${MODALIDADES[mod]?.nome}`
-                : `🎯 Precisão — Turma ${turma} · ${MODALIDADES[mod]?.nome}`;
+            rank = await obterRankingPorPrecisao(mod, turma);
+            tit = `🎯 Precisão — Turma ${turma} · ${MODALIDADES[mod]?.nome}`;
             ti.innerText = tit;
-            th.innerHTML = todas
-                ? `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Pontos</th><th>Tempo médio dos acertos</th>`
-                : `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo médio dos acertos</th>`;
+            th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Acertos</th><th>Pontos</th><th>Tempo médio dos acertos</th>`;
             document.getElementById("banner-posicao-global").classList.add("hidden");
             document.getElementById("medias-turmas-container").classList.add("hidden");
         }
 
-        // ═══ Velocidade (turma específica OU todas) ═══
+        // ═══ Velocidade — sempre por turma específica ═══
         else if (tipoRankingAtual === "velocidade") {
-            const todas = (turma === "todas");
-            const filtroTurma = todas ? null : turma;
-            rank = await obterRankingPorVelocidade(mod, filtroTurma);
-            tit = todas
-                ? `⚡ Velocidade Global (100%) — ${MODALIDADES[mod]?.nome}`
-                : `⚡ Velocidade — Turma ${turma} (100%) · ${MODALIDADES[mod]?.nome}`;
+            rank = await obterRankingPorVelocidade(mod, turma);
+            tit = `⚡ Velocidade — Turma ${turma} (100%) · ${MODALIDADES[mod]?.nome}`;
             ti.innerText = tit;
-            th.innerHTML = todas
-                ? `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`
-                : `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
+            th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
             document.getElementById("banner-posicao-global").classList.add("hidden");
             document.getElementById("medias-turmas-container").classList.add("hidden");
         }
 
-        // ═══ Média Geral (turma específica OU todas) ═══
+        // ═══ Média — turma específica OU global + card explicativo ═══
         else if (tipoRankingAtual === "media") {
             const todas = (turma === "todas");
             const turmaFiltro = todas ? null : turma;
@@ -12097,6 +12205,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>📚 2-5</th><th>🎯 6-9</th><th>⭐ 1-10</th><th>Média Geral</th>`;
             document.getElementById("banner-posicao-global").classList.add("hidden");
             document.getElementById("medias-turmas-container").classList.add("hidden");
+
+            // Card explicativo — aparece sempre na aba Média
+            if (mediaExpEl) {
+                if (!mediaExpEl.dataset.renderizado) {
+                    mediaExpEl.innerHTML = renderizarExplicacaoMedia();
+                    mediaExpEl.dataset.renderizado = "1";
+                }
+                mediaExpEl.classList.remove("hidden");
+            }
+            // Critérios de desempate não se aplicam à Média (a ordem é por média desc, depois totalPartidas)
+            if (obsDesempateEl) obsDesempateEl.classList.add("hidden");
 
             if (!rank.length) {
                 tb.innerHTML = `<tr><td colspan="7"><div class="ranking-vazio"><span class="emoji-vazio">🏅</span>Nenhum aluno com <strong>${MEDIA_MIN_PARTIDAS} partidas oficiais</strong> em <strong>cada uma das 3 modalidades</strong> ainda.<br>Jogue mais para entrar!</div></td></tr>`;
@@ -12132,8 +12251,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
 
         const mostrarTurmaNaLinha = !(
-            (tipoRankingAtual === "precisao" && turma !== "todas") ||
-            (tipoRankingAtual === "velocidade" && turma !== "todas")
+            (tipoRankingAtual === "precisao") ||
+            (tipoRankingAtual === "velocidade")
         );
 
         let h = "";
@@ -12249,7 +12368,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         // Turma salva é aplicada apenas na aba "Minha Turma"
         if (tp === "turma") aplicarTurmaSalvaNoFiltro();
 
-        // Filtro de turma aparece em todas as abas que aceitam "todas"
+        // Gerenciamento dinâmico da opção "🌍 Todas as turmas":
+        //   · Precisão e Velocidade → SEM "todas" (o Desafio entre turmas já cobre)
+        //   · Média                 → COM "todas" (permite ranking global de média)
+        if (tp === "precisao" || tp === "velocidade") {
+            _removerOpcaoTodas();
+        } else if (tp === "media") {
+            _adicionarOpcaoTodas();
+        }
+
+        // Filtro de turma aparece em todas as abas exceto "Desafio entre turmas"
         const abasComTurma = (tp === "turma" || tp === "precisao" || tp === "velocidade" || tp === "media");
         document.getElementById("filtro-modalidade").classList.remove("hidden");
         document.getElementById("filtro-turma").classList.toggle("hidden", !abasComTurma);
@@ -12259,6 +12387,30 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         atualizarHintTurmaAluno();
         renderizarRanking();
+    }
+
+    // Adiciona a opção "🌍 Todas as turmas" se ainda não existir
+    function _adicionarOpcaoTodas() {
+        const sel = document.getElementById("filtro-turma");
+        if (!sel || sel.querySelector('option[value="todas"]')) return;
+        const opt = document.createElement("option");
+        opt.value = "todas";
+        opt.textContent = "🌍 Todas as turmas";
+        sel.insertBefore(opt, sel.firstChild);
+    }
+
+    // Remove a opção "🌍 Todas as turmas" — se era a seleção atual, migra para uma turma válida
+    function _removerOpcaoTodas() {
+        const sel = document.getElementById("filtro-turma");
+        if (!sel) return;
+        const opt = sel.querySelector('option[value="todas"]');
+        if (!opt) return;
+        if (sel.value === "todas") {
+            const turmaSalva = obterTurmaSalvaAluno();
+            const opcoes = Array.from(sel.options).map(o => o.value).filter(v => v !== "todas");
+            sel.value = (turmaSalva && opcoes.includes(turmaSalva)) ? turmaSalva : (opcoes[0] || "");
+        }
+        opt.remove();
     }
 
     function aplicarTurmaSalvaNoFiltro() {
