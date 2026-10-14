@@ -3393,7 +3393,12 @@
             .hall-ver-ranking-btn { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.44] */
+
         /* ▼▼▼ [02.45] Home — Card "Minhas Posições · Jogar/Treinar" ─ INÍCIO ─── */
+        /* v10.5.3 · Reformulado: cada linha de modalidade agora exibe uma barra
+           de proporção treinos × oficiais daquela modalidade. O botão de ação
+           ficou mais baixo para dar destaque à barra. O sufixo "· N partidas"
+           foi removido do status (o número aparece na legenda da barra). */
 
         .home-modalidades-card {
             background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%);
@@ -3434,41 +3439,31 @@
             gap: 8px;
         }
 
-        /* ─── Linha clicável de modalidade ─── */
+        /* ─── Linha de modalidade ─── */
         .home-modalidade-linha {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            grid-template-areas:
-                "info metricas"
-                "selo selo";
-            gap: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             padding: 12px 14px;
             border-radius: 10px;
             background: rgba(10, 22, 40, 0.55);
             border: 1px solid rgba(56, 189, 248, 0.18);
-            cursor: pointer;
-            transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
             color: inherit;
             font-family: inherit;
             text-align: left;
             width: 100%;
             box-sizing: border-box;
-            box-shadow: none;
-            margin: 0;
-            font-weight: normal;
+            transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
         }
-
         .home-modalidade-linha:hover:not(:disabled) {
-            background: rgba(34, 211, 238, 0.08);
-            border-color: rgba(34, 211, 238, 0.55);
+            background: rgba(34, 211, 238, 0.06);
+            border-color: rgba(34, 211, 238, 0.5);
             transform: translateY(-1px);
         }
-
         .home-modalidade-linha:focus-visible {
             outline: 3px solid var(--neon-cyan);
             outline-offset: 2px;
         }
-
         .home-modalidade-linha:active:not(:disabled) { transform: translateY(0); }
 
         .home-modalidade-linha.zona-top4 {
@@ -3498,14 +3493,15 @@
             border-color: rgba(34, 211, 238, 0.4);
         }
 
-        .home-modalidade-info {
-            grid-area: info;
+        /* ─── Linha 1: nome + posição ─── */
+        .home-mod-l1 {
             display: flex;
-            flex-direction: column;
-            gap: 3px;
-            min-width: 0;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            line-height: 1.2;
         }
-        .home-modalidade-nome {
+        .home-mod-nome {
             font-size: 13.5px;
             font-weight: 800;
             color: var(--text-primary);
@@ -3513,9 +3509,29 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        .home-mod-pos {
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            white-space: nowrap;
+            letter-spacing: -0.2px;
+            flex-shrink: 0;
+        }
+        .home-mod-pos small { font-size: 10.5px; font-weight: 700; opacity: 0.8; }
+        .home-modalidade-linha.zona-top4 .home-mod-pos { color: #6ee7b7; }
+        .home-modalidade-linha.zona-reserva .home-mod-pos { color: #fde68a; }
+        .home-modalidade-linha.sem-dados .home-mod-pos { color: var(--text-muted); }
+
+        /* ─── Linha 2: status + pontos ─── */
+        .home-mod-l2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
             line-height: 1.2;
         }
-        .home-modalidade-status {
+        .home-mod-status {
             font-size: 11.5px;
             font-weight: 700;
             color: var(--text-secondary);
@@ -3523,87 +3539,121 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            line-height: 1.2;
         }
+        .home-modalidade-linha.zona-top4 .home-mod-status { color: #6ee7b7; }
+        .home-modalidade-linha.zona-reserva .home-mod-status { color: #fde68a; }
+        .home-modalidade-linha.sem-dados .home-mod-status { color: var(--text-muted); font-style: italic; }
 
-        .home-modalidade-linha.zona-top4 .home-modalidade-status { color: #6ee7b7; }
-        .home-modalidade-linha.zona-reserva .home-modalidade-status { color: #fde68a; }
-        .home-modalidade-linha.sem-dados .home-modalidade-nome { color: var(--text-secondary); }
-        .home-modalidade-linha.sem-dados .home-modalidade-status { color: var(--text-muted); font-style: italic; }
-
-        .home-modalidade-metricas {
-            grid-area: metricas;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 3px;
-            text-align: right;
-            min-width: 0;
-        }
-        .home-modalidade-pos {
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--neon-cyan);
-            letter-spacing: -0.2px;
-            white-space: nowrap;
-            line-height: 1.2;
-        }
-        .home-modalidade-pos small { font-size: 10.5px; font-weight: 700; }
-        .home-modalidade-pts {
+        .home-mod-pts {
             font-size: 12px;
             font-weight: 900;
             color: var(--neon-gold);
-            letter-spacing: 0.2px;
             white-space: nowrap;
-            line-height: 1.2;
+            letter-spacing: 0.2px;
+            flex-shrink: 0;
         }
+        .home-modalidade-linha.zona-top4 .home-mod-pts { color: #a7f3d0; }
+        .home-modalidade-linha.zona-reserva .home-mod-pts { color: #fef3c7; }
+        .home-modalidade-linha.sem-dados .home-mod-pts { color: var(--text-muted); font-style: italic; font-weight: 700; }
 
-        .home-modalidade-linha.zona-top4 .home-modalidade-pos { color: #6ee7b7; }
-        .home-modalidade-linha.zona-top4 .home-modalidade-pts { color: #a7f3d0; }
-        .home-modalidade-linha.zona-reserva .home-modalidade-pos { color: #fde68a; }
-        .home-modalidade-linha.zona-reserva .home-modalidade-pts { color: #fef3c7; }
-        .home-modalidade-linha.sem-dados .home-modalidade-pos { color: var(--text-muted); }
-        .home-modalidade-linha.sem-dados .home-modalidade-pts { color: var(--text-muted); font-style: italic; font-weight: 700; }
-
-        /* ─── Selo (elemento interno) ─── */
-        .home-modalidade-selo {
-            grid-area: selo;
-            padding: 9px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.4px;
-            text-align: center;
+        /* ─── Linha 3: barra treinos × oficiais ─── */
+        .home-mod-barra-bloco {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: background 0.18s ease;
-            line-height: 1;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .home-mod-barra {
+            display: flex;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 4px;
+            overflow: hidden;
             position: relative;
         }
-        .home-modalidade-selo.jogar {
+        .home-mod-barra-fill {
+            height: 100%;
+            transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .home-mod-barra-fill.oficiais {
+            background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
+            box-shadow: inset 0 0 6px rgba(34, 211, 238, 0.5);
+        }
+        .home-mod-barra-fill.treinos {
+            background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+            box-shadow: inset 0 0 6px rgba(168, 85, 247, 0.5);
+        }
+        .home-mod-barra-vazia {
+            height: 100%;
+            width: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(148, 163, 184, 0.15) 0 6px,
+                rgba(148, 163, 184, 0.05) 6px 12px
+            );
+            border-radius: 4px;
+        }
+        .home-mod-barra-legenda {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: 0.2px;
+            line-height: 1.3;
+        }
+        .home-mod-barra-legenda .numeros {
+            display: flex;
+            gap: 12px;
+        }
+        .home-mod-barra-legenda .num-of { color: #67e8f9; font-weight: 900; }
+        .home-mod-barra-legenda .num-tr { color: #d8b4fe; font-weight: 900; }
+        .home-mod-barra-legenda .legenda-vazia {
+            color: var(--text-muted);
+            font-style: italic;
+            font-weight: 600;
+        }
+
+        /* ─── Linha 4: botão de ação (compacto) ─── */
+        .home-mod-btn {
+            width: 100%;
+            margin: 0;
+            padding: 7px 12px;
+            border: none;
+            border-radius: 8px;
             background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%);
             color: #fff;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            cursor: pointer;
             box-shadow: 0 2px 0 #07583d;
+            font-family: inherit;
+            transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+            line-height: 1.2;
         }
-        .home-modalidade-linha:hover:not(:disabled) .home-modalidade-selo.jogar {
+        .home-mod-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, #0fa572 0%, #0a885e 100%);
         }
-        .home-modalidade-selo.treinar {
-            background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%);
-            color: #fff;
-            box-shadow: 0 2px 0 #a02622;
+        .home-mod-btn:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #07583d;
         }
-        .home-modalidade-linha:hover:not(:disabled) .home-modalidade-selo.treinar {
-            background: linear-gradient(135deg, #ff8f2a 0%, #e04554 100%);
+        .home-modalidade-linha.sem-dados .home-mod-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 0 2px 0 #3730a3;
         }
-        .home-modalidade-selo.nunca-jogou {
+        .home-modalidade-linha.sem-dados .home-mod-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        }
+        .home-modalidade-linha.sem-dados .home-mod-btn.pulse-selo {
             animation: homePulseSelo 2s ease-in-out infinite;
         }
         @keyframes homePulseSelo {
-            0%, 100% { box-shadow: 0 2px 0 rgba(0,0,0,0.3), 0 0 0 0 rgba(251, 191, 36, 0.55); }
-            50%      { box-shadow: 0 2px 0 rgba(0,0,0,0.3), 0 0 0 8px rgba(251, 191, 36, 0); }
+            0%, 100% { box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(251, 191, 36, 0.55); }
+            50%      { box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3), 0 0 0 8px rgba(251, 191, 36, 0); }
         }
 
         .home-modalidades-rodape {
@@ -3618,20 +3668,27 @@
 
         @media (max-width: 520px) {
             .home-modalidades-card { padding: 14px; }
-            .home-modalidade-linha { padding: 11px 12px; gap: 6px 8px; }
-            .home-modalidade-nome { font-size: 12.5px; }
-            .home-modalidade-status { font-size: 11px; }
-            .home-modalidade-pos { font-size: 12px; }
-            .home-modalidade-pos small { font-size: 10px; }
-            .home-modalidade-pts { font-size: 11.5px; }
-            .home-modalidade-selo { font-size: 11.5px; padding: 8px 12px; }
+            .home-modalidade-linha { padding: 11px 12px; gap: 6px; }
+            .home-mod-nome { font-size: 12.5px; }
+            .home-mod-status { font-size: 11px; }
+            .home-mod-pos { font-size: 12px; }
+            .home-mod-pos small { font-size: 10px; }
+            .home-mod-pts { font-size: 11.5px; }
+            .home-mod-barra-legenda { font-size: 10.5px; }
+            .home-mod-barra-legenda .numeros { gap: 10px; }
+            .home-mod-btn { font-size: 12px; padding: 7px 10px; }
             .home-modalidades-rodape { font-size: 10.5px; }
         }
+
         @media (prefers-reduced-motion: reduce) {
-            .home-modalidade-linha, .home-modalidade-selo { transition: none !important; }
-            .home-modalidade-selo.nunca-jogou { animation: none !important; }
+            .home-modalidade-linha,
+            .home-mod-barra-fill,
+            .home-mod-btn { transition: none !important; }
+            .home-modalidade-linha:hover:not(:disabled) { transform: none; }
+            .home-modalidade-linha.sem-dados .home-mod-btn.pulse-selo { animation: none !important; }
         }
         /* ▲▲▲ FIM [02.45] */
+
         /* ▼▼▼ [02.46] Home em telas largas (desktop ≥ 900px) ─────────── INÍCIO ─── */
         /* Aplica-se apenas a telas largas. Celulares e tablets pequenos       */
         /* permanecem exatamente como estavam antes desta regra.               */
@@ -4979,8 +5036,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 .perfil-atalho-meu { background: linear-gradient(135deg, rgba(56,189,248,.12), rgba(14,165,233,.05)) !important; border-color: var(--border-neon) !important; }
 .changelog-trigger { color: var(--text-muted) !important; border-color: #334155 !important; }
 .changelog-trigger:hover:not(:disabled) { background: #1e293b !important; color: var(--text-secondary) !important; border-color: #475569 !important; }
-
-/* ▲▲▲ FIM [02.52] */
+        /* ▲▲▲ FIM [02.52] */
         /* ▼▼▼ [02.53] Painel — Estender encerramento da etapa (P34) ─── INÍCIO ─── */
         .extensao-etapa-wrap {
             background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%) !important;
@@ -5129,17 +5185,15 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▼▼▼ [02.54] Otimização de performance — CLS do Hero (P35) ─── INÍCIO ─── */
         /* Fix do Cumulative Layout Shift (CLS) medido no Lighthouse.
            O hero da Home é preenchido por JS DEPOIS do primeiro paint
-           (nome do aluno, subtítulo dinâmico, contadores).
+           (nome do aluno, subtítulo dinâmico, bloco Ritmo na Copa).
            Quando o conteúdo muda de tamanho, empurra o layout abaixo → CLS alto.
-           Reservar espaço com min-height evita o salto visual. */
+           Reservar espaço com min-height evita o salto visual.
+           v10.5.3 · Os 3 cards (Certificados/Treinos/Oficiais) foram removidos
+           do hero. O min-height caiu em ~100px (desktop) e ~120px (mobile). */
 
         .hero-esports {
-            min-height: 420px;
+            min-height: 320px;
             contain: layout paint;
-        }
-
-        .hero-esports-stats {
-            min-height: 76px;
         }
 
         .hero-stat-valor {
@@ -5147,24 +5201,19 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             display: inline-block;
         }
 
-        /* v10.4.9 · Ritmo na Copa foi movido para dentro do hero.
-           O container agora vive dentro de .hero-esports-conteudo,
-           então a reserva de espaço do hero já cobre esse conteúdo. */
-
         /* Reserva espaço do bloco de alerta foco e do banner modo teste,
            que aparecem/desaparecem dinamicamente logo acima do hero */
         #modo-teste-banner-container:empty { display: none; }
         #alerta-foco-absoluto-container:empty { display: none; }
 
         /* Reserva altura dos containers de CTA e meta (preenchidos por JS) */
-        #acao-principal-container { min-height: 200px; }
+        #acao-principal-container { min-height: 260px; }
         #mapa-home-container { min-height: 180px; }
         #meta-pessoal-container { min-height: 80px; }
 
         @media (max-width: 780px) {
-            .hero-esports { min-height: 500px; }
-            .hero-esports-stats { min-height: 240px; }
-            #acao-principal-container { min-height: 320px; }
+            .hero-esports { min-height: 380px; }
+            #acao-principal-container { min-height: 340px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -6814,21 +6863,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <p class="hero-esports-sub" id="hero-sub-dinamica">
                     Acompanhe sua jornada na Copa da Tabuada.
                 </p>
-                <div class="hero-esports-stats" id="hero-stats-competitivas">
-                    <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo">🎓 Certificados</div>
-                        <div class="hero-stat-valor" id="hero-stat-certificados">0<span class="unidade">de 9</span></div>
-                    </div>
-                    <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo">🎯 Treinos</div>
-                        <div class="hero-stat-valor cyan" id="hero-stat-treinos">0</div>
-                    </div>
-                    <div class="hero-stat-card">
-                        <div class="hero-stat-rotulo">🎮 Oficiais</div>
-                        <div class="hero-stat-valor verde" id="hero-stat-oficiais">0</div>
-                    </div>
-                </div>
-                <!-- ▼ v10.4.9 · Ritmo na Copa (dentro do hero) -->
+                <!-- ▼ v10.4.9 · Ritmo na Copa (dentro do hero) — panorama GERAL
+                     de todas as modalidades. A visão por modalidade vive no
+                     card "Minhas Posições" logo abaixo. -->
                 <div id="hero-ritmo-container"></div>
             </div>
         </section>
@@ -6857,7 +6894,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     </div>
     <!-- ▲▲▲ FIM [03.01] -->
-
     <!-- ▼▼▼ [03.01.bis] NAVEGAÇÃO INFERIOR GLOBAL ─────────── INÍCIO ─── -->
     <nav id="bottom-nav-global" class="bottom-nav hidden" aria-label="Navegação principal">
         <button class="bottom-nav-btn" data-tela="hall" onclick="abrirHallDaFama()">
@@ -8007,11 +8043,13 @@ verificarVersao();
     const CAMINHO_ETAPA             = "copa_etapa";
     const CAMINHO_CERTIFICADOS      = "copa_certificados";
     const CAMINHO_TREINOS_FOCADOS   = "copa_treinos_focados";
+    // v10.5.3 · Contador de treinos POR MODALIDADE (usado na barra do card
+    // "Minhas Posições"). Chave: copa_treinos_por_modalidade/{chave}/{mod}.
+    const CAMINHO_TREINOS_POR_MOD   = "copa_treinos_por_modalidade";
     const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
     const PREFIXO_LOCAL_CORES = "copaV2_cores_";
     const PREFIXO_LEGADO_CORES = "ceib_cores_";
     // ▲▲▲ FIM [05.02]
-
     // ▼▼▼ [05.03] Senhas e segurança ───────────────────────────────────────
     const SENHA_PROFESSOR_HASH = "68accac682c485d39a223b9c57ae8423271ec0e1129f5298cc5455656d23c3e7";
     const SENHA_PROFESSOR_HASH_FALLBACK = "1ojwkhau4c9";
@@ -13585,7 +13623,6 @@ if (containerProg) {
         }
     }
     // ▲▲▲ FIM [14.07]
-
     // ▼▼▼ [14.08] Finalização ──────────────────────────────────────────
     async function finalizarCircuito() {
         if (finalizando) return;
@@ -13665,16 +13702,21 @@ if (containerProg) {
             // v10.4.5 · Contador de treinos: conta QUALQUER treino identificado
             // que tenha sido completado com as 20 perguntas — independente do
             // tipo. Treino interrompido NÃO conta.
+            // v10.5.3 · Além do contador geral, agora incrementa também o
+            // contador POR MODALIDADE (usado na barra do card Minhas Posições).
             // ─────────────────────────────────────────────────────────────
             const treinoCompleto = (acertos + erros) === TOTAL_PERGUNTAS;
             if (treinoCompleto) {
+                const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
                 try {
-                    const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
                     await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1);
-                    if (typeof albumSessaoCache !== "undefined") {
-                        albumSessaoCache = { chave: null, ts: 0, resultado: null };
-                    }
-                } catch(e) { console.warn("Falha ao contabilizar treino:", e); }
+                } catch(e) { console.warn("Falha ao contabilizar treino (geral):", e); }
+                try {
+                    await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chaveTreino}/${modalidadeAtual}`).transaction(n => (n || 0) + 1);
+                } catch(e) { console.warn("Falha ao contabilizar treino (por modalidade):", e); }
+                if (typeof albumSessaoCache !== "undefined") {
+                    albumSessaoCache = { chave: null, ts: 0, resultado: null };
+                }
             }
 
             mapaFonteUltima = resultado.desempenhoOperacoes;
@@ -13762,7 +13804,6 @@ if (containerProg) {
         }
     }
     // ▲▲▲ FIM [14.08]
-
     // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
     function gerarCardsComparacao(melhor, tent) {
         const novo = ehMelhorResultado(tent, melhor) && tent.data === melhor.data;
@@ -16814,12 +16855,16 @@ if (containerProg) {
     }
     // ▲▲▲ FIM [17.10]
 
-
     // ═══════════════════════════════════════════════════════════════════════
     // [18] JS-HOME · Home E-Sports + Hall da Fama + Detalhes da etapa
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [18.01] Home E-Sports — Hero com métricas + Ritmo na Copa ─
+    // ▼▼▼ [18.01] Home E-Sports — Hero com saudação + Ritmo na Copa ─
+    // v10.5.3 · Os 3 cards do hero (Certificados/Treinos/Oficiais) foram
+    // removidos. O hero agora mostra apenas: saudação + subtítulo dinâmico
+    // + bloco "Seu Ritmo na Copa" (panorama geral de treinos × oficiais).
+    // A visão por modalidade vive no card "Minhas Posições" logo abaixo.
+
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -16832,52 +16877,31 @@ if (containerProg) {
         const heroNome = document.getElementById("hero-nome-destaque");
         if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
 
-        // Sem identificação: zera tudo, sem erro
+        // Sem identificação: zera o ritmo
         if (!nome || !turma) {
-            definirHeroStats({ certificados: 0, treinos: 0, oficiais: 0 });
             atualizarFraseHero(null);
             renderizarRitmoCopa(null);
             return;
         }
 
         try {
-            // Roda em paralelo: partidas oficiais + certificados + treinos
-            const [partidas, certificados, snapTreinos] = await Promise.all([
+            // Roda em paralelo: partidas oficiais + contador geral de treinos
+            const [partidas, snapTreinos] = await Promise.all([
                 obterHistoricoAluno(nome, turma).catch(() => []),
-                obterCertificadosFirebase(nome, turma).catch(() => ({})),
                 database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
             ]);
 
             const oficiais = partidas.length;
             const treinos = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
 
-            // Conta certificados conquistados (máx 9 = 3 modalidades × 3 níveis)
-            let certificadosCount = 0;
-            Object.keys(certificados || {}).forEach(mod => {
-                const pMod = certificados[mod] || {};
-                Object.keys(pMod).forEach(nivel => { if (CERT_NIVEIS[nivel]) certificadosCount++; });
-            });
-
-            definirHeroStats({ certificados: certificadosCount, treinos, oficiais });
             atualizarFraseHero({ oficiais, treinos });
             renderizarRitmoCopa({ oficiais, treinos });
 
         } catch (e) {
             console.warn("[Home] Falha ao preencher hero:", e);
-            definirHeroStats({ certificados: 0, treinos: 0, oficiais: 0 });
             atualizarFraseHero(null);
             renderizarRitmoCopa(null);
         }
-    }
-
-    // Atualiza os 3 cards do hero (Certificados · Treinos · Oficiais)
-    function definirHeroStats({ certificados, treinos, oficiais }) {
-        const elCert = document.getElementById("hero-stat-certificados");
-        const elTre  = document.getElementById("hero-stat-treinos");
-        const elOfi  = document.getElementById("hero-stat-oficiais");
-        if (elCert) elCert.innerHTML = `${certificados}<span class="unidade">de 9</span>`;
-        if (elTre)  elTre.textContent  = treinos.toLocaleString("pt-BR");
-        if (elOfi)  elOfi.textContent  = oficiais.toLocaleString("pt-BR");
     }
 
     // Atualiza o subtítulo do hero conforme a proporção treinos × oficiais
@@ -16905,8 +16929,7 @@ if (containerProg) {
         else                   el.textContent = "Você tem equilibrado treinos e partidas oficiais.";
     }
 
-    // v10.4.9 · Bloco de ritmo agora vive DENTRO do hero-esports.
-    // Mostra apenas a barra proporcional, os números e a legenda.
+    // Bloco "Seu Ritmo na Copa" DENTRO do hero — panorama GERAL.
     // A frase interpretativa é responsabilidade do subtítulo do hero
     // (atualizarFraseHero) — evita duplicação de texto.
     function renderizarRitmoCopa(dados) {
@@ -16956,7 +16979,7 @@ if (containerProg) {
 
     // ─────────────────────────────────────────────────────────────────────
     // Funções legadas mantidas para não quebrar dependências externas.
-    // Não são mais chamadas por preencherHomeEsports() desde a v10.4.5,
+    // Não são mais chamadas por preencherHomeEsports() desde a v10.5.3,
     // mas continuam existindo com guardas internas seguras.
     // ─────────────────────────────────────────────────────────────────────
     function classificarZonaHome(pos) {
@@ -17051,7 +17074,6 @@ if (containerProg) {
         avisoEl.innerHTML = minha ? renderizarAvisoTurmaFora(minha, info.modalidade) : "";
     }
     // ▲▲▲ FIM [18.01]
-
     // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
     async function abrirHallDaFama() {
         mostrarTela("tela-hall-fama");
@@ -18151,10 +18173,11 @@ if (containerProg) {
     // ▲▲▲ FIM [18.06]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
+    // v10.5.3 · Cada linha agora exibe uma barra de proporção treinos × oficiais
+    // daquela modalidade específica. A barra geral ("Seu Ritmo na Copa") continua
+    // no hero. Fonte dos treinos por modalidade: CAMINHO_TREINOS_POR_MOD
+    // (contador incrementado em finalizarCircuito() desde v10.5.3).
 
-    // Renderiza o card "🏆 Minhas Posições · Jogar/Treinar" dentro
-    // de #acao-principal-container. Decide o modo (jogar/treinar)
-    // conforme a fase atual da etapa.
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
         if (!ctn) return;
@@ -18169,16 +18192,20 @@ if (containerProg) {
             ? "Escolha uma modalidade para jogar a classificatória. Só o seu melhor resultado conta."
             : "Escolha uma modalidade para treinar. Suas partidas alimentam o mapa e os certificados, mas não entram no ranking.";
 
-        // ─── Coleta de posições (só se identificado) ───
+        // ─── Coleta de dados em paralelo (só se identificado) ───
         let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
         if (nome && turma) {
             try {
-                const [r25, r69, r010, partidas] = await Promise.all([
+                const chave = chaveAlbum(nome, turma);
+                const [r25, r69, r010, partidas, snapTreinos] = await Promise.all([
                     obterRankingPorPontos("2-5", turma).catch(() => []),
                     obterRankingPorPontos("6-9", turma).catch(() => []),
                     obterRankingPorPontos("0-10", turma).catch(() => []),
-                    obterHistoricoAluno(nome, turma).catch(() => [])
+                    obterHistoricoAluno(nome, turma).catch(() => []),
+                    database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chave}`).once("value").catch(() => null)
                 ]);
+                const treinosPorMod = (snapTreinos && snapTreinos.val()) || {};
+
                 const montar = (mod, ranking) => {
                     const idx = ranking.findIndex(r =>
                         normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
@@ -18187,11 +18214,13 @@ if (containerProg) {
                     const melhor = minhas.length
                         ? minhas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
                         : null;
+                    const treinos = Number(treinosPorMod[mod]) || 0;
                     return {
                         posicao: idx === -1 ? null : idx + 1,
                         total: ranking.length,
                         pontos: melhor ? (Number(melhor.pontos) || 0) : 0,
-                        partidasCount: minhas.length,
+                        oficiaisCount: minhas.length,
+                        treinosCount: treinos,
                         jogou: !!melhor
                     };
                 };
@@ -18208,11 +18237,16 @@ if (containerProg) {
 
         let linhas = "";
         ["2-5", "6-9", "0-10"].forEach(mod => {
-            const info = dadosPorMod[mod];
-            const jogou = info && info.jogou;
+            const info = dadosPorMod[mod] || { posicao: null, total: 0, pontos: 0, oficiaisCount: 0, treinosCount: 0, jogou: false };
+            const jogou = info.jogou;
+            const oficiais = info.oficiaisCount;
+            const treinos = info.treinosCount;
+            const totalJogos = oficiais + treinos;
+
+            // ─── Zona / status / pontos ───
             let zonaCls = "sem-dados";
             let posTxt = "—";
-            let ptsTxt = "";
+            let ptsTxt = "—";
             let statusTxt = "Sem partida ainda";
 
             if (jogou) {
@@ -18222,31 +18256,57 @@ if (containerProg) {
                 else if (pos)             { zonaCls = "";             statusTxt = "Em disputa"; }
                 else                      { zonaCls = "";             statusTxt = "Participando"; }
                 posTxt = pos
-                    ? `${pos}º <small style="opacity:.7;font-weight:700;">de ${info.total}</small>`
+                    ? `${pos}º <small>de ${info.total}</small>`
                     : "—";
                 ptsTxt = `${info.pontos.toLocaleString("pt-BR")} pts`;
-                // Sufixo de partidas oficiais (só quando há pelo menos 1)
-                const n = info.partidasCount || 0;
-                if (n > 0) {
-                    statusTxt += ` · ${n} ${n === 1 ? "partida" : "partidas"}`;
-                }
+            } else if (treinos > 0) {
+                zonaCls = "sem-dados";
+                statusTxt = "Sem partida oficial";
             }
 
-            const seloClasse = modo === "jogar" ? "jogar" : "treinar";
-            const seloTexto  = modo === "jogar" ? "▶ Jogar" : "🎯 Treinar";
-            const seloPulse  = jogou ? "" : " nunca-jogou";
-            const ariaLabel  = `${modo === "jogar" ? "Jogar" : "Treinar"} modalidade ${rotulos[mod]}${jogou ? ` — ${statusTxt.toLowerCase()}` : ""}`;
+            // ─── Barra proporcional ───
+            let barraHtml;
+            if (totalJogos === 0) {
+                barraHtml = `
+                    <div class="home-mod-barra"><div class="home-mod-barra-vazia"></div></div>
+                    <div class="home-mod-barra-legenda">
+                        <span class="legenda-vazia">Nenhuma partida registrada nesta modalidade</span>
+                    </div>`;
+            } else {
+                const pctOfi = (oficiais / totalJogos) * 100;
+                const pctTre = (treinos / totalJogos) * 100;
+                barraHtml = `
+                    <div class="home-mod-barra">
+                        ${oficiais > 0 ? `<div class="home-mod-barra-fill oficiais" style="width:${pctOfi.toFixed(1)}%"></div>` : ""}
+                        ${treinos  > 0 ? `<div class="home-mod-barra-fill treinos"  style="width:${pctTre.toFixed(1)}%"></div>` : ""}
+                    </div>
+                    <div class="home-mod-barra-legenda">
+                        <span>Ritmo da modalidade</span>
+                        <span class="numeros">
+                            <span class="num-of">${oficiais} ${oficiais === 1 ? "oficial" : "oficiais"}</span>
+                            <span class="num-tr">${treinos} ${treinos === 1 ? "treino" : "treinos"}</span>
+                        </span>
+                    </div>`;
+            }
+
+            // ─── Botão ───
+            const seloTexto = modo === "jogar" ? "▶ Jogar" : "🎯 Treinar";
+            const pulseCls = (!jogou && treinos === 0) ? " pulse-selo" : "";
+            const ariaLabel = `${modo === "jogar" ? "Jogar" : "Treinar"} modalidade ${rotulos[mod]}${jogou ? ` — ${statusTxt.toLowerCase()}` : ""}`;
 
             linhas += `<button type="button" class="home-modalidade-linha ${zonaCls}" onclick="escolherModalidadeHome('${mod}')" aria-label="${escaparHtml(ariaLabel)}">
-                <span class="home-modalidade-info">
-                    <span class="home-modalidade-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
-                    <span class="home-modalidade-status">${escaparHtml(statusTxt)}</span>
+                <span class="home-mod-l1">
+                    <span class="home-mod-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
+                    <span class="home-mod-pos">${posTxt}</span>
                 </span>
-                <span class="home-modalidade-metricas">
-                    <span class="home-modalidade-pos">${posTxt}</span>
-                    <span class="home-modalidade-pts">${ptsTxt}</span>
+                <span class="home-mod-l2">
+                    <span class="home-mod-status">${escaparHtml(statusTxt)}</span>
+                    <span class="home-mod-pts">${ptsTxt}</span>
                 </span>
-                <span class="home-modalidade-selo ${seloClasse}${seloPulse}">${seloTexto}</span>
+                <span class="home-mod-barra-bloco">
+                    ${barraHtml}
+                </span>
+                <span class="home-mod-btn${pulseCls}">${seloTexto}</span>
             </button>`;
         });
 
@@ -18287,7 +18347,6 @@ if (containerProg) {
         await registrarAluno(!etapaAtiva);
     }
     // ▲▲▲ FIM [18.07]
-
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
     // v10.4.10 · Coach pessoal com IA — atualizado com Média Geral,
     //            medalhas de Consistência, votação, patentes, bloqueio,
