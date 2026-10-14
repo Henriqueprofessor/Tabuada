@@ -7110,9 +7110,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <button type="button" class="aba"       id="sub-global-media"      onclick="mudarMetricaRanking('media')">🏅 Média</button>
         </div>
 
-        <div id="observacao-velocidade" class="observacao-ranking hidden">⚡ <strong>Ranking de Velocidade:</strong> Apenas alunos com <strong>100% de acertos (20/20)</strong> são considerados.</div>
-
-        <div id="observacao-desempate" class="observacao-desempate">🏅 <strong>Critérios de desempate:</strong> Maior pontuação · Maior número de acertos · Menor tempo médio · Maior sequência de acertos · Data do resultado.<br>ℹ️ O <strong>tempo médio dos acertos</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</div>
+        <!-- ▼ v10.5.3 · Os blocos #observacao-velocidade e #observacao-desempate
+             foram removidos. Seu conteúdo foi absorvido pelas descrições de
+             cada ranking (#ranking-descricao), que aparecem abaixo da tabela. -->
 
         <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
         <div id="ultima-sincronizacao" class="info-sincronizacao">Última atualização: --</div>
@@ -12055,8 +12055,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     //   são mais usadas pela tela de Ranking.
     // v10.5.3 · P38 — cada ranking ganha descrição própria, exibida
     //   DEPOIS da tabela/comparativo e ANTES do botão "Voltar".
-    //   A antiga .media-explicacao (que ficava ACIMA da tabela) foi
-    //   substituída pelo mecanismo unificado [13.06.desc].
+    //   A antiga .media-explicacao (que ficava ACIMA da tabela) e os
+    //   blocos #observacao-velocidade / #observacao-desempate foram
+    //   substituídos pelo mecanismo unificado [13.06.desc].
 
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
@@ -12272,6 +12273,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // O container #ranking-descricao vive FORA do #ranking-conteudo-escopo,
     // logo depois de #medias-turmas-container e antes do botão Voltar —
     // garantindo que o botão "Voltar" seja sempre o último elemento visual.
+    //
+    // v10.5.3 · Absorve o conteúdo dos antigos #observacao-velocidade e
+    //   #observacao-desempate. Nada mais aparece acima do botão Sincronizar.
 
     function descreverRankingPontos() {
         return `
@@ -12295,6 +12299,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             <p>Acerte rápido e sem errar. Quanto mais longa a sequência de acertos, maior o bônus acumulado.</p>
 
             <div class="ranking-desc-dica"><strong>💡 Empate?</strong> Desempatamos por: pontos → acertos → menor tempo médio dos acertos → maior sequência → partida mais antiga.</div>
+
+            <p style="margin-top:8px;">ℹ️ O <strong>tempo médio dos acertos</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</p>
 
             <span class="ranking-desc-escopo">🎟️ Os 4 melhores de cada turma/modalidade avançam para a Final.</span>
         `;
@@ -12323,7 +12329,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             <div class="ranking-desc-subtitulo">📈 Como subir</div>
             <p>Memorize as tabuadas para responder cada vez mais rápido <strong>sem perder a precisão</strong>. Um único erro tira você da lista.</p>
 
-            <div class="ranking-desc-dica"><strong>💡 Empate?</strong> Menor tempo médio → maior número de partidas perfeitas.</div>
+            <div class="ranking-desc-dica"><strong>💡 Empate?</strong> Menor tempo médio dos acertos → maior número de partidas perfeitas. E lembre-se: <strong>errar rápido não prejudica sua velocidade</strong> — só acertos entram na conta.</div>
 
             ${linhaEscopo}
         `;
@@ -12430,15 +12436,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             // ─── Guarda: tela limpa (nenhum escopo selecionado) ───
             if (!tipoRankingAtual) return;
 
-            // ─── Estado inicial: esconde todos os auxiliares ───
-            const obsDesempateEl = document.getElementById("observacao-desempate");
-            const obsVelocEl = document.getElementById("observacao-velocidade");
+            // ─── Estado inicial: esconde auxiliares ───
             const bannerEl = document.getElementById("banner-posicao-global");
             const mediasCtnEl = document.getElementById("medias-turmas-container");
             const tabelaWrap = document.querySelector("#tela-ranking .tabela-container");
 
-            if (obsDesempateEl) obsDesempateEl.classList.remove("hidden");
-            if (obsVelocEl) obsVelocEl.classList.add("hidden");
             if (bannerEl) bannerEl.classList.add("hidden");
             if (mediasCtnEl) mediasCtnEl.classList.add("hidden");
             if (tabelaWrap) tabelaWrap.style.display = "";
@@ -12465,16 +12467,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 if (!nomeA || !turmaAluno) return false;
                 return normalizarNome(r.nome) === normalizarNome(nomeA)
                        && r.turma === turmaAluno;
-            }
-
-            // ─── Métrica de Velocidade liga o aviso ───
-            if (metricaRankingAtual === "velocidade" && obsVelocEl) {
-                obsVelocEl.classList.remove("hidden");
-            }
-
-            // ─── Métrica Média esconde o aviso de desempate padrão ───
-            if (metricaRankingAtual === "media" && obsDesempateEl) {
-                obsDesempateEl.classList.add("hidden");
             }
 
             // ═══════════════════════════════════════════════════════════
@@ -12683,8 +12675,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     //   Escopo "global" → métricas: velocidade · media · desafio
     //   Ao reabrir a tela, volta ao estado limpo (via resetarRankingParaEstadoLimpo).
     //   O dropdown de turma sempre inicia na turma do aluno (pendência P37 aberta).
-    // v10.5.3 · P38 — reset também esconde a descrição (#ranking-descricao),
-    //   que substituiu #media-explicacao.
+    // v10.5.3 · P38 — reset esconde a descrição (#ranking-descricao).
+    //   Os IDs #observacao-velocidade e #observacao-desempate deixaram de
+    //   existir (foram absorvidos pelas descrições).
     let metricaRankingAtual = "pontos";
 
     function mudarEscopoRanking(escopo) {
@@ -12794,9 +12787,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.getElementById("sub-abas-global")?.classList.add("hidden");
 
         // Esconde tudo que é contextual do escopo
-        ["filtro-turma", "hint-turma-aluno", "observacao-velocidade",
-         "observacao-desempate", "banner-posicao-global",
-         "ranking-descricao", "medias-turmas-container"].forEach(id => {
+        ["filtro-turma", "hint-turma-aluno",
+         "banner-posicao-global", "ranking-descricao",
+         "medias-turmas-container"].forEach(id => {
             document.getElementById(id)?.classList.add("hidden");
         });
         // Limpa o conteúdo da descrição (evita fantasma ao reabrir)
