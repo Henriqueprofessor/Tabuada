@@ -12058,6 +12058,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     //   A antiga .media-explicacao (que ficava ACIMA da tabela) e os
     //   blocos #observacao-velocidade / #observacao-desempate foram
     //   substituídos pelo mecanismo unificado [13.06.desc].
+    // v10.5.3b · P38 (ajuste) — no ranking de Pontos, a coluna "Pontos"
+    //   migrou da 4ª posição para entre "Jogos" e "Status", deixando
+    //   "Acertos", "Tempo" e "Jogos" mais próximos do nome do aluno.
 
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
@@ -12510,7 +12513,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 });
                 rank = await obterRankingPorPontos(mod, turma);
                 tit = `🏆 Turmas · ${turma} — ${MODALIDADES[mod]?.nome}`;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th><th>Jogos</th><th>Status</th>`;
+                // v10.5.3b · Coluna "Pontos" migrou para entre "Jogos" e "Status"
+                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Tempo médio dos acertos</th><th>Jogos</th><th>Pontos</th><th>Status</th>`;
                 if (!rank.length) {
                     ti.innerText = tit;
                     tb.innerHTML = `<tr><td colspan="8"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`;
@@ -12527,7 +12531,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : p === 4 ? "🎫" : "";
                     const vc = ehVoce(r);
                     const cv = vc ? " voce-linha" : "";
-                    h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${j}</td><td style="text-align:center"><span class="tag ${sc}">${st}</span></td></tr>`;
+                    h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${j}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center"><span class="tag ${sc}">${st}</span></td></tr>`;
                 }
                 tb.innerHTML = h;
                 return;
