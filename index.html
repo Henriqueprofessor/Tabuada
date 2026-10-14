@@ -3808,59 +3808,68 @@
             }
         }
         /* ▲▲▲ FIM [02.46] */
-        /* ▼▼▼ [02.47] Home — Ritmo na Copa (dentro do hero) ─────── INÍCIO ─── */
-        /* v10.4.9 · Card separado foi incorporado dentro do hero-esports.
-           A frase interpretativa vive no subtítulo do hero (evita duplicação).
-           Aqui só ficam barra de proporção, números e legenda. */
-
-        .hero-ritmo-bloco {
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px dashed rgba(34, 211, 238, 0.25);
+        /* ▼▼▼ [02.47] Home — Ritmo na Copa (card autônomo) ─────── INÍCIO ─── */
+        /* v10.5.4 · O bloco "Seu Ritmo na Copa" deixou de viver dentro do
+           hero-esports. Agora é um card autônomo, posicionado logo abaixo
+           do card "Minhas Posições · Jogar/Treinar". Estilo alinhado aos
+           demais cards da Home: gradiente escuro, borda ciano à esquerda
+           de 4px, border-radius 14px, padding 16px. */
+        .home-ritmo-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%);
+            border: 1px solid var(--border-neon);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            text-align: left;
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             gap: 10px;
-            animation: heroRitmoIn 0.35s ease;
+            animation: homeRitmoIn 0.35s ease;
         }
-        @keyframes heroRitmoIn {
+        @keyframes homeRitmoIn {
             from { opacity: 0; transform: translateY(6px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        .hero-ritmo-cabecalho {
+        .home-ritmo-cabecalho {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             gap: 12px;
             flex-wrap: wrap;
         }
-        .hero-ritmo-titulo {
-            font-size: 11px;
+        .home-ritmo-titulo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
             font-weight: 800;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.3px;
             text-transform: uppercase;
-            color: var(--neon-cyan);
+            color: var(--text-primary);
             line-height: 1.2;
         }
-        .hero-ritmo-numeros {
+        .home-ritmo-numeros {
             display: flex;
             gap: 14px;
             flex-wrap: wrap;
             font-size: 12.5px;
-            color: #cbd5e1;
+            color: var(--text-secondary);
             font-weight: 700;
             line-height: 1.2;
         }
-        .hero-ritmo-numeros .num {
+        .home-ritmo-numeros .num {
             font-weight: 900;
             font-size: 15px;
             letter-spacing: -0.3px;
             margin-right: 2px;
         }
-        .hero-ritmo-numeros .num.cyan { color: var(--neon-cyan); }
-        .hero-ritmo-numeros .num.gold { color: var(--neon-gold); }
+        .home-ritmo-numeros .num.cyan { color: var(--neon-cyan); }
+        .home-ritmo-numeros .num.gold { color: var(--neon-gold); }
 
-        .hero-ritmo-barra {
+        .home-ritmo-barra {
             display: flex;
             height: 12px;
             background: rgba(0, 0, 0, 0.35);
@@ -3868,52 +3877,59 @@
             overflow: hidden;
             position: relative;
         }
-        .hero-ritmo-fill {
+        .home-ritmo-fill {
             height: 100%;
             transition: width 0.9s cubic-bezier(.22, 1, .36, 1);
         }
-        .hero-ritmo-fill.treinos {
+        .home-ritmo-fill.treinos {
             background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
             box-shadow: inset 0 0 6px rgba(168, 85, 247, 0.5);
         }
-        .hero-ritmo-fill.oficiais {
+        .home-ritmo-fill.oficiais {
             background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
             box-shadow: inset 0 0 6px rgba(34, 211, 238, 0.5);
         }
 
-        .hero-ritmo-legenda {
+        .home-ritmo-legenda {
             display: flex;
             justify-content: space-between;
             gap: 10px;
             font-size: 11.5px;
-            color: #cbd5e1;
+            color: var(--text-secondary);
             font-weight: 700;
             line-height: 1.4;
         }
-        .hero-ritmo-legenda .pct {
-            color: #fff;
+        .home-ritmo-legenda .pct {
+            color: var(--text-primary);
             font-weight: 900;
         }
 
-        .hero-ritmo-vazio {
+        .home-ritmo-vazio {
             font-size: 12.5px;
-            color: #94a3b8;
+            color: var(--text-muted);
             padding: 6px 0;
             line-height: 1.5;
         }
-        .hero-ritmo-vazio strong { color: #cbd5e1; }
+        .home-ritmo-vazio strong { color: var(--text-secondary); }
+
+        /* Quando o container está vazio, esconde completamente — evita
+           que a reserva de min-height (ver [02.54]) deixe um gap fantasma
+           para aluno não identificado. */
+        #ritmo-copa-container:empty { display: none; }
 
         @media (max-width: 520px) {
-            .hero-ritmo-bloco { margin-top: 14px; padding-top: 12px; gap: 8px; }
-            .hero-ritmo-numeros { font-size: 12px; gap: 10px; }
-            .hero-ritmo-numeros .num { font-size: 14px; }
-            .hero-ritmo-legenda { font-size: 11px; }
+            .home-ritmo-card { padding: 14px; }
+            .home-ritmo-titulo { font-size: 12.5px; }
+            .home-ritmo-numeros { font-size: 12px; gap: 10px; }
+            .home-ritmo-numeros .num { font-size: 14px; }
+            .home-ritmo-legenda { font-size: 11px; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .hero-ritmo-bloco { animation: none; }
-            .hero-ritmo-fill { transition: none !important; }
+            .home-ritmo-card { animation: none; }
+            .home-ritmo-fill { transition: none !important; }
         }
         /* ▲▲▲ FIM [02.47] */
+
         /* ▼▼▼ [02.48] Painel — Heatmap de Turma + Sugestões ───────── INÍCIO ─── */
 
         .heatmap-wrap {
@@ -5180,17 +5196,21 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .extensao-etapa-msg { transition: none !important; animation: none !important; }
         }
         /* ▲▲▲ FIM [02.53] */
+
         /* ▼▼▼ [02.54] Otimização de performance — CLS do Hero (P35) ─── INÍCIO ─── */
         /* Fix do Cumulative Layout Shift (CLS) medido no Lighthouse.
            O hero da Home é preenchido por JS DEPOIS do primeiro paint
-           (nome do aluno, subtítulo dinâmico, bloco Ritmo na Copa).
-           Quando o conteúdo muda de tamanho, empurra o layout abaixo → CLS alto.
+           (nome do aluno, subtítulo dinâmico). Quando o conteúdo muda de
+           tamanho, empurra o layout abaixo → CLS alto.
            Reservar espaço com min-height evita o salto visual.
-           v10.5.3 · Os 3 cards (Certificados/Treinos/Oficiais) foram removidos
-           do hero. O min-height caiu em ~100px (desktop) e ~120px (mobile). */
+           v10.5.3 · Os 3 cards (Certificados/Treinos/Oficiais) foram
+           removidos do hero.
+           v10.5.4 · O bloco "Seu Ritmo na Copa" migrou para um card
+           autônomo (#ritmo-copa-container). O hero perdeu essa altura,
+           mas ganhamos uma reserva nova para o card do Ritmo. */
 
         .hero-esports {
-            min-height: 320px;
+            min-height: 240px;
             contain: layout paint;
         }
 
@@ -5204,20 +5224,23 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         #modo-teste-banner-container:empty { display: none; }
         #alerta-foco-absoluto-container:empty { display: none; }
 
-        /* Reserva altura dos containers de CTA e meta (preenchidos por JS) */
+        /* Reserva altura dos containers de CTA, ritmo e meta (preenchidos por JS) */
         #acao-principal-container { min-height: 260px; }
-        #mapa-home-container { min-height: 180px; }
-        #meta-pessoal-container { min-height: 80px; }
+        #ritmo-copa-container      { min-height: 130px; }
+        #mapa-home-container       { min-height: 180px; }
+        #meta-pessoal-container    { min-height: 80px; }
 
         @media (max-width: 780px) {
-            .hero-esports { min-height: 380px; }
+            .hero-esports            { min-height: 280px; }
             #acao-principal-container { min-height: 340px; }
+            #ritmo-copa-container     { min-height: 140px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
             .hero-esports { contain: none; }
         }
         /* ▲▲▲ FIM [02.54] */
+
         /* ▼▼▼ [02.55] Coach da Copa + FAB ───────────────────── INÍCIO ─── */
         /* v10.4.8 · Coach pessoal com IA — prompt read-only personalizado
            com perfil COMPLETO do aluno. A IA atua como treinador:
@@ -5762,7 +5785,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* v10.4.9 · Mostra a versão atual ao lado do logo "Copa da Tabuada".
            · Ciano (padrão)  → estado neutro ou verificação falhou
            · Verde (✓)       → está na última versão publicada
-           · Âmbar (⚠ + pulso) → versão publicada é mais nova; clique recarrega */
+           · Vermelho (⚠ + shake + glow) → versão publicada é mais nova; clique recarrega
+           v10.5.4 · O estado "desatualizada" passou de âmbar para vermelho,
+           porque o âmbar colidia com o ouro do troféu e do logo. Além da
+           cor, ganhou 3 camadas de chamariz visual (moderadas):
+             1) Shake leve a cada 3s (movimento puxa o olho periférico)
+             2) Glow pulsante no ícone ⚠
+             3) Fade suave do fundo (respiração) */
 
         .logo-versao {
             /* Reset de botão */
@@ -5833,30 +5862,62 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             line-height: 1;
         }
 
-        /* ─── Estado ÂMBAR: versão publicada é mais nova ─── */
+        /* ─── Estado VERMELHO: versão publicada é mais nova ───
+           Três camadas visuais somadas:
+             1) Cor de fundo vermelha translúcida
+             2) Fade suave do fundo (respiração, 2.4s) + shake leve (3.2s)
+             3) Glow pulsante no ícone ⚠
+           Todas moderadas — chamam atenção sem irritar. */
         .logo-versao.versao-desatualizada {
-            background: rgba(251, 191, 36, 0.14);
-            border-color: rgba(251, 191, 36, 0.55);
-            color: #fde68a;
-            animation: logoVersaoPulse 2.2s ease-in-out infinite;
+            background: rgba(239, 68, 68, 0.14);
+            border-color: rgba(239, 68, 68, 0.6);
+            color: #fca5a5;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
+            animation:
+                logoVersaoShake 3.2s ease-in-out infinite,
+                logoVersaoGlow 2.4s ease-in-out infinite;
         }
         .logo-versao.versao-desatualizada:hover:not(:disabled) {
-            background: rgba(251, 191, 36, 0.26);
-            border-color: var(--neon-gold);
-            color: #fef3c7;
+            background: rgba(239, 68, 68, 0.28);
+            border-color: #ef4444;
+            color: #fecaca;
             transform: translateY(-1px);
             animation-play-state: paused;
         }
         .logo-versao.versao-desatualizada::before {
             content: "⚠";
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 900;
-            color: var(--neon-gold);
+            color: #ef4444;
             line-height: 1;
+            display: inline-block;
+            animation: logoVersaoIconGlow 1.6s ease-in-out infinite;
         }
-        @keyframes logoVersaoPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.45); }
-            50%      { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0); }
+
+        /* ─── Shake leve, periódico ───
+           Amplitude de 1px, cadência de 3.2s. O movimento acontece nos
+           primeiros ~20% do ciclo; o resto do tempo fica parado.
+           É isso que faz o olho periférico notar — sem virar ruído. */
+        @keyframes logoVersaoShake {
+            0%      { transform: translateX(0); }
+            4%      { transform: translateX(-1px); }
+            8%      { transform: translateX(1px); }
+            12%     { transform: translateX(-1px); }
+            16%     { transform: translateX(1px); }
+            20%     { transform: translateX(0); }
+            100%    { transform: translateX(0); }
+        }
+
+        /* ─── Glow externo suave (respiração) ─── */
+        @keyframes logoVersaoGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+            50%      { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+        }
+
+        /* ─── Glow interno do ⚠ (pulsação de brilho) ─── */
+        @keyframes logoVersaoIconGlow {
+            0%, 100% { text-shadow: 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+            50%      { text-shadow: 0 0 6px rgba(239, 68, 68, 0.9); transform: scale(1.1); }
         }
 
         @media (max-width: 520px) {
@@ -5876,9 +5937,18 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         @media (prefers-reduced-motion: reduce) {
             .logo-versao { transition: none !important; }
             .logo-versao:hover:not(:disabled) { transform: none; }
-            .logo-versao.versao-desatualizada { animation: none; }
+            .logo-versao.versao-desatualizada,
+            .logo-versao.versao-desatualizada::before {
+                animation: none;
+            }
+            /* Mantém o box-shadow visível mesmo sem animação, para não perder
+               o "peso" do estado de alerta. */
+            .logo-versao.versao-desatualizada {
+                box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+            }
         }
         /* ▲▲▲ FIM [02.58] */
+
         /* ▼▼▼ [02.59] Botão "Verificar versão" no cabeçalho ─────── INÍCIO ─── */
         /* v10.4.9 · Botão ao lado do badge da versão. Consulta o Firebase
            sob demanda e, se encontrar versão mais nova, recarrega o app.
@@ -6779,14 +6849,18 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <p class="hero-esports-sub" id="hero-sub-dinamica">
                     Acompanhe sua jornada na Copa da Tabuada.
                 </p>
-                <!-- ▼ v10.4.9 · Ritmo na Copa (dentro do hero) — panorama GERAL
-                     de todas as modalidades. A visão por modalidade vive no
-                     card "Minhas Posições" logo abaixo. -->
-                <div id="hero-ritmo-container"></div>
+                <!-- v10.5.4 · O bloco "Seu Ritmo na Copa" saiu do hero.
+                     Agora vive como card autônomo em #ritmo-copa-container,
+                     logo abaixo do card "Minhas Posições". -->
             </div>
         </section>
 
         <div id="acao-principal-container"></div>
+
+        <!-- ▼ v10.5.4 · Card "Seu Ritmo na Copa" — panorama geral de
+             treinos × oficiais de TODAS as modalidades. Fica logo abaixo
+             do card "Minhas Posições", como card autônomo. -->
+        <div id="ritmo-copa-container"></div>
 
         <!-- ⚙️ L2 — Meta pessoal reposicionada: agora logo abaixo do CTA principal -->
         <div id="meta-pessoal-container"></div>
@@ -16782,9 +16856,11 @@ if (containerProg) {
 
     // ▼▼▼ [18.01] Home E-Sports — Hero com saudação + Ritmo na Copa ─
     // v10.5.3 · Os 3 cards do hero (Certificados/Treinos/Oficiais) foram
-    // removidos. O hero agora mostra apenas: saudação + subtítulo dinâmico
-    // + bloco "Seu Ritmo na Copa" (panorama geral de treinos × oficiais).
-    // A visão por modalidade vive no card "Minhas Posições" logo abaixo.
+    // removidos.
+    // v10.5.4 · O bloco "Seu Ritmo na Copa" saiu do hero e virou card
+    // autônomo em #ritmo-copa-container, logo abaixo do card
+    // "Minhas Posições". O hero agora mostra apenas: saudação + subtítulo
+    // dinâmico. A visão por modalidade vive no card "Minhas Posições".
 
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
@@ -16798,7 +16874,7 @@ if (containerProg) {
         const heroNome = document.getElementById("hero-nome-destaque");
         if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
 
-        // Sem identificação: zera o ritmo
+        // Sem identificação: zera a frase e limpa o card do ritmo
         if (!nome || !turma) {
             atualizarFraseHero(null);
             renderizarRitmoCopa(null);
@@ -16850,28 +16926,31 @@ if (containerProg) {
         else                   el.textContent = "Você tem equilibrado treinos e partidas oficiais.";
     }
 
-    // Bloco "Seu Ritmo na Copa" DENTRO do hero — panorama GERAL.
-    // A frase interpretativa é responsabilidade do subtítulo do hero
-    // (atualizarFraseHero) — evita duplicação de texto.
+    // Card "Seu Ritmo na Copa" — card AUTÔNOMO, fora do hero.
+    // Vive em #ritmo-copa-container, logo abaixo de "Minhas Posições".
+    // A frase interpretativa continua sendo responsabilidade do subtítulo
+    // do hero (atualizarFraseHero) — evita duplicação de texto.
     function renderizarRitmoCopa(dados) {
-        const ctn = document.getElementById("hero-ritmo-container");
+        const ctn = document.getElementById("ritmo-copa-container");
         if (!ctn) return;
 
-        // Sem identificação
+        // Sem identificação → limpa o container. O CSS #ritmo-copa-container:empty
+        // (em [02.47]) esconde o card completamente.
         if (!dados) {
-            ctn.innerHTML = `<div class="hero-ritmo-bloco">
-                <div class="hero-ritmo-vazio">Identifique-se para acompanhar seu ritmo aqui.</div>
-            </div>`;
+            ctn.innerHTML = "";
             return;
         }
 
         const { oficiais, treinos } = dados;
         const total = oficiais + treinos;
 
-        // Sem nenhuma partida (nem treino, nem oficial)
+        // Identificado, mas sem nenhuma partida (nem treino, nem oficial)
         if (total === 0) {
-            ctn.innerHTML = `<div class="hero-ritmo-bloco">
-                <div class="hero-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
+            ctn.innerHTML = `<div class="home-ritmo-card">
+                <div class="home-ritmo-cabecalho">
+                    <span class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</span>
+                </div>
+                <div class="home-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
             </div>`;
             return;
         }
@@ -16879,19 +16958,19 @@ if (containerProg) {
         const pctOfi = Math.round((oficiais / total) * 100);
         const pctTre = 100 - pctOfi;
 
-        ctn.innerHTML = `<div class="hero-ritmo-bloco">
-            <div class="hero-ritmo-cabecalho">
-                <span class="hero-ritmo-titulo">🎯 Seu Ritmo na Copa</span>
-                <span class="hero-ritmo-numeros">
+        ctn.innerHTML = `<div class="home-ritmo-card">
+            <div class="home-ritmo-cabecalho">
+                <span class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</span>
+                <span class="home-ritmo-numeros">
                     <span><span class="num gold">${treinos.toLocaleString("pt-BR")}</span>${treinos === 1 ? "treino" : "treinos"}</span>
                     <span><span class="num cyan">${oficiais.toLocaleString("pt-BR")}</span>${oficiais === 1 ? "partida oficial" : "partidas oficiais"}</span>
                 </span>
             </div>
-            <div class="hero-ritmo-barra" role="img" aria-label="Proporção: ${pctTre}% treinos, ${pctOfi}% partidas oficiais">
-                <div class="hero-ritmo-fill treinos" style="width: ${pctTre}%"></div>
-                <div class="hero-ritmo-fill oficiais" style="width: ${pctOfi}%"></div>
+            <div class="home-ritmo-barra" role="img" aria-label="Proporção: ${pctTre}% treinos, ${pctOfi}% partidas oficiais">
+                <div class="home-ritmo-fill treinos" style="width: ${pctTre}%"></div>
+                <div class="home-ritmo-fill oficiais" style="width: ${pctOfi}%"></div>
             </div>
-            <div class="hero-ritmo-legenda">
+            <div class="home-ritmo-legenda">
                 <span>🎯 Treinos <span class="pct">${pctTre}%</span></span>
                 <span>🎮 Oficiais <span class="pct">${pctOfi}%</span></span>
             </div>
@@ -16995,6 +17074,7 @@ if (containerProg) {
         avisoEl.innerHTML = minha ? renderizarAvisoTurmaFora(minha, info.modalidade) : "";
     }
     // ▲▲▲ FIM [18.01]
+
     // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
     async function abrirHallDaFama() {
         mostrarTela("tela-hall-fama");
