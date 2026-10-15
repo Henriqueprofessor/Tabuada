@@ -6975,6 +6975,28 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.67] */
 
+        /* ▼▼▼ [02.68] Ajustes do motor Aprender (Decomposição) ─ INÍCIO ─── */
+        /* v10.5.6 · Decomposição tem enunciado mais longo que o Reverso
+           (ex: "7 × 8 = 7 × 5 + 7 × ?"). Reduz a fonte para caber em
+           uma linha no desktop e em duas no celular, sem virar sopa
+           de letras. */
+
+        .aprender-conta.duas-linhas {
+            font-size: clamp(24px, 5.5vw, 40px);
+            letter-spacing: 1px;
+            line-height: 1.15;
+            word-spacing: -0.05em;
+        }
+        .aprender-conta.duas-linhas .incognita {
+            font-size: 0.85em;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 400px) {
+            .aprender-conta.duas-linhas { font-size: 22px; }
+        }
+        /* ▲▲▲ FIM [02.68] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -19830,15 +19852,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     // ▲▲▲ FIM [19.05]
 
-    // ▼▼▼ [19.06] Motor Aprender + Treino Reverso + Mini-menu ──── INÍCIO ───
-    // v10.5.5 · Motor pedagógico sem cronômetro, com pistas em 3 níveis
-    // e tela de resumo. O primeiro modo que usa este motor é o
-    // Treino Reverso (`3 × ? = 21`).
-    //
-    // Registro no mapa: cada resposta do motor Aprender carrega
-    //   { tentativas, pistaUsada }
-    // O bloco [09.02] aplica um cap: se o aluno precisou de muita
-    // pista, a operação NÃO chega a "verde" no mapa.
+    // ▼▼▼ [19.06] Motor Aprender + Modos + Mini-menu ──── INÍCIO ───
+    // v10.5.6 · Motor pedagógico com arquitetura por modo. Cada modo
+    // declara suas próprias pistas e revelação. Já implementados:
+    //   · 🔄 Reverso       (fator faltante)
+    //   · 🧩 Decomposição  (distributiva com âncora)
+    // Os demais aparecem como "Em breve".
 
     const STORAGE_MENU_TREINO_USOS = "copa_menu_treino_usos";
 
@@ -19854,7 +19873,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         { id: "decomposicao", icone: "🧩", nome: "Decomposição",
           desc: "Aprenda a derivar o resultado pela soma",
           exemplo: "7×8 = 7×5 + ?",
-          emBreve: true },
+          emBreve: false },
         { id: "espelho", icone: "🪞", nome: "Espelho",
           desc: "Veja, pense e diga se sabia de cor",
           exemplo: "🟢 sabia · 🔴 errei",
@@ -20014,45 +20033,152 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (!mod) { fecharMenuTreino(); return; }
         registrarUsoMenuTreino(modoId);
         fecharMenuTreino();
-        if (modoId === "reverso") {
-            abrirTreinoReverso(mod);
+
+        if (APRENDER_MODOS[modoId]) {
+            abrirTreinoAprender(modoId, mod);
             return;
         }
         const modo = MODOS_TREINO.find(m => m.id === modoId);
         if (modo) notificarModoEmBreve(modo.nome);
     }
 
-    // ─── MOTOR APRENDER + TREINO REVERSO ───
+    // ═══════════════════════════════════════════════════════════════════
+    // MOTOR APRENDER — arquitetura por modo
+    // ═══════════════════════════════════════════════════════════════════
 
     const APRENDER_SESSAO_PADRAO = 5;
 
+    // ─── Helper comum: gera pista 2 (decomposição genérica) reaproveitável ───
+    function _aprenderDicaDecomposicao(fA, fB) {
+        return gerarDicaDecomposicao(fA, fB);
+    }
+
+    // ─── Escolha da âncora em Decomposição ───
+    // Regra: se B <= 5, usa floor(B/2). Senão, usa 5 (a tabuada do 5 é
+    // a mais memorizada e serve de ponto de partida confortável).
+    function _escolherAncoraDecomposicao(fB) {
+        if (fB <= 2) return 1;
+        if (fB <= 5) return Math.max(1, Math.floor(fB / 2));
+        return 5;
+    }
+
     const APRENDER_MODOS = {
+        // ═══════════════════════════════════════════════════════════════
+        // 🔄 REVERSO — fator faltante
+        // ═══════════════════════════════════════════════════════════════
         reverso: {
             id: "reverso",
             nome: "Treino Reverso",
             icone: "🔄",
-            gerarPergunta(fA, fB) {
+            tamanhoSessaoPadrao: 5,
+            classeConta: "",
+
+            gerarPergunta(base) {
+                const { fA, fB } = base;
                 const ocultar = Math.random() < 0.5 ? "fB" : "fA";
                 const produto = fA * fB;
+                const respostaCorreta = ocultar === "fB" ? fB : fA;
+                const enunciadoHtml = ocultar === "fB"
+                    ? `${fA} × <span class="incognita">?</span> = ${produto}`
+                    : `<span class="incognita">?</span> × ${fB} = ${produto}`;
+                return { fA, fB, ocultar, produto, respostaCorreta, enunciadoHtml };
+            },
+
+            pista1(p) {
+                const { fA, fB, ocultar } = p;
+                const metade = ocultar === "fB"
+                    ? Math.max(1, Math.floor(fB / 2))
+                    : Math.max(1, Math.floor(fA / 2));
+                return `Pense em <strong>${fA} × ${metade}</strong> e dobre.`;
+            },
+
+            pista2(p) {
+                const { fA, fB, ocultar } = p;
                 if (ocultar === "fB") {
-                    return { fA, fB, ocultar: "fB", respostaCorreta: fB, produto };
+                    const metade = Math.max(1, Math.floor(fB / 2));
+                    const resto = fB - metade;
+                    return `${fA} × ${fB} = <strong>${fA} × ${metade} + ${fA} × ${resto}</strong> = ?`;
                 }
-                return { fA, fB, ocultar: "fA", respostaCorreta: fA, produto };
+                const metade = Math.max(1, Math.floor(fA / 2));
+                const resto = fA - metade;
+                return `${fA} × ${fB} = <strong>${metade} × ${fB} + ${resto} × ${fB}</strong> = ?`;
+            },
+
+            pista3(p) {
+                const { fA, fB } = p;
+                const total = fA * fB;
+                return `Imagine ${fA} grupos de ${fB} objetos:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${total}</strong> objetos no total.`;
+            },
+
+            revelacao(p) {
+                const { fA, fB, ocultar } = p;
+                const produto = fA * fB;
+                if (ocultar === "fB") {
+                    const metade = Math.max(1, Math.floor(fB / 2));
+                    return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${fA} × ${metade} = ${fA * metade}, basta dobrar: ${fA * metade} + ${fA * (fB - metade)} = ${produto}.`;
+                }
+                const metade = Math.max(1, Math.floor(fA / 2));
+                return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${metade} × ${fB} = ${metade * fB}, basta somar: ${metade * fB} + ${(fA - metade) * fB} = ${produto}.`;
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🧩 DECOMPOSIÇÃO — distributiva com âncora
+        // ═══════════════════════════════════════════════════════════════
+        decomposicao: {
+            id: "decomposicao",
+            nome: "Decomposição",
+            icone: "🧩",
+            tamanhoSessaoPadrao: 5,
+            classeConta: "duas-linhas",
+
+            gerarPergunta(base) {
+                const { fA, fB } = base;
+                const fC = _escolherAncoraDecomposicao(fB);
+                const resto = fB - fC;
+                const produto = fA * fB;
+                const respostaCorreta = resto;
+                const enunciadoHtml = `${fA} × ${fB} = ${fA} × ${fC} + ${fA} × <span class="incognita">?</span>`;
+                return { fA, fB, fC, resto, produto, respostaCorreta, enunciadoHtml };
+            },
+
+            pista1(p) {
+                const { fB, fC } = p;
+                return `Conte de <strong>${fC}</strong> até <strong>${fB}</strong>: quantos passos você dá?`;
+            },
+
+            pista2(p) {
+                const { fA, fB, fC } = p;
+                return `${fA} × ${fB} = ${fA} × ${fC} + ${fA} × <strong>___</strong>`;
+            },
+
+            pista3(p) {
+                const { fA, fC, resto } = p;
+                const parcial = fA * fC;
+                return `Sabemos que <strong>${fA} × ${fC} = ${parcial}</strong>. Agora é só somar ${fA} <strong>${resto}</strong> ${resto === 1 ? "vez" : "vezes"}.`;
+            },
+
+            revelacao(p) {
+                const { fA, fB, fC, resto, produto } = p;
+                return `<strong>${fA} × ${fB} = ${fA} × ${fC} + ${fA} × ${resto} = ${fA * fC} + ${fA * resto} = ${produto}</strong>. A resposta é <strong>${resto}</strong>.`;
             }
         }
     };
 
-    async function abrirTreinoReverso(mod) {
+    // ═══════════════════════════════════════════════════════════════════
+    // ABERTURA E FLUXO DA SESSÃO APRENDER
+    // ═══════════════════════════════════════════════════════════════════
+
+    async function abrirTreinoAprender(modoId, mod) {
         if (!MODALIDADES[mod]) return;
+        const cfg = APRENDER_MODOS[modoId];
+        if (!cfg) { notificarModoEmBreve(modoId); return; }
+
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { mostrarTela("tela-single"); return; }
 
-        const modoId = "reverso";
-        const cfg = APRENDER_MODOS[modoId];
-        if (!cfg) return;
-
-        // Monta foco de operações (mesma lógica do Treino Inteligente)
+        // Monta operações de foco — mesma lógica do Treino Inteligente
         let operacoesFoco = [];
         try {
             const lista = await montarListaTreinoInteligente(nome, turma, mod);
@@ -20067,7 +20193,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             }
         }
 
-        const tamanhoSessao = Math.min(APRENDER_SESSAO_PADRAO, operacoesFoco.length);
+        const tamanhoSessao = Math.min(cfg.tamanhoSessaoPadrao, operacoesFoco.length);
         const sessaoOps = [];
         for (let i = 0; i < tamanhoSessao; i++) {
             const op = escolherPorPeso(operacoesFoco, o => o.peso || 1);
@@ -20098,7 +20224,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (e.indiceAtual >= e.tamanhoSessao) { renderizarResumoAprender(false); return; }
 
         const base = e.sessaoOps[e.indiceAtual] || { fA: 1, fB: 1 };
-        e.perguntaAtual = e.cfg.gerarPergunta(base.fA, base.fB);
+        e.perguntaAtual = e.cfg.gerarPergunta(base);
         e.pistaNivel = 0;
         e.tentativas = 0;
         e.acertou = false;
@@ -20115,6 +20241,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const total = e.tamanhoSessao;
         const atual = e.indiceAtual + 1;
         const modNome = MODALIDADES[e.mod]?.nome || e.mod;
+        const classeConta = e.cfg.classeConta ? ` ${e.cfg.classeConta}` : "";
 
         const blocos = e.sessaoOps.map((_, i) => {
             if (i < e.resultados.length) {
@@ -20126,13 +20253,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             if (i === e.indiceAtual) return `<div class="bloco atual"></div>`;
             return `<div class="bloco"></div>`;
         }).join("");
-
-        let enunciado;
-        if (p.ocultar === "fB") {
-            enunciado = `${p.fA} × <span class="incognita">?</span> = ${p.produto}`;
-        } else {
-            enunciado = `<span class="incognita">?</span> × ${p.fB} = ${p.produto}`;
-        }
 
         ctn.innerHTML = `
             <div class="aprender-cabecalho">
@@ -20148,7 +20268,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             <div class="aprender-barra" aria-hidden="true">${blocos}</div>
 
-            <div class="aprender-conta" id="aprender-conta">${enunciado}</div>
+            <div class="aprender-conta${classeConta}" id="aprender-conta">${p.enunciadoHtml}</div>
 
             <div class="aprender-input-linha">
                 <input
@@ -20216,7 +20336,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                 tentativas: e.tentativas,
                 acertou: true
             });
-            if (e.pistaNivel === 3 || e.pistaNivel === "revelou") {
+            if (e.pistaNivel === 3) {
                 e.aRevisar.push({ fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB });
             }
             renderizarFeedbackAprender("ok", acertouNaPrimeira);
@@ -20280,7 +20400,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (!e || !ctn) return;
 
         const p = e.perguntaAtual;
-        const { fA, fB } = p;
         const nivel = e.pistaNivel;
 
         if (btn) {
@@ -20291,44 +20410,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
 
         let html = "";
-        if (nivel >= 1) html += `<div class="aprender-pista-item nivel-1"><span class="aprender-pista-titulo">💡 Estratégia</span>${gerarPista1Aprender(fA, fB, p.ocultar)}</div>`;
-        if (nivel >= 2) html += `<div class="aprender-pista-item nivel-2"><span class="aprender-pista-titulo">🧩 Decomposição</span>${gerarPista2Aprender(fA, fB, p.ocultar)}</div>`;
-        if (nivel >= 3) html += `<div class="aprender-pista-item nivel-3"><span class="aprender-pista-titulo">🎨 Apoio visual</span>${gerarPista3Aprender(fA, fB)}</div>`;
-        if (nivel === "revelou") html += `<div class="aprender-pista-item revelacao"><span class="aprender-pista-titulo">✅ Resposta</span>${gerarRevelacaoAprender(fA, fB, p.ocultar)}</div>`;
+        if (nivel >= 1) html += `<div class="aprender-pista-item nivel-1"><span class="aprender-pista-titulo">💡 Estratégia</span>${e.cfg.pista1(p)}</div>`;
+        if (nivel >= 2) html += `<div class="aprender-pista-item nivel-2"><span class="aprender-pista-titulo">🧩 Decomposição</span>${e.cfg.pista2(p)}</div>`;
+        if (nivel >= 3) html += `<div class="aprender-pista-item nivel-3"><span class="aprender-pista-titulo">🎨 Apoio visual</span>${e.cfg.pista3(p)}</div>`;
+        if (nivel === "revelou") html += `<div class="aprender-pista-item revelacao"><span class="aprender-pista-titulo">✅ Resposta</span>${e.cfg.revelacao(p)}</div>`;
         ctn.innerHTML = html;
-    }
-
-    function gerarPista1Aprender(fA, fB, ocultar) {
-        const dica = gerarDicaDecomposicao(fA, fB);
-        if (ocultar === "fB") {
-            const metade = Math.max(1, Math.floor(fB / 2));
-            return `Pense em <strong>${fA} × ${metade}</strong> e dobre. ${dica}`;
-        }
-        const metade = Math.max(1, Math.floor(fA / 2));
-        return `Pense em <strong>${metade} × ${fB}</strong> e dobre. ${dica}`;
-    }
-    function gerarPista2Aprender(fA, fB, ocultar) {
-        if (ocultar === "fB") {
-            const metade = Math.max(1, Math.floor(fB / 2));
-            const resto = fB - metade;
-            return `${fA} × ${fB} = <strong>${fA} × ${metade} + ${fA} × ${resto}</strong> = ?`;
-        }
-        const metade = Math.max(1, Math.floor(fA / 2));
-        const resto = fA - metade;
-        return `${fA} × ${fB} = <strong>${metade} × ${fB} + ${resto} × ${fB}</strong> = ?`;
-    }
-    function gerarPista3Aprender(fA, fB) {
-        const total = fA * fB;
-        return `Imagine ${fA} grupos de ${fB} objetos:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${total}</strong> objetos no total.`;
-    }
-    function gerarRevelacaoAprender(fA, fB, ocultar) {
-        const produto = fA * fB;
-        if (ocultar === "fB") {
-            const metade = Math.max(1, Math.floor(fB / 2));
-            return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${fA} × ${metade} = ${fA * metade}, basta dobrar: ${fA * metade} + ${fA * (fB - metade)} = ${produto}.`;
-        }
-        const metade = Math.max(1, Math.floor(fA / 2));
-        return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${metade} × ${fB} = ${metade * fB}, basta somar: ${metade * fB} + ${(fA - metade) * fB} = ${produto}.`;
     }
 
     function renderizarFeedbackAprender(tipo, acertouNaPrimeira) {
