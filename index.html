@@ -6997,6 +6997,149 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.68] */
 
+        /* ▼▼▼ [02.69] Treino Espelho — autoavaliação ──────── INÍCIO ─── */
+        /* v10.5.6 · O modo Espelho não usa input nem pista. O aluno
+           vê a conta, decide quando revelar e se autoavalia com 🟢/🔴. */
+
+        .aprender-conta.revelada {
+            color: var(--neon-gold);
+            text-shadow: 0 0 24px rgba(251, 191, 36, 0.4);
+            animation: aprenderContaRevelada 0.35s ease;
+        }
+        @keyframes aprenderContaRevelada {
+            0%   { transform: scale(0.94); opacity: 0.6; }
+            60%  { transform: scale(1.04); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .aprender-btn-ver-resposta {
+            width: 100%;
+            margin: 6px 0 0;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 0 #075985, 0 6px 18px rgba(14, 165, 233, 0.35);
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+        .aprender-btn-ver-resposta:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+            transform: translateY(-1px);
+        }
+        .aprender-btn-ver-resposta:active:not(:disabled) {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #075985, 0 3px 10px rgba(14, 165, 233, 0.35);
+        }
+        .aprender-btn-ver-resposta:focus-visible {
+            outline: 3px solid var(--neon-cyan);
+            outline-offset: 3px;
+        }
+
+        .aprender-autoavaliacao {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 14px 0 0;
+        }
+        .aprender-btn-auto {
+            width: 100%;
+            margin: 0;
+            padding: 16px 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14.5px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+            line-height: 1.2;
+            transition: all 0.15s ease;
+        }
+        .aprender-btn-auto .emoji {
+            font-size: 32px;
+            line-height: 1;
+        }
+        .aprender-btn-auto .txt {
+            font-size: 14.5px;
+        }
+        .aprender-btn-auto .sub {
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0.82;
+            letter-spacing: 0.2px;
+        }
+        .aprender-btn-auto.sabia {
+            background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%);
+            color: #fff;
+            box-shadow: 0 3px 0 #07583d, 0 5px 14px rgba(11, 143, 100, 0.28);
+        }
+        .aprender-btn-auto.sabia:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0fa572 0%, #0a885e 100%);
+            transform: translateY(-1px);
+        }
+        .aprender-btn-auto.errei {
+            background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+            color: #fff;
+            box-shadow: 0 3px 0 #7c2d12, 0 5px 14px rgba(180, 83, 9, 0.28);
+        }
+        .aprender-btn-auto.errei:hover:not(:disabled) {
+            background: linear-gradient(135deg, #c76611 0%, #a54b12 100%);
+            transform: translateY(-1px);
+        }
+        .aprender-btn-auto:active:not(:disabled) { transform: translateY(1px); }
+        .aprender-btn-auto:focus-visible {
+            outline: 3px solid var(--neon-gold);
+            outline-offset: 3px;
+        }
+        .aprender-btn-auto:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .aprender-pergunta-espelho {
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            margin: -12px 0 14px;
+            line-height: 1.5;
+            padding: 10px 14px;
+            background: rgba(34, 211, 238, 0.06);
+            border-left: 3px solid var(--neon-cyan);
+            border-radius: 8px;
+        }
+        .aprender-pergunta-espelho strong { color: var(--neon-cyan); font-weight: 800; }
+
+        @media (max-width: 480px) {
+            .aprender-btn-auto { padding: 14px 10px; }
+            .aprender-btn-auto .emoji { font-size: 26px; }
+            .aprender-btn-auto .txt { font-size: 13px; }
+            .aprender-btn-auto .sub { font-size: 10px; }
+            .aprender-btn-ver-resposta { padding: 16px 20px; font-size: 15px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .aprender-conta.revelada { animation: none !important; }
+            .aprender-btn-ver-resposta, .aprender-btn-auto { transition: none !important; }
+            .aprender-btn-ver-resposta:hover:not(:disabled),
+            .aprender-btn-auto.sabia:hover:not(:disabled),
+            .aprender-btn-auto.errei:hover:not(:disabled) { transform: none; }
+        }
+        /* ▲▲▲ FIM [02.69] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -7011,8 +7154,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <div class="esports-logo" id="titulo-secreto">
                 <span class="emoji-logo">🏆</span>
                 <span>Copa da Tabuada</span>
-                <!-- ▼ v10.5.1 · Badge com a versão atual — clique abre o Changelog
-                     (ou recarrega, se estiver desatualizado) -->
                 <button
                     type="button"
                     class="logo-versao"
@@ -7020,8 +7161,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.5.3</button>
-                <!-- ▼ v10.5.1 · Botão "Verificar versão" — consulta o Firebase sob demanda -->
+                >v10.5.6</button>
                 <button
                     type="button"
                     class="logo-verificar"
@@ -7066,23 +7206,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <p class="hero-esports-sub" id="hero-sub-dinamica">
                     Acompanhe sua jornada na Copa da Tabuada.
                 </p>
-                <!-- v10.5.4 · O bloco "Seu Ritmo na Copa" saiu do hero.
-                     Agora vive como card autônomo em #ritmo-copa-container,
-                     logo abaixo do card "Minhas Posições". -->
             </div>
         </section>
 
         <div id="acao-principal-container"></div>
-
-        <!-- ▼ v10.5.4 · Card "Seu Ritmo na Copa" — panorama geral de
-             treinos × oficiais de TODAS as modalidades. Fica logo abaixo
-             do card "Minhas Posições", como card autônomo. -->
         <div id="ritmo-copa-container"></div>
-
-        <!-- ⚙️ L2 — Meta pessoal reposicionada: agora logo abaixo do CTA principal -->
         <div id="meta-pessoal-container"></div>
-
-        <!-- ▼ NOVO: Mapa de Tabuadas na Home -->
         <div id="mapa-home-container"></div>
 
         <div class="home-card">
@@ -7098,9 +7227,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <div class="home-empty-msg">Carregando informações da etapa...</div>
             </div>
         </div>
-
     </div>
     <!-- ▲▲▲ FIM [03.01] -->
+
+
     <!-- ▼▼▼ [03.01.bis] NAVEGAÇÃO INFERIOR GLOBAL ─────────── INÍCIO ─── -->
     <nav id="bottom-nav-global" class="bottom-nav hidden" aria-label="Navegação principal">
         <button class="bottom-nav-btn" data-tela="hall" onclick="abrirHallDaFama()">
@@ -7175,7 +7305,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.5.3</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.5.6</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -7728,7 +7858,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <div class="modal-card changelog-modal-card" onclick="event.stopPropagation()">
         <div class="modal-header"><h3>📋 Histórico de versões</h3><button class="modal-close" onclick="fecharChangelog()" aria-label="Fechar">✕</button></div>
 
-        <!-- ▼ v10.4.9 · Crédito de autoria (masthead no topo) -->
         <div class="changelog-credito-topo">
             <div class="changelog-credito-titulo">
                 <span class="icone" aria-hidden="true">🏫</span>
@@ -7737,11 +7866,15 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <span class="changelog-credito-autor">Idealizado e desenvolvido por <strong>Prof. Henrique Angelo da Silva</strong></span>
             <span class="changelog-credito-escola">Professor de Matemática · Colégio Estadual Ismael Branco</span>
         </div>
-        <!-- ▲ -->
 
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.5.3 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.5.6 · atual</span>
+                <h4 class="changelog-titulo">🧩 Modos de treino pedagógicos + Espelho + Decomposição</h4>
+                <p class="changelog-descricao">A área de treino ganhou dois novos modos focados em <strong>aprendizagem real</strong>, além de uma arquitetura pronta para receber mais. O botão <strong>🎯 Treinar</strong> em "Minhas Posições" agora abre um <strong>mini-menu</strong> com o Treino Inteligente no topo e todos os modos disponíveis abaixo. <strong>🔄 Treino Reverso</strong> — a conta vem com um número escondido (<em>3 × ? = 21</em>) e você precisa descobrir qual é, em vez de só dar o resultado. <strong>🧩 Decomposição</strong> — a conta mostra como o resultado pode ser montado em duas partes (<em>7×8 = 7×5 + 7×?</em>), ensinando você a <strong>derivar</strong> o resultado quando esquecer. Ambos os modos têm <strong>pistas em 3 níveis</strong> (estratégia → decomposição → apoio visual), <strong>sem cronômetro</strong> e com <strong>tentativas repetidas</strong>. E a novidade mais silenciosa é a mais importante: o mapa agora <strong>distingue quem acerta sozinho de quem acerta com ajuda</strong>. Se você precisou de muita pista, a operação não fica verde — fica amarela ou azul, mais honesto com o que você realmente sabe. O <strong>Treino Espelho</strong> chegou junto: você vê a conta, pensa, revela a resposta e diz honestamente se <strong>sabia de cor</strong> 🟢 ou se <strong>errou/demorou</strong> 🔴.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.5.3</span>
                 <h4 class="changelog-titulo">📖 Explicações dos rankings + Home mais limpa</h4>
                 <p class="changelog-descricao">Cada ranking agora tem uma <strong>explicação própria</strong>, exibida no final da tela — depois da tabela e antes do botão Voltar. Você passa a entender o critério antes de se frustrar ou se vangloriar por uma posição. São <strong>4 textos distintos</strong>: Pontos, Velocidade, Média e Desafio entre Turmas. As antigas faixas de "critérios de desempate" e "ranking só de 20/20" (que ficavam soltas no topo) foram absorvidas pelas explicações — o topo da tela ficou mais limpo. Na aba <strong>Global</strong>, o Desafio entre Turmas virou a <strong>primeira sub-aba</strong> (era a última), refletindo o fato de ser a métrica padrão ao entrar. No ranking de Pontos, a coluna "Pontos" foi movida para entre "Jogos" e "Status", deixando as colunas mais próximas do nome do aluno. A <strong>Home</strong> ganhou um hero mais enxuto: saíram os três cards de Certificados, Treinos e Oficiais — o Ritmo na Copa continua lá, como panorama geral. E cada linha de modalidade do card <strong>Minhas Posições</strong> agora mostra uma <strong>barra proporcional treinos × oficiais</strong> daquela modalidade específica, com contagem em cada lado. Assim dá pra ver de relance onde você está treinando mais e onde está jogando mais.</p>
             </div>
@@ -7758,7 +7891,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <div class="changelog-item">
                 <span class="changelog-versao">v10.5.0</span>
                 <h4 class="changelog-titulo">📊 Média Geral + Item [13]: parciais não valem medalha</h4>
-                <p class="changelog-descricao">Pacote grande com duas frentes. <strong>🎯 Item [13] — Tentativas parciais</strong>: o botão "✕ Encerrar tentativa" só aparece a partir da 2ª partida oficial da modalidade (a 1ª precisa ser completada). Partidas canceladas continuam no histórico, no mapa e na média, mas <strong>NÃO contam para medalhas, Hall da Fama nem Álbum</strong>. Nova mensagem explica tudo antes do aluno decidir cancelar. Fechar o navegador perde a partida (nada é salvo). <strong>📊 Média Geral — novidade completa</strong>: nova seção 🏅 Consistência no Álbum, com 5 medalhas (Primeira Média 8k, Consistente 12k, Regular 15k, Elite 17k em qualquer, Lenda da Média 17k nas 3 ao mesmo tempo). Ranking ganhou 2 abas novas: 🏅 Média Turma e 🏅 Média Global. Hall da Fama ganhou o card 📊 Média Consistente. Média conta só partidas oficiais — cancelar derruba a média. Mínimo de 5 partidas em cada modalidade para entrar no ranking. <strong>🏆 Coach atualizado</strong>: agora conhece Média Geral, votação, patentes, bloqueio de vínculo, tempo esgotado e canal de mensagens. Nova opção 9 no menu: "Como subir minha média geral". Sugere dois alvos simultâneos: próximo certificado + próxima medalha de consistência.</p>
+                <p class="changelog-descricao">Pacote grande com duas frentes. <strong>🎯 Item [13] — Tentativas parciais</strong>: o botão "✕ Encerrar tentativa" só aparece a partir da 2ª partida oficial da modalidade (a 1ª precisa ser completada). Partidas canceladas continuam no histórico, no mapa e na média, mas <strong>NÃO contam para medalhas, Hall da Fama nem Álbum</strong>. Nova mensagem explica tudo antes do aluno decidir cancelar. Fechar o navegador perde a partida (nada é salvo). <strong>📊 Média Geral — novidade completa</strong>: nova seção 🏅 Consistência no Álbum, com 5 medalhas (Primeira Média 8k, Consistente 12k, Regular 15k, Elite 17k em qualquer, Lenda da Média 17k nas 3 ao mesmo tempo). Ranking ganhou 2 abas novas: 🏅 Média Turma e 🏅 Média Global. Hall da Fama ganhou o card 📊 Média Consistente. Média conta só partidas oficiais — cancelar derruba a média. Mínimo de 5 partidas em cada modalidade para entrar no ranking. <strong>🏆 Coach atualizado</strong>: agora conhece Média Geral, votação, patentes, bloqueio de vínculo, tempo esgotado e canal de mensagens. Nova opção 9 no menu: "Como subir minha média geral".</p>
             </div>
             <div class="changelog-item">
                 <span class="changelog-versao">v10.4.9</span>
@@ -8238,7 +8371,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.5.3";
+const APP_VERSION = "10.5.6";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -19853,11 +19986,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     // ▲▲▲ FIM [19.05]
 
     // ▼▼▼ [19.06] Motor Aprender + Modos + Mini-menu ──── INÍCIO ───
-    // v10.5.6 · Motor pedagógico com arquitetura por modo. Cada modo
-    // declara suas próprias pistas e revelação. Já implementados:
-    //   · 🔄 Reverso       (fator faltante)
-    //   · 🧩 Decomposição  (distributiva com âncora)
-    // Os demais aparecem como "Em breve".
+    // v10.5.6 · Arquitetura por modo + Treino Espelho.
+    // Modos implementados: 🔄 Reverso · 🧩 Decomposição · 🪞 Espelho.
+    //
+    // O motor suporta dois tipos de modo:
+    //   · tipo: "input"  → aluno digita a resposta (Reverso, Decomposição)
+    //   · tipo: "auto"   → aluno revela e se autoavalia com 🟢/🔴 (Espelho)
 
     const STORAGE_MENU_TREINO_USOS = "copa_menu_treino_usos";
 
@@ -19877,7 +20011,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         { id: "espelho", icone: "🪞", nome: "Espelho",
           desc: "Veja, pense e diga se sabia de cor",
           exemplo: "🟢 sabia · 🔴 errei",
-          emBreve: true },
+          emBreve: false },
         { id: "chunking", icone: "🧱", nome: "Chunking",
           desc: "Treine uma tabuada só — bloco por bloco",
           exemplo: "só tabuada do 7",
@@ -20048,14 +20182,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     const APRENDER_SESSAO_PADRAO = 5;
 
-    // ─── Helper comum: gera pista 2 (decomposição genérica) reaproveitável ───
-    function _aprenderDicaDecomposicao(fA, fB) {
-        return gerarDicaDecomposicao(fA, fB);
-    }
-
-    // ─── Escolha da âncora em Decomposição ───
-    // Regra: se B <= 5, usa floor(B/2). Senão, usa 5 (a tabuada do 5 é
-    // a mais memorizada e serve de ponto de partida confortável).
     function _escolherAncoraDecomposicao(fB) {
         if (fB <= 2) return 1;
         if (fB <= 5) return Math.max(1, Math.floor(fB / 2));
@@ -20070,6 +20196,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             id: "reverso",
             nome: "Treino Reverso",
             icone: "🔄",
+            tipo: "input",
             tamanhoSessaoPadrao: 5,
             classeConta: "",
 
@@ -20129,6 +20256,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             id: "decomposicao",
             nome: "Decomposição",
             icone: "🧩",
+            tipo: "input",
             tamanhoSessaoPadrao: 5,
             classeConta: "duas-linhas",
 
@@ -20162,6 +20290,28 @@ window.addEventListener("DOMContentLoaded", async () => {
                 const { fA, fB, fC, resto, produto } = p;
                 return `<strong>${fA} × ${fB} = ${fA} × ${fC} + ${fA} × ${resto} = ${fA * fC} + ${fA * resto} = ${produto}</strong>. A resposta é <strong>${resto}</strong>.`;
             }
+        },
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🪞 ESPELHO — flashcard com autoavaliação (sem input, sem pista)
+        // ═══════════════════════════════════════════════════════════════
+        espelho: {
+            id: "espelho",
+            nome: "Espelho",
+            icone: "🪞",
+            tipo: "auto",
+            tamanhoSessaoPadrao: 8,
+            classeConta: "",
+
+            gerarPergunta(base) {
+                const { fA, fB } = base;
+                const produto = fA * fB;
+                return {
+                    fA, fB, produto,
+                    respostaCorreta: produto,
+                    enunciadoHtml: `${fA} × ${fB} = <span class="incognita">?</span>`
+                };
+            }
         }
     };
 
@@ -20178,7 +20328,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { mostrarTela("tela-single"); return; }
 
-        // Monta operações de foco — mesma lógica do Treino Inteligente
         let operacoesFoco = [];
         try {
             const lista = await montarListaTreinoInteligente(nome, turma, mod);
@@ -20209,6 +20358,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             tentativas: 0,
             acertou: false,
             respondido: false,
+            revelada: false,
             resultados: [],
             aRevisar: [],
             sessaoOps
@@ -20229,6 +20379,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         e.tentativas = 0;
         e.acertou = false;
         e.respondido = false;
+        e.revelada = false;
         renderizarPerguntaAprender();
     }
 
@@ -20236,6 +20387,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         const e = aprenderEstado;
         const ctn = document.getElementById("aprender-conteudo");
         if (!e || !ctn) return;
+
+        if (e.cfg.tipo === "auto") { renderizarPerguntaEspelho(); return; }
 
         const p = e.perguntaAtual;
         const total = e.tamanhoSessao;
@@ -20265,33 +20418,13 @@ window.addEventListener("DOMContentLoaded", async () => {
                 </div>
                 <span class="aprender-progresso-num">Conta ${atual} de ${total}</span>
             </div>
-
             <div class="aprender-barra" aria-hidden="true">${blocos}</div>
-
             <div class="aprender-conta${classeConta}" id="aprender-conta">${p.enunciadoHtml}</div>
-
             <div class="aprender-input-linha">
-                <input
-                    type="text"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    autocomplete="off"
-                    spellcheck="false"
-                    id="aprender-input"
-                    class="aprender-input"
-                    placeholder="?"
-                    aria-label="Sua resposta"
-                    maxlength="3"
-                >
-                <button class="aprender-btn-confirmar" id="aprender-btn-confirmar" onclick="confirmarRespostaAprender()">
-                    Confirmar
-                </button>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false" id="aprender-input" class="aprender-input" placeholder="?" aria-label="Sua resposta" maxlength="3">
+                <button class="aprender-btn-confirmar" id="aprender-btn-confirmar" onclick="confirmarRespostaAprender()">Confirmar</button>
             </div>
-
-            <button class="aprender-btn-pista" id="aprender-btn-pista" onclick="pedirPistaAprender()">
-                💡 Preciso de uma pista
-            </button>
-
+            <button class="aprender-btn-pista" id="aprender-btn-pista" onclick="pedirPistaAprender()">💡 Preciso de uma pista</button>
             <div id="aprender-pista-area" class="aprender-pista-area"></div>
             <div id="aprender-feedback-area"></div>
         `;
@@ -20305,9 +20438,141 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    // ─── Fluxo específico do Espelho ───
+    function renderizarPerguntaEspelho() {
+        const e = aprenderEstado;
+        const ctn = document.getElementById("aprender-conteudo");
+        if (!e || !ctn) return;
+
+        const p = e.perguntaAtual;
+        const total = e.tamanhoSessao;
+        const atual = e.indiceAtual + 1;
+        const modNome = MODALIDADES[e.mod]?.nome || e.mod;
+
+        const blocos = e.sessaoOps.map((_, i) => {
+            if (i < e.resultados.length) {
+                const r = e.resultados[i];
+                return r.acertouNaPrimeira ? `<div class="bloco ok"></div>` : `<div class="bloco erro"></div>`;
+            }
+            if (i === e.indiceAtual) return `<div class="bloco atual"></div>`;
+            return `<div class="bloco"></div>`;
+        }).join("");
+
+        const contaTxt = e.revelada
+            ? `${p.fA} × ${p.fB} = <span style="color:#6ee7b7;">${p.produto}</span>`
+            : p.enunciadoHtml;
+
+        const classeConta = (e.revelada ? " revelada" : "") + (e.cfg.classeConta ? " " + e.cfg.classeConta : "");
+
+        let areaInteracao;
+        if (!e.revelada) {
+            areaInteracao = `
+                <button class="aprender-btn-ver-resposta" onclick="revelarRespostaAprender()">
+                    🤔 Pensar · depois ver a resposta
+                </button>
+            `;
+        } else {
+            areaInteracao = `
+                <div class="aprender-pergunta-espelho">
+                    Seja honesto: você <strong>sabia de cor</strong> antes de revelar?
+                </div>
+                <div class="aprender-autoavaliacao">
+                    <button class="aprender-btn-auto sabia" onclick="autoAvaliarAprender(true)" aria-label="Sabia de cor">
+                        <span class="emoji">🟢</span>
+                        <span class="txt">Sabia de cor</span>
+                        <span class="sub">respondi na hora</span>
+                    </button>
+                    <button class="aprender-btn-auto errei" onclick="autoAvaliarAprender(false)" aria-label="Errei ou demorei">
+                        <span class="emoji">🔴</span>
+                        <span class="txt">Errei / demorei</span>
+                        <span class="sub">preciso treinar mais</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        ctn.innerHTML = `
+            <div class="aprender-cabecalho">
+                <div class="aprender-cabecalho-esq">
+                    <button class="aprender-btn-sair" onclick="sairAprender()" aria-label="Sair do treino">← Sair</button>
+                    <div class="aprender-titulo-modo">
+                        ${e.cfg.icone} ${escaparHtml(e.cfg.nome)}
+                        <small>${escaparHtml(modNome)}</small>
+                    </div>
+                </div>
+                <span class="aprender-progresso-num">Carta ${atual} de ${total}</span>
+            </div>
+            <div class="aprender-barra" aria-hidden="true">${blocos}</div>
+            <div class="aprender-conta${classeConta}" id="aprender-conta">${contaTxt}</div>
+            ${areaInteracao}
+            <div id="aprender-feedback-area"></div>
+        `;
+
+        setTimeout(() => {
+            const btn = ctn.querySelector(".aprender-btn-ver-resposta") || ctn.querySelector(".aprender-btn-auto");
+            if (btn) btn.focus();
+        }, 80);
+    }
+
+    function revelarRespostaAprender() {
+        const e = aprenderEstado;
+        if (!e || e.revelada || e.respondido) return;
+        e.revelada = true;
+        renderizarPerguntaEspelho();
+    }
+
+    function autoAvaliarAprender(sabiaDeCor) {
+        const e = aprenderEstado;
+        if (!e || e.respondido || !e.revelada) return;
+        e.respondido = true;
+        e.acertou = !!sabiaDeCor;
+        e.tentativas = 1;
+        e.pistaNivel = 0;
+
+        e.resultados.push({
+            fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB,
+            acertouNaPrimeira: !!sabiaDeCor,
+            pistasUsadas: 0,
+            tentativas: 1,
+            acertou: !!sabiaDeCor
+        });
+        if (!sabiaDeCor) {
+            e.aRevisar.push({ fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB });
+        }
+
+        const isUltima = (e.indiceAtual + 1) >= e.tamanhoSessao;
+        const area = document.getElementById("aprender-feedback-area");
+        if (area) {
+            const dica = gerarDicaDecomposicao(e.perguntaAtual.fA, e.perguntaAtual.fB);
+            if (sabiaDeCor) {
+                area.innerHTML = `
+                    <div class="aprender-feedback ok">
+                        <span class="aprender-feedback-titulo">✅ Ótimo!</span>
+                        Continue assim — a memória se reforça a cada acerto.
+                    </div>
+                    <div class="aprender-acoes uma-coluna">
+                        <button class="aprender-btn-principal" onclick="avancarPerguntaAprender()">${isUltima ? "Ver resumo →" : "Próxima carta →"}</button>
+                    </div>
+                `;
+            } else {
+                area.innerHTML = `
+                    <div class="aprender-feedback erro">
+                        <span class="aprender-feedback-titulo">💪 Sem problema</span>
+                        Esta operação vai voltar no final para reforçar.
+                        <div class="aprender-feedback-dica">💡 Dica: ${dica}</div>
+                    </div>
+                    <div class="aprender-acoes uma-coluna">
+                        <button class="aprender-btn-principal" onclick="avancarPerguntaAprender()">${isUltima ? "Ver resumo →" : "Próxima carta →"}</button>
+                    </div>
+                `;
+            }
+        }
+    }
+
     function confirmarRespostaAprender() {
         const e = aprenderEstado;
         if (!e || e.respondido) return;
+        if (e.cfg.tipo === "auto") return;
         const input = document.getElementById("aprender-input");
         if (!input) return;
         const valor = parseInt(String(input.value || "").trim(), 10);
@@ -20353,6 +20618,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     function pedirPistaAprender() {
         const e = aprenderEstado;
         if (!e || e.respondido) return;
+        if (e.cfg.tipo === "auto") return;
         if (e.pistaNivel === 0) e.pistaNivel = 1;
         else if (e.pistaNivel === 1) e.pistaNivel = 2;
         else if (e.pistaNivel === 2) e.pistaNivel = 3;
@@ -20398,6 +20664,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const ctn = document.getElementById("aprender-pista-area");
         const btn = document.getElementById("aprender-btn-pista");
         if (!e || !ctn) return;
+        if (e.cfg.tipo === "auto") return;
 
         const p = e.perguntaAtual;
         const nivel = e.pistaNivel;
@@ -20599,10 +20866,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         const ops = e.aRevisar.map(r => ({ fA: r.fA, fB: r.fB }));
         aprenderEstado = {
             modoId: e.modoId, cfg: e.cfg, mod: e.mod, nome: e.nome, turma: e.turma,
-            tamanhoSessao: Math.min(ops.length, APRENDER_SESSAO_PADRAO),
+            tamanhoSessao: Math.min(ops.length, e.cfg.tamanhoSessaoPadrao || APRENDER_SESSAO_PADRAO),
             indiceAtual: 0, perguntaAtual: null, pistaNivel: 0,
-            tentativas: 0, acertou: false, respondido: false,
-            resultados: [], aRevisar: [], sessaoOps: ops.slice(0, Math.min(ops.length, APRENDER_SESSAO_PADRAO))
+            tentativas: 0, acertou: false, respondido: false, revelada: false,
+            resultados: [], aRevisar: [],
+            sessaoOps: ops.slice(0, Math.min(ops.length, e.cfg.tamanhoSessaoPadrao || APRENDER_SESSAO_PADRAO))
         };
         proximaPerguntaAprender();
     }
