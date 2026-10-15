@@ -6815,278 +6815,146 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.66] */
 
-        /* ▼▼▼ [02.67] Mini-menu de Treino ───────────────────── INÍCIO ─── */
-        /* v10.5.4 · Ao tocar "🎯 Treinar" em Minhas Posições, abre este
-           menu em vez de ir direto ao Treino Inteligente. Preserva a
-           modalidade clicada. Treino Inteligente fica no topo como
-           "Recomendado para mim"; os 5 modos novos aparecem abaixo. */
+        /* ▼▼▼ [02.67] Motor Aprender + Mini-menu de Treino ───── INÍCIO ─── */
+        /* v10.5.5 · Motor pedagógico sem cronômetro, com input numérico,
+           pistas em 3 níveis e tela de resumo. Compartilhado pelos modos
+           que usam "aprender" (Reverso é o primeiro).
+           Ver bloco JS [19.06] para a lógica e [09.02] para o schema
+           estendido (tentativas/pistaUsada). */
 
-        .menu-treino-card {
-            max-width: 480px;
-            padding: 0;
-            overflow: hidden;
+        /* ─── TELA APRENDER ─── */
+        .aprender-tela {
+            max-width: 640px;
+            margin: 16px auto;
+            padding: 24px 22px 22px;
             background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%);
             border: 1px solid var(--border-neon);
-            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(34, 211, 238, 0.05);
+            border-radius: 18px;
+            box-shadow: var(--shadow-card), inset 0 0 60px rgba(34, 211, 238, 0.05);
+            text-align: left;
         }
-        .menu-treino-card .modal-header {
-            padding: 16px 18px;
-            border-bottom: 1px solid var(--border-neon);
-            background: linear-gradient(135deg, #102a43 0%, #174a73 55%, #0d7a61 100%);
-        }
-        .menu-treino-card .modal-header h3 {
-            color: #fff;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-        }
-        .menu-treino-card .modal-close {
-            color: rgba(255, 255, 255, 0.75);
-        }
-        .menu-treino-card .modal-close:hover {
-            background: rgba(220, 53, 69, 0.28);
-            color: #fff;
-        }
-        .menu-treino-corpo {
-            padding: 16px 18px 18px;
-            max-height: 75vh;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(34, 211, 238, 0.35) transparent;
-        }
+        .aprender-cabecalho { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+        .aprender-cabecalho-esq { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .aprender-btn-sair { width: auto; margin: 0; padding: 7px 12px; background: transparent; color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer; box-shadow: none; }
+        .aprender-btn-sair:hover:not(:disabled) { background: rgba(148, 163, 184, 0.10); border-color: var(--text-secondary); color: var(--text-primary); }
+        .aprender-titulo-modo { font-size: 13px; font-weight: 800; letter-spacing: 0.4px; color: var(--neon-cyan); text-transform: uppercase; line-height: 1.2; }
+        .aprender-titulo-modo small { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.2px; text-transform: none; margin-top: 2px; }
+        .aprender-progresso-num { font-size: 12.5px; font-weight: 800; color: var(--text-secondary); background: rgba(10, 22, 40, 0.55); border: 1px solid rgba(56, 189, 248, 0.25); padding: 5px 12px; border-radius: 20px; white-space: nowrap; }
+        .aprender-barra { display: flex; gap: 4px; margin-bottom: 22px; }
+        .aprender-barra .bloco { flex: 1; height: 6px; background: rgba(148, 163, 184, 0.20); border-radius: 4px; transition: background 0.3s ease; }
+        .aprender-barra .bloco.atual    { background: var(--neon-cyan); }
+        .aprender-barra .bloco.ok       { background: #10b981; }
+        .aprender-barra .bloco.ok-pista { background: #f59e0b; }
+        .aprender-barra .bloco.erro     { background: #ef4444; }
+        .aprender-conta { font-size: clamp(38px, 9vw, 60px); font-weight: 900; color: #f8fafc; text-align: center; letter-spacing: 2px; line-height: 1.1; margin: 12px 0 22px; font-variant-numeric: tabular-nums; word-break: break-word; }
+        .aprender-conta .incognita { display: inline-block; min-width: 1.4em; color: var(--neon-gold); text-shadow: 0 0 20px rgba(251, 191, 36, 0.5); animation: aprenderIncognita 2s ease-in-out infinite; }
+        @keyframes aprenderIncognita { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .aprender-input-linha { display: flex; gap: 10px; margin-bottom: 14px; align-items: stretch; }
+        .aprender-input { flex: 1; min-width: 0; padding: 16px 18px; background: rgba(10, 22, 40, 0.7); color: #f8fafc; border: 2px solid rgba(34, 211, 238, 0.35); border-radius: 12px; font-size: clamp(22px, 5vw, 28px); font-weight: 800; text-align: center; font-family: inherit; font-variant-numeric: tabular-nums; letter-spacing: 1px; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; box-sizing: border-box; margin: 0; }
+        .aprender-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2); }
+        .aprender-input.certo { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25); color: #6ee7b7; }
+        .aprender-input.errado { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22); color: #fca5a5; animation: aprenderShake 0.35s ease; }
+        @keyframes aprenderShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        .aprender-btn-confirmar { width: auto; min-width: 110px; margin: 0; padding: 0 20px; background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; letter-spacing: 0.4px; cursor: pointer; box-shadow: 0 3px 0 #07583d, 0 5px 14px rgba(11, 143, 100, 0.28); font-family: inherit; transition: all 0.15s ease; }
+        .aprender-btn-confirmar:hover:not(:disabled) { background: linear-gradient(135deg, #0fa572 0%, #0a885e 100%); transform: translateY(-1px); }
+        .aprender-btn-confirmar:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 #07583d, 0 2px 8px rgba(11, 143, 100, 0.28); }
+        .aprender-btn-confirmar:disabled { opacity: 0.5; cursor: not-allowed; }
+        .aprender-btn-pista { width: 100%; margin: 0 0 4px; padding: 12px 16px; background: transparent; color: var(--neon-gold); border: 1px dashed rgba(251, 191, 36, 0.5); border-radius: 10px; font-size: 13.5px; font-weight: 800; letter-spacing: 0.3px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: none; font-family: inherit; transition: all 0.15s ease; }
+        .aprender-btn-pista:hover:not(:disabled) { background: rgba(251, 191, 36, 0.10); border-color: var(--neon-gold); border-style: solid; }
+        .aprender-btn-pista:disabled { opacity: 0.5; cursor: not-allowed; }
+        .aprender-pista-area { margin: 4px 0 0; display: flex; flex-direction: column; gap: 8px; }
+        .aprender-pista-item { padding: 12px 14px; border-radius: 10px; font-size: 13px; line-height: 1.55; animation: aprenderPistaIn 0.35s cubic-bezier(.34, 1.56, .64, 1); }
+        @keyframes aprenderPistaIn { 0% { opacity: 0; transform: translateY(-6px); } 100% { opacity: 1; transform: translateY(0); } }
+        .aprender-pista-item.nivel-1 { background: linear-gradient(135deg, rgba(251, 191, 36, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%); border-left: 3px solid var(--neon-gold); color: #fef3c7; }
+        .aprender-pista-item.nivel-2 { background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(217, 119, 6, 0.10) 100%); border-left: 3px solid #f59e0b; color: #fef3c7; }
+        .aprender-pista-item.nivel-3 { background: linear-gradient(135deg, rgba(251, 191, 36, 0.24) 0%, rgba(217, 119, 6, 0.14) 100%); border-left: 3px solid #d97706; color: #fff7ed; }
+        .aprender-pista-item.revelacao { background: linear-gradient(135deg, rgba(34, 197, 94, 0.14) 0%, rgba(22, 163, 74, 0.06) 100%); border-left: 3px solid #22c55e; color: #bbf7d0; }
+        .aprender-pista-item strong { color: #fff; font-weight: 900; background: rgba(0, 0, 0, 0.18); padding: 1px 6px; border-radius: 4px; letter-spacing: 0.2px; }
+        .aprender-pista-titulo { display: block; font-size: 10.5px; font-weight: 900; letter-spacing: 0.8px; text-transform: uppercase; opacity: 0.75; margin-bottom: 4px; }
+        .aprender-feedback { padding: 14px 16px; border-radius: 12px; font-size: 13.5px; line-height: 1.55; animation: aprenderPistaIn 0.35s ease; text-align: left; margin: 14px 0 4px; }
+        .aprender-feedback.ok { background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(22, 163, 74, 0.08) 100%); border-left: 4px solid #22c55e; color: #bbf7d0; }
+        .aprender-feedback.ok strong { color: #86efac; }
+        .aprender-feedback.ok-pista { background: linear-gradient(135deg, rgba(251, 191, 36, 0.16) 0%, rgba(217, 119, 6, 0.08) 100%); border-left: 4px solid var(--neon-gold); color: #fef3c7; }
+        .aprender-feedback.ok-pista strong { color: #fde68a; }
+        .aprender-feedback.erro { background: linear-gradient(135deg, rgba(239, 68, 68, 0.14) 0%, rgba(153, 27, 27, 0.06) 100%); border-left: 4px solid #ef4444; color: #fecaca; }
+        .aprender-feedback.erro strong { color: #fca5a5; }
+        .aprender-feedback-titulo { display: block; font-size: 12px; font-weight: 900; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 4px; }
+        .aprender-feedback-dica { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.18); font-size: 12.5px; line-height: 1.55; color: #f1f5f9; }
+        .aprender-feedback-dica strong { background: rgba(0, 0, 0, 0.22); padding: 1px 6px; border-radius: 4px; color: #fff; }
+        .aprender-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+        .aprender-acoes.uma-coluna { grid-template-columns: 1fr; }
+        .aprender-acoes button { width: 100%; margin: 0; padding: 13px 16px; border-radius: 10px; font-size: 14px; font-weight: 800; letter-spacing: 0.3px; font-family: inherit; cursor: pointer; border: none; transition: all 0.15s ease; }
+        .aprender-btn-principal { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); color: #fff; box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28); }
+        .aprender-btn-principal:hover:not(:disabled) { background: linear-gradient(135deg, #0284c7 0%, #075985 100%); transform: translateY(-1px); }
+        .aprender-btn-secundario { background: transparent; color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.3); box-shadow: none; }
+        .aprender-btn-secundario:hover:not(:disabled) { background: rgba(148, 163, 184, 0.10); border-color: var(--text-secondary); color: var(--text-primary); }
+        .aprender-resumo { padding: 4px 0 0; }
+        .aprender-resumo-hero { text-align: center; padding: 20px 16px 24px; }
+        .aprender-resumo-emoji { font-size: 62px; line-height: 1; display: inline-block; margin-bottom: 10px; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35)); animation: aprenderHeroFloat 3s ease-in-out infinite; }
+        @keyframes aprenderHeroFloat { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
+        .aprender-resumo-titulo { font-size: clamp(20px, 5vw, 26px); font-weight: 900; color: #f8fafc; margin: 0 0 6px; line-height: 1.15; letter-spacing: -0.3px; }
+        .aprender-resumo-sub { font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+        .aprender-resumo-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0 18px; }
+        .aprender-resumo-stat { padding: 14px 12px; background: rgba(10, 22, 40, 0.55); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 12px; text-align: center; }
+        .aprender-resumo-stat .valor { display: block; font-size: 26px; font-weight: 900; line-height: 1; margin-bottom: 6px; letter-spacing: -0.5px; }
+        .aprender-resumo-stat .rotulo { display: block; font-size: 10.5px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.4px; text-transform: uppercase; line-height: 1.3; }
+        .aprender-resumo-stat.ok   .valor { color: #6ee7b7; }
+        .aprender-resumo-stat.ajuda .valor { color: #fbbf24; }
+        .aprender-resumo-stat.rever .valor { color: #fca5a5; }
+        .aprender-resumo-lista { background: rgba(10, 22, 40, 0.45); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+        .aprender-resumo-lista-titulo { font-size: 12px; font-weight: 900; letter-spacing: 0.6px; text-transform: uppercase; color: var(--neon-gold); margin: 0 0 10px; }
+        .aprender-resumo-lista ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .aprender-resumo-lista li { font-size: 13px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; line-height: 1.4; }
+        .aprender-resumo-lista li .emoji { font-size: 16px; flex-shrink: 0; }
+        .aprender-resumo-lista li .op { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 800; font-size: 12.5px; background: rgba(0, 0, 0, 0.28); padding: 2px 8px; border-radius: 6px; letter-spacing: 0.3px; }
+        .aprender-resumo-vazio { text-align: center; padding: 16px 12px; font-size: 13px; color: var(--text-muted); line-height: 1.5; background: rgba(10, 22, 40, 0.4); border: 1px dashed rgba(148, 163, 184, 0.28); border-radius: 10px; margin-bottom: 16px; }
+
+        /* ─── MINI-MENU DE TREINO ─── */
+        .menu-treino-card { max-width: 480px; padding: 0; overflow: hidden; background: linear-gradient(160deg, #0f2340 0%, #0a1628 100%); border: 1px solid var(--border-neon); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(34, 211, 238, 0.05); }
+        .menu-treino-card .modal-header { padding: 16px 18px; border-bottom: 1px solid var(--border-neon); background: linear-gradient(135deg, #102a43 0%, #174a73 55%, #0d7a61 100%); }
+        .menu-treino-card .modal-header h3 { color: #fff; font-size: 15px; letter-spacing: 0.3px; }
+        .menu-treino-card .modal-close { color: rgba(255, 255, 255, 0.75); }
+        .menu-treino-card .modal-close:hover { background: rgba(220, 53, 69, 0.28); color: #fff; }
+        .menu-treino-corpo { padding: 16px 18px 18px; max-height: 75vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(34, 211, 238, 0.35) transparent; }
         .menu-treino-corpo::-webkit-scrollbar { width: 6px; }
-        .menu-treino-corpo::-webkit-scrollbar-thumb {
-            background: rgba(34, 211, 238, 0.35);
-            border-radius: 3px;
-        }
-
-        .menu-treino-secao {
-            font-size: 10.5px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--neon-gold);
-            margin: 4px 0 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            line-height: 1.2;
-        }
-
-        /* ─── Card "Recomendado para mim" ─── */
-        .menu-treino-recomendado {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 14px 16px;
-            background: linear-gradient(135deg, rgba(34, 211, 238, 0.14) 0%, rgba(14, 165, 233, 0.06) 100%);
-            border: 1px solid rgba(34, 211, 238, 0.45);
-            border-left: 4px solid var(--neon-cyan);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-family: inherit;
-            cursor: pointer;
-            margin: 0;
-            transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .menu-treino-recomendado:hover:not(:disabled) {
-            transform: translateY(-1px);
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 20px rgba(34, 211, 238, 0.18);
-        }
-        .menu-treino-recomendado:focus-visible {
-            outline: 3px solid var(--neon-cyan);
-            outline-offset: 2px;
-        }
-        .menu-treino-recomendado:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-            background: linear-gradient(135deg, rgba(148, 163, 184, 0.10) 0%, rgba(100, 116, 139, 0.05) 100%);
-            border-color: rgba(148, 163, 184, 0.3);
-            border-left-color: var(--text-muted);
-        }
-        .menu-treino-recomendado-topo {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 6px;
-        }
-        .menu-treino-recomendado-icone {
-            font-size: 26px;
-            line-height: 1;
-            flex-shrink: 0;
-            filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5));
-        }
-        .menu-treino-recomendado-titulo {
-            font-size: 14.5px;
-            font-weight: 900;
-            color: var(--neon-cyan);
-            line-height: 1.25;
-            letter-spacing: 0.2px;
-        }
-        .menu-treino-recomendado-sub {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.45;
-            margin-bottom: 0;
-        }
-        .menu-treino-recomendado-cta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 10px;
-            padding: 9px 14px;
-            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
-            color: #fff;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.3px;
-            box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28);
-        }
-        .menu-treino-pendentes {
-            display: inline-block;
-            font-size: 10.5px;
-            font-weight: 900;
-            color: var(--neon-gold);
-            background: rgba(251, 191, 36, 0.14);
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 6px;
-            vertical-align: middle;
-            letter-spacing: 0.3px;
-        }
-
-        /* ─── Lista dos 5 modos ─── */
-        .menu-treino-lista {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
-        .menu-treino-modo {
-            display: grid;
-            grid-template-columns: 44px 1fr auto;
-            align-items: center;
-            gap: 12px;
-            padding: 11px 14px;
-            background: rgba(10, 22, 40, 0.55);
-            border: 1px solid rgba(56, 189, 248, 0.18);
-            border-radius: 10px;
-            color: var(--text-primary);
-            font-family: inherit;
-            text-align: left;
-            cursor: pointer;
-            transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
-            width: 100%;
-            margin: 0;
-            box-shadow: none;
-        }
-        .menu-treino-modo:hover:not(:disabled) {
-            transform: translateX(2px);
-            border-color: rgba(34, 211, 238, 0.5);
-            background: rgba(10, 22, 40, 0.75);
-        }
-        .menu-treino-modo:focus-visible {
-            outline: 3px solid var(--neon-cyan);
-            outline-offset: 2px;
-        }
-        .menu-treino-modo.em-breve {
-            opacity: 0.55;
-            cursor: pointer;
-        }
-        .menu-treino-modo.em-breve:hover {
-            transform: none;
-            border-color: rgba(56, 189, 248, 0.18);
-            background: rgba(10, 22, 40, 0.55);
-        }
-        .menu-treino-modo-icone {
-            font-size: 26px;
-            line-height: 1;
-            text-align: center;
-        }
+        .menu-treino-corpo::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.35); border-radius: 3px; }
+        .menu-treino-secao { font-size: 10.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--neon-gold); margin: 4px 0 8px; display: flex; align-items: center; gap: 6px; line-height: 1.2; }
+        .menu-treino-recomendado { display: block; width: 100%; text-align: left; padding: 14px 16px; background: linear-gradient(135deg, rgba(34, 211, 238, 0.14) 0%, rgba(14, 165, 233, 0.06) 100%); border: 1px solid rgba(34, 211, 238, 0.45); border-left: 4px solid var(--neon-cyan); border-radius: 12px; color: var(--text-primary); font-family: inherit; cursor: pointer; margin: 0; transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+        .menu-treino-recomendado:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(34, 211, 238, 0.18); }
+        .menu-treino-recomendado:focus-visible { outline: 3px solid var(--neon-cyan); outline-offset: 2px; }
+        .menu-treino-recomendado:disabled { opacity: 0.55; cursor: not-allowed; background: linear-gradient(135deg, rgba(148, 163, 184, 0.10) 0%, rgba(100, 116, 139, 0.05) 100%); border-color: rgba(148, 163, 184, 0.3); border-left-color: var(--text-muted); }
+        .menu-treino-recomendado-topo { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+        .menu-treino-recomendado-icone { font-size: 26px; line-height: 1; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5)); }
+        .menu-treino-recomendado-titulo { font-size: 14.5px; font-weight: 900; color: var(--neon-cyan); line-height: 1.25; letter-spacing: 0.2px; }
+        .menu-treino-recomendado-sub { font-size: 12px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 0; }
+        .menu-treino-recomendado-cta { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; padding: 9px 14px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); color: #fff; border-radius: 8px; font-size: 13px; font-weight: 800; letter-spacing: 0.3px; box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28); }
+        .menu-treino-pendentes { display: inline-block; font-size: 10.5px; font-weight: 900; color: var(--neon-gold); background: rgba(251, 191, 36, 0.14); border: 1px solid rgba(251, 191, 36, 0.4); padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.3px; }
+        .menu-treino-lista { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+        .menu-treino-modo { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 11px 14px; background: rgba(10, 22, 40, 0.55); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 10px; color: var(--text-primary); font-family: inherit; text-align: left; cursor: pointer; transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease; width: 100%; margin: 0; box-shadow: none; }
+        .menu-treino-modo:hover:not(:disabled) { transform: translateX(2px); border-color: rgba(34, 211, 238, 0.5); background: rgba(10, 22, 40, 0.75); }
+        .menu-treino-modo:focus-visible { outline: 3px solid var(--neon-cyan); outline-offset: 2px; }
+        .menu-treino-modo.em-breve { opacity: 0.55; cursor: pointer; }
+        .menu-treino-modo.em-breve:hover { transform: none; border-color: rgba(56, 189, 248, 0.18); background: rgba(10, 22, 40, 0.55); }
+        .menu-treino-modo-icone { font-size: 26px; line-height: 1; text-align: center; }
         .menu-treino-modo-info { min-width: 0; }
-        .menu-treino-modo-nome {
-            display: block;
-            font-size: 13.5px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-            line-height: 1.2;
-        }
-        .menu-treino-modo-desc {
-            display: block;
-            font-size: 11.5px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-        .menu-treino-modo-exemplo {
-            display: inline-block;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-            font-size: 11px;
-            font-weight: 800;
-            background: rgba(34, 211, 238, 0.10);
-            color: var(--neon-cyan);
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(34, 211, 238, 0.25);
-            white-space: nowrap;
-            letter-spacing: 0.3px;
-        }
-        .menu-treino-modo-selo-em-breve {
-            font-size: 9.5px;
-            font-weight: 900;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            background: rgba(148, 163, 184, 0.15);
-            padding: 4px 8px;
-            border-radius: 8px;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        /* ─── Estado vazio / mensagem ─── */
-        .menu-treino-vazio {
-            padding: 12px 14px;
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(22, 163, 74, 0.05) 100%);
-            border-left: 3px solid #22c55e;
-            border-radius: 8px;
-            font-size: 12.5px;
-            color: #bbf7d0;
-            line-height: 1.55;
-            margin-bottom: 8px;
-        }
+        .menu-treino-modo-nome { display: block; font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; line-height: 1.2; }
+        .menu-treino-modo-desc { display: block; font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; }
+        .menu-treino-modo-exemplo { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; font-weight: 800; background: rgba(34, 211, 238, 0.10); color: var(--neon-cyan); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(34, 211, 238, 0.25); white-space: nowrap; letter-spacing: 0.3px; }
+        .menu-treino-modo-selo-em-breve { font-size: 9.5px; font-weight: 900; letter-spacing: 0.5px; color: var(--text-muted); background: rgba(148, 163, 184, 0.15); padding: 4px 8px; border-radius: 8px; text-transform: uppercase; white-space: nowrap; }
+        .menu-treino-vazio { padding: 12px 14px; background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(22, 163, 74, 0.05) 100%); border-left: 3px solid #22c55e; border-radius: 8px; font-size: 12.5px; color: #bbf7d0; line-height: 1.55; margin-bottom: 8px; }
         .menu-treino-vazio strong { color: #86efac; font-weight: 800; }
-
-        /* ─── Rodapé ─── */
-        .menu-treino-rodape {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px dashed rgba(148, 163, 184, 0.2);
-        }
-        .menu-treino-rodape button {
-            width: auto;
-            padding: 9px 22px;
-            margin: 0;
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            box-shadow: none;
-        }
-        .menu-treino-rodape button:hover:not(:disabled) {
-            background: rgba(148, 163, 184, 0.10);
-            border-color: var(--text-secondary);
-            color: var(--text-primary);
-        }
+        .menu-treino-rodape { display: flex; align-items: center; justify-content: center; margin-top: 16px; padding-top: 14px; border-top: 1px dashed rgba(148, 163, 184, 0.2); }
+        .menu-treino-rodape button { width: auto; padding: 9px 22px; margin: 0; background: transparent; color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; font-size: 13px; font-weight: 700; box-shadow: none; }
+        .menu-treino-rodape button:hover:not(:disabled) { background: rgba(148, 163, 184, 0.10); border-color: var(--text-secondary); color: var(--text-primary); }
 
         @media (max-width: 520px) {
+            .aprender-tela { padding: 18px 16px 18px; margin: 12px auto; }
+            .aprender-resumo-stats { grid-template-columns: 1fr; gap: 8px; }
+            .aprender-resumo-stat { padding: 11px 12px; }
+            .aprender-resumo-stat .valor { font-size: 22px; }
+            .aprender-acoes { grid-template-columns: 1fr; }
+            .aprender-input-linha { flex-direction: column; }
+            .aprender-btn-confirmar { min-height: 52px; }
             .menu-treino-card { max-width: 100%; border-radius: 12px; }
             .menu-treino-corpo { padding: 14px 14px 16px; max-height: 78vh; }
             .menu-treino-modo { padding: 10px 12px; grid-template-columns: 36px 1fr auto; gap: 10px; }
@@ -7097,12 +6965,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             .menu-treino-recomendado-titulo { font-size: 13.5px; }
             .menu-treino-recomendado-sub { font-size: 11.5px; }
         }
-
         @media (prefers-reduced-motion: reduce) {
-            .menu-treino-recomendado,
-            .menu-treino-modo { transition: none !important; }
-            .menu-treino-recomendado:hover,
-            .menu-treino-modo:hover:not(:disabled) { transform: none; }
+            .aprender-conta .incognita, .aprender-resumo-emoji { animation: none !important; }
+            .aprender-pista-item, .aprender-feedback { animation: none !important; }
+            .aprender-input.errado { animation: none !important; }
+            .aprender-btn-confirmar, .aprender-btn-pista, .aprender-btn-principal, .aprender-btn-secundario, .aprender-btn-sair { transition: none !important; }
+            .menu-treino-recomendado, .menu-treino-modo { transition: none !important; }
+            .menu-treino-recomendado:hover, .menu-treino-modo:hover:not(:disabled) { transform: none; }
         }
         /* ▲▲▲ FIM [02.67] */
 
@@ -7782,6 +7651,17 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
     </div>
     <!-- ▲▲▲ FIM [03.13] -->
+
+    <!-- ▼▼▼ [03.14] TELA APRENDER — motor sem cronômetro + pistas graduais ─ INÍCIO ─── -->
+    <!-- v10.5.5 · Container da tela Aprender. O conteúdo interno
+         (pergunta, pistas, feedback, resumo) é injetado pelo bloco
+         [19.06]. Compartilhada por todos os modos que usam o motor
+         Aprender (Reverso é o primeiro). -->
+    <div id="tela-aprender" class="card hidden" style="background:transparent;box-shadow:none;padding:0;">
+        <div class="aprender-tela" id="aprender-conteudo"></div>
+    </div>
+    <!-- ▲▲▲ FIM [03.14] -->
+
     <!-- ▼▼▼ [04.01] MODAL OPERAÇÃO ───────────────────────────── -->
     <div id="modal-operacao" class="modal-overlay hidden" onclick="fecharModalOperacao(event)">
         <div class="modal-card" onclick="event.stopPropagation()">
@@ -8312,6 +8192,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <!-- ▲▲▲ FIM [04.16] -->
 
     <!-- ▼▼▼ [04.18] MODAL MINI-MENU DE TREINO ───────────────── INÍCIO ─── -->
+    <!-- v10.5.5 · Aberto ao tocar em "🎯 Treinar" em Minhas Posições.
+         Preserva a modalidade clicada. Contém "Recomendado para mim"
+         (Treino Inteligente) e a lista de modos (Reverso ativo; os
+         demais aparecem como "Em breve"). -->
     <div id="modal-menu-treino" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="menu-treino-titulo" onclick="fecharMenuTreino(event)">
         <div class="modal-card menu-treino-card" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -9438,14 +9322,30 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [09.01]
 
     // ▼▼▼ [09.02] Helpers de histórico e estado da operação ─────────────
+    // v10.5.5 · Schema estendido: cada resposta pode carregar
+    //   { tentativas, pistaUsada }. Isso permite ao motor Aprender
+    //   registrar se o aluno chegou sozinho ou precisou de ajuda.
+    //
+    // Regra de cap (nova em v10.5.5):
+    //   · Se nas últimas 5 respostas há pista 3 / "revelou" / 3+ tentativas
+    //     → a operação NÃO chega a "verde". Cap em "amarelo".
+    //   · Se há pista 1-2 ou 2 tentativas → cap em "azul".
+    //   · Caso contrário → sem cap (pode chegar a "verde").
+    //
+    // Compatibilidade: respostas antigas (sem tentativas/pistaUsada)
+    // não sofrem cap — o comportamento anterior é preservado.
+
     function normalizarHistoricoOperacao(valor) {
         if (!valor) return [];
         if (Array.isArray(valor.historico)) return valor.historico.slice();
-        // Formato em memória durante o jogo: { respostas: [{acertou, tempo}, ...] }
         if (Array.isArray(valor.respostas)) {
-            return valor.respostas.map(r => ({ acertou: !!r.acertou, tempo: Number(r.tempo) || 0, data: Date.now() }));
+            return valor.respostas.map(r => {
+                const out = { acertou: !!r.acertou, tempo: Number(r.tempo) || 0, data: Date.now() };
+                if (r.tentativas !== undefined) out.tentativas = Number(r.tentativas) || 1;
+                if (r.pistaUsada !== undefined) out.pistaUsada = r.pistaUsada;
+                return out;
+            });
         }
-        // Compatibilidade defensiva com formato antigo {acertos, erros, tentativas}
         const acertos = Number(valor.acertos) || 0;
         const erros   = Number(valor.erros)   || 0;
         const total   = acertos + erros;
@@ -9460,7 +9360,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function statsDaOperacao(historico) {
         const lista = (historico || []).slice(-MAPA_JANELA_AVALIACAO);
         const tentativas = lista.length;
-        if (tentativas === 0) return { tentativas: 0, acertos: 0, taxa: 0, tempoMediano: null, tempoMedio: null };
+        if (tentativas === 0) {
+            return { tentativas: 0, acertos: 0, taxa: 0, tempoMediano: null, tempoMedio: null, capMaximo: "verde" };
+        }
         const acertos = lista.filter(r => r.acertou).length;
         const taxa = acertos / tentativas;
         const tempos = lista.filter(r => r.acertou && Number.isFinite(r.tempo) && r.tempo > 0)
@@ -9471,7 +9373,24 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             mediana = (tempos.length % 2 === 0) ? (tempos[meio - 1] + tempos[meio]) / 2 : tempos[meio];
         }
         const tMedio = tempos.length ? tempos.reduce((s, v) => s + v, 0) / tempos.length : null;
-        return { tentativas, acertos, taxa, tempoMediano: mediana, tempoMedio: tMedio };
+
+        // Cap por uso de pista (motor Aprender). Analisa só as últimas 5.
+        const recentes = lista.slice(-5);
+        let temPistaAlta = false;
+        let temPistaBaixa = false;
+        for (const r of recentes) {
+            const tent = Number(r.tentativas) || 1;
+            const pista = r.pistaUsada;
+            const pistaNum = (typeof pista === "number") ? pista : null;
+            if (pista === "revelou" || (pistaNum !== null && pistaNum >= 3) || tent >= 3) {
+                temPistaAlta = true;
+            } else if ((pistaNum !== null && pistaNum >= 1) || tent >= 2) {
+                temPistaBaixa = true;
+            }
+        }
+        const capMaximo = temPistaAlta ? "amarelo" : (temPistaBaixa ? "azul" : "verde");
+
+        return { tentativas, acertos, taxa, tempoMediano: mediana, tempoMedio: tMedio, capMaximo };
     }
 
     function estadoDaOperacao(historico, minTent = MAPA_MIN_TENT_PADRAO) {
@@ -9480,7 +9399,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (s.taxa < LIMIAR_DESENV) return "vermelho";
         if (s.taxa < LIMIAR_QUASE)  return "amarelo";
         if (s.taxa < LIMIAR_DOMINIO) return "azul";
-        return s.tentativas >= minTent ? "verde" : "cinza-parcial";
+        if (s.tentativas >= minTent) {
+            if (s.capMaximo === "amarelo") return "amarelo";
+            if (s.capMaximo === "azul")    return "azul";
+            return "verde";
+        }
+        return "cinza-parcial";
     }
 
     function corDaOperacao(d) {
@@ -13538,7 +13462,8 @@ if (containerProg) {
     }
 
     function mostrarTela(id) {
-        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
+        // v10.5.5 · Adicionada "tela-aprender" à lista.
+        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso","tela-aprender"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
 
         // ▼▼▼ CORREÇÃO: Preenche automaticamente o nome e a turma na tela de cadastro
@@ -18513,12 +18438,8 @@ if (containerProg) {
     // ▲▲▲ FIM [18.06]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.5.3 · Cada linha exibe barra de proporção treinos × oficiais.
-    // v10.5.4 · A linha virou <div> com DOIS botões independentes:
-    //   · ▶ Jogar    (verde) — só abre quando a etapa está ativa;
-    //                          se não está, esmaece mas continua clicável
-    //                          (mostra toast explicando).
-    //   · 🎯 Treinar (roxo)  — sempre disponível.
+    // v10.5.5 · treinarModalidadeHome abre o mini-menu de treino
+    // (bloco [04.18]) em vez de ir direto ao Treino Inteligente.
 
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
@@ -18533,7 +18454,6 @@ if (containerProg) {
             ? "Escolha uma modalidade para jogar a classificatória ou para treinar. Só o seu melhor resultado oficial conta."
             : "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
 
-        // ─── Coleta de dados em paralelo (só se identificado) ───
         let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
         if (nome && turma) {
             try {
@@ -18584,7 +18504,6 @@ if (containerProg) {
             const treinos = info.treinosCount;
             const totalJogos = oficiais + treinos;
 
-            // ─── Zona / status / pontos ───
             let zonaCls = "sem-dados";
             let posTxt = "—";
             let ptsTxt = "—";
@@ -18596,16 +18515,13 @@ if (containerProg) {
                 else if (pos && pos <= 6) { zonaCls = "zona-reserva"; statusTxt = "Zona de reserva"; }
                 else if (pos)             { zonaCls = "";             statusTxt = "Em disputa"; }
                 else                      { zonaCls = "";             statusTxt = "Participando"; }
-                posTxt = pos
-                    ? `${pos}º <small>de ${info.total}</small>`
-                    : "—";
+                posTxt = pos ? `${pos}º <small>de ${info.total}</small>` : "—";
                 ptsTxt = `${info.pontos.toLocaleString("pt-BR")} pts`;
             } else if (treinos > 0) {
                 zonaCls = "sem-dados";
                 statusTxt = "Sem partida oficial";
             }
 
-            // ─── Barra proporcional ───
             let barraHtml;
             if (totalJogos === 0) {
                 barraHtml = `
@@ -18630,7 +18546,6 @@ if (containerProg) {
                     </div>`;
             }
 
-            // ─── Dois botões ───
             const jogarCls = etapaAtiva ? "jogar" : "jogar desabilitado";
             const conviteCls = (!jogou && treinos === 0 && etapaAtiva) ? " convite" : "";
             const jogarAria = etapaAtiva
@@ -18665,14 +18580,6 @@ if (containerProg) {
         </div>`;
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Handlers dos dois botões
-    // ─────────────────────────────────────────────────────────────────
-
-    // ▶ Jogar — só funciona quando a etapa está ativa.
-    // Se o botão estiver esmaecido (.desabilitado), ainda assim pode ser
-    // clicado: aqui dentro confirmamos a fase e mostramos um toast
-    // explicando por que não dá para jogar agora.
     async function jogarModalidadeHome(mod) {
         if (!MODALIDADES[mod]) return;
 
@@ -18703,8 +18610,6 @@ if (containerProg) {
         await registrarAluno(false);
     }
 
-    // 🎯 Treinar — sempre disponível. O treino alimenta o mapa e os
-    // certificados, mas não entra no ranking.
     async function treinarModalidadeHome(mod) {
         if (!MODALIDADES[mod]) return;
 
@@ -18719,7 +18624,7 @@ if (containerProg) {
             return;
         }
 
-        // v10.5.4 · Abre o mini-menu de treino em vez de ir direto ao
+        // v10.5.5 · Abre o mini-menu de treino em vez de ir direto ao
         // Treino Inteligente. Preserva a modalidade clicada.
         abrirMenuTreino(mod);
     }
@@ -20158,6 +20063,705 @@ window.addEventListener("DOMContentLoaded", async () => {
         }, 2400);
     }
     // ▲▲▲ FIM [19.05]
+
+    // ▼▼▼ [19.06] Motor Aprender + Treino Reverso + Mini-menu ──── INÍCIO ───
+    // v10.5.5 · Motor pedagógico sem cronômetro, com pistas em 3 níveis
+    // e tela de resumo. O primeiro modo que usa este motor é o
+    // Treino Reverso (`3 × ? = 21`).
+    //
+    // Registro no mapa: cada resposta do motor Aprender carrega
+    //   { tentativas, pistaUsada }
+    // O bloco [09.02] aplica um cap: se o aluno precisou de muita
+    // pista, a operação NÃO chega a "verde" no mapa.
+
+    const STORAGE_MENU_TREINO_USOS = "copa_menu_treino_usos";
+
+    const MODOS_TREINO = [
+        { id: "inteligente", icone: "🧠", nome: "Treino Inteligente",
+          desc: "Sorteia as operações que você mais precisa",
+          exemplo: "pesos por cor",
+          emBreve: false },
+        { id: "reverso", icone: "🔄", nome: "Treino Reverso",
+          desc: "Descubra o número que falta na conta",
+          exemplo: "3 × ? = 21",
+          emBreve: false },
+        { id: "decomposicao", icone: "🧩", nome: "Decomposição",
+          desc: "Aprenda a derivar o resultado pela soma",
+          exemplo: "7×8 = 7×5 + ?",
+          emBreve: true },
+        { id: "espelho", icone: "🪞", nome: "Espelho",
+          desc: "Veja, pense e diga se sabia de cor",
+          exemplo: "🟢 sabia · 🔴 errei",
+          emBreve: true },
+        { id: "chunking", icone: "🧱", nome: "Chunking",
+          desc: "Treine uma tabuada só — bloco por bloco",
+          exemplo: "só tabuada do 7",
+          emBreve: true },
+        { id: "progressivo", icone: "⏱️", nome: "Progressivo",
+          desc: "O tempo cai conforme sua precisão sobe",
+          exemplo: "10s → 4s",
+          emBreve: true }
+    ];
+
+    let menuTreinoModAtual = null;
+    let aprenderEstado = null;
+
+    // ─── Usos (memória de ordenação) ───
+    function carregarUsosMenuTreino() {
+        try { const raw = localStorage.getItem(STORAGE_MENU_TREINO_USOS); return raw ? JSON.parse(raw) : {}; }
+        catch(e) { return {}; }
+    }
+    function registrarUsoMenuTreino(modoId) {
+        try {
+            const usos = carregarUsosMenuTreino();
+            usos[modoId] = (usos[modoId] || 0) + 1;
+            localStorage.setItem(STORAGE_MENU_TREINO_USOS, JSON.stringify(usos));
+        } catch(e) {}
+    }
+
+    // ─── MINI-MENU ───
+    async function abrirMenuTreino(mod) {
+        if (!MODALIDADES[mod]) return;
+        const modal = document.getElementById("modal-menu-treino");
+        const corpo = document.getElementById("menu-treino-corpo");
+        const titulo = document.getElementById("menu-treino-titulo");
+        if (!modal || !corpo) return;
+
+        menuTreinoModAtual = mod;
+        if (titulo) titulo.innerHTML = `🎯 Treinar · ${escaparHtml(MODALIDADES[mod].nome)}`;
+        corpo.innerHTML = `<div class="desempenho-loading">⏳ Preparando opções…</div>`;
+        modal.classList.remove("hidden");
+
+        let pendentes = 0, total = 0;
+        try {
+            const nome = obterNomeSalvoAluno();
+            const turma = obterTurmaSalvaAluno();
+            if (nome && turma) {
+                const cont = await contarPendentesTreino(nome, turma, mod);
+                pendentes = cont.pendentes || 0;
+                total = cont.total || 0;
+            }
+        } catch(e) { console.warn("[Menu Treino] Falha ao contar pendentes:", e); }
+
+        renderizarMenuTreino(mod, pendentes, total);
+
+        setTimeout(() => { document.querySelector("#modal-menu-treino .modal-close")?.focus(); }, 80);
+    }
+
+    function renderizarMenuTreino(mod, pendentes, total) {
+        const corpo = document.getElementById("menu-treino-corpo");
+        if (!corpo) return;
+
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        const semPendentes = pendentes === 0 && total > 0;
+        const semDados = !nome || !turma;
+
+        const usos = carregarUsosMenuTreino();
+        const modosOrdenados = [...MODOS_TREINO].sort((a, b) => {
+            const ua = usos[a.id] || 0;
+            const ub = usos[b.id] || 0;
+            return ub - ua;
+        });
+
+        let html = "";
+        html += `<div class="menu-treino-secao">🤖 Recomendado para mim</div>`;
+
+        if (semDados) {
+            html += `<button class="menu-treino-recomendado" disabled>
+                <div class="menu-treino-recomendado-topo">
+                    <span class="menu-treino-recomendado-icone">🧠</span>
+                    <div class="menu-treino-recomendado-titulo">Treino Inteligente</div>
+                </div>
+                <div class="menu-treino-recomendado-sub">Identifique-se para o app escolher as operações certas para você.</div>
+            </button>`;
+        } else if (semPendentes) {
+            html += `<div class="menu-treino-vazio">
+                ✅ <strong>Você já domina tudo em ${escaparHtml(MODALIDADES[mod].nome)}!</strong><br>
+                Experimente um dos modos abaixo para manter o ritmo ou ganhar velocidade.
+            </div>`;
+        } else {
+            const plural = pendentes === 1 ? "operação" : "operações";
+            const tempo = pendentes <= 5 ? "~2 min" : pendentes <= 12 ? "~4 min" : "~6 min";
+            html += `<button class="menu-treino-recomendado" onclick="iniciarTreinoInteligenteDoMenu()">
+                <div class="menu-treino-recomendado-topo">
+                    <span class="menu-treino-recomendado-icone">🧠</span>
+                    <div class="menu-treino-recomendado-titulo">
+                        Treino Inteligente
+                        <span class="menu-treino-pendentes">${pendentes} ${plural} pendentes</span>
+                    </div>
+                </div>
+                <div class="menu-treino-recomendado-sub">Sorteia as operações que você mais precisa. Alimenta o mapa e os certificados.</div>
+                <div class="menu-treino-recomendado-cta">▶ Começar · ${tempo}</div>
+            </button>`;
+        }
+
+        html += `<div class="menu-treino-secao" style="margin-top:16px;">🎯 Escolher um modo</div>`;
+        html += `<div class="menu-treino-lista">`;
+        modosOrdenados.forEach(m => {
+            const emBreve = !!m.emBreve;
+            const cls = emBreve ? "menu-treino-modo em-breve" : "menu-treino-modo";
+            const selo = emBreve ? `<span class="menu-treino-modo-selo-em-breve">Em breve</span>` : `<span class="menu-treino-modo-exemplo">${m.exemplo}</span>`;
+            const onclickAttr = emBreve
+                ? `onclick="notificarModoEmBreve('${escaparHtml(m.nome).replace(/'/g,"\\'")}')"`
+                : `onclick="iniciarModoDeTreino('${m.id}')"`;
+            html += `<button type="button" class="${cls}" ${onclickAttr} aria-label="${escaparHtml(m.nome)}${emBreve ? ' — em breve' : ''}">
+                <span class="menu-treino-modo-icone" aria-hidden="true">${m.icone}</span>
+                <span class="menu-treino-modo-info">
+                    <span class="menu-treino-modo-nome">${escaparHtml(m.nome)}</span>
+                    <span class="menu-treino-modo-desc">${escaparHtml(m.desc)}</span>
+                </span>
+                ${selo}
+            </button>`;
+        });
+        html += `</div>`;
+        html += `<div class="menu-treino-rodape"><button type="button" onclick="fecharMenuTreino()">Cancelar</button></div>`;
+        corpo.innerHTML = html;
+    }
+
+    function fecharMenuTreino(e) {
+        if (e && e.target && e.target.closest(".menu-treino-card")) return;
+        document.getElementById("modal-menu-treino")?.classList.add("hidden");
+        menuTreinoModAtual = null;
+    }
+
+    function notificarModoEmBreve(nomeModo) {
+        notificar(`🚧 ${nomeModo} chega em uma próxima atualização!`, "info", 3500);
+    }
+
+    async function iniciarTreinoInteligenteDoMenu() {
+        const mod = menuTreinoModAtual;
+        if (!mod) { fecharMenuTreino(); return; }
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { fecharMenuTreino(); notificar("Identifique-se para treinar.", "aviso"); return; }
+        registrarUsoMenuTreino("inteligente");
+        fecharMenuTreino();
+        alunoAtual = nome; turmaAtual = turma; modalidadeAtual = mod;
+        treinoAnonimo = false;
+        await carregarFocoTreino(nome, turma, mod);
+        await iniciarTreinoInteligente();
+    }
+
+    function iniciarModoDeTreino(modoId) {
+        const mod = menuTreinoModAtual;
+        if (!mod) { fecharMenuTreino(); return; }
+        registrarUsoMenuTreino(modoId);
+        fecharMenuTreino();
+        if (modoId === "reverso") {
+            abrirTreinoReverso(mod);
+            return;
+        }
+        const modo = MODOS_TREINO.find(m => m.id === modoId);
+        if (modo) notificarModoEmBreve(modo.nome);
+    }
+
+    // ─── MOTOR APRENDER + TREINO REVERSO ───
+
+    const APRENDER_SESSAO_PADRAO = 5;
+
+    const APRENDER_MODOS = {
+        reverso: {
+            id: "reverso",
+            nome: "Treino Reverso",
+            icone: "🔄",
+            gerarPergunta(fA, fB) {
+                const ocultar = Math.random() < 0.5 ? "fB" : "fA";
+                const produto = fA * fB;
+                if (ocultar === "fB") {
+                    return { fA, fB, ocultar: "fB", respostaCorreta: fB, produto };
+                }
+                return { fA, fB, ocultar: "fA", respostaCorreta: fA, produto };
+            }
+        }
+    };
+
+    async function abrirTreinoReverso(mod) {
+        if (!MODALIDADES[mod]) return;
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { mostrarTela("tela-single"); return; }
+
+        const modoId = "reverso";
+        const cfg = APRENDER_MODOS[modoId];
+        if (!cfg) return;
+
+        // Monta foco de operações (mesma lógica do Treino Inteligente)
+        let operacoesFoco = [];
+        try {
+            const lista = await montarListaTreinoInteligente(nome, turma, mod);
+            const comPeso = lista.filter(i => i.peso > 1);
+            operacoesFoco = comPeso.length ? comPeso.slice(0, 20) : lista.slice(0, 20);
+        } catch(e) { console.warn("[Aprender] Falha ao montar foco:", e); }
+
+        if (!operacoesFoco.length) {
+            const fatores = MODALIDADES[mod].fatores;
+            for (const fA of fatores) {
+                for (let fB = 1; fB <= 10; fB++) operacoesFoco.push({ fA, fB, peso: 1 });
+            }
+        }
+
+        const tamanhoSessao = Math.min(APRENDER_SESSAO_PADRAO, operacoesFoco.length);
+        const sessaoOps = [];
+        for (let i = 0; i < tamanhoSessao; i++) {
+            const op = escolherPorPeso(operacoesFoco, o => o.peso || 1);
+            sessaoOps.push({ fA: op.fA, fB: op.fB });
+        }
+
+        aprenderEstado = {
+            modoId, cfg, mod, nome, turma,
+            tamanhoSessao,
+            indiceAtual: 0,
+            perguntaAtual: null,
+            pistaNivel: 0,
+            tentativas: 0,
+            acertou: false,
+            respondido: false,
+            resultados: [],
+            aRevisar: [],
+            sessaoOps
+        };
+
+        mostrarTela("tela-aprender");
+        proximaPerguntaAprender();
+    }
+
+    function proximaPerguntaAprender() {
+        const e = aprenderEstado;
+        if (!e) return;
+        if (e.indiceAtual >= e.tamanhoSessao) { renderizarResumoAprender(false); return; }
+
+        const base = e.sessaoOps[e.indiceAtual] || { fA: 1, fB: 1 };
+        e.perguntaAtual = e.cfg.gerarPergunta(base.fA, base.fB);
+        e.pistaNivel = 0;
+        e.tentativas = 0;
+        e.acertou = false;
+        e.respondido = false;
+        renderizarPerguntaAprender();
+    }
+
+    function renderizarPerguntaAprender() {
+        const e = aprenderEstado;
+        const ctn = document.getElementById("aprender-conteudo");
+        if (!e || !ctn) return;
+
+        const p = e.perguntaAtual;
+        const total = e.tamanhoSessao;
+        const atual = e.indiceAtual + 1;
+        const modNome = MODALIDADES[e.mod]?.nome || e.mod;
+
+        const blocos = e.sessaoOps.map((_, i) => {
+            if (i < e.resultados.length) {
+                const r = e.resultados[i];
+                if (r.acertouNaPrimeira) return `<div class="bloco ok"></div>`;
+                if (r.acertou)           return `<div class="bloco ok-pista"></div>`;
+                return `<div class="bloco erro"></div>`;
+            }
+            if (i === e.indiceAtual) return `<div class="bloco atual"></div>`;
+            return `<div class="bloco"></div>`;
+        }).join("");
+
+        let enunciado;
+        if (p.ocultar === "fB") {
+            enunciado = `${p.fA} × <span class="incognita">?</span> = ${p.produto}`;
+        } else {
+            enunciado = `<span class="incognita">?</span> × ${p.fB} = ${p.produto}`;
+        }
+
+        ctn.innerHTML = `
+            <div class="aprender-cabecalho">
+                <div class="aprender-cabecalho-esq">
+                    <button class="aprender-btn-sair" onclick="sairAprender()" aria-label="Sair do treino">← Sair</button>
+                    <div class="aprender-titulo-modo">
+                        ${e.cfg.icone} ${escaparHtml(e.cfg.nome)}
+                        <small>${escaparHtml(modNome)}</small>
+                    </div>
+                </div>
+                <span class="aprender-progresso-num">Conta ${atual} de ${total}</span>
+            </div>
+
+            <div class="aprender-barra" aria-hidden="true">${blocos}</div>
+
+            <div class="aprender-conta" id="aprender-conta">${enunciado}</div>
+
+            <div class="aprender-input-linha">
+                <input
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    autocomplete="off"
+                    spellcheck="false"
+                    id="aprender-input"
+                    class="aprender-input"
+                    placeholder="?"
+                    aria-label="Sua resposta"
+                    maxlength="3"
+                >
+                <button class="aprender-btn-confirmar" id="aprender-btn-confirmar" onclick="confirmarRespostaAprender()">
+                    Confirmar
+                </button>
+            </div>
+
+            <button class="aprender-btn-pista" id="aprender-btn-pista" onclick="pedirPistaAprender()">
+                💡 Preciso de uma pista
+            </button>
+
+            <div id="aprender-pista-area" class="aprender-pista-area"></div>
+            <div id="aprender-feedback-area"></div>
+        `;
+
+        const input = document.getElementById("aprender-input");
+        if (input) {
+            input.addEventListener("keydown", (ev) => {
+                if (ev.key === "Enter") { ev.preventDefault(); confirmarRespostaAprender(); }
+            });
+            setTimeout(() => input.focus(), 80);
+        }
+    }
+
+    function confirmarRespostaAprender() {
+        const e = aprenderEstado;
+        if (!e || e.respondido) return;
+        const input = document.getElementById("aprender-input");
+        if (!input) return;
+        const valor = parseInt(String(input.value || "").trim(), 10);
+        if (!Number.isFinite(valor) || valor <= 0 || valor > 100) {
+            input.classList.add("errado");
+            setTimeout(() => input.classList.remove("errado"), 400);
+            return;
+        }
+
+        e.tentativas++;
+        if (valor === e.perguntaAtual.respostaCorreta) {
+            e.acertou = true;
+            e.respondido = true;
+            input.classList.add("certo");
+            input.disabled = true;
+            const bc = document.getElementById("aprender-btn-confirmar");
+            if (bc) bc.disabled = true;
+            const bp = document.getElementById("aprender-btn-pista");
+            if (bp) bp.disabled = true;
+
+            const acertouNaPrimeira = e.tentativas === 1 && e.pistaNivel === 0;
+            e.resultados.push({
+                fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB,
+                acertouNaPrimeira,
+                pistasUsadas: e.pistaNivel,
+                tentativas: e.tentativas,
+                acertou: true
+            });
+            if (e.pistaNivel === 3 || e.pistaNivel === "revelou") {
+                e.aRevisar.push({ fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB });
+            }
+            renderizarFeedbackAprender("ok", acertouNaPrimeira);
+            return;
+        }
+
+        input.classList.add("errado");
+        setTimeout(() => input.classList.remove("errado"), 400);
+        input.value = "";
+        input.focus();
+        renderizarFeedbackAprender("erro");
+    }
+
+    function pedirPistaAprender() {
+        const e = aprenderEstado;
+        if (!e || e.respondido) return;
+        if (e.pistaNivel === 0) e.pistaNivel = 1;
+        else if (e.pistaNivel === 1) e.pistaNivel = 2;
+        else if (e.pistaNivel === 2) e.pistaNivel = 3;
+        else if (e.pistaNivel === 3) e.pistaNivel = "revelou";
+        else return;
+
+        renderizarPistasAprender();
+
+        if (e.pistaNivel === "revelou") {
+            e.respondido = true;
+            e.acertou = false;
+            e.resultados.push({
+                fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB,
+                acertouNaPrimeira: false,
+                pistasUsadas: "revelou",
+                tentativas: e.tentativas,
+                acertou: false
+            });
+            e.aRevisar.push({ fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB });
+            const input = document.getElementById("aprender-input");
+            if (input) input.disabled = true;
+            const bc = document.getElementById("aprender-btn-confirmar");
+            if (bc) bc.disabled = true;
+            const bp = document.getElementById("aprender-btn-pista");
+            if (bp) bp.disabled = true;
+            const area = document.getElementById("aprender-feedback-area");
+            if (area) {
+                area.innerHTML = `
+                    <div class="aprender-feedback ok-pista">
+                        <span class="aprender-feedback-titulo">📖 Resposta revelada</span>
+                        Vamos seguir em frente. Esta operação vai voltar no final da sessão.
+                    </div>
+                    <div class="aprender-acoes uma-coluna">
+                        <button class="aprender-btn-principal" onclick="avancarPerguntaAprender()">Próxima conta →</button>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    function renderizarPistasAprender() {
+        const e = aprenderEstado;
+        const ctn = document.getElementById("aprender-pista-area");
+        const btn = document.getElementById("aprender-btn-pista");
+        if (!e || !ctn) return;
+
+        const p = e.perguntaAtual;
+        const { fA, fB } = p;
+        const nivel = e.pistaNivel;
+
+        if (btn) {
+            if (nivel === "revelou") { btn.textContent = "✓ Resposta revelada"; btn.disabled = true; }
+            else if (nivel === 0) { btn.textContent = "💡 Preciso de uma pista"; }
+            else if (nivel >= 3) { btn.textContent = "🔓 Revelar a resposta"; }
+            else { btn.textContent = `💡 Mais uma pista (${nivel + 1} de 3)`; }
+        }
+
+        let html = "";
+        if (nivel >= 1) html += `<div class="aprender-pista-item nivel-1"><span class="aprender-pista-titulo">💡 Estratégia</span>${gerarPista1Aprender(fA, fB, p.ocultar)}</div>`;
+        if (nivel >= 2) html += `<div class="aprender-pista-item nivel-2"><span class="aprender-pista-titulo">🧩 Decomposição</span>${gerarPista2Aprender(fA, fB, p.ocultar)}</div>`;
+        if (nivel >= 3) html += `<div class="aprender-pista-item nivel-3"><span class="aprender-pista-titulo">🎨 Apoio visual</span>${gerarPista3Aprender(fA, fB)}</div>`;
+        if (nivel === "revelou") html += `<div class="aprender-pista-item revelacao"><span class="aprender-pista-titulo">✅ Resposta</span>${gerarRevelacaoAprender(fA, fB, p.ocultar)}</div>`;
+        ctn.innerHTML = html;
+    }
+
+    function gerarPista1Aprender(fA, fB, ocultar) {
+        const dica = gerarDicaDecomposicao(fA, fB);
+        if (ocultar === "fB") {
+            const metade = Math.max(1, Math.floor(fB / 2));
+            return `Pense em <strong>${fA} × ${metade}</strong> e dobre. ${dica}`;
+        }
+        const metade = Math.max(1, Math.floor(fA / 2));
+        return `Pense em <strong>${metade} × ${fB}</strong> e dobre. ${dica}`;
+    }
+    function gerarPista2Aprender(fA, fB, ocultar) {
+        if (ocultar === "fB") {
+            const metade = Math.max(1, Math.floor(fB / 2));
+            const resto = fB - metade;
+            return `${fA} × ${fB} = <strong>${fA} × ${metade} + ${fA} × ${resto}</strong> = ?`;
+        }
+        const metade = Math.max(1, Math.floor(fA / 2));
+        const resto = fA - metade;
+        return `${fA} × ${fB} = <strong>${metade} × ${fB} + ${resto} × ${fB}</strong> = ?`;
+    }
+    function gerarPista3Aprender(fA, fB) {
+        const total = fA * fB;
+        return `Imagine ${fA} grupos de ${fB} objetos:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${total}</strong> objetos no total.`;
+    }
+    function gerarRevelacaoAprender(fA, fB, ocultar) {
+        const produto = fA * fB;
+        if (ocultar === "fB") {
+            const metade = Math.max(1, Math.floor(fB / 2));
+            return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${fA} × ${metade} = ${fA * metade}, basta dobrar: ${fA * metade} + ${fA * (fB - metade)} = ${produto}.`;
+        }
+        const metade = Math.max(1, Math.floor(fA / 2));
+        return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${metade} × ${fB} = ${metade * fB}, basta somar: ${metade * fB} + ${(fA - metade) * fB} = ${produto}.`;
+    }
+
+    function renderizarFeedbackAprender(tipo, acertouNaPrimeira) {
+        const e = aprenderEstado;
+        const area = document.getElementById("aprender-feedback-area");
+        if (!e || !area) return;
+
+        const p = e.perguntaAtual;
+        const dica = gerarDicaDecomposicao(p.fA, p.fB);
+        const isUltima = (e.indiceAtual + 1) >= e.tamanhoSessao;
+
+        let html = "";
+        if (tipo === "ok" && acertouNaPrimeira) {
+            html = `<div class="aprender-feedback ok">
+                <span class="aprender-feedback-titulo">✅ Acertou de primeira!</span>
+                Você foi direto na resposta.
+                <div class="aprender-feedback-dica">💡 ${dica}</div>
+            </div>`;
+        } else if (tipo === "ok") {
+            const pistasTxt = e.pistaNivel === 1 ? "1 pista" : e.pistaNivel === 2 ? "2 pistas" : "3 pistas";
+            html = `<div class="aprender-feedback ok-pista">
+                <span class="aprender-feedback-titulo">✓ Chegou na resposta</span>
+                Você precisou de ${pistasTxt}. Sem problema — a prática é assim mesmo.
+                <div class="aprender-feedback-dica">💡 Para lembrar: ${dica}</div>
+            </div>`;
+        } else {
+            html = `<div class="aprender-feedback erro">
+                <span class="aprender-feedback-titulo">🤔 Ainda não é essa</span>
+                Tenta de novo? Ou pede uma pista.
+            </div>`;
+        }
+
+        if (tipo === "ok") {
+            html += `<div class="aprender-acoes uma-coluna">
+                <button class="aprender-btn-principal" onclick="avancarPerguntaAprender()">${isUltima ? "Ver resumo →" : "Próxima conta →"}</button>
+            </div>`;
+        }
+        area.innerHTML = html;
+        if (tipo === "erro") {
+            const input = document.getElementById("aprender-input");
+            if (input) setTimeout(() => input.focus(), 100);
+        }
+    }
+
+    function avancarPerguntaAprender() {
+        const e = aprenderEstado;
+        if (!e) return;
+        e.indiceAtual++;
+        proximaPerguntaAprender();
+    }
+
+    function sairAprender() {
+        const e = aprenderEstado;
+        if (!e) { mostrarTela("tela-inicial"); return; }
+        if (e.resultados.length === 0) { aprenderEstado = null; mostrarTela("tela-inicial"); return; }
+        if (!confirm("Sair agora?\n\nO que você já fez nesta sessão vai ser contabilizado no seu mapa.")) return;
+        finalizarSessaoAprender(true);
+    }
+
+    async function finalizarSessaoAprender(saiuAntes) {
+        const e = aprenderEstado;
+        if (!e) return;
+        try { await persistirResultadosAprender(e); } catch (err) { console.warn("[Aprender] Falha ao persistir:", err); }
+
+        const completou = !saiuAntes && e.resultados.length >= e.tamanhoSessao;
+        if (completou) {
+            const chaveTreino = chaveAlbum(e.nome, e.turma);
+            try { await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1); }
+            catch(err) { console.warn("[Aprender] Falha ao contabilizar treino geral:", err); }
+            try { await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chaveTreino}/${e.mod}`).transaction(n => (n || 0) + 1); }
+            catch(err) { console.warn("[Aprender] Falha ao contabilizar treino por modalidade:", err); }
+            if (typeof albumSessaoCache !== "undefined") albumSessaoCache = { chave: null, ts: 0, resultado: null };
+        }
+        renderizarResumoAprender(saiuAntes);
+    }
+
+    async function persistirResultadosAprender(e) {
+        if (!e.resultados.length) return;
+        const deltas = {};
+        for (const r of e.resultados) {
+            const k = `${r.fA}x${r.fB}`;
+            if (!deltas[k]) deltas[k] = { respostas: [] };
+            const acertoValido = r.acertouNaPrimeira || (typeof r.pistasUsadas === "number" && r.pistasUsadas <= 2);
+            deltas[k].respostas.push({
+                acertou: acertoValido,
+                tempo: 0,
+                tentativas: r.tentativas || 1,
+                pistaUsada: r.pistasUsadas || 0
+            });
+        }
+        try { await incrementarMapaAluno(e.nome, e.turma, e.mod, deltas); }
+        catch(err) { console.warn("[Aprender] incrementarMapaAluno falhou:", err); }
+
+        try {
+            mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(e.nome, e.turma);
+            await verificarPromocoes(e.nome, e.turma, e.mod, mapaFonteAgregada);
+        } catch(err) { console.warn("[Aprender] verificarPromocoes falhou:", err); }
+
+        try { await verificarCertificadosPosPartida(e.nome, e.turma, e.mod); }
+        catch(err) { console.warn("[Aprender] certificados falhou:", err); }
+    }
+
+    function renderizarResumoAprender(saiuAntes) {
+        const e = aprenderEstado;
+        const ctn = document.getElementById("aprender-conteudo");
+        if (!e || !ctn) return;
+
+        const total = e.resultados.length;
+        const acertosPrimeira = e.resultados.filter(r => r.acertouNaPrimeira).length;
+        const comAjuda = e.resultados.filter(r => !r.acertouNaPrimeira && r.acertou).length;
+        const aRever = e.resultados.filter(r => !r.acertou).length;
+
+        let emojiHero = "🎯";
+        let titulo = "Sessão concluída!";
+        let sub = "Você praticou sem pressão. Cada conta reforça a memória.";
+        if (saiuAntes) {
+            emojiHero = "⏸️";
+            titulo = "Sessão encerrada";
+            sub = `Você parou na conta ${total} de ${e.tamanhoSessao}. O que você já fez ficou registrado.`;
+        } else if (acertosPrimeira === total && total > 0) {
+            emojiHero = "🏆";
+            titulo = "Sessão perfeita!";
+            sub = "Você acertou tudo de primeira. Que memória afiada!";
+        } else if (acertosPrimeira >= Math.ceil(total * 0.6)) {
+            emojiHero = "🌟";
+            titulo = "Excelente trabalho!";
+            sub = "A maior parte das contas você acertou de primeira.";
+        }
+
+        let listaRevisarHtml;
+        if (e.aRevisar.length > 0) {
+            const itens = e.aRevisar.slice(0, 6).map(r => `
+                <li>
+                    <span class="emoji">🎯</span>
+                    <span class="op">${r.fA} × ${r.fB}</span>
+                    <span>precisa de mais prática</span>
+                </li>`).join("");
+            listaRevisarHtml = `<div class="aprender-resumo-lista">
+                <div class="aprender-resumo-lista-titulo">🔁 Contas para revisar</div>
+                <ul>${itens}</ul>
+            </div>`;
+        } else {
+            listaRevisarHtml = `<div class="aprender-resumo-vazio">✅ Nenhuma conta ficou pendente de revisão nesta sessão!</div>`;
+        }
+
+        const acoes = [];
+        if (e.aRevisar.length > 0) acoes.push(`<button class="aprender-btn-principal" onclick="reverContasAprender()">🔁 Rever estas contas</button>`);
+        acoes.push(`<button class="aprender-btn-secundario" onclick="sairResumoAprender()">Voltar ao início</button>`);
+
+        ctn.innerHTML = `
+            <div class="aprender-resumo">
+                <div class="aprender-resumo-hero">
+                    <span class="aprender-resumo-emoji">${emojiHero}</span>
+                    <h2 class="aprender-resumo-titulo">${titulo}</h2>
+                    <p class="aprender-resumo-sub">${sub}</p>
+                </div>
+                <div class="aprender-resumo-stats">
+                    <div class="aprender-resumo-stat ok"><span class="valor">${acertosPrimeira}</span><span class="rotulo">De primeira</span></div>
+                    <div class="aprender-resumo-stat ajuda"><span class="valor">${comAjuda}</span><span class="rotulo">Com pista</span></div>
+                    <div class="aprender-resumo-stat rever"><span class="valor">${aRever}</span><span class="rotulo">Para revisar</span></div>
+                </div>
+                ${listaRevisarHtml}
+                <div class="aprender-acoes ${acoes.length === 1 ? "uma-coluna" : ""}">${acoes.join("")}</div>
+            </div>
+        `;
+
+        try {
+            if (!saiuAntes && acertosPrimeira === total && total > 0) { somSecaoCompleta(); dispararConfetes(); }
+            else if (!saiuAntes) { somConclusao(); }
+        } catch(err) {}
+    }
+
+    function sairResumoAprender() {
+        aprenderEstado = null;
+        mostrarTela("tela-inicial");
+        try { atualizarTelaInicialComEtapa(); } catch(err) {}
+    }
+
+    function reverContasAprender() {
+        const e = aprenderEstado;
+        if (!e || !e.aRevisar.length) return;
+        const ops = e.aRevisar.map(r => ({ fA: r.fA, fB: r.fB }));
+        aprenderEstado = {
+            modoId: e.modoId, cfg: e.cfg, mod: e.mod, nome: e.nome, turma: e.turma,
+            tamanhoSessao: Math.min(ops.length, APRENDER_SESSAO_PADRAO),
+            indiceAtual: 0, perguntaAtual: null, pistaNivel: 0,
+            tentativas: 0, acertou: false, respondido: false,
+            resultados: [], aRevisar: [], sessaoOps: ops.slice(0, Math.min(ops.length, APRENDER_SESSAO_PADRAO))
+        };
+        proximaPerguntaAprender();
+    }
+
+    // ─── ESC fecha o mini-menu ───
+    document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        const m = document.getElementById("modal-menu-treino");
+        if (m && !m.classList.contains("hidden")) fecharMenuTreino();
+    });
+    // ▲▲▲ FIM [19.06]
     </script>
 </body>
 </html>
