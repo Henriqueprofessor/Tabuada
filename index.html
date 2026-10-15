@@ -7140,6 +7140,49 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.69] */
 
+        /* ▼▼▼ [02.70] Atalho do rodapé de "Minhas Posições" ─── INÍCIO ─── */
+        /* v10.5.7 · Botão contextual no rodapé do card que leva direto ao
+           Treino Inteligente da modalidade com mais pendências. Substitui
+           o acesso rápido que o card antigo da Home oferecia. */
+
+        .home-modalidades-atalho {
+            display: block;
+            width: 100%;
+            margin: 10px 0 0;
+            padding: 11px 14px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.10) 0%, rgba(14, 165, 233, 0.05) 100%);
+            color: var(--neon-cyan);
+            border: 1px dashed rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: center;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+            box-shadow: none;
+            line-height: 1.35;
+            box-sizing: border-box;
+        }
+        .home-modalidades-atalho:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.18) 0%, rgba(14, 165, 233, 0.10) 100%);
+            border-style: solid;
+            border-color: var(--neon-cyan);
+            color: #a5f3fc;
+        }
+        .home-modalidades-atalho:focus-visible {
+            outline: 3px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+        @media (max-width: 520px) {
+            .home-modalidades-atalho { font-size: 12px; padding: 10px 12px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .home-modalidades-atalho { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.70] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -7213,13 +7256,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div id="ritmo-copa-container"></div>
         <div id="meta-pessoal-container"></div>
         <div id="mapa-home-container"></div>
-
-        <div class="home-card">
-            <div class="home-card-titulo">🎯 Treino Inteligente</div>
-            <div id="home-treino-inteligente-conteudo">
-                <div class="home-empty-msg">Jogue uma partida para liberar o treino personalizado.</div>
-            </div>
-        </div>
 
         <div class="home-card">
             <div class="home-card-titulo">📅 Etapa Classificatória</div>
@@ -9009,15 +9045,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [07.08]
     // ▼▼▼ [07.08.bis] Mapa de Tabuadas — Card da Home ───────────
-    // Estado do modal do mapa
+    // v10.5.7 · Botão dinâmico abaixo do seletor de modalidade:
+    //   · 1 a 5 pendentes na modalidade ativa  → Foco Absoluto
+    //   · 6 ou mais pendentes                  → Treino Inteligente
+
     let modalMapaMod = "todas";
-    // Fonte GLOBAL (mesma que o resto do jogo usa) — carregada uma vez ao abrir o modal
     let modalMapaFonteAgregada = {};
     let modalMapaFonteUltima = {};
-    // Backup do estado global (restaurado ao fechar)
     let modalMapaBackup = null;
 
-    // v10.4.2 — chave da modalidade escolhida no seletor do card
     const STORAGE_FOCO_MOD = "copa_foco_mod";
 
     async function renderizarMapaHome() {
@@ -9036,15 +9072,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
 
         try {
-            // Universo = 100 operações (1..10 × 1..10) — igual a TOTAL_OPERACOES_MAPA
             const todasChaves = [];
             FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => todasChaves.push(`${a}x${b}`)));
             const totalOps = todasChaves.length;
 
-            // Fonte global (mescla das 3 modalidades)
             const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
 
-            // Conta dominadas/pendentes por modalidade
             const pendentesPorMod = {};
             const dominadasPorMod = {};
             for (const mod of Object.keys(MODALIDADES)) {
@@ -9058,7 +9091,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 pendentesPorMod[mod] = ops.length - dom;
             }
 
-            // Contagem global
             let totalDominadas = 0;
             todasChaves.forEach(k => {
                 const h = normalizarHistoricoOperacao(mapaGlobal[k]);
@@ -9067,7 +9099,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const pct = totalOps ? Math.round((totalDominadas / totalOps) * 100) : 0;
             const totalPendentes = totalOps - totalDominadas;
 
-            // Chips por modalidade
             const iconesMod  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
             const rotulosMod = { "2-5": "2-5", "6-9": "6-9", "0-10": "1-10" };
             let chipsHtml = "";
@@ -9076,8 +9107,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 chipsHtml += `<span class="mapa-home-chip"><span class="icone">${iconesMod[mod] || "📖"}</span> ${rotulosMod[mod] || mod}: <strong>${dominadasPorMod[mod]}/${ops.length}</strong></span>`;
             }
 
-            // v10.4.2 — Decide a modalidade ativa do seletor.
-            // Regra: usa a salva; se ela não tiver pendências mas outra tiver, migra para a que tem mais.
             let modAtiva = localStorage.getItem(STORAGE_FOCO_MOD) || "0-10";
             if (!MODALIDADES[modAtiva]) modAtiva = "0-10";
             if (pendentesPorMod[modAtiva] === 0 && totalPendentes > 0) {
@@ -9087,7 +9116,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 if (comPend.length) modAtiva = comPend[0];
             }
 
-            // Seletor de modalidade (aparece só se houver pendências em qualquer modalidade)
             let seletorHtml = "";
             if (totalPendentes > 0) {
                 const botoes = Object.keys(MODALIDADES).map(m => {
@@ -9103,18 +9131,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 </div>`;
             }
 
-            // Botão de ação: contextual à modalidade escolhida
+            // ─── Botão dinâmico ───
             let botaoAcaoHtml = "";
             const pendNaAtiva = pendentesPorMod[modAtiva] || 0;
             if (pendNaAtiva > 0) {
-                const ehFocoAbsoluto = pendNaAtiva <= 5;
-                const label = ehFocoAbsoluto
-                    ? `🎯 Foco absoluto: ${pendNaAtiva} ${pendNaAtiva === 1 ? "operação" : "operações"} em ${rotulosMod[modAtiva]}`
-                    : `🎯 Treinar ${pendNaAtiva} operações pendentes em ${rotulosMod[modAtiva]}`;
-                const cor = ehFocoAbsoluto ? "#fde68a" : "var(--neon-cyan)";
-                const borda = ehFocoAbsoluto ? "rgba(251,191,36,.7)" : "rgba(34,211,238,.4)";
-                const fundo = ehFocoAbsoluto ? "rgba(251,191,36,.10)" : "transparent";
-                botaoAcaoHtml = `<button class="home-btn-link" style="margin-top:2px;border-style:solid;border-color:${borda};color:${cor};background:${fundo};" onclick="iniciarFocoAbsolutoDaHome('${modAtiva}')">${label}</button>`;
+                if (pendNaAtiva <= 5) {
+                    // Foco Absoluto
+                    const label = `🎯 Foco absoluto: ${pendNaAtiva} ${pendNaAtiva === 1 ? "operação" : "operações"} em ${rotulosMod[modAtiva]}`;
+                    botaoAcaoHtml = `<button class="home-btn-link" style="margin-top:2px;border-style:solid;border-color:rgba(251,191,36,.7);color:#fde68a;background:rgba(251,191,36,.10);" onclick="iniciarFocoAbsolutoDaHome('${modAtiva}')">${label}</button>`;
+                } else {
+                    // Treino Inteligente
+                    const label = `🧠 Treinar as ${pendNaAtiva} pendentes em ${rotulosMod[modAtiva]}`;
+                    botaoAcaoHtml = `<button class="home-btn-link" style="margin-top:2px;border-style:solid;border-color:rgba(34,211,238,.45);color:var(--neon-cyan);background:rgba(34,211,238,.08);" onclick="iniciarTreinoInteligenteParaMod('${modAtiva}')">${label}</button>`;
+                }
             } else if (totalPendentes > 0) {
                 botaoAcaoHtml = `<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:6px 0;">✓ Você já domina tudo nesta modalidade. Escolha outra acima.</div>`;
             }
@@ -9149,14 +9178,30 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // v10.4.2 — Troca a modalidade de foco e re-renderiza o card.
     function escolherModFoco(mod) {
         if (!MODALIDADES[mod]) return;
         localStorage.setItem(STORAGE_FOCO_MOD, mod);
         renderizarMapaHome();
     }
 
-    // ─── Modal do mapa completo (3 abas, fonte global) ─────────────────
+    // ─── Wrapper para o botão "Treinar pendentes" do card do Mapa ───
+    async function iniciarTreinoInteligenteParaMod(mod) {
+        if (!MODALIDADES[mod]) return;
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
+        alunoAtual = nome;
+        turmaAtual = turma;
+        modalidadeAtual = mod;
+        treinoAnonimo = false;
+        treinoFocoOperacoes = null;
+        treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
+        await carregarFocoTreino(nome, turma, mod);
+        await iniciarTreinoInteligente();
+    }
+
+    // ─── Modal do mapa completo ───
     async function abrirMapaCompleto() {
         const modal = document.getElementById("modal-mapa-completo");
         const container = document.getElementById("modal-mapa-completo-conteudo");
@@ -13617,11 +13662,12 @@ if (containerProg) {
     }
 
     function mostrarTela(id) {
-        // v10.5.5 · Adicionada "tela-aprender" à lista.
+        // v10.5.7 · "tela-aprender" permanece; o card do Treino Inteligente
+        // saiu da Home — a chamada renderizarTreinoInteligenteHome() foi
+        // removida do fluxo (a função continua no arquivo por compatibilidade).
         ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso","tela-aprender"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
 
-        // ▼▼▼ CORREÇÃO: Preenche automaticamente o nome e a turma na tela de cadastro
         if (id === "tela-single") {
             const nomeSalvo = obterNomeSalvoAluno();
             const turmaSalva = obterTurmaSalvaAluno();
@@ -13630,15 +13676,10 @@ if (containerProg) {
             if (nomeSalvo && inputNome) inputNome.value = nomeSalvo;
             if (turmaSalva && selectTurma) selectTurma.value = turmaSalva;
         }
-        // ▲▲▲ FIM DA CORREÇÃO
 
-        // ▼▼▼ NAVEGAÇÃO INFERIOR GLOBAL
         atualizarNavGlobal(id);
-        // ▲▲▲
 
-        // ▼ v10.4.8 — FAB do Coach (visível em quase todas as telas, exceto Jogo/Cadastro/Preparação/Painel)
         try { atualizarFABCoach(id); } catch(e) { console.warn("[FAB Coach] Falha:", e); }
-        // ▲
 
         if (id === "tela-inicial") {
             renderizarMetaPessoal();
@@ -13646,9 +13687,7 @@ if (containerProg) {
             atualizarTelaInicialComEtapa();
             preencherHomeEsports();
             renderizarMapaHome();
-            renderizarTreinoInteligenteHome();
         }
-        // ▼ v10.5.2 — Ao entrar no Ranking, reseta para a tela limpa (só os 2 botões de escopo)
         if (id === "tela-ranking") {
             atualizarDisplayUltimaSincronizacao();
             aplicarTurmaSalvaNoFiltro();
@@ -13720,7 +13759,6 @@ if (containerProg) {
         }
     }
 
-    // v10.4.1 — Escolhe o modo de treino conforme quantidade de operações pendentes.
     async function iniciarTreinoInteligente() {
         const lista = await montarListaTreinoInteligente(alunoAtual, turmaAtual, modalidadeAtual);
         const pendentes = lista.filter(i => i.peso > 1);
@@ -13742,7 +13780,6 @@ if (containerProg) {
         iniciarPartidaTreino();
     }
 
-    // v10.4.2 — Aceita a modalidade como parâmetro (vinda do seletor do card do Mapa).
     async function iniciarFocoAbsolutoDaHome(mod) {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -14851,6 +14888,10 @@ if (containerProg) {
     // ▲▲▲ FIM [15.03]
 
     // ▼▼▼ [15.04] Card "Treino Inteligente" na Home ───────────────────
+    // v10.5.7 · A função renderizarTreinoInteligenteHome() continua no
+    // arquivo por compatibilidade, mas o card saiu da Home. O
+    // iniciarTreinoInteligenteDaHome() agora aceita mod opcional.
+
     async function renderizarTreinoInteligenteHome() {
         const c = document.getElementById("home-treino-inteligente-conteudo");
         if (!c) return;
@@ -14868,7 +14909,6 @@ if (containerProg) {
                 return;
             }
             const pctDominio = Math.round((cont.verde / cont.total) * 100);
-            // ⚙️ L2 — Botão convidativo (sem prometer número) + texto de apoio com contexto
             c.innerHTML = `
                 <div class="home-status-etapa" style="gap:6px;">
                     <div style="font-size:13px;line-height:1.5;color:var(--text-secondary);">
@@ -14903,14 +14943,16 @@ if (containerProg) {
             c.innerHTML = `<div class="home-empty-msg">Não foi possível carregar agora.</div>`;
         }
     }
-    async function iniciarTreinoInteligenteDaHome() {
+
+    // Aceita mod opcional. Se não vier, cai no comportamento antigo.
+    async function iniciarTreinoInteligenteDaHome(mod) {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
-        const mod = obterModalidadeMetaAtual();
+        const modalidade = (mod && MODALIDADES[mod]) ? mod : obterModalidadeMetaAtual();
         if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
-        alunoAtual = nome; turmaAtual = turma; modalidadeAtual = mod;
+        alunoAtual = nome; turmaAtual = turma; modalidadeAtual = modalidade;
         treinoAnonimo = false;
-        await carregarFocoTreino(nome, turma, mod);
+        await carregarFocoTreino(nome, turma, modalidade);
         await iniciarTreinoInteligente();
     }
     // ▲▲▲ FIM [15.04]
@@ -18593,8 +18635,9 @@ if (containerProg) {
     // ▲▲▲ FIM [18.06]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.5.5 · treinarModalidadeHome abre o mini-menu de treino
-    // (bloco [04.18]) em vez de ir direto ao Treino Inteligente.
+    // v10.5.7 · Rodapé do card "Minhas Posições" ganha um atalho para
+    // o Treino Inteligente da modalidade com mais pendências — preserva
+    // o acesso de 2 toques que existia antes do card antigo.
 
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
@@ -18610,6 +18653,10 @@ if (containerProg) {
             : "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
 
         let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
+        let pendentesTotais = 0;
+        let modComMaisPend = null;
+        let pendentesDaMais = 0;
+
         if (nome && turma) {
             try {
                 const chave = chaveAlbum(nome, turma);
@@ -18643,6 +18690,21 @@ if (containerProg) {
                 dadosPorMod["2-5"]  = montar("2-5",  r25);
                 dadosPorMod["6-9"]  = montar("6-9",  r69);
                 dadosPorMod["0-10"] = montar("0-10", r010);
+
+                // Conta pendências por modalidade para o atalho do rodapé
+                try {
+                    const pend = {};
+                    for (const m of Object.keys(MODALIDADES)) {
+                        const c = await contarPendentesTreino(nome, turma, m);
+                        pend[m] = c.pendentes || 0;
+                        pendentesTotais += pend[m];
+                    }
+                    const ordenado = Object.keys(pend).sort((a, b) => pend[b] - pend[a]);
+                    if (ordenado.length && pend[ordenado[0]] > 0) {
+                        modComMaisPend = ordenado[0];
+                        pendentesDaMais = pend[ordenado[0]];
+                    }
+                } catch(e) { console.warn("[Home/Modalidades] Falha ao contar pendências:", e); }
             } catch(e) {
                 console.warn("[Home/Modalidades] Falha ao montar dados:", e);
             }
@@ -18727,11 +18789,22 @@ if (containerProg) {
             </div>`;
         });
 
+        // ─── Atalho do rodapé — só aparece se o aluno tem pendências ───
+        let atalhoHtml = "";
+        if (modComMaisPend && pendentesDaMais > 0) {
+            const plural = pendentesDaMais === 1 ? "operação" : "operações";
+            const rotuloMod = rotulos[modComMaisPend] || modComMaisPend;
+            atalhoHtml = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">
+                🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →
+            </button>`;
+        }
+
         ctn.innerHTML = `<div class="home-modalidades-card">
             <div class="home-modalidades-titulo">🏆 ${escaparHtml(tituloAcao)}</div>
             <div class="home-modalidades-sub">${subtitulo}</div>
             <div class="home-modalidades-lista">${linhas}</div>
             <div class="home-modalidades-rodape">⚠️ Classificação provisória · Top 4 de cada modalidade avança para a Final</div>
+            ${atalhoHtml}
         </div>`;
     }
 
@@ -18779,8 +18852,6 @@ if (containerProg) {
             return;
         }
 
-        // v10.5.5 · Abre o mini-menu de treino em vez de ir direto ao
-        // Treino Inteligente. Preserva a modalidade clicada.
         abrirMenuTreino(mod);
     }
     // ▲▲▲ FIM [18.07]
