@@ -24592,6 +24592,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     //         acertosTreino, errosTreino,
     //         porTipoAcessos/{modoId},
     //         porTipoConcluidos/{modoId}
+    //
+    // v10.7.2 · Resiliência a permission_denied: se as regras do Firebase
+    // ainda não incluem copa_evento, o módulo detecta uma única vez,
+    // loga UMA mensagem informativa (console.info, não warn), e para de
+    // tentar por 10 minutos antes de reaver a permissão. Sem spam no
+    // console e sem tentar a cada clique de treino.
 
     const EVENTO_TIPOS_TREINO = [
         { id: "inteligente",  icone: "🧠", nome: "Treino Inteligente" },
@@ -24603,21 +24609,51 @@ window.addEventListener("DOMContentLoaded", async () => {
     ];
 
     let _eventoMetaCache = { dados: null, ts: 0 };
+    let _eventoSemPermissao = false;
+    let _eventoSemPermissaoAvisado = false;
+    let _eventoSemPermissaoTs = 0;
     const _EVENTO_META_CACHE_MS = 30 * 1000;
+    const _EVENTO_SEM_PERMISSAO_TTL_MS = 10 * 60 * 1000;
 
     async function obterMetaDoEventoAtivo(forcar) {
         const agora = Date.now();
+
+        // Se já sabemos que não temos permissão (regras do Firebase ainda
+        // não incluem copa_evento), não tenta de novo até o TTL passar.
+        if (_eventoSemPermissao && (agora - _eventoSemPermissaoTs) < _EVENTO_SEM_PERMISSAO_TTL_MS) {
+            return null;
+        }
+
         if (!forcar && _eventoMetaCache.dados !== undefined
                      && (agora - _eventoMetaCache.ts) < _EVENTO_META_CACHE_MS) {
             return _eventoMetaCache.dados;
         }
+
         try {
             const snap = await database.ref(`${CAMINHO_EVENTO}/atual/meta`).once("value");
             const meta = snap.val() || null;
             _eventoMetaCache = { dados: meta, ts: agora };
+            // Se funcionou, limpa o flag (regras podem ter mudado)
+            _eventoSemPermissao = false;
+            _eventoSemPermissaoAvisado = false;
             return meta;
         } catch(e) {
-            console.warn("[Evento] Falha ao ler meta:", e);
+            const ehPermissao = !!(e && e.message && e.message.includes("permission_denied"));
+            if (ehPermissao) {
+                _eventoSemPermissao = true;
+                _eventoSemPermissaoTs = agora;
+                if (!_eventoSemPermissaoAvisado) {
+                    _eventoSemPermissaoAvisado = true;
+                    console.info(
+                        "[Evento] Sem permissão para ler copa_evento. " +
+                        "Isso é normal se as regras do Firebase ainda não incluem esse caminho. " +
+                        "As funções do evento ficarão desativadas silenciosamente até a permissão ser concedida. " +
+                        "Professor: veja o Firebase Console → Realtime Database → Rules para liberar o caminho."
+                    );
+                }
+            } else {
+                console.warn("[Evento] Falha ao ler meta:", e);
+            }
             return null;
         }
     }
@@ -24762,12 +24798,18 @@ window.addEventListener("DOMContentLoaded", async () => {
                 criadoEm: Date.now()
             });
             limparCacheMetaEvento();
+            _eventoSemPermissao = false;
+            _eventoSemPermissaoAvisado = false;
             notificar("✅ Evento iniciado!", "sucesso", 4000);
             try { somNovoRecorde(); } catch(e) {}
             await renderizarPainelEvento();
         } catch(e) {
             console.warn("[Evento] Falha ao iniciar:", e);
-            notificar("❌ Não foi possível iniciar o evento.", "erro", 5000);
+            if (e && e.message && e.message.includes("permission_denied")) {
+                notificar("❌ Sem permissão para gravar em copa_evento. Veja as regras do Firebase.", "erro", 8000);
+            } else {
+                notificar("❌ Não foi possível iniciar o evento.", "erro", 5000);
+            }
         }
     }
 
@@ -24805,6 +24847,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         try {
             await database.ref(`${CAMINHO_EVENTO}/atual`).remove();
             limparCacheMetaEvento();
+            _eventoSemPermissao = false;
+            _eventoSemPermissaoAvisado = false;
             notificar("🗑️ Evento resetado.", "info", 4000);
             await renderizarPainelEvento();
         } catch(e) {
@@ -24836,7 +24880,16 @@ window.addEventListener("DOMContentLoaded", async () => {
             container.innerHTML = renderizarCardEvento(meta, totais, diario);
         } catch(e) {
             console.warn("[Evento] Falha ao renderizar:", e);
-            container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar os dados do evento agora.<br>Tente novamente em instantes.</div>`;
+            const ehPermissao = !!(e && e.message && e.message.includes("permission_denied"));
+            if (ehPermissao) {
+                container.innerHTML = `<div class="painel-evento-vazio">
+                    ⚠️ <strong>Sem permissão para ler o caminho copa_evento.</strong><br>
+                    O sistema de Evento precisa que as regras do Firebase incluam esse caminho.
+                    No Firebase Console → Realtime Database → Rules, adicione a permissão para <code>copa_evento</code>.
+                </div>`;
+            } else {
+                container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar os dados do evento agora.<br>Tente novamente em instantes.</div>`;
+            }
         }
     }
 
@@ -24969,7 +25022,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     function renderizarCardEvento(meta, totais, diario) {
         const cab = _renderizarCabecalhoEvento(meta);
         if (!meta || !meta.inicioEm) {
-            // Sem evento: só mostra o vazio + ações
             return `<div class="painel-evento-wrap">${cab}</div>`;
         }
         const totaisHtml = _renderizarTotaisEvento(totais);
@@ -25069,14 +25121,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     // ─────────────────────────────────────────────────────────────────
     // Hooks automáticos
     // ─────────────────────────────────────────────────────────────────
-    // Observam as funções originais do app e disparam o registro de
-    // atividade no evento. Não substituem as funções — apenas adicionam
-    // uma chamada ANTES do original.
-    //
-    // Isso evita reescrever blocos gigantes como [14.04], [14.08],
-    // [19.06] e [19.07]. Se alguma dessas funções for renomeada no
-    // futuro, o hook só registra um aviso no console — o app continua
-    // funcionando normalmente.
     (function instalarHooksDoEvento() {
         if (typeof window === "undefined") return;
 
@@ -25093,32 +25137,25 @@ window.addEventListener("DOMContentLoaded", async () => {
             };
         }
 
-        // ─── Acessos a treino ───
-        // Motor antigo: Treino Inteligente, Foco Absoluto, Variações — todos
-        // passam por iniciarPartidaTreino.
+        // Acessos a treino
         wrap("iniciarPartidaTreino", () => {
             if (treinoAnonimo) return;
             registrarAcessoDeTreinoNoEvento("inteligente");
         });
 
-        // Motor Aprender — Reverso, Decomposição, Espelho.
         wrap("abrirTreinoAprender", (modoId) => {
             registrarAcessoDeTreinoNoEvento(modoId);
         });
 
-        // Chunking — usa a variante com tabuada fixa.
         wrap("abrirTreinoAprenderComTabuadaFixa", (modoId) => {
             registrarAcessoDeTreinoNoEvento(modoId || "chunking");
         });
 
-        // Progressivo — motor próprio.
         wrap("iniciarTreinoProgressivo", () => {
             registrarAcessoDeTreinoNoEvento("progressivo");
         });
 
-        // ─── Conclusões de treino ───
-        // Aprender: renderizarResumoAprender é o ÚLTIMO passo da sessão —
-        // seja por conclusão natural, seja por saída antecipada.
+        // Conclusões de treino
         wrap("renderizarResumoAprender", (saiuAntes) => {
             const e = aprenderEstado;
             if (!e) return;
@@ -25129,7 +25166,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             registrarConclusaoDeTreinoNoEvento(e.modoId, acertos, erros);
         });
 
-        // Progressivo: mesmo padrão.
         wrap("renderizarResumoProgressivo", (saiuAntes) => {
             const e = progressivoEstado;
             if (!e) return;
@@ -25140,7 +25176,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             registrarConclusaoDeTreinoNoEvento("progressivo", acertos, erros);
         });
 
-        // Partidas oficiais + treino do motor antigo (finalizarCircuito).
+        // Partidas oficiais + treino do motor antigo
         wrap("finalizarCircuito", () => {
             const eraTreino = !!modoTreino;
             if (eraTreino) {
