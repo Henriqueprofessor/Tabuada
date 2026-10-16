@@ -20214,8 +20214,36 @@ window.addEventListener("DOMContentLoaded", async () => {
     // Modos implementados: 🔄 Reverso · 🧩 Decomposição · 🪞 Espelho ·
     //                      🧱 Chunking (input, tabuada isolada).
     // O Progressivo é motor separado (bloco [19.07]).
+    //
+    // v10.5.8b · Correção pedagógica do pista1 (Estratégia).
+    // A estratégia "metade e dobro" só funciona para fator PAR. Para
+    // ímpar, ela dá resposta errada. O helper _gerarPistaDobraOuSoma
+    // cobre todos os casos corretamente.
 
     const STORAGE_MENU_TREINO_USOS = "copa_menu_treino_usos";
+
+    // ─── Helper pedagógico: pista de "estratégia" correta para fA × fB ───
+    // Cobre todos os casos:
+    //   · fB = 1   → identidade
+    //   · fB = 2   → dobro simples
+    //   · fB = 5   → metade de ×10
+    //   · fB = 9   → ×10 menos fA
+    //   · fB = 10  → zero no final
+    //   · fB par   → metade e dobro (funciona!)
+    //   · fB ímpar → (fB-1) e some fA (fB-1 é par, seguro)
+    function _gerarPistaDobraOuSoma(fA, fB) {
+        if (fB === 1) return `Todo número vezes 1 é ele mesmo: <strong>${fA}</strong>.`;
+        if (fB === 2) return `Dobrar é só somar <strong>${fA} + ${fA}</strong>.`;
+        if (fB === 5) return `Pense em <strong>${fA} × 10</strong> e divida por 2.`;
+        if (fB === 9) return `Pense em <strong>${fA} × 10</strong> e subtraia ${fA}.`;
+        if (fB === 10) return `É só colocar um zero no final de <strong>${fA}</strong>.`;
+        if (fB % 2 === 0) {
+            const metade = fB / 2;
+            return `Pense em <strong>${fA} × ${metade}</strong> e dobre.`;
+        }
+        // fB ímpar (3, 7) — fB - 1 é par
+        return `Pense em <strong>${fA} × ${fB - 1}</strong> e some ${fA}.`;
+    }
 
     const MODOS_TREINO = [
         { id: "inteligente", icone: "🧠", nome: "Treino Inteligente",
@@ -20248,7 +20276,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     let menuTreinoDados = { pendentes: 0, total: 0 };
     let aprenderEstado = null;
 
-    // ─── Usos (memória de ordenação) ───
     function carregarUsosMenuTreino() {
         try { const raw = localStorage.getItem(STORAGE_MENU_TREINO_USOS); return raw ? JSON.parse(raw) : {}; }
         catch(e) { return {}; }
@@ -20261,7 +20288,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         } catch(e) {}
     }
 
-    // ─── MINI-MENU ───
     async function abrirMenuTreino(mod) {
         if (!MODALIDADES[mod]) return;
         const modal = document.getElementById("modal-menu-treino");
@@ -20393,13 +20419,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (!mod) { fecharMenuTreino(); return; }
         registrarUsoMenuTreino(modoId);
 
-        // Chunking → abre seletor de tabuada DENTRO do mini-menu
         if (modoId === "chunking") {
             renderizarSeletorTabuadaChunking(mod);
             return;
         }
 
-        // Progressivo → motor próprio (bloco [19.07])
         if (modoId === "progressivo") {
             fecharMenuTreino();
             iniciarTreinoProgressivo(mod);
@@ -20415,7 +20439,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (modo) notificarModoEmBreve(modo.nome);
     }
 
-    // ─── Seletor de tabuada (Chunking) ───
     function renderizarSeletorTabuadaChunking(mod) {
         const corpo = document.getElementById("menu-treino-corpo");
         const titulo = document.getElementById("menu-treino-titulo");
@@ -20459,16 +20482,17 @@ window.addEventListener("DOMContentLoaded", async () => {
         abrirTreinoAprenderComTabuadaFixa("chunking", mod, tabuada);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // MOTOR APRENDER — arquitetura por modo
-    // ═══════════════════════════════════════════════════════════════════
-
     const APRENDER_SESSAO_PADRAO = 5;
 
     function _escolherAncoraDecomposicao(fB) {
         if (fB <= 2) return 1;
         if (fB <= 5) return Math.max(1, Math.floor(fB / 2));
         return 5;
+    }
+
+    // Plural correto para "objetos"
+    function _pluralObjetos(n) {
+        return n === 1 ? "1 objeto" : `${n} objetos`;
     }
 
     const APRENDER_MODOS = {
@@ -20494,13 +20518,18 @@ window.addEventListener("DOMContentLoaded", async () => {
                 return { fA, fB, ocultar, produto, respostaCorreta, enunciadoHtml };
             },
 
+            // v10.5.8b · Pista corrigida. Se a incógnita é fB, a estratégia
+            // é descobrir "quantas vezes fA cabe em produto". Se é fA,
+            // o mesmo com fB. Cai na estratégia universal de dobra/soma
+            // quando faz sentido.
             pista1(p) {
-                const { fA, fB, ocultar } = p;
-                const metade = ocultar === "fB"
-                    ? Math.max(1, Math.floor(fB / 2))
-                    : Math.max(1, Math.floor(fA / 2));
-                return `Pense em <strong>${fA} × ${metade}</strong> e dobre.`;
+                const { fA, fB, produto, ocultar } = p;
+                if (ocultar === "fB") {
+                    return `Quantas vezes <strong>${fA}</strong> cabe em <strong>${produto}</strong>?<br><small style="opacity:0.85;">Dica de cálculo: ${_gerarPistaDobraOuSoma(fA, fB).replace(/<\/?strong>/g, "")}</small>`;
+                }
+                return `Quantas vezes <strong>${fB}</strong> cabe em <strong>${produto}</strong>?<br><small style="opacity:0.85;">Dica de cálculo: ${_gerarPistaDobraOuSoma(fB, fA).replace(/<\/?strong>/g, "")}</small>`;
             },
+
             pista2(p) {
                 const { fA, fB, ocultar } = p;
                 if (ocultar === "fB") {
@@ -20512,11 +20541,13 @@ window.addEventListener("DOMContentLoaded", async () => {
                 const resto = fA - metade;
                 return `${fA} × ${fB} = <strong>${metade} × ${fB} + ${resto} × ${fB}</strong> = ?`;
             },
+
             pista3(p) {
                 const { fA, fB } = p;
                 const total = fA * fB;
-                return `Imagine ${fA} grupos de ${fB} objetos:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${total}</strong> objetos no total.`;
+                return `Imagine ${fA} grupos de ${fB} ${fB === 1 ? "objeto" : "objetos"}:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${_pluralObjetos(total)}</strong> no total.`;
             },
+
             revelacao(p) {
                 const { fA, fB, ocultar } = p;
                 const produto = fA * fB;
@@ -20549,19 +20580,23 @@ window.addEventListener("DOMContentLoaded", async () => {
                 const enunciadoHtml = `${fA} × ${fB} = ${fA} × ${fC} + ${fA} × <span class="incognita">?</span>`;
                 return { fA, fB, fC, resto, produto, respostaCorreta, enunciadoHtml };
             },
+
             pista1(p) {
                 const { fB, fC } = p;
                 return `Conte de <strong>${fC}</strong> até <strong>${fB}</strong>: quantos passos você dá?`;
             },
+
             pista2(p) {
                 const { fA, fB, fC } = p;
                 return `${fA} × ${fB} = ${fA} × ${fC} + ${fA} × <strong>___</strong>`;
             },
+
             pista3(p) {
                 const { fA, fC, resto } = p;
                 const parcial = fA * fC;
                 return `Sabemos que <strong>${fA} × ${fC} = ${parcial}</strong>. Agora é só somar ${fA} <strong>${resto}</strong> ${resto === 1 ? "vez" : "vezes"}.`;
             },
+
             revelacao(p) {
                 const { fA, fB, fC, resto, produto } = p;
                 return `<strong>${fA} × ${fB} = ${fA} × ${fC} + ${fA} × ${resto} = ${fA * fC} + ${fA * resto} = ${produto}</strong>. A resposta é <strong>${resto}</strong>.`;
@@ -20611,10 +20646,10 @@ window.addEventListener("DOMContentLoaded", async () => {
                 };
             },
 
+            // v10.5.8b · Pista corrigida pelo helper universal
             pista1(p) {
                 const { fA, fB } = p;
-                const metade = Math.max(1, Math.floor(fB / 2));
-                return `Pense em <strong>${fA} × ${metade}</strong> e dobre.`;
+                return _gerarPistaDobraOuSoma(fA, fB);
             },
             pista2(p) {
                 const { fA, fB } = p;
@@ -20625,11 +20660,16 @@ window.addEventListener("DOMContentLoaded", async () => {
             pista3(p) {
                 const { fA, fB } = p;
                 const total = fA * fB;
-                return `Imagine ${fA} grupos de ${fB} objetos:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${total}</strong> objetos no total.`;
+                return `Imagine ${fA} grupos de ${fB} ${fB === 1 ? "objeto" : "objetos"}:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${_pluralObjetos(total)}</strong> no total.`;
             },
             revelacao(p) {
                 const { fA, fB } = p;
                 const produto = fA * fB;
+                if (fB === 1) return `<strong>${fA} × 1 = ${fA}</strong>. Todo número vezes 1 é ele mesmo.`;
+                if (fB === 2) return `<strong>${fA} × 2 = ${produto}</strong>. É só somar: ${fA} + ${fA} = ${produto}.`;
+                if (fB === 5) return `<strong>${fA} × 5 = ${produto}</strong>. Como ${fA} × 10 = ${fA * 10}, basta dividir por 2: ${fA * 10} ÷ 2 = ${produto}.`;
+                if (fB === 9) return `<strong>${fA} × 9 = ${produto}</strong>. Como ${fA} × 10 = ${fA * 10}, basta subtrair ${fA}: ${fA * 10} - ${fA} = ${produto}.`;
+                if (fB === 10) return `<strong>${fA} × 10 = ${produto}</strong>. É só colocar um zero no final de ${fA}.`;
                 const metade = Math.max(1, Math.floor(fB / 2));
                 return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${fA} × ${metade} = ${fA * metade}, basta somar: ${fA * metade} + ${fA * (fB - metade)} = ${produto}.`;
             }
@@ -20689,7 +20729,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         proximaPerguntaAprender();
     }
 
-    // Variante usada pelo Chunking: sessão gerada a partir de UMA tabuada.
     async function abrirTreinoAprenderComTabuadaFixa(modoId, mod, tabuada) {
         if (!MODALIDADES[mod]) return;
         const cfg = APRENDER_MODOS[modoId];
@@ -20699,7 +20738,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { mostrarTela("tela-single"); return; }
 
-        // 10 operações: tabuada × 1..10, embaralhadas
         const ops = [];
         for (let fB = 1; fB <= 10; fB++) ops.push({ fA: tabuada, fB });
         for (let i = ops.length - 1; i > 0; i--) {
@@ -21235,7 +21273,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         proximaPerguntaAprender();
     }
 
-    // ─── ESC fecha o mini-menu ───
     document.addEventListener("keydown", (e) => {
         if (e.key !== "Escape") return;
         const m = document.getElementById("modal-menu-treino");
