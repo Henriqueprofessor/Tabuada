@@ -19015,14 +19015,14 @@ if (containerProg) {
     // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
-    // v10.4.10 · Coach pessoal com IA — atualizado com Média Geral,
-    //            medalhas de Consistência, votação, patentes, bloqueio,
-    //            tempo esgotado, ✕ Encerrar e canal de mensagens.
+    // v10.5.7 · Coach agora conhece os 5 modos de treino.
+    // Adicionados: Helper 8 (identificarModoRecomendado),
+    // Helper 9 (resumoUsoTreinos), seções novas em montarBlocoPerfil
+    // e no prompt (PRÓXIMOS ALVOS DE TREINO + menu 10 + playbook 10).
 
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
 
-    // Telas onde o FAB NÃO deve aparecer
     const TELAS_SEM_COACH_FAB = new Set([
         "tela-jogo",
         "tela-single",
@@ -19030,9 +19030,6 @@ if (containerProg) {
         "tela-painel"
     ]);
 
-    // ─────────────────────────────────────────────────────────────────
-    // FAB — visibilidade controlada por mostrarTela()
-    // ─────────────────────────────────────────────────────────────────
     function atualizarFABCoach(idTela) {
         const fab = document.getElementById("coach-fab");
         if (!fab) return;
@@ -19221,8 +19218,9 @@ if (containerProg) {
 
         const porTabuada = analisarTabuadasDoAluno(mapaGlobal);
         const operacoesProblematicas = identificarOperacoesProblematicas(mapaGlobal, 8);
+        const usosTreino = carregarUsosMenuTreino();
 
-        return { perfil, posicoes, certificados, porTabuada, operacoesProblematicas };
+        return { perfil, posicoes, certificados, porTabuada, operacoesProblematicas, usosTreino };
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -19235,6 +19233,7 @@ if (containerProg) {
         const certs = (dados && dados.certificados) || {};
         const porTab = (dados && dados.porTabuada) || {};
         const probs = (dados && dados.operacoesProblematicas) || [];
+        const usos = (dados && dados.usosTreino) || {};
 
         const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
         const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
@@ -19295,7 +19294,7 @@ if (containerProg) {
             });
         }
 
-        // ⚙️ NOVO — MÉDIA GERAL (dados vêm do compilarDadosAluno via perfil)
+        // ─── NOVO v10.5.7: MÉDIA GERAL ───
         L.push("");
         L.push("📊 MÉDIA GERAL (só partidas oficiais — completas + parciais):");
         const m25  = Number(p.media25)  || 0;
@@ -19322,6 +19321,17 @@ if (containerProg) {
             L.push(`  • Medalhas de Consistência: ${medalhasConsist.join(", ")}`);
         } else {
             L.push(`  • Medalhas de Consistência: nenhuma ainda`);
+        }
+
+        // ─── NOVO v10.5.7: TREINOS USADOS + RECOMENDADO ───
+        L.push("");
+        L.push("🎯 TREINOS USADOS (histórico):");
+        L.push(`  • ${resumoUsoTreinos(usos)}`);
+
+        const recTreino = identificarModoRecomendado(dados, usos);
+        if (recTreino) {
+            L.push(`  • 🏋️ TREINO RECOMENDADO AGORA: ${recTreino.icone} ${recTreino.nome}`);
+            L.push(`     → motivo: ${recTreino.motivo}`);
         }
 
         L.push("");
@@ -19410,6 +19420,160 @@ if (containerProg) {
     }
 
     // ─────────────────────────────────────────────────────────────────
+    // Helper 8 (NOVO v10.5.7): modo de treino recomendado para o perfil
+    // ─────────────────────────────────────────────────────────────────
+    // Recebe os dados coletados + o histórico de uso dos modos.
+    // Retorna { modoId, nome, icone, motivo, quando } ou null.
+    //
+    // Diagnóstico:
+    //   · Primeira sessão              → Inteligente
+    //   · Domina tudo + velocidade é
+    //     o gargalo                    → Progressivo
+    //   · Uma tabuada muito fraca
+    //     (< 30%)                      → Chunking
+    //   · Muitas pendências (> 40%)    → Inteligente
+    //   · 3+ ops com < 50% de acerto   → Reverso
+    //   · 3+ ops entre 50 e 75%        → Decomposição
+    //   · Bom ritmo, poucas partidas   → Espelho
+    //   · Default                      → Inteligente
+    function identificarModoRecomendado(dados, usosTreino) {
+        const p = (dados && dados.perfil) || {};
+        const probs = (dados && dados.operacoesProblematicas) || [];
+        const porTab = (dados && dados.porTabuada) || {};
+
+        const totalPartidas = Number(p.totalPartidas) || 0;
+        const dominadas = Number(p.operacoesDominadas) || 0;
+        const pctDominio = Math.round((dominadas / 100) * 100);
+        const temposMedio = Number(p.melhorTempoMedio) || 999;
+        const pendentes = 100 - pctDominio;
+
+        // Regra 1: primeira sessão
+        if (totalPartidas === 0) {
+            return {
+                modoId: "inteligente",
+                nome: "Treino Inteligente",
+                icone: "🧠",
+                motivo: "você ainda não jogou nenhuma partida oficial — o Treino Inteligente escolhe as operações certas para começar.",
+                quando: "primeira sessão"
+            };
+        }
+
+        // Regra 2: domina tudo + velocidade é o gargalo
+        if (pctDominio >= 90 && temposMedio > 2.0) {
+            return {
+                modoId: "progressivo",
+                nome: "Progressivo",
+                icone: "⏱️",
+                motivo: `você domina ${pctDominio}% do mapa mas seu melhor tempo médio é ${temposMedio.toFixed(2)}s — o Progressivo aperta o cronômetro conforme você acerta.`,
+                quando: "domínio + velocidade"
+            };
+        }
+
+        // Regra 3: domina tudo
+        if (pctDominio >= 95) {
+            return {
+                modoId: "progressivo",
+                nome: "Progressivo",
+                icone: "⏱️",
+                motivo: `você já domina ${pctDominio}% do mapa — o próximo passo é velocidade. O Progressivo ajusta o cronômetro ao seu ritmo.`,
+                quando: "domínio + velocidade"
+            };
+        }
+
+        // Regra 4: tabuada muito fraca
+        const fracas = Object.entries(porTab)
+            .filter(([, d]) => d.pct < 30)
+            .sort((a, b) => a[1].pct - b[1].pct);
+        if (fracas.length > 0) {
+            const tab = fracas[0][0];
+            const pctTab = fracas[0][1].pct;
+            return {
+                modoId: "chunking",
+                nome: "Chunking",
+                icone: "🧱",
+                motivo: `a tabuada do ${tab} está em ${pctTab}% — o Chunking treina uma tabuada inteira de uma vez, foco total nela.`,
+                quando: "tabuada fraca"
+            };
+        }
+
+        // Regra 5: muitas pendências
+        if (pendentes >= 40) {
+            return {
+                modoId: "inteligente",
+                nome: "Treino Inteligente",
+                icone: "🧠",
+                motivo: `você tem ${pendentes}% do mapa em aberto. O Treino Inteligente ataca as operações mais urgentes primeiro, na ordem certa.`,
+                quando: "muitas pendências"
+            };
+        }
+
+        // Regra 6: operações com erro sistemático
+        const muitoRuins = probs.filter(o => o.taxa < 0.5);
+        if (muitoRuins.length >= 3) {
+            return {
+                modoId: "reverso",
+                nome: "Treino Reverso",
+                icone: "🔄",
+                motivo: `você tem ${muitoRuins.length} operações com menos de 50% de acerto. O Reverso força você a descobrir o número que falta — ajuda a fixar de verdade.`,
+                quando: "erros sistemáticos"
+            };
+        }
+
+        // Regra 7: operações em zona intermediária
+        const medias = probs.filter(o => o.taxa >= 0.5 && o.taxa < 0.75);
+        if (medias.length >= 3) {
+            return {
+                modoId: "decomposicao",
+                nome: "Decomposição",
+                icone: "🧩",
+                motivo: `você tem ${medias.length} operações entre 50% e 75% de acerto. A Decomposição ensina a montar o resultado em duas partes — ajuda quando você esquece.`,
+                quando: "consolidar raciocínio"
+            };
+        }
+
+        // Regra 8: bom ritmo + poucas partidas
+        if (pctDominio >= 60 && pctDominio < 95 && totalPartidas < 15) {
+            return {
+                modoId: "espelho",
+                nome: "Espelho",
+                icone: "🪞",
+                motivo: "você está em bom ritmo. O Espelho ajuda você a checar com honestidade o que já sabe de cor e o que ainda precisa treinar.",
+                quando: "autoavaliação"
+            };
+        }
+
+        // Default
+        return {
+            modoId: "inteligente",
+            nome: "Treino Inteligente",
+            icone: "🧠",
+            motivo: "o Treino Inteligente escolhe as operações que você mais precisa a cada sessão, sem você ter que decidir.",
+            quando: "recomendado para mim"
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Helper 9 (NOVO v10.5.7): resumo do uso dos modos
+    // ─────────────────────────────────────────────────────────────────
+    function resumoUsoTreinos(usos) {
+        if (!usos || typeof usos !== "object") return "nenhum treino ainda";
+        const modos = Object.keys(usos).filter(k => usos[k] > 0);
+        if (!modos.length) return "nenhum treino ainda";
+        const nomes = {
+            inteligente: "Inteligente",
+            reverso: "Reverso",
+            decomposicao: "Decomposição",
+            espelho: "Espelho",
+            chunking: "Chunking",
+            progressivo: "Progressivo"
+        };
+        return modos
+            .sort((a, b) => usos[b] - usos[a])
+            .map(m => `${nomes[m] || m}: ${usos[m]}×`)
+            .join(" · ");
+    }
+
+    // ─────────────────────────────────────────────────────────────────
     // Construção do prompt (persona de COACH)
     // ─────────────────────────────────────────────────────────────────
     function construirPromptIA(nome, turma, dadosPerfil) {
@@ -19437,12 +19601,13 @@ if (containerProg) {
             ? `\n═══ PERFIL COMPLETO DO ATLETA ═══\n\n${montarBlocoPerfil(dadosPerfil)}\n`
             : "";
 
-        // ─── PRÓXIMO ALVO (Opção C: certificado + medalha de consistência) ───
+        // ─── PRÓXIMO ALVO (certificado + medalha + treino) ───
         const proxCert = temDados ? identificarProximoCertificado(dadosPerfil) : null;
         const proxMedalha = temDados ? identificarProximaMedalhaConsistencia(dadosPerfil) : null;
+        const proxTreino = temDados ? identificarModoRecomendado(dadosPerfil, dadosPerfil.usosTreino || {}) : null;
 
         let blocoProxAlvo = "";
-        if (proxCert || proxMedalha) {
+        if (proxCert || proxMedalha || proxTreino) {
             blocoProxAlvo = `\n🎯 PRÓXIMOS ALVOS (os mais próximos de conquistar):\n`;
             if (proxCert) {
                 blocoProxAlvo += `  [CERTIFICADO] ${proxCert.cfg.icone} ${proxCert.cfg.nome} · ${proxCert.nomeMod}\n`;
@@ -19457,6 +19622,10 @@ if (containerProg) {
                     blocoProxAlvo += `     → alcançar média ≥ ${proxMedalha.alvo.toLocaleString("pt-BR")} pts em qualquer modalidade\n`;
                     blocoProxAlvo += `     → maior média atual: ${Math.round(proxMedalha.maxMedia).toLocaleString("pt-BR")} pts — faltam ${Math.round(proxMedalha.gap).toLocaleString("pt-BR")}\n`;
                 }
+            }
+            if (proxTreino) {
+                blocoProxAlvo += `  [TREINO RECOMENDADO] ${proxTreino.icone} ${proxTreino.nome}\n`;
+                blocoProxAlvo += `     → motivo: ${proxTreino.motivo}\n`;
             }
             blocoProxAlvo += `\n`;
         }
@@ -19478,7 +19647,7 @@ Quando o aluno colar este prompt, sua PRIMEIRA resposta deve ter EXATAMENTE esta
    • Ponto FORTE (cite número real)
    • Ponto FRACO (cite número real)
    • Destaque competitivo (posição real ou zona)
-3. MENU DE OPÇÕES (numeradas de 1 a 9, exatamente como abaixo)
+3. MENU DE OPÇÕES (numeradas de 1 a 10, exatamente como abaixo)
 4. Instrução: "Digite o número da opção ou escreva sua pergunta!"
 
 O MENU DEVE SER SEMPRE ESTE:
@@ -19492,6 +19661,7 @@ O MENU DEVE SER SEMPRE ESTE:
 7️⃣ 🎓 Como conquistar o próximo certificado
 8️⃣ 💬 Outro assunto
 9️⃣ 🏅 Como subir minha média geral
+🔟 🧠 Qual treino devo fazer agora?
 
 ═══ PLAYBOOK — COMO RESPONDER A CADA OPÇÃO ═══
 
@@ -19544,6 +19714,45 @@ O MENU DEVE SER SEMPRE ESTE:
    • Se ele ainda não jogou todas as 3 modalidades, incentive a experimentar
    Termine com uma ação concreta: "Jogue X partidas em [modalidade] mantendo Y de média."
 
+🔟 QUAL TREINO DEVO FAZER AGORA (NOVO):
+   Esta é a pergunta mais importante do coach moderno. Você conhece 6 modos:
+
+   A) 🧠 TREINO INTELIGENTE — o app escolhe.
+      Quando: aluno tem muitas pendências (>40% do mapa) OU primeira sessão.
+      Como funciona: sorteia as operações que você mais precisa, com peso por cor
+      (cinza > vermelho > amarelo > azul). É o "recomendado para mim".
+
+   B) 🔄 TREINO REVERSO — descobre o número que falta.
+      Exemplo: "3 × ? = 21". Quando: aluno erra operações sistematicamente
+      (<50% de acerto em 3+ operações). Ajuda a fixar de verdade, porque força
+      o raciocínio inverso.
+
+   C) 🧩 DECOMPOSIÇÃO — monta o resultado em duas partes.
+      Exemplo: "7 × 8 = 7 × 5 + 7 × ?". Quando: aluno erra entre 50% e 75%
+      em 3+ operações. Ajuda a derivar o resultado quando esquece.
+
+   D) 🪞 ESPELHO — flashcard com autoavaliação.
+      Você vê a conta, pensa, revela, e diz honestamente se 🟢 sabia de cor
+      ou 🔴 errei/demorei. Quando: aluno em bom ritmo, poucas partidas, quer
+      checar o que já domina de verdade.
+
+   E) 🧱 CHUNKING — uma tabuada isolada.
+      Treina as 10 contas de UMA tabuada escolhida. Quando: uma tabuada
+      específica está muito fraca (<30%). Foco total nela até decorar.
+
+   F) ⏱️ PROGRESSIVO — timer que se ajusta a você.
+      Começa em 10s, cai para 8s, 6s, 4s conforme você acerta. Se erra,
+      sobe de novo. Quando: você domina o conteúdo (>90% do mapa) mas o
+      tempo médio ainda é alto (>2,0s). Foco em automaticidade.
+
+   COMO RESPONDER:
+   Use o bloco "🏋️ TREINO RECOMENDADO AGORA" do perfil. Diga:
+     • O modo recomendado (nome + ícone)
+     • Por que (cite os números do perfil)
+     • Onde encontrar (Minhas Posições → 🎯 Treinar → escolher o modo)
+     • Uma dica prática ("faça uma sessão de 3 minutos hoje")
+   Se o aluno já usou algum modo, reconheça ("vi que você já fez 2× Reverso").
+
 ═══ TOM E ESTILO ═══
 • Fale como um treinador motivador, MAS com clareza de médico.
 • Use frases curtas. Exemplos: "Você está a 3 operações do Ouro." "Seu ponto forte é claro: Tabuada do 2."
@@ -19564,13 +19773,14 @@ O MENU DEVE SER SEMPRE ESTE:
 • Se o tempo de 10s esgotar, a pergunta CONTA COMO ERRADA. Não deixe em branco — é melhor chutar do que esperar o tempo acabar.
 • O botão "✕ Encerrar tentativa" só aparece a partir da 2ª partida oficial da modalidade (a 1ª precisa ser completada).
 • Ao clicar em ✕, a partida é salva como PARCIAL:
-     → Continua contando no histórico, no mapa e NA MÉDIA (derruba a média se foi ruim).
-     → NÃO conta para medalhas, Hall da Fama nem Álbum.
+    → Continua contando no histórico, no mapa e NA MÉDIA (derruba a média se foi ruim).
+    → NÃO conta para medalhas, Hall da Fama nem Álbum.
 • Fechar o navegador durante a partida = nada é salvo (perde tudo).
 
 ▸ MAPA DE TABUADAS
 • 100 operações com cores por domínio recente (últimas 10 respostas): ⚪ sem prática · 🔴 reforçar · 🟡 em treino · 🔵 quase lá · 🟢 dominada (≥90% de acerto com 5+ tentativas).
 • Treinos e parciais alimentam o mapa. Mas só partidas completas contam para medalhas.
+• CAP DE PISTA (novidade v10.5.7): se você precisou de pista 3, "revelou" ou fez 3+ tentativas em uma operação dentro de um treino Aprender, ela NÃO chega a verde — fica amarela ou azul. É o app sendo honesto com o que você realmente sabe.
 
 ▸ CERTIFICADOS (por modalidade — 9 no total)
 • São 3 níveis × 3 modalidades = 9 certificados possíveis. Aluno pode ter Ouro em 2-5 e Prata em 1-10 ao mesmo tempo.
@@ -19580,11 +19790,11 @@ O MENU DEVE SER SEMPRE ESTE:
 • Velocidades ideais: 2-5 → 2,0s · 6-9 → 2,5s · 1-10 → 3,0s
 • Depois de conquistado, o certificado NÃO é perdido — é uma conquista histórica.
 
-▸ MÉDIA GERAL (novidade)
+▸ MÉDIA GERAL
 • É a MÉDIA DE PONTOS das partidas oficiais em cada modalidade (soma dos pontos ÷ número de partidas).
 • Só partidas OFICIAIS contam. Treinos NÃO entram na média.
 • Partidas canceladas (✕) ENTRAM na média — cancelar muito DERRUBA a média.
-• O ranking de Média Geral exige mínimo de 5 partidas oficiais em CADA uma das 3 modalidades. Quem cancela muito pode não conseguir entrar.
+• O ranking de Média Geral exige mínimo de 5 partidas oficiais em CADA uma das 3 modalidades.
 • Existe a aba "🏅 Média Turma" e "🏅 Média Global" nos Rankings especiais.
 • Hall da Fama tem o card "📊 Média Consistente".
 • Álbum tem a seção "🏅 Consistência" com 5 medalhas:
@@ -19593,6 +19803,17 @@ O MENU DEVE SER SEMPRE ESTE:
      🏆 Regular          → média ≥ 15.000 pts em qualquer modalidade
      💎 Elite            → média ≥ 17.000 pts em qualquer modalidade
      👑 Lenda da Média   → média ≥ 17.000 pts nas 3 modalidades AO MESMO TEMPO
+
+▸ TREINOS DISPONÍVEIS (novidade v10.5.7 — 6 modos)
+• O aluno acessa em "Minhas Posições → 🎯 Treinar → escolher um modo".
+• 🧠 Treino Inteligente: o app escolhe as operações mais urgentes (peso por cor).
+• 🔄 Treino Reverso: "3 × ? = 21" — descobre o número que falta.
+• 🧩 Decomposição: "7 × 8 = 7 × 5 + 7 × ?" — monta em duas partes.
+• 🪞 Espelho: você pensa, revela e diz honestamente se sabia (🟢) ou não (🔴).
+• 🧱 Chunking: treina UMA tabuada isolada (ex: só a do 7).
+• ⏱️ Progressivo: timer que cai (10s → 8s → 6s → 4s) conforme você acerta.
+• TODOS alimentam o mapa e os certificados. NENHUM entra no ranking oficial.
+• As sessões são curtas: 5 a 10 contas por vez.
 
 ▸ ÁLBUM E PATENTES
 • Álbum: medalhas (comum/incomum/raro/épico/lendário) → viram estrelas → definem a patente.
@@ -19625,7 +19846,7 @@ O MENU DEVE SER SEMPRE ESTE:
 • Média Geral: mínimo de 5 partidas por modalidade.
 
 ═══ REGRAS INVIOLÁVEIS ═══
-1. Sua PRIMEIRA resposta é SEMPRE: saudação + diagnóstico curto + menu de 9 opções + "Digite o número".
+1. Sua PRIMEIRA resposta é SEMPRE: saudação + diagnóstico curto + menu de 10 opções + "Digite o número".
 2. NUNCA responda perguntas antes de apresentar o menu (a não ser que o aluno já tenha vindo direto com uma pergunta específica — nesse caso, responda e depois ofereça o menu).
 3. NUNCA invente números que não estão no PERFIL acima.
 4. SEMPRE termine suas respostas com uma pergunta ou uma ação concreta
@@ -19687,7 +19908,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                         const pct = Math.round((dominadas / 100) * 100);
                         partes.push(`<span class="sep">·</span> <strong>${pct}%</strong> do mapa`);
                     }
-                    // ⚙️ NOVO: média geral combinada quando existe
                     const m25 = Number(dadosPerfil.perfil.media25) || 0;
                     const m69 = Number(dadosPerfil.perfil.media69) || 0;
                     const m010 = Number(dadosPerfil.perfil.media010) || 0;
