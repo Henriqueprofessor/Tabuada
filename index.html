@@ -7837,6 +7837,121 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 }
 /* ▲▲▲ FIM [02.74] */
 
+/* ▼▼▼ [02.75] Modal "Como funciona o Hall da Fama" ────────── */
+
+/* Reutiliza .btn-como-funciona-menu (de [02.74]) e .modal-explicacao-*
+   (de [02.73]). Aqui só o conteúdo interno do Hall. */
+
+.hall-descricao {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+}
+.hall-descricao .hall-desc-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--neon-gold);
+    letter-spacing: 0.3px;
+    margin: 0 0 12px;
+    line-height: 1.2;
+}
+.hall-descricao .hall-desc-subtitulo {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--neon-cyan);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin: 14px 0 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
+}
+.hall-descricao .hall-desc-subtitulo:first-of-type { margin-top: 2px; }
+.hall-descricao p {
+    margin: 0 0 6px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+.hall-descricao p:last-child { margin-bottom: 0; }
+.hall-descricao p strong { color: var(--text-primary); font-weight: 800; }
+.hall-descricao ul {
+    margin: 0 0 6px;
+    padding-left: 18px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+.hall-descricao ul li { margin-bottom: 3px; }
+.hall-descricao ul li strong { color: var(--text-primary); font-weight: 800; }
+
+/* Grade de categorias */
+.hall-descricao .hall-desc-categorias {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+.hall-descricao .hall-desc-categoria {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-left: 3px solid var(--neon-cyan);
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+.hall-descricao .hall-desc-categoria strong {
+    color: var(--text-primary);
+    font-weight: 800;
+    display: block;
+    margin-bottom: 2px;
+}
+.hall-descricao .hall-desc-categoria .hall-desc-cat-emoji {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* Cor específica por categoria (opcional, reforço visual) */
+.hall-descricao .hall-desc-categoria.cat-medalhas     { border-left-color: #fbbf24; }
+.hall-descricao .hall-desc-categoria.cat-estrelas     { border-left-color: #fde68a; }
+.hall-descricao .hall-desc-categoria.cat-album        { border-left-color: #a855f7; }
+.hall-descricao .hall-desc-categoria.cat-mapa         { border-left-color: #22c55e; }
+.hall-descricao .hall-desc-categoria.cat-velocidade   { border-left-color: #22d3ee; }
+.hall-descricao .hall-desc-categoria.cat-acertos      { border-left-color: #10b981; }
+.hall-descricao .hall-desc-categoria.cat-maratonista  { border-left-color: #fb923c; }
+.hall-descricao .hall-desc-categoria.cat-presenca     { border-left-color: #ec4899; }
+.hall-descricao .hall-desc-categoria.cat-treino       { border-left-color: #d8b4fe; }
+.hall-descricao .hall-desc-categoria.cat-media        { border-left-color: #f59e0b; }
+.hall-descricao .hall-desc-categoria.cat-turma        { border-left-color: #fcd34d; }
+
+/* Dica final */
+.hall-descricao .hall-desc-dica {
+    background: rgba(0, 0, 0, 0.25);
+    border-left: 3px solid var(--neon-gold);
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+.hall-descricao .hall-desc-dica strong { color: var(--neon-gold); font-weight: 800; }
+
+@media (max-width: 520px) {
+    .hall-descricao .hall-desc-titulo { font-size: 14px; }
+    .hall-descricao p,
+    .hall-descricao ul,
+    .hall-descricao .hall-desc-categoria,
+    .hall-descricao .hall-desc-dica { font-size: 12px; }
+}
+/* ▲▲▲ FIM [02.75] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -8012,12 +8127,24 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div id="hall-fama-conteudo" class="hall-fama-grid">
             <div class="desempenho-loading">⏳ Carregando os destaques da Copa...</div>
         </div>
-        <div class="hall-info-rodape">
-            💡 <strong>Como funciona:</strong> os rankings são calculados em tempo real com base em todas as partidas registradas. Se você quer aparecer aqui, <strong>jogue mais, colecione medalhas e domine o mapa de tabuadas</strong>!
-        </div>
+
+        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão abre o
+             modal explicativo do Hall da Fama (11 categorias, como entrar,
+             critérios de desempate, etc.). -->
+        <button type="button"
+                id="btn-como-funciona-hall"
+                class="btn-como-funciona-menu"
+                onclick="abrirModalComoFuncionaHall()"
+                aria-haspopup="dialog"
+                aria-controls="modal-explicacao-hall">
+            ℹ️ Como funciona o Hall da Fama?
+        </button>
+        <!-- ▲ -->
+
         <button onclick="mostrarTela('tela-mais')" class="botao-secundario" style="margin-top:14px;">⬅️ Voltar</button>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
     </div>
+    <!-- ▲▲▲ FIM [03.03] -->
 
     <!-- ▼▼▼ [03.04] CADASTRO ─────────────────────────────────── -->
     <div id="tela-single" class="card hidden">
@@ -9121,6 +9248,23 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
 </div>
 <!-- ▲▲▲ FIM [04.20] -->
+
+<!-- ▼▼▼ [04.21] MODAL — Explicação do Hall da Fama ─────────── -->
+<div id="modal-explicacao-hall"
+     class="modal-explicacao-overlay hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-explicacao-hall-corpo"
+     onclick="if (event.target === this) fecharModalComoFuncionaHall();">
+    <div class="modal-explicacao-caixa">
+        <button type="button"
+                class="modal-explicacao-fechar"
+                onclick="fecharModalComoFuncionaHall()"
+                aria-label="Fechar explicação">✕</button>
+        <div id="modal-explicacao-hall-corpo" class="hall-descricao"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.21] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -20722,7 +20866,122 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
     // ▲▲▲ FIM [18.08]
 
+    // ▼▼▼ [18.09] Modal "Como funciona o Hall da Fama" ──────────────
+    // v10.6.x · Explicação pedagógica do Hall da Fama. Lista as 11
+    // categorias, explica como entrar, critérios mínimos e destaques.
+    // Reutiliza as classes genéricas do modal do Ranking ([02.73]/[04.19]).
 
+    function construirConteudoComoFuncionaHall() {
+        return `
+            <div class="hall-desc-titulo"><span aria-hidden="true">🏆</span> Como funciona o Hall da Fama</div>
+
+            <div class="hall-desc-subtitulo">📊 O que é</div>
+            <p>O Hall da Fama é a <strong>vitrine dos maiores destaques</strong> da Copa. São <strong>11 categorias diferentes</strong> — cada uma premia um tipo de feito. Não existe um "campeão geral": cada aluno pode brilhar na categoria em que se destaca mais.</p>
+
+            <div class="hall-desc-subtitulo">✅ Como entrar</div>
+            <p>Basta ter <strong>pelo menos 1 partida registrada</strong> na Copa. Todas as categorias são calculadas em tempo real a partir do seu histórico. Não precisa se inscrever — se você jogar, aparece.</p>
+
+            <div class="hall-desc-subtitulo">🎯 As 11 categorias</div>
+            <div class="hall-desc-categorias">
+                <div class="hall-desc-categoria cat-medalhas">
+                    <strong><span class="hall-desc-cat-emoji">🏅</span> Mais Medalhas</strong>
+                    Quem colecionou o maior número de medalhas no Álbum.
+                </div>
+                <div class="hall-desc-categoria cat-estrelas">
+                    <strong><span class="hall-desc-cat-emoji">⭐</span> Mais Estrelas</strong>
+                    Quem acumulou mais estrelas — as medalhas raras valem mais.
+                </div>
+                <div class="hall-desc-categoria cat-album">
+                    <strong><span class="hall-desc-cat-emoji">💎</span> Álbum de Elite</strong>
+                    Raridade das medalhas + bônus por seções completas. Lendárias valem 8, Épicas 5, Raras 3.
+                </div>
+                <div class="hall-desc-categoria cat-mapa">
+                    <strong><span class="hall-desc-cat-emoji">🗺️</span> Maior Mapa Verde</strong>
+                    Quem dominou mais operações do mapa (≥90% de acerto com 5+ tentativas). Os que fecharam 100% ganham o selo de <strong>Mestre</strong>.
+                </div>
+                <div class="hall-desc-categoria cat-velocidade">
+                    <strong><span class="hall-desc-cat-emoji">🏆</span> Mestre da Velocidade</strong>
+                    Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas abaixo de 0,8s.
+                </div>
+                <div class="hall-desc-categoria cat-acertos">
+                    <strong><span class="hall-desc-cat-emoji">✅</span> Total de Acertos</strong>
+                    Soma de todos os acertos acumulados. Quem joga muito é recompensado aqui.
+                </div>
+                <div class="hall-desc-categoria cat-maratonista">
+                    <strong><span class="hall-desc-cat-emoji">🏃</span> Maratonista da Copa</strong>
+                    Quem jogou o maior número de partidas oficiais. Dedicação total!
+                </div>
+                <div class="hall-desc-categoria cat-presenca">
+                    <strong><span class="hall-desc-cat-emoji">📅</span> Presença VIP</strong>
+                    Quem jogou em mais dias diferentes. Constância é a chave.
+                </div>
+                <div class="hall-desc-categoria cat-treino">
+                    <strong><span class="hall-desc-cat-emoji">🧠</span> Mestre do Treino</strong>
+                    Quem mais completou treinos identificados — todos os 6 modos contam.
+                </div>
+                <div class="hall-desc-categoria cat-media">
+                    <strong><span class="hall-desc-cat-emoji">📊</span> Média Consistente</strong>
+                    Quem mantém a maior média geral somando as 3 modalidades. Exige <strong>5 partidas oficiais em cada uma</strong>.
+                </div>
+                <div class="hall-desc-categoria cat-turma">
+                    <strong><span class="hall-desc-cat-emoji">🏫</span> Turma de Elite</strong>
+                    Turma com a melhor média dos <strong>4 melhores alunos</strong> na modalidade 1-10. Mínimo de 4 alunos com resultado.
+                </div>
+            </div>
+
+            <div class="hall-desc-subtitulo">🔍 Como explorar</div>
+            <ul>
+                <li>Cada card mostra o <strong>1º lugar</strong> + sua posição atual.</li>
+                <li>Botão <strong>"Ver ranking completo"</strong> abre a lista inteira da categoria.</li>
+                <li>Seu nome aparece destacado com <strong>← Você</strong> quando você está no ranking.</li>
+                <li>Quando seu nome é o 1º da categoria, a linha fica com <strong>destaque dourado</strong>.</li>
+            </ul>
+
+            <div class="hall-desc-subtitulo">📋 Critérios de contagem</div>
+            <ul>
+                <li><strong>Partidas completas</strong> (20/20) contam para quase todas as categorias.</li>
+                <li><strong>Treinos</strong> contam apenas para o <strong>Mestre do Treino</strong>.</li>
+                <li>A categoria <strong>Média Consistente</strong> usa TODAS as partidas oficiais — inclusive as canceladas (✕), que derrubam a média.</li>
+                <li>A <strong>Turma de Elite</strong> exige mínimo de 4 alunos com resultado na modalidade 1-10.</li>
+            </ul>
+
+            <div class="hall-desc-dica"><strong>💡 Dica:</strong> se você ainda não aparece em nenhuma categoria, jogue mais partidas oficiais completas e colecione medalhas no Álbum. A primeira partida já te coloca no Hall.</div>
+
+            <span style="display:inline-block;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);border-radius:10px;padding:3px 10px;margin-top:10px;font-size:11.5px;font-weight:800;color:#a5f3fc;letter-spacing:.3px;">🏆 11 categorias · 11 formas diferentes de brilhar.</span>
+        `;
+    }
+
+    function abrirModalComoFuncionaHall() {
+        const modal = document.getElementById("modal-explicacao-hall");
+        const corpo = document.getElementById("modal-explicacao-hall-corpo");
+        if (!modal || !corpo) return;
+        if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaHall();
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+            modal.querySelector(".modal-explicacao-fechar")?.focus();
+        }, 30);
+    }
+
+    function fecharModalComoFuncionaHall() {
+        const modal = document.getElementById("modal-explicacao-hall");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+    }
+
+    // Fechar com tecla ESC (instalado uma única vez)
+    if (!window._modalExplicacaoHallEscInstalado) {
+        window._modalExplicacaoHallEscInstalado = true;
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            const modal = document.getElementById("modal-explicacao-hall");
+            if (modal && !modal.classList.contains("hidden")) {
+                fecharModalComoFuncionaHall();
+            }
+        });
+    }
+    // ▲▲▲ FIM [18.09]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
