@@ -9383,7 +9383,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <div class="changelog-item">
                 <span class="changelog-versao atual" id="changelog-versao-atual">v10.7.2 · atual</span>
                 <h4 class="changelog-titulo">ℹ️ Botões "Como funciona" mais discretos + ajustes nos treinos</h4>
-                <p class="changelog-descricao">Os botões "ℹ️ Como funciona...?" que ficavam no rodapé de cada tela ocupando uma faixa inteira viraram <strong>ícones circulares compactos "?"</strong> ao lado do título. A mudança foi aplicada nos <strong>9 menus</strong> que já tinham explicação: Ranking, Álbum, Hall da Fama, Minhas Posições, Meu Progresso, Desempenho, Mapa de Tabuadas, Ritmo na Copa e Mapa de Tabuadas (Home). Junto com isso, os treinos ganharam 3 melhorias: (1) <strong>o bug do Decomposição</strong> foi corrigido — quando o segundo fator é 1, a pergunta pedia resposta "0" que o app não aceitava; agora esse caso é descartado da sessão. (2) <strong>Sessões curtas não repetem mais contas</strong> — o sorteio ponderado agora é sem reposição, garantindo que cada operação da sessão seja diferente. (3) <strong>Feedback visual imediato</strong> ao abrir um treino — antes, se a rede demorasse, o aluno ficava olhando uma tela parada; agora aparece "⏳ A preparar o treino…" antes das leituras. Por fim, o modal "Como funciona a Copa" e o modal "Como funciona o Meu Progresso" agora explicam claramente a diferença entre <strong>Domínio</strong> (precisão, que os treinos Aprender desenvolvem) e <strong>Fluência</strong> (velocidade com precisão, que só Progressivo e partidas oficiais comprovam).</p>
+                <p class="changelog-descricao">Os botões "ℹ️ Como funciona...?" que ficavam no rodapé de cada tela ocupando uma faixa inteira viraram <strong>ícones circulares compactos "?"</strong> ao lado do título. A mudança foi aplicada nos <strong>9 menus</strong> que já tinham explicação: Ranking, Álbum, Hall da Fama, Minhas Posições, Meu Progresso, Desempenho, Mapa de Tabuadas, Ritmo na Copa e Mapa de Tabuadas (Home). Junto com isso, os treinos ganharam 6 melhorias: (1) <strong>o bug do Decomposição</strong> foi corrigido — quando o segundo fator é 1, a pergunta pedia resposta "0" que o app não aceitava; agora esse caso é descartado da sessão. (2) <strong>Sessões curtas não repetem mais contas</strong> — o sorteio ponderado agora é sem reposição. (3) <strong>Tela de loading em todos os treinos</strong> — ao abrir Reverso, Decomposição, Espelho, Chunking, Progressivo ou Treino Inteligente, o app mostra <strong>"⏳ A preparar o treino…"</strong> enquanto os dados chegam, evitando a sensação de clique sem resposta. (4) <strong>Validação estrita dos campos de resposta</strong> — só dígitos são aceitos; letras ou símbolos fazem o campo tremer e não são enviados. (5) Aplica-se também ao <strong>Progressivo</strong>, que agora tem o mesmo cuidado do Aprender. (6) Os modais "Como funciona a Copa" e "Como funciona o Meu Progresso" agora explicam claramente a diferença entre <strong>Domínio</strong> (precisão, que os treinos Aprender desenvolvem) e <strong>Fluência</strong> (velocidade com precisão, que só Progressivo e partidas oficiais comprovam).</p>
             </div>
             <div class="changelog-item">
                 <span class="changelog-versao">v10.6.0</span>
@@ -15866,6 +15866,11 @@ if (containerProg) {
     // ▲▲▲ FIM [14.03]
 
     // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
+    // v10.7.2 · Tela de loading no Treino Inteligente (substitui o
+    // toast "Preparando seu treino…"). Usa a mesma tela do Aprender e
+    // do Progressivo (tela-aprender com "⏳ A preparar o treino…"),
+    // garantindo consistência visual.
+
     const TELAS_COM_NAV_GLOBAL = new Set([
         "tela-inicial", "tela-mais", "tela-ranking",
         "tela-desempenho", "tela-album", "tela-hall-fama", "tela-perfil",
@@ -15892,9 +15897,6 @@ if (containerProg) {
     }
 
     function mostrarTela(id) {
-        // v10.5.7 · "tela-aprender" permanece; o card do Treino Inteligente
-        // saiu da Home — a chamada renderizarTreinoInteligenteHome() foi
-        // removida do fluxo (a função continua no arquivo por compatibilidade).
         ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso","tela-aprender"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
 
@@ -15989,8 +15991,38 @@ if (containerProg) {
         }
     }
 
+    // v10.7.2 · Helper reutilizável: mostra a tela de loading do treino
+    // inteligente. Usa o mesmo container do Aprender/Progressivo
+    // (#tela-aprender + #aprender-conteudo), garantindo consistência
+    // visual e reaproveitando o CSS já existente.
+    function _mostrarLoadingTreinoInteligente() {
+        mostrarTela("tela-aprender");
+        const ctn = document.getElementById("aprender-conteudo");
+        if (!ctn) return;
+        ctn.innerHTML = `
+            <div style="padding:60px 24px;text-align:center;color:var(--text-muted);">
+                <div style="font-size:34px;line-height:1;margin-bottom:14px;opacity:.85;" aria-hidden="true">⏳</div>
+                <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">A preparar o treino…</div>
+                <div style="font-size:13px;line-height:1.5;">Escolhendo as operações certas para você.</div>
+            </div>
+        `;
+    }
+
     async function iniciarTreinoInteligente() {
-        const lista = await montarListaTreinoInteligente(alunoAtual, turmaAtual, modalidadeAtual);
+        // v10.7.2 · Tela de loading imediata (mesma usada pelo Aprender
+        // e pelo Progressivo). Substitui o toast que existia antes.
+        _mostrarLoadingTreinoInteligente();
+
+        let lista = [];
+        try {
+            lista = await montarListaTreinoInteligente(alunoAtual, turmaAtual, modalidadeAtual);
+        } catch(e) {
+            console.warn("[Treino Inteligente] Falha ao montar lista:", e);
+            mostrarTela("tela-inicial");
+            notificar("Não foi possível preparar o treino agora. Tente novamente.", "erro", 5000);
+            return;
+        }
+
         const pendentes = lista.filter(i => i.peso > 1);
 
         treinoFocoOperacoes = null;
@@ -22946,19 +22978,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     // O Progressivo é motor separado (bloco [19.07]).
     //
     // v10.5.7b · Correção pedagógica do pista1 (Estratégia).
-    // A estratégia "metade e dobro" só funciona para fator PAR. Para
-    // ímpar, ela dá resposta errada. O helper _gerarPistaDobraOuSoma
-    // cobre todos os casos corretamente.
     //
-    // v10.7.2 · Três correções pontuais:
-    //   Item 1 — Decomposição com fator 1 descartada (evita pergunta
-    //            com resposta 0, rejeitada pela validação).
-    //   Item 2 — Sorteio ponderado SEM REPETIÇÃO nas sessões curtas.
+    // v10.7.2 · Correções acumuladas:
+    //   Item 1 — Decomposição com fator 1 descartada.
+    //   Item 2 — Sorteio ponderado SEM REPETIÇÃO.
     //   Item 4 — Feedback visual imediato antes das leituras de rede.
+    //   Item 5 — Validação estrita do campo de resposta (só dígitos).
 
     const STORAGE_MENU_TREINO_USOS = "copa_menu_treino_usos";
 
-    // ─── Helper pedagógico: pista de "estratégia" correta para fA × fB ───
     function _gerarPistaDobraOuSoma(fA, fB) {
         if (fB === 1) return `Todo número vezes 1 é ele mesmo: <strong>${fA}</strong>.`;
         if (fB === 2) return `Dobrar é só somar <strong>${fA} + ${fA}</strong>.`;
@@ -23221,14 +23249,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         return n === 1 ? "1 objeto" : `${n} objetos`;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // v10.7.2 · Helpers novos (itens 1 e 2 da análise)
-    // ═══════════════════════════════════════════════════════════════════
-
-    // Item 1 — Filtra operações que não fazem sentido em cada modo.
-    // No Decomposição, fB = 1 produz âncora 1 e resto 0 — a pergunta
-    // ficaria "fA × 1 = fA × 1 + fA × ?" com resposta 0, rejeitada
-    // pela validação. Removemos essas operações da sessão.
+    // v10.7.2 · Helpers (itens 1 e 2 da análise).
     function _filtrarOperacoesValidasPorModo(modoId, ops) {
         if (!Array.isArray(ops)) return [];
         if (modoId === "decomposicao") {
@@ -23237,11 +23258,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         return ops.slice();
     }
 
-    // Item 2 — Sorteio ponderado SEM REPETIÇÃO.
-    // Cada operação só pode ser sorteada uma vez por sessão. Em sessões
-    // curtas (5-10 contas), o sorteio com repetição podia devolver a
-    // mesma operação duas vezes e deixar outras de fora.
-    // Complexidade O(n²) aceitável para n ≤ 20.
     function _sortearSemRepeticaoPonderado(lista, n, pesoFn) {
         const pool = Array.isArray(lista) ? lista.slice() : [];
         const resultado = [];
@@ -23256,9 +23272,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     const APRENDER_MODOS = {
-        // ═══════════════════════════════════════════════════════════════
-        // 🔄 REVERSO — fator faltante
-        // ═══════════════════════════════════════════════════════════════
         reverso: {
             id: "reverso",
             nome: "Treino Reverso",
@@ -23316,9 +23329,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             }
         },
 
-        // ═══════════════════════════════════════════════════════════════
-        // 🧩 DECOMPOSIÇÃO — distributiva com âncora
-        // ═══════════════════════════════════════════════════════════════
         decomposicao: {
             id: "decomposicao",
             nome: "Decomposição",
@@ -23329,10 +23339,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             gerarPergunta(base) {
                 const { fA, fB } = base;
-                // v10.7.2 · Defesa em profundidade: se por qualquer motivo
-                // fB = 1 chegou aqui, escolhemos uma âncora que evita o
-                // resto 0 — mas o filtro em abrirTreinoAprender já remove
-                // esse caso. Isto aqui é cinto e suspensório.
                 const fBseguro = (fB === 1) ? 2 : fB;
                 const fC = _escolherAncoraDecomposicao(fBseguro);
                 const resto = fBseguro - fC;
@@ -23364,9 +23370,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             }
         },
 
-        // ═══════════════════════════════════════════════════════════════
-        // 🪞 ESPELHO — flashcard com autoavaliação
-        // ═══════════════════════════════════════════════════════════════
         espelho: {
             id: "espelho",
             nome: "Espelho",
@@ -23386,9 +23389,6 @@ window.addEventListener("DOMContentLoaded", async () => {
             }
         },
 
-        // ═══════════════════════════════════════════════════════════════
-        // 🧱 CHUNKING — uma tabuada isolada
-        // ═══════════════════════════════════════════════════════════════
         chunking: {
             id: "chunking",
             nome: "Chunking",
@@ -23436,15 +23436,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // ═══════════════════════════════════════════════════════════════════
-    // ABERTURA E FLUXO DA SESSÃO APRENDER
-    // ═══════════════════════════════════════════════════════════════════
-
-    // v10.7.2 · Item 4: mostra a tela com "A preparar o treino…"
-    // ANTES de carregar os dados do Firebase. Antes, o menu fechava e o
-    // aluno ficava olhando uma tela parada por 1–2s em conexões lentas.
-    // Também é aqui que os itens 1 e 2 agem: filtro do Decomposição
-    // (fB ≠ 1) e sorteio sem repetição.
     async function abrirTreinoAprender(modoId, mod) {
         if (!MODALIDADES[mod]) return;
         const cfg = APRENDER_MODOS[modoId];
@@ -23454,7 +23445,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { mostrarTela("tela-single"); return; }
 
-        // ─── v10.7.2 · Item 4: feedback visual imediato ───
         mostrarTela("tela-aprender");
         const ctnLoading = document.getElementById("aprender-conteudo");
         if (ctnLoading) {
@@ -23474,11 +23464,8 @@ window.addEventListener("DOMContentLoaded", async () => {
             operacoesFoco = comPeso.length ? comPeso.slice(0, 20) : lista.slice(0, 20);
         } catch(e) { console.warn("[Aprender] Falha ao montar foco:", e); }
 
-        // ─── v10.7.2 · Item 1: filtro por modo (Decomposição exclui fB = 1) ───
         operacoesFoco = _filtrarOperacoesValidasPorModo(modoId, operacoesFoco);
 
-        // Fallback: se o filtro zerou ou a lista veio vazia, repõe com o
-        // universo da modalidade — e filtra de novo (para Decomposição).
         if (!operacoesFoco.length) {
             const fatores = MODALIDADES[mod].fatores;
             for (const fA of fatores) {
@@ -23489,7 +23476,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         const tamanhoSessao = Math.min(cfg.tamanhoSessaoPadrao, operacoesFoco.length);
 
-        // ─── v10.7.2 · Item 2: sorteio SEM repetição ───
         const sessaoOps = _sortearSemRepeticaoPonderado(
             operacoesFoco,
             tamanhoSessao,
@@ -23523,8 +23509,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { mostrarTela("tela-single"); return; }
 
-        // Chunking percorre uma tabuada fixa; não precisa de rede.
-        // O embaralhamento já garante ordem aleatória sem repetição.
         const ops = [];
         for (let fB = 1; fB <= 10; fB++) ops.push({ fA: tabuada, fB });
         for (let i = ops.length - 1; i > 0; i--) {
@@ -23753,13 +23737,28 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    // v10.7.2 · Item 5: validação estrita — aceita APENAS dígitos.
+    // Antes, parseInt("56abc") = 56 silenciosamente. Agora, entrada
+    // com qualquer caractere não-numérico treme e não é enviada.
     function confirmarRespostaAprender() {
         const e = aprenderEstado;
         if (!e || e.respondido) return;
         if (e.cfg.tipo === "auto") return;
         const input = document.getElementById("aprender-input");
         if (!input) return;
-        const valor = parseInt(String(input.value || "").trim(), 10);
+
+        const raw = String(input.value || "").trim();
+
+        // ─── v10.7.2 · Validação estrita: só dígitos ───
+        if (!/^\d+$/.test(raw)) {
+            input.classList.add("errado");
+            setTimeout(() => input.classList.remove("errado"), 400);
+            input.value = "";
+            input.focus();
+            return;
+        }
+
+        const valor = parseInt(raw, 10);
         if (!Number.isFinite(valor) || valor <= 0 || valor > 100) {
             input.classList.add("errado");
             setTimeout(() => input.classList.remove("errado"), 400);
@@ -24044,9 +24043,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         try { atualizarTelaInicialComEtapa(); } catch(err) {}
     }
 
-    // v10.7.2 · Item 1: ao revisar, filtra o caso fB = 1 (Decomposição).
-    // Se a sessão original foi toda de fB = 1, avisa e encerra em vez de
-    // abrir uma sessão vazia.
     function reverContasAprender() {
         const e = aprenderEstado;
         if (!e || !e.aRevisar.length) return;
@@ -24093,6 +24089,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     //       0-1/3       → tempo sobe 2s (máximo 10s)
     //   · Sem pistas: o timer pausaria e destruiria o propósito.
     //   · Salva o tempo REAL de cada resposta no mapa (velocidade).
+    //
+    // v10.7.2 · Loading visível antes das leituras de rede + validação
+    // estrita do campo de resposta (aceita apenas dígitos).
 
     let progressivoEstado = null;
     let progressivoTimerInterval = null;
@@ -24109,6 +24108,19 @@ window.addEventListener("DOMContentLoaded", async () => {
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { mostrarTela("tela-single"); return; }
 
+        // ─── v10.7.2 · Loading imediato antes das leituras de rede ───
+        mostrarTela("tela-aprender");
+        const ctnLoading = document.getElementById("aprender-conteudo");
+        if (ctnLoading) {
+            ctnLoading.innerHTML = `
+                <div style="padding:60px 24px;text-align:center;color:var(--text-muted);">
+                    <div style="font-size:34px;line-height:1;margin-bottom:14px;opacity:.85;" aria-hidden="true">⏳</div>
+                    <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">A preparar o treino…</div>
+                    <div style="font-size:13px;line-height:1.5;">Escolhendo as operações certas para você.</div>
+                </div>
+            `;
+        }
+
         // Foco: operações pendentes (mesma seleção do Treino Inteligente)
         let operacoesFoco = [];
         try {
@@ -24124,27 +24136,27 @@ window.addEventListener("DOMContentLoaded", async () => {
             }
         }
 
-        const sessaoOps = [];
-        for (let i = 0; i < PROGRESSIVO_TAMANHO_SESSAO; i++) {
-            const op = escolherPorPeso(operacoesFoco, o => o.peso || 1);
-            sessaoOps.push({ fA: op.fA, fB: op.fB });
-        }
+        // v10.7.2 · Item 2: sorteio SEM repetição (mesma lógica do Aprender).
+        const sessaoOps = _sortearSemRepeticaoPonderado(
+            operacoesFoco,
+            PROGRESSIVO_TAMANHO_SESSAO,
+            o => o.peso || 1
+        );
 
         progressivoEstado = {
             mod, nome, turma,
-            tamanhoSessao: PROGRESSIVO_TAMANHO_SESSAO,
+            tamanhoSessao: sessaoOps.length,
             indiceAtual: 0,
             perguntaAtual: null,
             respondido: false,
             tempoAtual: PROGRESSIVO_TEMPO_MAX,
             tempoInicio: 0,
-            ultimosResultados: [],   // { acertou, tempo }
+            ultimosResultados: [],
             resultados: [],
             aRevisar: [],
             sessaoOps
         };
 
-        mostrarTela("tela-aprender");
         proximaPerguntaProgressivo();
     }
 
@@ -24265,12 +24277,25 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (progressivoTimeoutId) { clearTimeout(progressivoTimeoutId); progressivoTimeoutId = null; }
     }
 
+    // v10.7.2 · Item 5: validação estrita — aceita APENAS dígitos.
     function confirmarRespostaProgressivo() {
         const e = progressivoEstado;
         if (!e || e.respondido) return;
         const input = document.getElementById("progressivo-input");
         if (!input) return;
-        const valor = parseInt(String(input.value || "").trim(), 10);
+
+        const raw = String(input.value || "").trim();
+
+        // ─── v10.7.2 · Validação estrita: só dígitos ───
+        if (!/^\d+$/.test(raw)) {
+            input.classList.add("errado");
+            setTimeout(() => input.classList.remove("errado"), 400);
+            input.value = "";
+            input.focus();
+            return;
+        }
+
+        const valor = parseInt(raw, 10);
         if (!Number.isFinite(valor) || valor <= 0 || valor > 100) {
             input.classList.add("errado");
             setTimeout(() => input.classList.remove("errado"), 400);
@@ -24312,7 +24337,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (input && acertou) input.classList.add("certo");
         if (input && !acertou) input.classList.add("errado");
 
-        // Ajuste do timer a cada 3 respostas completas
         let mudancaTimer = null;
         if (e.ultimosResultados.length === PROGRESSIVO_JANELA) {
             const acertos = e.ultimosResultados.filter(r => r.acertou).length;
