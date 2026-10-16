@@ -7336,6 +7336,237 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.71] */
 
+        /* ▼▼▼ [02.72] Painel — Evento com início e fim ───────── INÍCIO ─── */
+        /* Sistema de evento com janela de tempo definida pelo professor.
+           Conta: partidas oficiais, treinos (acessos + conclusões),
+           acertos, erros, alunos por dia, ranking de tipos de treino.
+           Só aparece quando o professor inicia um evento. */
+
+        .painel-evento-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* ─── Cabeçalho do evento ─── */
+        .painel-evento-cabecalho {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 14px;
+            background: linear-gradient(135deg, rgba(34,211,238,.10) 0%, rgba(14,165,233,.04) 100%);
+            border: 1px solid rgba(34,211,238,.35);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 10px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .painel-evento-cabecalho strong {
+            color: var(--neon-cyan);
+            font-weight: 900;
+        }
+        .painel-evento-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+        .painel-evento-status.ativo {
+            background: rgba(16,185,129,.18);
+            color: #6ee7b7;
+            border: 1px solid rgba(16,185,129,.5);
+        }
+        .painel-evento-status.encerrado {
+            background: rgba(148,163,184,.18);
+            color: var(--text-secondary);
+            border: 1px solid rgba(148,163,184,.4);
+        }
+
+        /* ─── Grid de totais ─── */
+        .painel-evento-totais-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
+        .painel-evento-total-card {
+            padding: 12px 12px 10px;
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .painel-evento-total-icone { font-size: 20px; line-height: 1; }
+        .painel-evento-total-valor {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            line-height: 1.1;
+            letter-spacing: -0.4px;
+        }
+        .painel-evento-total-valor.oficial { color: var(--neon-gold); }
+        .painel-evento-total-valor.treino  { color: #d8b4fe; }
+        .painel-evento-total-valor.acerto  { color: #6ee7b7; }
+        .painel-evento-total-valor.erro    { color: #fca5a5; }
+        .painel-evento-total-rotulo {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            line-height: 1.3;
+        }
+
+        /* ─── Ranking de tipos de treino ─── */
+        .painel-evento-tipos-wrap {
+            padding: 12px 14px;
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 10px;
+        }
+        .painel-evento-tipos-titulo {
+            font-size: 11.5px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--neon-gold);
+            margin: 0 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .painel-evento-tipos-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .painel-evento-tipo-linha {
+            display: grid;
+            grid-template-columns: 24px 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            font-size: 12.5px;
+            color: var(--text-primary);
+        }
+        .painel-evento-tipo-linha.zerado { opacity: 0.5; }
+        .painel-evento-tipo-icone { font-size: 18px; line-height: 1; }
+        .painel-evento-tipo-nome { font-weight: 700; }
+        .painel-evento-tipo-stat {
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .painel-evento-tipo-stat.acesso  { color: var(--neon-cyan); }
+        .painel-evento-tipo-stat.conclui { color: #6ee7b7; }
+
+        /* ─── Histórico diário ─── */
+        .painel-evento-diario-wrap {
+            padding: 12px 14px;
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 10px;
+        }
+        .painel-evento-diario-titulo {
+            font-size: 11.5px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            margin: 0 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .painel-evento-diario-tabela {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .painel-evento-diario-tabela th {
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 10.5px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.25);
+            border-bottom: 1px solid rgba(148,163,184,.2);
+        }
+        .painel-evento-diario-tabela th.col-data { text-align: left; }
+        .painel-evento-diario-tabela td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid rgba(148,163,184,.08);
+            color: var(--text-primary);
+        }
+        .painel-evento-diario-tabela td.col-data {
+            text-align: left;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .painel-evento-diario-tabela tbody tr:hover {
+            background: rgba(34,211,238,.05);
+        }
+        .painel-evento-diario-vazio {
+            text-align: center;
+            padding: 20px 12px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* ─── Ações ─── */
+        .painel-evento-acoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .painel-evento-acoes button {
+            flex: 1;
+            min-width: 140px;
+            margin: 0;
+        }
+
+        /* ─── Vazio ─── */
+        .painel-evento-vazio {
+            text-align: center;
+            padding: 24px 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            background: rgba(10, 22, 40, 0.4);
+            border: 1px dashed rgba(148,163,184,.28);
+            border-radius: 12px;
+        }
+        .painel-evento-vazio strong { color: var(--text-secondary); }
+
+        @media (max-width: 620px) {
+            .painel-evento-totais-grid { grid-template-columns: repeat(2, 1fr); }
+            .painel-evento-tipo-linha { grid-template-columns: 22px 1fr auto; gap: 8px; font-size: 12px; }
+            .painel-evento-tipo-stat.conclui { grid-column: 2 / -1; text-align: right; }
+            .painel-evento-diario-tabela { font-size: 11px; }
+            .painel-evento-diario-tabela th, .painel-evento-diario-tabela td { padding: 6px 4px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .painel-evento-tipo-linha,
+            .painel-evento-diario-tabela tbody tr { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.72] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -7887,6 +8118,14 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <h4 style="margin-top:0;">📤 Publicação de versão</h4>
                 <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Controle qual versão do app os alunos devem usar. Quando o app deles abrir, vai comparar a versão que estão rodando com a publicada aqui. <strong>Suba sempre o HTML novo antes de publicar</strong> — senão os alunos podem recarregar para uma versão que ainda não está no ar.</p>
                 <div id="painel-versao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+            </div>
+            <!-- ▲ -->
+
+            <!-- ▼ v10.6.0 · Evento com início e fim -->
+            <div class="senha-container" style="margin-bottom:16px;">
+                <h4 style="margin-top:0;">📊 Evento com início e fim</h4>
+                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Inicie um evento para acompanhar <strong>partidas oficiais, treinos, acessos, acertos, erros e alunos participando por dia</strong>. Os contadores começam <strong>do zero</strong> quando você clicar em "Iniciar evento". Você pode encerrar quando quiser e exportar tudo em CSV.</p>
+                <div id="painel-evento-conteudo"><div class="desempenho-loading">⏳ Carregando dados do evento…</div></div>
             </div>
             <!-- ▲ -->
 
@@ -8613,10 +8852,14 @@ verificarVersao();
     // v10.5.3 · Contador de treinos POR MODALIDADE (usado na barra do card
     // "Minhas Posições"). Chave: copa_treinos_por_modalidade/{chave}/{mod}.
     const CAMINHO_TREINOS_POR_MOD   = "copa_treinos_por_modalidade";
+    // v10.6.0 · Evento com início e fim definidos pelo professor.
+    // Estrutura: copa_evento/atual/{meta, totais, diario} + copa_evento/historico
+    const CAMINHO_EVENTO            = "copa_evento";
     const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
     const PREFIXO_LOCAL_CORES = "copaV2_cores_";
     const PREFIXO_LEGADO_CORES = "ceib_cores_";
     // ▲▲▲ FIM [05.02]
+
     // ▼▼▼ [05.03] Senhas e segurança ───────────────────────────────────────
     const SENHA_PROFESSOR_HASH = "68accac682c485d39a223b9c57ae8423271ec0e1129f5298cc5455656d23c3e7";
     const SENHA_PROFESSOR_HASH_FALLBACK = "1ojwkhau4c9";
@@ -21960,6 +22203,604 @@ window.addEventListener("DOMContentLoaded", async () => {
         proximaPerguntaProgressivo();
     }
     // ▲▲▲ FIM [19.07]
+
+    // ▼▼▼ [19.08] Evento — Módulo completo ────────────────── INÍCIO ───
+    // v10.6.0 · Sistema de evento com início e fim definidos pelo professor.
+    //
+    // O que conta:
+    //   · Partidas oficiais (total + por dia)
+    //   · Sessões de treino CONCLUÍDAS (total + por dia)
+    //   · ACESSOS a treinos (abertos mesmo sem concluir) — total + por dia
+    //   · CONCLUSÕES por tipo de treino + ACESSOS por tipo de treino
+    //   · Acertos e erros (oficial e treino, separados)
+    //   · Alunos únicos por dia + participações diárias acumuladas
+    //
+    // Tipos de treino contados: inteligente · reverso · decomposicao ·
+    //                           espelho · chunking · progressivo
+    //
+    // Estrutura Firebase:
+    //   copa_evento/atual/
+    //     meta/         ← { nome, inicioEm, fimEm, ativo, encerradoEm, criadoEm }
+    //     totais/       ← partidasOficiais, treinos, treinoAcessos,
+    //                     acertosOficiais, errosOficiais,
+    //                     acertosTreino, errosTreino,
+    //                     participacoesDiarias,
+    //                     porTipoTreinoAcessos/{modoId},
+    //                     porTipoTreinoConcluidos/{modoId}
+    //     diario/
+    //       "YYYY-MM-DD"/
+    //         alunos/{chaveAluno} = true   ← dedup do aluno no dia
+    //         alunosCount                  ← contador do dia
+    //         partidasOficiais, treinos, treinoAcessos,
+    //         acertosOficiais, errosOficiais,
+    //         acertosTreino, errosTreino,
+    //         porTipoAcessos/{modoId},
+    //         porTipoConcluidos/{modoId}
+
+    const EVENTO_TIPOS_TREINO = [
+        { id: "inteligente",  icone: "🧠", nome: "Treino Inteligente" },
+        { id: "reverso",      icone: "🔄", nome: "Treino Reverso" },
+        { id: "decomposicao", icone: "🧩", nome: "Decomposição" },
+        { id: "espelho",      icone: "🪞", nome: "Espelho" },
+        { id: "chunking",     icone: "🧱", nome: "Chunking" },
+        { id: "progressivo",  icone: "⏱️", nome: "Progressivo" }
+    ];
+
+    let _eventoMetaCache = { dados: null, ts: 0 };
+    const _EVENTO_META_CACHE_MS = 30 * 1000;
+
+    async function obterMetaDoEventoAtivo(forcar) {
+        const agora = Date.now();
+        if (!forcar && _eventoMetaCache.dados !== undefined
+                     && (agora - _eventoMetaCache.ts) < _EVENTO_META_CACHE_MS) {
+            return _eventoMetaCache.dados;
+        }
+        try {
+            const snap = await database.ref(`${CAMINHO_EVENTO}/atual/meta`).once("value");
+            const meta = snap.val() || null;
+            _eventoMetaCache = { dados: meta, ts: agora };
+            return meta;
+        } catch(e) {
+            console.warn("[Evento] Falha ao ler meta:", e);
+            return null;
+        }
+    }
+
+    function limparCacheMetaEvento() { _eventoMetaCache = { dados: null, ts: 0 }; }
+
+    function eventoEstaAtivo(meta) {
+        if (!meta) return false;
+        if (!meta.ativo) return false;
+        if (!meta.inicioEm) return false;
+        if (meta.fimEm && Date.now() > meta.fimEm) return false;
+        return true;
+    }
+
+    async function garantirParticipacaoDiaria(hoje, chaveAluno) {
+        // Se o aluno já jogou hoje, não incrementa de novo.
+        try {
+            const ref = database.ref(`${CAMINHO_EVENTO}/atual/diario/${hoje}/alunos/${chaveAluno}`);
+            const snap = await ref.once("value");
+            if (snap.exists()) return;
+            await ref.set(true);
+            await database.ref(`${CAMINHO_EVENTO}/atual/diario/${hoje}/alunosCount`)
+                .set(firebase.database.ServerValue.increment(1));
+            await database.ref(`${CAMINHO_EVENTO}/atual/totais/participacoesDiarias`)
+                .set(firebase.database.ServerValue.increment(1));
+        } catch(e) {
+            console.warn("[Evento] Falha ao registrar participação diária:", e);
+        }
+    }
+
+    async function registrarAcessoDeTreinoNoEvento(modoId) {
+        if (!modoId || !EVENTO_TIPOS_TREINO.some(t => t.id === modoId)) return;
+        if (treinoAnonimo) return;
+        if (!alunoAtual || !turmaAtual) return;
+        const meta = await obterMetaDoEventoAtivo();
+        if (!eventoEstaAtivo(meta)) return;
+
+        const hoje = chaveDataDia(Date.now());
+        const chaveAluno = chaveAlbum(alunoAtual, turmaAtual);
+        const inc = firebase.database.ServerValue.increment(1);
+        const updates = {};
+        updates[`atual/totais/treinoAcessos`] = inc;
+        updates[`atual/totais/porTipoTreinoAcessos/${modoId}`] = inc;
+        updates[`atual/diario/${hoje}/treinoAcessos`] = inc;
+        updates[`atual/diario/${hoje}/porTipoAcessos/${modoId}`] = inc;
+
+        try { await database.ref(CAMINHO_EVENTO).update(updates); }
+        catch(e) { console.warn("[Evento] Falha ao registrar acesso de treino:", e); }
+        await garantirParticipacaoDiaria(hoje, chaveAluno);
+    }
+
+    async function registrarConclusaoDeTreinoNoEvento(modoId, acertos, erros) {
+        if (!modoId || !EVENTO_TIPOS_TREINO.some(t => t.id === modoId)) return;
+        if (treinoAnonimo) return;
+        if (!alunoAtual || !turmaAtual) return;
+        const meta = await obterMetaDoEventoAtivo();
+        if (!eventoEstaAtivo(meta)) return;
+
+        const hoje = chaveDataDia(Date.now());
+        const chaveAluno = chaveAlbum(alunoAtual, turmaAtual);
+        const inc = firebase.database.ServerValue.increment(1);
+        const a = Number(acertos) || 0;
+        const e = Number(erros) || 0;
+        const updates = {};
+        updates[`atual/totais/treinos`] = inc;
+        updates[`atual/totais/porTipoTreinoConcluidos/${modoId}`] = inc;
+        updates[`atual/totais/acertosTreino`] = firebase.database.ServerValue.increment(a);
+        updates[`atual/totais/errosTreino`] = firebase.database.ServerValue.increment(e);
+        updates[`atual/diario/${hoje}/treinos`] = inc;
+        updates[`atual/diario/${hoje}/porTipoConcluidos/${modoId}`] = inc;
+        updates[`atual/diario/${hoje}/acertosTreino`] = firebase.database.ServerValue.increment(a);
+        updates[`atual/diario/${hoje}/errosTreino`] = firebase.database.ServerValue.increment(e);
+
+        try { await database.ref(CAMINHO_EVENTO).update(updates); }
+        catch(err) { console.warn("[Evento] Falha ao registrar conclusão de treino:", err); }
+        await garantirParticipacaoDiaria(hoje, chaveAluno);
+    }
+
+    async function registrarPartidaOficialNoEvento(acertos, erros) {
+        if (!alunoAtual || !turmaAtual) return;
+        const meta = await obterMetaDoEventoAtivo();
+        if (!eventoEstaAtivo(meta)) return;
+
+        const hoje = chaveDataDia(Date.now());
+        const chaveAluno = chaveAlbum(alunoAtual, turmaAtual);
+        const inc = firebase.database.ServerValue.increment(1);
+        const a = Number(acertos) || 0;
+        const e = Number(erros) || 0;
+        const updates = {};
+        updates[`atual/totais/partidasOficiais`] = inc;
+        updates[`atual/totais/acertosOficiais`] = firebase.database.ServerValue.increment(a);
+        updates[`atual/totais/errosOficiais`] = firebase.database.ServerValue.increment(e);
+        updates[`atual/diario/${hoje}/partidasOficiais`] = inc;
+        updates[`atual/diario/${hoje}/acertosOficiais`] = firebase.database.ServerValue.increment(a);
+        updates[`atual/diario/${hoje}/errosOficiais`] = firebase.database.ServerValue.increment(e);
+
+        try { await database.ref(CAMINHO_EVENTO).update(updates); }
+        catch(err) { console.warn("[Evento] Falha ao registrar partida oficial:", err); }
+        await garantirParticipacaoDiaria(hoje, chaveAluno);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Controle do evento (chamado pelo painel)
+    // ─────────────────────────────────────────────────────────────────
+
+    async function iniciarEventoNoPainel() {
+        if (!exigirProfessorAutenticado()) return;
+
+        const nome = prompt("📛 Nome do evento (opcional):", "Copa da Tabuada CEIB 2026");
+        if (nome === null) return;
+        const duracaoTxt = prompt("📅 Duração do evento em dias:", "30");
+        if (duracaoTxt === null) return;
+        const d = parseInt(duracaoTxt, 10);
+        if (!Number.isFinite(d) || d <= 0) { notificar("Duração inválida.", "aviso"); return; }
+
+        const inicioEm = Date.now();
+        const fimEm = inicioEm + d * 24 * 60 * 60 * 1000;
+        const fmtIni = new Date(inicioEm).toLocaleString("pt-BR");
+        const fmtFim = new Date(fimEm).toLocaleString("pt-BR");
+
+        const ok = confirm(
+            "📊 INICIAR EVENTO\n\n" +
+            `Nome: ${nome || "(sem nome)"}\n` +
+            `Início: ${fmtIni}\n` +
+            `Fim: ${fmtFim}\n\n` +
+            "Os contadores começam do ZERO a partir de agora.\n" +
+            "Partidas e treinos anteriores NÃO entram.\n\n" +
+            "Continuar?"
+        );
+        if (!ok) return;
+
+        try {
+            // Zera contadores ANTES de gravar a meta (para não sobrar resíduo)
+            await database.ref(`${CAMINHO_EVENTO}/atual/totais`).remove();
+            await database.ref(`${CAMINHO_EVENTO}/atual/diario`).remove();
+            await database.ref(`${CAMINHO_EVENTO}/atual/meta`).set({
+                nome: nome || "Evento",
+                inicioEm,
+                fimEm,
+                ativo: true,
+                encerradoEm: null,
+                criadoEm: Date.now()
+            });
+            limparCacheMetaEvento();
+            notificar("✅ Evento iniciado!", "sucesso", 4000);
+            try { somNovoRecorde(); } catch(e) {}
+            await renderizarPainelEvento();
+        } catch(e) {
+            console.warn("[Evento] Falha ao iniciar:", e);
+            notificar("❌ Não foi possível iniciar o evento.", "erro", 5000);
+        }
+    }
+
+    async function encerrarEventoNoPainel() {
+        if (!exigirProfessorAutenticado()) return;
+        if (!confirm("🏁 Encerrar o evento?\n\nOs contadores param de subir. Você poderá consultar o resultado e exportar o CSV normalmente.")) return;
+        try {
+            await database.ref(`${CAMINHO_EVENTO}/atual/meta`).update({
+                ativo: false,
+                encerradoEm: Date.now()
+            });
+            limparCacheMetaEvento();
+            notificar("🏁 Evento encerrado!", "sucesso", 4000);
+            try { somConclusao(); } catch(e) {}
+            await renderizarPainelEvento();
+        } catch(e) {
+            console.warn("[Evento] Falha ao encerrar:", e);
+            notificar("❌ Não foi possível encerrar.", "erro", 5000);
+        }
+    }
+
+    async function resetarEventoNoPainel() {
+        if (!exigirProfessorAutenticado()) return;
+        const ok = confirm(
+            "⚠️ ATENÇÃO — RESETAR EVENTO\n\n" +
+            "Isso vai:\n" +
+            "• Apagar todos os contadores do evento atual\n" +
+            "• Apagar o histórico diário\n" +
+            "• Apagar a meta (nome, datas)\n\n" +
+            "⚠️ Partidas, treinos e mapas dos alunos NÃO são afetados.\n\n" +
+            "Continuar?"
+        );
+        if (!ok) return;
+        if (!confirm("Última confirmação: apagar o evento agora?")) return;
+        try {
+            await database.ref(`${CAMINHO_EVENTO}/atual`).remove();
+            limparCacheMetaEvento();
+            notificar("🗑️ Evento resetado.", "info", 4000);
+            await renderizarPainelEvento();
+        } catch(e) {
+            console.warn("[Evento] Falha ao resetar:", e);
+            notificar("❌ Não foi possível resetar.", "erro", 5000);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Render do painel
+    // ─────────────────────────────────────────────────────────────────
+
+    async function renderizarPainelEvento() {
+        const container = document.getElementById("painel-evento-conteudo");
+        if (!container) return;
+        container.innerHTML = `<div class="desempenho-loading">⏳ Carregando dados do evento…</div>`;
+
+        try {
+            const [metaSnap, totaisSnap, diarioSnap] = await Promise.all([
+                database.ref(`${CAMINHO_EVENTO}/atual/meta`).once("value"),
+                database.ref(`${CAMINHO_EVENTO}/atual/totais`).once("value"),
+                database.ref(`${CAMINHO_EVENTO}/atual/diario`).once("value")
+            ]);
+            const meta = metaSnap.val() || null;
+            const totais = totaisSnap.val() || {};
+            const diario = diarioSnap.val() || {};
+
+            _eventoMetaCache = { dados: meta, ts: Date.now() };
+            container.innerHTML = renderizarCardEvento(meta, totais, diario);
+        } catch(e) {
+            console.warn("[Evento] Falha ao renderizar:", e);
+            container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar os dados do evento agora.<br>Tente novamente em instantes.</div>`;
+        }
+    }
+
+    function _fmtNumeroEvento(n) {
+        const v = Number(n) || 0;
+        return v.toLocaleString("pt-BR");
+    }
+
+    function _renderizarCabecalhoEvento(meta) {
+        if (!meta || !meta.inicioEm) {
+            return `<div class="painel-evento-vazio">
+                📊 <strong>Nenhum evento ativo.</strong><br>
+                Clique em <strong>Iniciar evento</strong> para começar a contar partidas, treinos, acessos, acertos, erros e alunos por dia.
+                <div class="painel-evento-acoes" style="margin-top:14px;">
+                    <button class="botao-verde" onclick="iniciarEventoNoPainel()">▶️ Iniciar evento</button>
+                </div>
+            </div>`;
+        }
+        const ativo = eventoEstaAtivo(meta);
+        const statusCls = ativo ? "ativo" : "encerrado";
+        const statusTxt = ativo ? "🟢 Em andamento" : "🏁 Encerrado";
+        const fmtData = (ts) => ts ? new Date(ts).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" }) : "—";
+        const restanteMs = meta.fimEm ? Math.max(0, meta.fimEm - Date.now()) : 0;
+        const restanteTxt = meta.fimEm
+            ? (restanteMs > 0
+                ? `${Math.ceil(restanteMs / (24*60*60*1000))} dia(s)`
+                : "encerrado")
+            : "sem prazo definido";
+
+        return `<div class="painel-evento-cabecalho">
+            <span class="painel-evento-status ${statusCls}">${statusTxt}</span>
+            <span><strong>📛 ${escaparHtml(meta.nome || "Evento")}</strong></span>
+            <span>Início: <strong>${fmtData(meta.inicioEm)}</strong></span>
+            <span>Fim: <strong>${fmtData(meta.fimEm)}</strong> (restante: ${restanteTxt})</span>
+            ${meta.encerradoEm ? `<span>Encerrado em: <strong>${fmtData(meta.encerradoEm)}</strong></span>` : ""}
+        </div>
+        <div class="painel-evento-acoes" style="margin-top:10px;">
+            ${ativo
+                ? `<button class="botao-forcar" onclick="encerrarEventoNoPainel()">🏁 Encerrar evento</button>`
+                : `<button class="botao-verde" onclick="iniciarEventoNoPainel()">▶️ Iniciar novo evento</button>`}
+            <button class="botao-secundario" onclick="renderizarPainelEvento()">🔄 Atualizar agora</button>
+            <button class="botao-forcar" onclick="resetarEventoNoPainel()">🗑️ Resetar evento</button>
+        </div>`;
+    }
+
+    function _renderizarTotaisEvento(totais) {
+        const cards = [
+            { icone: "🏆", valor: totais.partidasOficiais, rotulo: "Partidas oficiais", cls: "oficial" },
+            { icone: "🎯", valor: totais.treinos,          rotulo: "Treinos concluídos", cls: "treino" },
+            { icone: "👆", valor: totais.treinoAcessos,    rotulo: "Acessos a treinos",  cls: "treino" },
+            { icone: "✅", valor: totais.acertosOficiais,  rotulo: "Acertos oficiais",   cls: "acerto" },
+            { icone: "❌", valor: totais.errosOficiais,    rotulo: "Erros oficiais",     cls: "erro" },
+            { icone: "✅", valor: totais.acertosTreino,    rotulo: "Acertos em treino",  cls: "acerto" },
+            { icone: "❌", valor: totais.errosTreino,      rotulo: "Erros em treino",    cls: "erro" },
+            { icone: "👥", valor: totais.participacoesDiarias, rotulo: "Participações diárias", cls: "" }
+        ];
+        const html = cards.map(c => `<div class="painel-evento-total-card">
+            <span class="painel-evento-total-icone">${c.icone}</span>
+            <span class="painel-evento-total-valor ${c.cls}">${_fmtNumeroEvento(c.valor)}</span>
+            <span class="painel-evento-total-rotulo">${c.rotulo}</span>
+        </div>`).join("");
+        return `<div class="painel-evento-totais-grid">${html}</div>`;
+    }
+
+    function _renderizarTiposTreino(totais) {
+        const acessos = totais.porTipoTreinoAcessos || {};
+        const concluidos = totais.porTipoTreinoConcluidos || {};
+        const linhas = EVENTO_TIPOS_TREINO.map(t => {
+            const a = Number(acessos[t.id]) || 0;
+            const c = Number(concluidos[t.id]) || 0;
+            const zerado = (a === 0 && c === 0) ? " zerado" : "";
+            return `<div class="painel-evento-tipo-linha${zerado}">
+                <span class="painel-evento-tipo-icone" aria-hidden="true">${t.icone}</span>
+                <span class="painel-evento-tipo-nome">${escaparHtml(t.nome)}</span>
+                <span class="painel-evento-tipo-stat acesso">${_fmtNumeroEvento(a)} ${a === 1 ? "acesso" : "acessos"}</span>
+                <span class="painel-evento-tipo-stat conclui">${_fmtNumeroEvento(c)} ${c === 1 ? "concluído" : "concluídos"}</span>
+            </div>`;
+        }).join("");
+        return `<div class="painel-evento-tipos-wrap">
+            <div class="painel-evento-tipos-titulo">🎯 Uso dos tipos de treino (evento inteiro)</div>
+            <div class="painel-evento-tipos-lista">${linhas}</div>
+        </div>`;
+    }
+
+    function _renderizarDiarioEvento(diario) {
+        const chaves = Object.keys(diario || {}).sort((a, b) => b.localeCompare(a));
+        if (!chaves.length) {
+            return `<div class="painel-evento-diario-wrap">
+                <div class="painel-evento-diario-titulo">📅 Histórico diário</div>
+                <div class="painel-evento-diario-vazio">Nenhuma atividade registrada ainda.</div>
+            </div>`;
+        }
+        const linhas = chaves.map(dia => {
+            const d = diario[dia] || {};
+            return `<tr>
+                <td class="col-data">${escaparHtml(dia)}</td>
+                <td>${_fmtNumeroEvento(d.alunosCount)}</td>
+                <td>${_fmtNumeroEvento(d.partidasOficiais)}</td>
+                <td>${_fmtNumeroEvento(d.treinos)}</td>
+                <td>${_fmtNumeroEvento(d.treinoAcessos)}</td>
+                <td>${_fmtNumeroEvento(d.acertosOficiais)}</td>
+                <td>${_fmtNumeroEvento(d.errosOficiais)}</td>
+                <td>${_fmtNumeroEvento(d.acertosTreino)}</td>
+                <td>${_fmtNumeroEvento(d.errosTreino)}</td>
+            </tr>`;
+        }).join("");
+        return `<div class="painel-evento-diario-wrap">
+            <div class="painel-evento-diario-titulo">📅 Histórico diário</div>
+            <div style="overflow-x:auto;">
+                <table class="painel-evento-diario-tabela">
+                    <thead>
+                        <tr>
+                            <th class="col-data">Dia</th>
+                            <th>👥 Alunos</th>
+                            <th>🏆 Oficiais</th>
+                            <th>🎯 Treinos</th>
+                            <th>👆 Acessos</th>
+                            <th>✅ Acertos (ofic.)</th>
+                            <th>❌ Erros (ofic.)</th>
+                            <th>✅ Acertos (treino)</th>
+                            <th>❌ Erros (treino)</th>
+                        </tr>
+                    </thead>
+                    <tbody>${linhas}</tbody>
+                </table>
+            </div>
+        </div>`;
+    }
+
+    function renderizarCardEvento(meta, totais, diario) {
+        const cab = _renderizarCabecalhoEvento(meta);
+        if (!meta || !meta.inicioEm) {
+            // Sem evento: só mostra o vazio + ações
+            return `<div class="painel-evento-wrap">${cab}</div>`;
+        }
+        const totaisHtml = _renderizarTotaisEvento(totais);
+        const tiposHtml = _renderizarTiposTreino(totais);
+        const diarioHtml = _renderizarDiarioEvento(diario);
+        const acoesHtml = `<div class="painel-evento-acoes" style="margin-top:4px;">
+            <button class="botao-secundario" onclick="exportarCSVEvento()">📎 Exportar CSV do evento</button>
+        </div>`;
+        return `<div class="painel-evento-wrap">
+            ${cab}
+            ${totaisHtml}
+            ${tiposHtml}
+            ${diarioHtml}
+            ${acoesHtml}
+        </div>`;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Exportação CSV do evento
+    // ─────────────────────────────────────────────────────────────────
+
+    async function exportarCSVEvento() {
+        if (!exigirProfessorAutenticado()) return;
+        try {
+            const [metaSnap, totaisSnap, diarioSnap] = await Promise.all([
+                database.ref(`${CAMINHO_EVENTO}/atual/meta`).once("value"),
+                database.ref(`${CAMINHO_EVENTO}/atual/totais`).once("value"),
+                database.ref(`${CAMINHO_EVENTO}/atual/diario`).once("value")
+            ]);
+            const meta = metaSnap.val() || {};
+            const totais = totaisSnap.val() || {};
+            const diario = diarioSnap.val() || {};
+
+            const esc = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
+            const fmtData = (ts) => ts ? new Date(ts).toLocaleString("pt-BR") : "—";
+
+            let csv = "";
+
+            // Cabeçalho
+            csv += `EVENTO,${esc(meta.nome || "Evento")}\n`;
+            csv += `Início,${esc(fmtData(meta.inicioEm))}\n`;
+            csv += `Fim previsto,${esc(fmtData(meta.fimEm))}\n`;
+            csv += `Encerrado em,${esc(fmtData(meta.encerradoEm))}\n`;
+            csv += `Exportado em,${esc(new Date().toLocaleString("pt-BR"))}\n\n`;
+
+            // Totais
+            csv += `TOTAIS GERAIS\n`;
+            csv += `Métrica,Valor\n`;
+            csv += `Partidas oficiais,${Number(totais.partidasOficiais) || 0}\n`;
+            csv += `Treinos concluídos,${Number(totais.treinos) || 0}\n`;
+            csv += `Acessos a treinos,${Number(totais.treinoAcessos) || 0}\n`;
+            csv += `Acertos oficiais,${Number(totais.acertosOficiais) || 0}\n`;
+            csv += `Erros oficiais,${Number(totais.errosOficiais) || 0}\n`;
+            csv += `Acertos em treino,${Number(totais.acertosTreino) || 0}\n`;
+            csv += `Erros em treino,${Number(totais.errosTreino) || 0}\n`;
+            csv += `Participações diárias,${Number(totais.participacoesDiarias) || 0}\n\n`;
+
+            // Tipos de treino
+            csv += `USO POR TIPO DE TREINO\n`;
+            csv += `Tipo,Acessos,Concluídos\n`;
+            EVENTO_TIPOS_TREINO.forEach(t => {
+                const a = Number((totais.porTipoTreinoAcessos || {})[t.id]) || 0;
+                const c = Number((totais.porTipoTreinoConcluidos || {})[t.id]) || 0;
+                csv += `${esc(t.nome)},${a},${c}\n`;
+            });
+            csv += `\n`;
+
+            // Histórico diário
+            csv += `HISTÓRICO DIÁRIO\n`;
+            csv += `Dia,Alunos,Partidas oficiais,Treinos,Acessos,Acertos ofic.,Erros ofic.,Acertos treino,Erros treino\n`;
+            const dias = Object.keys(diario).sort();
+            dias.forEach(dia => {
+                const d = diario[dia] || {};
+                csv += `${esc(dia)},${Number(d.alunosCount) || 0},${Number(d.partidasOficiais) || 0},`
+                     + `${Number(d.treinos) || 0},${Number(d.treinoAcessos) || 0},`
+                     + `${Number(d.acertosOficiais) || 0},${Number(d.errosOficiais) || 0},`
+                     + `${Number(d.acertosTreino) || 0},${Number(d.errosTreino) || 0}\n`;
+            });
+
+            // BOM UTF-8 para Excel abrir com acentos corretos
+            const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `evento_copa_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 30000);
+            notificar("📎 CSV do evento exportado!", "sucesso");
+        } catch(e) {
+            console.warn("[Evento] Falha ao exportar CSV:", e);
+            notificar("❌ Não foi possível exportar o CSV agora.", "erro", 5000);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Hooks automáticos
+    // ─────────────────────────────────────────────────────────────────
+    // Observam as funções originais do app e disparam o registro de
+    // atividade no evento. Não substituem as funções — apenas adicionam
+    // uma chamada ANTES do original.
+    //
+    // Isso evita reescrever blocos gigantes como [14.04], [14.08],
+    // [19.06] e [19.07]. Se alguma dessas funções for renomeada no
+    // futuro, o hook só registra um aviso no console — o app continua
+    // funcionando normalmente.
+    (function instalarHooksDoEvento() {
+        if (typeof window === "undefined") return;
+
+        function wrap(nomeFuncao, callbackAntes) {
+            const original = window[nomeFuncao];
+            if (typeof original !== "function") {
+                console.warn(`[Evento] Hook "${nomeFuncao}" não encontrado — pulando.`);
+                return;
+            }
+            window[nomeFuncao] = function(...args) {
+                try { callbackAntes.apply(this, args); }
+                catch(e) { console.warn(`[Evento] Falha no hook de ${nomeFuncao}:`, e); }
+                return original.apply(this, args);
+            };
+        }
+
+        // ─── Acessos a treino ───
+        // Motor antigo: Treino Inteligente, Foco Absoluto, Variações — todos
+        // passam por iniciarPartidaTreino.
+        wrap("iniciarPartidaTreino", () => {
+            if (treinoAnonimo) return;
+            registrarAcessoDeTreinoNoEvento("inteligente");
+        });
+
+        // Motor Aprender — Reverso, Decomposição, Espelho.
+        wrap("abrirTreinoAprender", (modoId) => {
+            registrarAcessoDeTreinoNoEvento(modoId);
+        });
+
+        // Chunking — usa a variante com tabuada fixa.
+        wrap("abrirTreinoAprenderComTabuadaFixa", (modoId) => {
+            registrarAcessoDeTreinoNoEvento(modoId || "chunking");
+        });
+
+        // Progressivo — motor próprio.
+        wrap("iniciarTreinoProgressivo", () => {
+            registrarAcessoDeTreinoNoEvento("progressivo");
+        });
+
+        // ─── Conclusões de treino ───
+        // Aprender: renderizarResumoAprender é o ÚLTIMO passo da sessão —
+        // seja por conclusão natural, seja por saída antecipada.
+        wrap("renderizarResumoAprender", (saiuAntes) => {
+            const e = aprenderEstado;
+            if (!e) return;
+            const completou = !saiuAntes && e.resultados.length >= e.tamanhoSessao;
+            if (!completou) return;
+            const acertos = e.resultados.filter(r => r.acertou).length;
+            const erros = e.resultados.length - acertos;
+            registrarConclusaoDeTreinoNoEvento(e.modoId, acertos, erros);
+        });
+
+        // Progressivo: mesmo padrão.
+        wrap("renderizarResumoProgressivo", (saiuAntes) => {
+            const e = progressivoEstado;
+            if (!e) return;
+            const completou = !saiuAntes && e.resultados.length >= e.tamanhoSessao;
+            if (!completou) return;
+            const acertos = e.resultados.filter(r => r.acertou).length;
+            const erros = e.resultados.length - acertos;
+            registrarConclusaoDeTreinoNoEvento("progressivo", acertos, erros);
+        });
+
+        // Partidas oficiais + treino do motor antigo (finalizarCircuito).
+        wrap("finalizarCircuito", () => {
+            const eraTreino = !!modoTreino;
+            if (eraTreino) {
+                if (treinoAnonimo) return;
+                const completou = (acertos + erros) >= TOTAL_PERGUNTAS;
+                if (completou) {
+                    registrarConclusaoDeTreinoNoEvento("inteligente", acertos, erros);
+                }
+            } else {
+                registrarPartidaOficialNoEvento(acertos, erros);
+            }
+        });
+
+        console.info("✅ [Evento] Hooks instalados.");
+    })();
+    // ▲▲▲ FIM [19.08]
     </script>
 </body>
 </html>
