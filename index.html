@@ -8555,6 +8555,62 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             }
         }
         /* ▲▲▲ FIM [02.81] */
+
+        /* ▼▼▼ [02.82] Título com botão de ajuda inline ─────────── INÍCIO ─── */
+        /* v10.7.2 · Wrapper flex para agrupar um título (h2/h3/span)
+           com o botão `.btn-como-funciona-inline` ao lado — usado em
+           8 menus, substituindo o botão grande `.btn-como-funciona-menu`
+           do rodapé.
+
+           O botão em si é estilizado em [02.81] (`.btn-como-funciona-inline`).
+           Aqui só garantimos o layout do agrupamento. */
+
+        .card-titulo-com-ajuda {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* O título (primeiro filho — span, h2, h3 ou texto) não encolhe
+           antes do botão. Se faltar espaço, quebra de linha (flex-wrap). */
+        .card-titulo-com-ajuda > *:first-child {
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        /* Dentro do header de modal: título + botão à esquerda,
+           botão ✕ à direita (via modal-header, que já é flex). */
+        .modal-titulo-com-ajuda {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .modal-titulo-com-ajuda > h3 {
+            margin: 0;
+            flex-shrink: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Ajuste fino para títulos de card alinhados à esquerda
+           (ex: "Meu Progresso", que usava text-align: left inline). */
+        .card-titulo-com-ajuda.esquerda {
+            justify-content: flex-start;
+        }
+
+        @media (max-width: 520px) {
+            .card-titulo-com-ajuda,
+            .modal-titulo-com-ajuda {
+                gap: 6px;
+            }
+        }
+        /* ▲▲▲ FIM [02.82] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -8576,7 +8632,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.6.0</button>
+                >v10.7.2</button>
                 <button
                     type="button"
                     class="logo-verificar"
@@ -8713,7 +8769,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.6.0</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.7.2</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -8725,24 +8781,21 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     <!-- ▼▼▼ [03.03] TELA HALL DA FAMA ───────────────────────── -->
     <div id="tela-hall-fama" class="card hidden">
-        <h2>🏆 Hall da Fama</h2>
+        <h2 class="card-titulo-com-ajuda">
+            <span>🏆 Hall da Fama</span>
+            <button type="button"
+                    id="btn-como-funciona-hall"
+                    class="btn-como-funciona-inline"
+                    onclick="abrirModalComoFuncionaHall()"
+                    aria-haspopup="dialog"
+                    aria-controls="modal-explicacao-hall"
+                    aria-label="Como funciona o Hall da Fama"
+                    title="Como funciona?">?</button>
+        </h2>
         <p class="subtitulo" style="text-align:left;">Os maiores destaques da Copa em cada categoria. Só entram alunos com pelo menos <strong>1 partida registrada</strong>.</p>
         <div id="hall-fama-conteudo" class="hall-fama-grid">
             <div class="desempenho-loading">⏳ Carregando os destaques da Copa...</div>
         </div>
-
-        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão abre o
-             modal explicativo do Hall da Fama (11 categorias, como entrar,
-             critérios de desempate, etc.). -->
-        <button type="button"
-                id="btn-como-funciona-hall"
-                class="btn-como-funciona-menu"
-                onclick="abrirModalComoFuncionaHall()"
-                aria-haspopup="dialog"
-                aria-controls="modal-explicacao-hall">
-            ℹ️ Como funciona o Hall da Fama?
-        </button>
-        <!-- ▲ -->
 
         <button onclick="mostrarTela('tela-mais')" class="botao-secundario" style="margin-top:14px;">⬅️ Voltar</button>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
@@ -8908,22 +8961,24 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div id="banner-posicao-global" class="banner-posicao-global hidden"></div>
 
-        <h3 id="titulo-ranking"></h3>
+        <!-- ▼ v10.7.2 · Título + botão de ajuda inline (substitui o botão
+             grande que ficava no rodapé). renderizarDescricaoRanking()
+             continua controlando a visibilidade via .hidden. -->
+        <div class="card-titulo-com-ajuda" style="margin: 6px 0 12px;">
+            <h3 id="titulo-ranking" style="margin: 0;"></h3>
+            <button type="button"
+                    id="btn-explicar-ranking"
+                    class="btn-como-funciona-inline hidden"
+                    onclick="abrirModalExplicacaoRanking()"
+                    aria-haspopup="dialog"
+                    aria-controls="modal-explicacao-ranking"
+                    aria-label="Como funciona este ranking"
+                    title="Como funciona?">?</button>
+        </div>
+        <!-- ▲ -->
+
         <div class="tabela-container"><table><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
         <div id="medias-turmas-container" class="medias-turmas hidden"></div>
-
-        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão é controlado
-             por renderizarDescricaoRanking() em [13.06]; fica oculto quando
-             não há explicação aplicável ao combo escopo/métrica atual. -->
-        <button type="button"
-                id="btn-explicar-ranking"
-                class="btn-explicar-ranking hidden"
-                onclick="abrirModalExplicacaoRanking()"
-                aria-haspopup="dialog"
-                aria-controls="modal-explicacao-ranking">
-            ℹ️ Como funciona este ranking?
-        </button>
-        <!-- ▲ -->
     </div>
 
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
@@ -8991,7 +9046,17 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     <!-- ▼▼▼ [03.10] DESEMPENHO ───────────────────────────────── -->
     <div id="tela-desempenho" class="card hidden">
-        <h2>📊 Desempenho</h2>
+        <h2 class="card-titulo-com-ajuda">
+            <span>📊 Desempenho</span>
+            <button type="button"
+                    id="btn-como-funciona-desempenho"
+                    class="btn-como-funciona-inline"
+                    onclick="abrirModalComoFuncionaDesempenho()"
+                    aria-haspopup="dialog"
+                    aria-controls="modal-explicacao-desempenho"
+                    aria-label="Como funciona o Desempenho"
+                    title="Como funciona?">?</button>
+        </h2>
         <div id="desempenho-identificacao">
             <p class="subtitulo" style="text-align:left;" id="desempenho-identificacao-texto">Digite o nome do aluno para ver a trajetória:</p>
             <div class="autocomplete-wrap">
@@ -9059,19 +9124,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </div>
 
-        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão abre o
-             modal explicativo do Desempenho (filtros, estatísticas,
-             gráfico, comparativo, evolução, histórico). -->
-        <button type="button"
-                id="btn-como-funciona-desempenho"
-                class="btn-como-funciona-menu"
-                onclick="abrirModalComoFuncionaDesempenho()"
-                aria-haspopup="dialog"
-                aria-controls="modal-explicacao-desempenho">
-            ℹ️ Como funciona o Desempenho?
-        </button>
-        <!-- ▲ -->
-
         <button onclick="abrirBuscarAlunoComMeusDados()" class="botao-link-cruzado">🗺️ Ver mapa de tabuadas e conquistas →</button>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Voltar ao início</button>
     </div>
@@ -9110,19 +9162,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div id="album-certificados-container"></div>
         <div id="album-filtros"></div>
         <div id="album-conteudo"></div>
-
-        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão abre o
-             modal explicativo do Álbum (como funciona, o que são estrelas,
-             patentes, raridades, certificados e filtros). -->
-        <button type="button"
-                id="btn-como-funciona-album"
-                class="btn-como-funciona-menu"
-                onclick="abrirModalComoFuncionaAlbum()"
-                aria-haspopup="dialog"
-                aria-controls="modal-explicacao-album">
-            ℹ️ Como funciona o Álbum?
-        </button>
-        <!-- ▲ -->
 
         <div style="margin-top: 28px; padding-top: 16px; border-top: 1px dashed var(--border-neon); text-align: center;">
             <button class="album-btn-voltar-capa" style="width: 100%; justify-content: center; padding: 16px; font-size: 15px; background: rgba(34, 211, 238, 0.1); color: var(--neon-cyan); border-color: var(--neon-cyan);" onclick="mostrarTela('tela-inicial')">
@@ -9255,23 +9294,20 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     <!-- ▼▼▼ [03.13] TELA MEU PROGRESSO ─────────────────────── -->
     <div id="tela-meu-progresso" class="card hidden">
-        <h2 style="text-align:left;">📈 Meu Progresso</h2>
+        <h2 class="card-titulo-com-ajuda esquerda">
+            <span>📈 Meu Progresso</span>
+            <button type="button"
+                    id="btn-como-funciona-progresso"
+                    class="btn-como-funciona-inline"
+                    onclick="abrirModalComoFuncionaProgresso()"
+                    aria-haspopup="dialog"
+                    aria-controls="modal-explicacao-progresso"
+                    aria-label="Como funciona o Meu Progresso"
+                    title="Como funciona?">?</button>
+        </h2>
         <div id="meu-progresso-conteudo">
             <div class="desempenho-loading" style="padding:40px 20px;text-align:center;color:var(--text-muted);">⏳ Carregando seu progresso…</div>
         </div>
-
-        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão abre o
-             modal explicativo do Meu Progresso (3 níveis de certificado,
-             requisitos, timeline, etc.). -->
-        <button type="button"
-                id="btn-como-funciona-progresso"
-                class="btn-como-funciona-menu"
-                onclick="abrirModalComoFuncionaProgresso()"
-                aria-haspopup="dialog"
-                aria-controls="modal-explicacao-progresso">
-            ℹ️ Como funciona o Meu Progresso?
-        </button>
-        <!-- ▲ -->
 
         <button onclick="mostrarTela('tela-desempenho')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar ao desempenho</button>
         <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
@@ -9343,7 +9379,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.6.0 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.7.2 · atual</span>
+                <h4 class="changelog-titulo">ℹ️ Botões "Como funciona" mais discretos nos 9 menus</h4>
+                <p class="changelog-descricao">Os botões "ℹ️ Como funciona...?" que ficavam no rodapé de cada tela ocupando uma faixa inteira viraram <strong>ícones circulares compactos "?"</strong> ao lado do título. A mudança foi aplicada nos <strong>9 menus</strong> que já tinham explicação: Ranking, Álbum, Hall da Fama, Minhas Posições, Meu Progresso, Desempenho, Mapa de Tabuadas, Ritmo na Copa e Mapa de Tabuadas (Home). O símbolo de interrogação é universalmente reconhecido como "ajuda" e agora fica exatamente onde o aluno procura: colado ao título que ele quer entender. Cada tela ganhou espaço vertical de volta, sem perder nenhuma explicação — <strong>todos os modais continuam funcionando com o mesmo conteúdo</strong>.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao">v10.6.0</span>
                 <h4 class="changelog-titulo">📊 Evento com início e fim + contadores pedagógicos</h4>
                 <p class="changelog-descricao">NOVO no Painel do Professor: um sistema de <strong>evento com janela de tempo</strong>. Você inicia o evento, define a duração em dias, e o app passa a contar automaticamente: <strong>partidas oficiais</strong>, <strong>treinos concluídos</strong>, <strong>acessos a treinos</strong>, <strong>acertos e erros</strong> (separados entre oficial e treino), <strong>alunos participando por dia</strong>, e um <strong>ranking de uso dos tipos de treino</strong> (Reverso, Decomposição, Espelho, Chunking, Progressivo e Inteligente — com acessos e conclusões lado a lado). Há um <strong>histórico diário</strong> com todos esses números por dia do evento, e um botão para <strong>exportar tudo em CSV</strong>. O evento começa do zero — partidas e treinos anteriores não entram. Você encerra quando quiser e os contadores param de subir. <strong>Nada muda nas telas dos alunos.</strong></p>
             </div>
@@ -9719,11 +9760,22 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.13] -->
+
     <!-- ▼▼▼ [04.14.bis] MODAL MAPA COMPLETO ─────────────────── -->
     <div id="modal-mapa-completo" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-mapa-completo-titulo" onclick="fecharMapaCompleto(event)">
         <div class="modal-card mapa-completo-modal-card" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3 id="modal-mapa-completo-titulo">🗺️ Seu Mapa de Tabuadas</h3>
+                <div class="modal-titulo-com-ajuda">
+                    <h3 id="modal-mapa-completo-titulo">🗺️ Seu Mapa de Tabuadas</h3>
+                    <button type="button"
+                            id="btn-como-funciona-mapa"
+                            class="btn-como-funciona-inline"
+                            onclick="abrirModalComoFuncionaMapa()"
+                            aria-haspopup="dialog"
+                            aria-controls="modal-explicacao-mapa"
+                            aria-label="Como funciona o mapa"
+                            title="Como funciona?">?</button>
+                </div>
                 <button class="modal-close" onclick="fecharMapaCompleto()" aria-label="Fechar">✕</button>
             </div>
             <div id="modal-mapa-completo-conteudo" class="mapa-completo-conteudo">
@@ -9732,6 +9784,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.14.bis] -->
+
     <!-- ▼▼▼ [04.15] MODAL HALL DA FAMA — RANKING DO MAPA ─────── -->
     <div id="modal-hall-mestres" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="hall-mestres-titulo" onclick="fecharModalHallMestres(event)">
         <div class="modal-card hall-mestres-modal-card" onclick="event.stopPropagation()">
@@ -10008,7 +10061,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.6.0";
+const APP_VERSION = "10.7.2";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -10658,6 +10711,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // do modal completo, abrindo o modal explicativo.
     // v10.7.1 · Adicionado botão "ℹ️ Como funciona meu mapa?" também
     // no card da Home, com modal próprio.
+    // v10.7.2 · Botão de ajuda virou ícone circular compacto "?" ao lado
+    // do título, nos 3 caminhos do card da Home E no modal completo.
+    // O ícone vive dentro de `.mapa-home-titulo` (que já é flex) e no
+    // `.modal-titulo-com-ajuda` do header do modal.
 
     let modalMapaMod = "todas";
     let modalMapaFonteAgregada = {};
@@ -10675,16 +10732,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         if (!nome || !turma) {
             container.innerHTML = `<div class="mapa-home-card">
-                <div class="mapa-home-titulo">🗺️ Seu Mapa de Tabuadas</div>
+                <div class="mapa-home-titulo">
+                    🗺️ Seu Mapa de Tabuadas
+                    <button type="button"
+                            id="btn-como-funciona-mapa-home"
+                            class="btn-como-funciona-inline"
+                            onclick="abrirModalComoFuncionaMapaHome()"
+                            aria-haspopup="dialog"
+                            aria-controls="modal-explicacao-mapa-home"
+                            aria-label="Como funciona o Mapa de Tabuadas"
+                            title="Como funciona?">?</button>
+                </div>
                 <div class="mapa-home-vazio">Jogue uma partida para liberar seu mapa.</div>
-                <button type="button"
-                        id="btn-como-funciona-mapa-home"
-                        class="btn-como-funciona-menu"
-                        onclick="abrirModalComoFuncionaMapaHome()"
-                        aria-haspopup="dialog"
-                        aria-controls="modal-explicacao-mapa-home">
-                    ℹ️ Como funciona o Mapa de Tabuadas?
-                </button>
             </div>`;
             return;
         }
@@ -10768,7 +10827,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             container.innerHTML = `
                 <div class="mapa-home-card">
-                    <div class="mapa-home-titulo">🗺️ Seu Mapa de Tabuadas</div>
+                    <div class="mapa-home-titulo">
+                        🗺️ Seu Mapa de Tabuadas
+                        <button type="button"
+                                id="btn-como-funciona-mapa-home"
+                                class="btn-como-funciona-inline"
+                                onclick="abrirModalComoFuncionaMapaHome()"
+                                aria-haspopup="dialog"
+                                aria-controls="modal-explicacao-mapa-home"
+                                aria-label="Como funciona o Mapa de Tabuadas"
+                                title="Como funciona?">?</button>
+                    </div>
                     <div class="mapa-home-numero">
                         <span class="pct">${pct}%</span>
                         <span class="detalhe">dominado · ${totalDominadas}/${totalOps} operações</span>
@@ -10780,14 +10849,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     ${seletorHtml}
                     ${botaoAcaoHtml}
                     <button class="home-btn-link" onclick="irParaMapaCompleto()">🗺️ Ver mapa completo →</button>
-                    <button type="button"
-                            id="btn-como-funciona-mapa-home"
-                            class="btn-como-funciona-menu"
-                            onclick="abrirModalComoFuncionaMapaHome()"
-                            aria-haspopup="dialog"
-                            aria-controls="modal-explicacao-mapa-home">
-                        ℹ️ Como funciona o Mapa de Tabuadas?
-                    </button>
                 </div>
             `;
 
@@ -10798,16 +10859,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         } catch(e) {
             console.warn("Falha ao renderizar mapa home:", e);
             container.innerHTML = `<div class="mapa-home-card">
-                <div class="mapa-home-titulo">🗺️ Seu Mapa de Tabuadas</div>
+                <div class="mapa-home-titulo">
+                    🗺️ Seu Mapa de Tabuadas
+                    <button type="button"
+                            id="btn-como-funciona-mapa-home"
+                            class="btn-como-funciona-inline"
+                            onclick="abrirModalComoFuncionaMapaHome()"
+                            aria-haspopup="dialog"
+                            aria-controls="modal-explicacao-mapa-home"
+                            aria-label="Como funciona o Mapa de Tabuadas"
+                            title="Como funciona?">?</button>
+                </div>
                 <div class="mapa-home-vazio">Não foi possível carregar agora.</div>
-                <button type="button"
-                        id="btn-como-funciona-mapa-home"
-                        class="btn-como-funciona-menu"
-                        onclick="abrirModalComoFuncionaMapaHome()"
-                        aria-haspopup="dialog"
-                        aria-controls="modal-explicacao-mapa-home">
-                    ℹ️ Como funciona o Mapa de Tabuadas?
-                </button>
             </div>`;
         }
     }
@@ -10908,17 +10971,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return `<button class="mapa-completo-tab ${ativa}" onclick="trocarModMapaCompleto('${a.id}')" aria-pressed="${modalMapaMod === a.id}" title="${escaparHtml(a.titulo)}">${a.label}</button>`;
         }).join("");
 
+        // v10.7.2 · O botão de ajuda agora vive no header do modal
+        // (ver [04.14.bis]). Aqui renderizamos só o conteúdo em si.
         container.innerHTML = `
             <div class="mapa-completo-tabs" role="tablist" aria-label="Visão do mapa">${tabsHtml}</div>
             <div id="modal-mapa-completo-map-area">${renderizarMapa()}</div>
-            <button type="button"
-                    id="btn-como-funciona-mapa"
-                    class="btn-como-funciona-menu"
-                    onclick="abrirModalComoFuncionaMapa()"
-                    aria-haspopup="dialog"
-                    aria-controls="modal-explicacao-mapa">
-                ℹ️ Como funciona o mapa?
-            </button>
         `;
     }
 
@@ -13387,6 +13444,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.07]
 
     // ▼▼▼ [11.08] Renderização — capa, cabeçalho, filtros, corpo ────────
+    // v10.7.2 · O botão "Como funciona o Álbum?" saiu do rodapé de
+    // #album-conteudo-view (bloco [03.11]) e virou um ícone circular
+    // compacto "?" ao lado da saudação "ÁLBUM DE CONQUISTAS" no cabeçalho
+    // dinâmico. Como o cabeçalho é regenerado a cada abertura, o botão
+    // acompanha automaticamente. O modal (#modal-explicacao-album) não
+    // mudou.
+
     function renderizarCapa() {
         const { nome, turma, persistidas, estrelas } = albumEstado;
         const total = MEDALS.length;
@@ -13440,7 +13504,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const temMaestria = (dados && dados.mapaCompleto) ? `<span class="album-mestre-selo" title="Você domina 100% do mapa de tabuadas!">🧠 MESTRE DA TABUADA</span>` : "";
         const certBtn = (dados && dados.mapaCompleto) ? `<button class="album-capa-botao" style="margin-top:16px;background:linear-gradient(135deg,#fbbf24 0%,#b45309 100%);box-shadow:0 5px 0 #7c2d12,0 8px 22px rgba(0,0,0,.35);" onclick="abrirCertificadoNivel('${escaparHtml(nome).replace(/'/g,"\\'")}','${escaparHtml(turma)}','0-10','lendaria')">🎓 Ver meu Certificado Lendário</button>` : "";
 
-        container.innerHTML = `<div class="album-header"><div class="album-header-saudacao">🏆 ÁLBUM DE CONQUISTAS</div><div class="album-header-nome">Olá, ${escaparHtml(nome)}!</div><div class="album-header-turma">Turma ${escaparHtml(turma)} · ⭐ ${estrelas} estrela${estrelas === 1 ? "" : "s"}<span class="album-patente-pill p-${patente.id}" title="${escaparHtml(patente.frase)}">${patente.icone} ${escaparHtml(patente.nome)}</span>${temMaestria}</div>${badgesRow}<div class="album-prog-bloco"><div class="album-prog-rotulo"><span>📖 Progresso geral</span><span class="num">${coladas} / ${total} · ${pct}%</span></div><div class="album-prog-trilha"><div class="album-prog-fill" style="width:${pct}%"></div></div></div><div class="album-raridades">${linhasRar}</div>${htmlProx}${certBtn}</div>`;
+        container.innerHTML = `<div class="album-header">
+            <div class="album-header-saudacao card-titulo-com-ajuda">
+                <span>🏆 ÁLBUM DE CONQUISTAS</span>
+                <button type="button"
+                        id="btn-como-funciona-album"
+                        class="btn-como-funciona-inline"
+                        onclick="abrirModalComoFuncionaAlbum()"
+                        aria-haspopup="dialog"
+                        aria-controls="modal-explicacao-album"
+                        aria-label="Como funciona o Álbum"
+                        title="Como funciona?">?</button>
+            </div>
+            <div class="album-header-nome">Olá, ${escaparHtml(nome)}!</div>
+            <div class="album-header-turma">Turma ${escaparHtml(turma)} · ⭐ ${estrelas} estrela${estrelas === 1 ? "" : "s"}<span class="album-patente-pill p-${patente.id}" title="${escaparHtml(patente.frase)}">${patente.icone} ${escaparHtml(patente.nome)}</span>${temMaestria}</div>${badgesRow}<div class="album-prog-bloco"><div class="album-prog-rotulo"><span>📖 Progresso geral</span><span class="num">${coladas} / ${total} · ${pct}%</span></div><div class="album-prog-trilha"><div class="album-prog-fill" style="width:${pct}%"></div></div></div><div class="album-raridades">${linhasRar}</div>${htmlProx}${certBtn}</div>`;
     }
 
     function abrirAlbumCapa() {
@@ -19561,6 +19638,8 @@ if (containerProg) {
     // dinâmico. A visão por modalidade vive no card "Minhas Posições".
     // v10.7.1 · Adicionado botão "ℹ️ Como funciona o Ritmo na Copa?"
     // dentro do card, abrindo modal explicativo.
+    // v10.7.2 · Botão de ajuda virou ícone circular compacto "?" ao lado
+    // do título, nos 2 caminhos (vazio e com dados).
 
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
@@ -19648,17 +19727,19 @@ if (containerProg) {
         if (total === 0) {
             ctn.innerHTML = `<div class="home-ritmo-card">
                 <div class="home-ritmo-cabecalho">
-                    <span class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</span>
+                    <span class="home-ritmo-titulo">
+                        🎯 Seu Ritmo na Copa
+                        <button type="button"
+                                id="btn-como-funciona-ritmo"
+                                class="btn-como-funciona-inline"
+                                onclick="abrirModalComoFuncionaRitmo()"
+                                aria-haspopup="dialog"
+                                aria-controls="modal-explicacao-ritmo"
+                                aria-label="Como funciona o Ritmo na Copa"
+                                title="Como funciona?">?</button>
+                    </span>
                 </div>
                 <div class="home-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
-                <button type="button"
-                        id="btn-como-funciona-ritmo"
-                        class="btn-como-funciona-menu"
-                        onclick="abrirModalComoFuncionaRitmo()"
-                        aria-haspopup="dialog"
-                        aria-controls="modal-explicacao-ritmo">
-                    ℹ️ Como funciona o Ritmo na Copa?
-                </button>
             </div>`;
             return;
         }
@@ -19668,7 +19749,17 @@ if (containerProg) {
 
         ctn.innerHTML = `<div class="home-ritmo-card">
             <div class="home-ritmo-cabecalho">
-                <span class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</span>
+                <span class="home-ritmo-titulo">
+                    🎯 Seu Ritmo na Copa
+                    <button type="button"
+                            id="btn-como-funciona-ritmo"
+                            class="btn-como-funciona-inline"
+                            onclick="abrirModalComoFuncionaRitmo()"
+                            aria-haspopup="dialog"
+                            aria-controls="modal-explicacao-ritmo"
+                            aria-label="Como funciona o Ritmo na Copa"
+                            title="Como funciona?">?</button>
+                </span>
                 <span class="home-ritmo-numeros">
                     <span><span class="num gold">${treinos.toLocaleString("pt-BR")}</span>${treinos === 1 ? "treino" : "treinos"}</span>
                     <span><span class="num cyan">${oficiais.toLocaleString("pt-BR")}</span>${oficiais === 1 ? "partida oficial" : "partidas oficiais"}</span>
@@ -19682,14 +19773,6 @@ if (containerProg) {
                 <span>🎯 Treinos <span class="pct">${pctTre}%</span></span>
                 <span>🎮 Oficiais <span class="pct">${pctOfi}%</span></span>
             </div>
-            <button type="button"
-                    id="btn-como-funciona-ritmo"
-                    class="btn-como-funciona-menu"
-                    onclick="abrirModalComoFuncionaRitmo()"
-                    aria-haspopup="dialog"
-                    aria-controls="modal-explicacao-ritmo">
-                ℹ️ Como funciona o Ritmo na Copa?
-            </button>
         </div>`;
     }
 
