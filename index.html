@@ -7567,6 +7567,123 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.72] */
 
+/* ▼▼▼ [02.73] Modal de explicação do ranking ────────────────── */
+
+/* Botão "Como funciona este ranking?" — fica dentro de #ranking-conteudo-escopo,
+   logo abaixo do comparativo/tabela. Só aparece quando há explicação disponível. */
+.btn-explicar-ranking {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    margin: 18px auto 6px;
+    padding: 12px 20px;
+    background: rgba(34, 211, 238, 0.08);
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    color: #22d3ee;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    font-family: inherit;
+}
+.btn-explicar-ranking:hover,
+.btn-explicar-ranking:focus-visible {
+    background: rgba(34, 211, 238, 0.18);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(34, 211, 238, 0.18);
+    outline: 2px solid rgba(34, 211, 238, 0.55);
+    outline-offset: 2px;
+}
+.btn-explicar-ranking.hidden {
+    display: none !important;
+}
+
+/* Overlay do modal */
+.modal-explicacao-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: fadeInModalExp 0.18s ease;
+}
+.modal-explicacao-overlay.hidden {
+    display: none !important;
+}
+
+/* Caixa do modal */
+.modal-explicacao-caixa {
+    background: #132a47;
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    border-radius: 14px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px 22px 22px;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    animation: slideUpModalExp 0.22s ease;
+    color: #e2e8f0;
+}
+
+/* Botão de fechar (X) */
+.modal-explicacao-fechar {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #e2e8f0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+.modal-explicacao-fechar:hover,
+.modal-explicacao-fechar:focus-visible {
+    background: rgba(255, 255, 255, 0.18);
+    outline: 2px solid rgba(34, 211, 238, 0.5);
+    outline-offset: 2px;
+}
+
+/* Neutraliza qualquer estilo externo do .ranking-descricao que tenha sido
+   pensado para ficar inline na tela. Dentro do modal, o conteúdo é puro. */
+.modal-explicacao-caixa .ranking-descricao {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+@keyframes fadeInModalExp {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes slideUpModalExp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-explicacao-overlay,
+    .modal-explicacao-caixa {
+        animation: none;
+    }
+}
+/* ▲▲▲ FIM [02.73] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -7903,10 +8020,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <button type="button" class="aba"       id="sub-global-media"      onclick="mudarMetricaRanking('media')">🏅 Média</button>
         </div>
 
-        <!-- ▼ v10.5.3 · Os blocos #observacao-velocidade e #observacao-desempate
-             foram removidos. Seu conteúdo foi absorvido pelas descrições de
-             cada ranking (#ranking-descricao), que aparecem abaixo da tabela. -->
-
         <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
         <div id="ultima-sincronizacao" class="info-sincronizacao">Última atualização: --</div>
 
@@ -7915,13 +8028,20 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <h3 id="titulo-ranking"></h3>
         <div class="tabela-container"><table><thead id="tabela-head-ranking"></thead><tbody id="tabela-ranking-body"></tbody></table></div>
         <div id="medias-turmas-container" class="medias-turmas hidden"></div>
-    </div>
 
-    <!-- ▼ v10.5.3 · Descrição do ranking ativo (P38) — aparece DEPOIS da
-         tabela/comparativo e ANTES do botão Voltar, que é sempre o
-         último elemento visual da tela. -->
-    <div id="ranking-descricao" class="ranking-descricao hidden" role="region" aria-label="Explicação do ranking"></div>
-    <!-- ▲ -->
+        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão é controlado
+             por renderizarDescricaoRanking() em [13.06]; fica oculto quando
+             não há explicação aplicável ao combo escopo/métrica atual. -->
+        <button type="button"
+                id="btn-explicar-ranking"
+                class="btn-explicar-ranking hidden"
+                onclick="abrirModalExplicacaoRanking()"
+                aria-haspopup="dialog"
+                aria-controls="modal-explicacao-ranking">
+            ℹ️ Como funciona este ranking?
+        </button>
+        <!-- ▲ -->
+    </div>
 
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
 </div>
@@ -8799,6 +8919,23 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.18] -->
+
+<!-- ▼▼▼ [04.19] MODAL — Explicação do Ranking ─────────────── -->
+<div id="modal-explicacao-ranking"
+     class="modal-explicacao-overlay hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-explicacao-ranking-corpo"
+     onclick="if (event.target === this) fecharModalExplicacaoRanking();">
+    <div class="modal-explicacao-caixa">
+        <button type="button"
+                class="modal-explicacao-fechar"
+                onclick="fecharModalExplicacaoRanking()"
+                aria-label="Fechar explicação">✕</button>
+        <div id="modal-explicacao-ranking-corpo" class="ranking-descricao"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.19] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -12948,21 +13085,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [13.05]
 
-    // ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
+// ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
     // v10.5.2 · Combina escopo (turma/global) × métrica.
     //   Se tipoRankingAtual === null → tela limpa, não renderiza nada.
     //   A métrica "precisao" e o "Ranking Geral" (pontos global) foram
     //   removidos em v10.5.2 — funções obterRankingPorPrecisao e
     //   obterRankingPorPontos(mod, null) continuam no arquivo, mas não
     //   são mais usadas pela tela de Ranking.
-    // v10.5.3 · P38 — cada ranking ganha descrição própria, exibida
-    //   DEPOIS da tabela/comparativo e ANTES do botão "Voltar".
-    //   A antiga .media-explicacao (que ficava ACIMA da tabela) e os
-    //   blocos #observacao-velocidade / #observacao-desempate foram
-    //   substituídos pelo mecanismo unificado [13.06.desc].
-    // v10.5.3b · P38 (ajuste) — no ranking de Pontos, a coluna "Pontos"
-    //   migrou da 4ª posição para entre "Jogos" e "Status", deixando
-    //   "Acertos", "Tempo" e "Jogos" mais próximos do nome do aluno.
+    // v10.5.3 · P38 — cada ranking ganha descrição própria.
+    // v10.6.x · A descrição inline migrou para um MODAL (#modal-explicacao-ranking).
+    //   A função renderizarDescricaoRanking() agora:
+    //     • Preenche o corpo do modal (#modal-explicacao-ranking-corpo);
+    //     • Controla a visibilidade do botão #btn-explicar-ranking;
+    //     • NÃO escreve mais nada na tela do ranking.
+    //   O botão "Voltar" continua sendo o último elemento visual.
 
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
@@ -13171,16 +13307,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // [13.06.desc] Descrições dos rankings (P38)
+    // [13.06.desc] Descrições dos rankings (P38 + modal v10.6.x)
     // ─────────────────────────────────────────────────────────────────
     // 4 textos distintos (Velocidade e Média reaproveitam entre escopos;
     // Pontos só existe em Turmas; Desafio só existe em Global).
-    // O container #ranking-descricao vive FORA do #ranking-conteudo-escopo,
-    // logo depois de #medias-turmas-container e antes do botão Voltar —
-    // garantindo que o botão "Voltar" seja sempre o último elemento visual.
     //
-    // v10.5.3 · Absorve o conteúdo dos antigos #observacao-velocidade e
-    //   #observacao-desempate. Nada mais aparece acima do botão Sincronizar.
+    // v10.6.x · O conteúdo deixou de ser exibido inline na tela do ranking
+    // e passou a habitar o modal #modal-explicacao-ranking. O botão
+    // #btn-explicar-ranking (dentro de #ranking-conteudo-escopo) só fica
+    // visível quando há uma explicação aplicável ao combo escopo/métrica.
 
     function descreverRankingPontos() {
         return `
@@ -13298,37 +13433,73 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         `;
     }
 
+    // v10.6.x · Preenche o modal com o conteúdo do ranking ativo e controla
+    // a visibilidade do botão #btn-explicar-ranking. NÃO escreve mais nada
+    // na tela do ranking (a antiga #ranking-descricao foi removida).
     function renderizarDescricaoRanking(escopo, metrica) {
-        const el = document.getElementById("ranking-descricao");
-        if (!el) return;
+        const btn   = document.getElementById("btn-explicar-ranking");
+        const corpo = document.getElementById("modal-explicacao-ranking-corpo");
+        const modal = document.getElementById("modal-explicacao-ranking");
 
-        // Sem escopo/métrica ativos, esconde
-        if (!escopo || !metrica) {
-            el.classList.add("hidden");
-            el.innerHTML = "";
-            return;
-        }
-        // Escopo turma sem aluno identificado → esconde (a tela mostra o hint)
-        if (escopo === "turma" && !obterTurmaSalvaAluno()) {
-            el.classList.add("hidden");
-            el.innerHTML = "";
-            return;
-        }
-
+        // Decide o HTML aplicável
         let html = "";
-        if (metrica === "pontos"     && escopo === "turma")  html = descreverRankingPontos();
-        else if (metrica === "velocidade")                    html = descreverRankingVelocidade(escopo);
-        else if (metrica === "media")                         html = descreverRankingMedia(escopo);
-        else if (metrica === "desafio" && escopo === "global") html = descreverRankingDesafio();
-
-        if (!html) {
-            el.classList.add("hidden");
-            el.innerHTML = "";
-            return;
+        if (escopo && metrica) {
+            // Escopo turma sem aluno identificado → não há descrição (a tela mostra o hint)
+            if (escopo === "turma" && !obterTurmaSalvaAluno()) {
+                html = "";
+            }
+            else if (metrica === "pontos"     && escopo === "turma")  html = descreverRankingPontos();
+            else if (metrica === "velocidade")                        html = descreverRankingVelocidade(escopo);
+            else if (metrica === "media")                             html = descreverRankingMedia(escopo);
+            else if (metrica === "desafio"    && escopo === "global") html = descreverRankingDesafio();
         }
 
-        el.innerHTML = html;
-        el.classList.remove("hidden");
+        // Botão: só aparece quando há conteúdo
+        if (btn) btn.classList.toggle("hidden", !html);
+
+        // Corpo do modal: atualiza sempre que houver conteúdo novo
+        if (corpo && html) corpo.innerHTML = html;
+
+        // Se o modal estiver aberto e o conteúdo virou vazio, fecha
+        if (modal && !modal.classList.contains("hidden") && !html) {
+            fecharModalExplicacaoRanking();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // [13.06.modal] Abrir / fechar o modal de explicação
+    // ─────────────────────────────────────────────────────────────────
+
+    function abrirModalExplicacaoRanking() {
+        const modal = document.getElementById("modal-explicacao-ranking");
+        const corpo = document.getElementById("modal-explicacao-ranking-corpo");
+        if (!modal || !corpo) return;
+        if (!corpo.innerHTML.trim()) return; // nada para mostrar
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        // Foco no botão de fechar por acessibilidade
+        setTimeout(() => {
+            modal.querySelector(".modal-explicacao-fechar")?.focus();
+        }, 30);
+    }
+
+    function fecharModalExplicacaoRanking() {
+        const modal = document.getElementById("modal-explicacao-ranking");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+    }
+
+    // Fechar com tecla ESC (instalado uma única vez)
+    if (!window._modalExplicacaoRankingEscInstalado) {
+        window._modalExplicacaoRankingEscInstalado = true;
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            const modal = document.getElementById("modal-explicacao-ranking");
+            if (modal && !modal.classList.contains("hidden")) {
+                fecharModalExplicacaoRanking();
+            }
+        });
     }
 
     async function renderizarRanking() {
@@ -13415,7 +13586,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 });
                 rank = await obterRankingPorPontos(mod, turma);
                 tit = `🏆 Turmas · ${turma} — ${MODALIDADES[mod]?.nome}`;
-                // v10.5.3b · Coluna "Pontos" migrou para entre "Jogos" e "Status"
                 th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Tempo médio dos acertos</th><th>Jogos</th><th>Pontos</th><th>Status</th>`;
                 if (!rank.length) {
                     ti.innerText = tit;
@@ -13501,8 +13671,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             tb.innerHTML = h;
 
         } finally {
-            // v10.5.3 · P38 — a descrição é (re)avaliada SEMPRE, em qualquer
-            // caminho de saída. Fica entre a tabela/comparativo e o botão Voltar.
+            // v10.6.x · Sempre (re)avalia o botão e o conteúdo do modal,
+            // em qualquer caminho de saída do renderizador.
             renderizarDescricaoRanking(tipoRankingAtual, metricaRankingAtual);
         }
     }
@@ -13574,16 +13744,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [13.06.bis]
 
-    // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
+// ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
     // v10.5.2 · Reformulação completa.
     //   Fluxo: tela limpa (2 botões) → escopo → métrica
     //   Escopo "turma"  → métricas: pontos · velocidade · media
     //   Escopo "global" → métricas: velocidade · media · desafio
     //   Ao reabrir a tela, volta ao estado limpo (via resetarRankingParaEstadoLimpo).
     //   O dropdown de turma sempre inicia na turma do aluno (pendência P37 aberta).
-    // v10.5.3 · P38 — reset esconde a descrição (#ranking-descricao).
-    //   Os IDs #observacao-velocidade e #observacao-desempate deixaram de
-    //   existir (foram absorvidos pelas descrições).
+    // v10.5.3 · P38 — descrições por ranking.
+    // v10.6.x · A explicação migrou para um modal. O reset agora:
+    //     • Esconde o botão #btn-explicar-ranking;
+    //     • Fecha o modal #modal-explicacao-ranking se estiver aberto;
+    //     • Limpa o corpo #modal-explicacao-ranking-corpo.
     let metricaRankingAtual = "pontos";
 
     function mudarEscopoRanking(escopo) {
@@ -13672,7 +13844,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // Reseta a tela para o estado inicial (só os 2 botões de escopo).
     // Chamada por mostrarTela() sempre que o aluno abre a tela Ranking.
-    // v10.5.3 · P38 — também esconde a descrição do ranking.
+    // v10.6.x · Fecha o modal de explicação e limpa seu corpo.
     function resetarRankingParaEstadoLimpo() {
         tipoRankingAtual = null;
         metricaRankingAtual = "pontos";
@@ -13694,13 +13866,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         // Esconde tudo que é contextual do escopo
         ["filtro-turma", "hint-turma-aluno",
-         "banner-posicao-global", "ranking-descricao",
+         "banner-posicao-global",
          "medias-turmas-container"].forEach(id => {
             document.getElementById(id)?.classList.add("hidden");
         });
-        // Limpa o conteúdo da descrição (evita fantasma ao reabrir)
-        const desc = document.getElementById("ranking-descricao");
-        if (desc) desc.innerHTML = "";
+
+        // v10.6.x · Esconde o botão de explicação e limpa/fecha o modal
+        document.getElementById("btn-explicar-ranking")?.classList.add("hidden");
+        const modalExp = document.getElementById("modal-explicacao-ranking");
+        if (modalExp) {
+            modalExp.classList.add("hidden");
+            document.body.style.overflow = "";
+        }
+        const corpoExp = document.getElementById("modal-explicacao-ranking-corpo");
+        if (corpoExp) corpoExp.innerHTML = "";
 
         // Limpa a tabela
         const th = document.getElementById("tabela-head-ranking");
