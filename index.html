@@ -7183,6 +7183,159 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.70] */
 
+        /* ▼▼▼ [02.71] Chunking + Progressivo ────────────── INÍCIO ─── */
+        /* v10.5.8 · Estilos do seletor de tabuada (Chunking) e do
+           motor com timer adaptativo (Progressivo). */
+
+        /* ─── Seler de tabuada do Chunking (dentro do mini-menu) ─── */
+        .menu-chunking-desc {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0 0 12px;
+            padding: 10px 12px;
+            background: rgba(34, 211, 238, 0.06);
+            border-left: 3px solid var(--neon-cyan);
+            border-radius: 8px;
+        }
+        .menu-chunking-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .menu-chunking-tabuada {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 16px 8px;
+            background: linear-gradient(160deg, rgba(34, 211, 238, 0.10) 0%, rgba(14, 165, 233, 0.04) 100%);
+            border: 1px solid rgba(34, 211, 238, 0.35);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            margin: 0;
+            box-shadow: none;
+            min-height: 76px;
+        }
+        .menu-chunking-tabuada:hover:not(:disabled) {
+            transform: translateY(-2px);
+            border-color: var(--neon-cyan);
+            background: linear-gradient(160deg, rgba(34, 211, 238, 0.20) 0%, rgba(14, 165, 233, 0.10) 100%);
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.20);
+        }
+        .menu-chunking-tabuada:focus-visible {
+            outline: 3px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+        .menu-chunking-tabuada .num {
+            font-size: 26px;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--neon-cyan);
+            letter-spacing: -1px;
+        }
+        .menu-chunking-tabuada .lbl {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        /* ─── Timer do Progressivo ─── */
+        .progressivo-timer {
+            margin: 14px 0 10px;
+            padding: 12px 14px;
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.20);
+            border-radius: 12px;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+        .progressivo-timer.apertado {
+            border-color: rgba(251, 191, 36, 0.55);
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.10) 0%, rgba(10, 22, 40, 0.55) 100%);
+        }
+        .progressivo-timer.relampago {
+            border-color: rgba(239, 68, 68, 0.55);
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.10) 0%, rgba(10, 22, 40, 0.55) 100%);
+        }
+        .progressivo-timer-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .progressivo-timer-rotulo {
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+        .progressivo-timer-numero {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
+            transition: color 0.3s ease;
+        }
+        .progressivo-timer.apertado .progressivo-timer-numero { color: var(--neon-gold); }
+        .progressivo-timer.relampago .progressivo-timer-numero { color: #fca5a5; }
+        .progressivo-timer-barra {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progressivo-timer-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
+            border-radius: 4px;
+            transition: width 0.1s linear, background 0.3s ease;
+        }
+        .progressivo-timer.apertado .progressivo-timer-fill {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+        }
+        .progressivo-timer.relampago .progressivo-timer-fill {
+            background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+        }
+        .progressivo-timer-aviso {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .progressivo-timer-aviso.subiu { color: #86efac; }
+        .progressivo-timer-aviso.desceu { color: #fcd34d; }
+
+        @media (max-width: 520px) {
+            .menu-chunking-tabuada { padding: 12px 6px; min-height: 66px; }
+            .menu-chunking-tabuada .num { font-size: 22px; }
+            .progressivo-timer { padding: 10px 12px; }
+            .progressivo-timer-numero { font-size: 18px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .menu-chunking-tabuada { transition: none !important; }
+            .menu-chunking-tabuada:hover:not(:disabled) { transform: none; }
+            .progressivo-timer, .progressivo-timer-numero, .progressivo-timer-fill { transition: none !important; }
+        }
+        /* ▲▲▲ FIM [02.71] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -20057,12 +20210,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     // ▲▲▲ FIM [19.05]
 
     // ▼▼▼ [19.06] Motor Aprender + Modos + Mini-menu ──── INÍCIO ───
-    // v10.5.6 · Arquitetura por modo + Treino Espelho.
-    // Modos implementados: 🔄 Reverso · 🧩 Decomposição · 🪞 Espelho.
-    //
-    // O motor suporta dois tipos de modo:
-    //   · tipo: "input"  → aluno digita a resposta (Reverso, Decomposição)
-    //   · tipo: "auto"   → aluno revela e se autoavalia com 🟢/🔴 (Espelho)
+    // v10.5.8 · Arquitetura por modo + Chunking.
+    // Modos implementados: 🔄 Reverso · 🧩 Decomposição · 🪞 Espelho ·
+    //                      🧱 Chunking (input, tabuada isolada).
+    // O Progressivo é motor separado (bloco [19.07]).
 
     const STORAGE_MENU_TREINO_USOS = "copa_menu_treino_usos";
 
@@ -20086,14 +20237,15 @@ window.addEventListener("DOMContentLoaded", async () => {
         { id: "chunking", icone: "🧱", nome: "Chunking",
           desc: "Treine uma tabuada só — bloco por bloco",
           exemplo: "só tabuada do 7",
-          emBreve: true },
+          emBreve: false },
         { id: "progressivo", icone: "⏱️", nome: "Progressivo",
           desc: "O tempo cai conforme sua precisão sobe",
           exemplo: "10s → 4s",
-          emBreve: true }
+          emBreve: false }
     ];
 
     let menuTreinoModAtual = null;
+    let menuTreinoDados = { pendentes: 0, total: 0 };
     let aprenderEstado = null;
 
     // ─── Usos (memória de ordenação) ───
@@ -20133,6 +20285,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             }
         } catch(e) { console.warn("[Menu Treino] Falha ao contar pendentes:", e); }
 
+        menuTreinoDados = { pendentes, total };
         renderizarMenuTreino(mod, pendentes, total);
 
         setTimeout(() => { document.querySelector("#modal-menu-treino .modal-close")?.focus(); }, 80);
@@ -20140,7 +20293,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     function renderizarMenuTreino(mod, pendentes, total) {
         const corpo = document.getElementById("menu-treino-corpo");
+        const titulo = document.getElementById("menu-treino-titulo");
         if (!corpo) return;
+        if (titulo) titulo.innerHTML = `🎯 Treinar · ${escaparHtml(MODALIDADES[mod].nome)}`;
 
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -20237,14 +20392,71 @@ window.addEventListener("DOMContentLoaded", async () => {
         const mod = menuTreinoModAtual;
         if (!mod) { fecharMenuTreino(); return; }
         registrarUsoMenuTreino(modoId);
-        fecharMenuTreino();
 
+        // Chunking → abre seletor de tabuada DENTRO do mini-menu
+        if (modoId === "chunking") {
+            renderizarSeletorTabuadaChunking(mod);
+            return;
+        }
+
+        // Progressivo → motor próprio (bloco [19.07])
+        if (modoId === "progressivo") {
+            fecharMenuTreino();
+            iniciarTreinoProgressivo(mod);
+            return;
+        }
+
+        fecharMenuTreino();
         if (APRENDER_MODOS[modoId]) {
             abrirTreinoAprender(modoId, mod);
             return;
         }
         const modo = MODOS_TREINO.find(m => m.id === modoId);
         if (modo) notificarModoEmBreve(modo.nome);
+    }
+
+    // ─── Seletor de tabuada (Chunking) ───
+    function renderizarSeletorTabuadaChunking(mod) {
+        const corpo = document.getElementById("menu-treino-corpo");
+        const titulo = document.getElementById("menu-treino-titulo");
+        if (!corpo || !titulo || !MODALIDADES[mod]) return;
+
+        titulo.innerHTML = `🧱 Chunking · ${escaparHtml(MODALIDADES[mod].nome)}`;
+
+        const tabuadas = MODALIDADES[mod].fatores || [];
+        const botoes = tabuadas.map(t => `
+            <button type="button" class="menu-chunking-tabuada" onclick="escolherTabuadaChunking(${t})" aria-label="Treinar tabuada do ${t}">
+                <span class="num">${t}</span>
+                <span class="lbl">tabuada</span>
+            </button>
+        `).join("");
+
+        const p = menuTreinoDados.pendentes || 0;
+        const tot = menuTreinoDados.total || 0;
+
+        corpo.innerHTML = `
+            <div class="menu-treino-secao">🧱 Escolher tabuada</div>
+            <p class="menu-chunking-desc">Cada sessão treina <strong>10 contas</strong> da tabuada escolhida. Ideal para focar em uma tabuada de cada vez.</p>
+            <div class="menu-chunking-grid">${botoes}</div>
+            <div class="menu-treino-rodape">
+                <button type="button" onclick="renderizarMenuTreino('${mod}', ${p}, ${tot})">← Voltar</button>
+            </div>
+        `;
+
+        setTimeout(() => {
+            document.querySelector("#modal-menu-treino .menu-chunking-tabuada")?.focus();
+        }, 80);
+    }
+
+    function escolherTabuadaChunking(tabuada) {
+        const mod = menuTreinoModAtual;
+        if (!mod || !MODALIDADES[mod]) return;
+        if (!MODALIDADES[mod].fatores.includes(tabuada)) {
+            notificar("Esta tabuada não pertence à modalidade atual.", "aviso");
+            return;
+        }
+        fecharMenuTreino();
+        abrirTreinoAprenderComTabuadaFixa("chunking", mod, tabuada);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -20289,7 +20501,6 @@ window.addEventListener("DOMContentLoaded", async () => {
                     : Math.max(1, Math.floor(fA / 2));
                 return `Pense em <strong>${fA} × ${metade}</strong> e dobre.`;
             },
-
             pista2(p) {
                 const { fA, fB, ocultar } = p;
                 if (ocultar === "fB") {
@@ -20301,13 +20512,11 @@ window.addEventListener("DOMContentLoaded", async () => {
                 const resto = fA - metade;
                 return `${fA} × ${fB} = <strong>${metade} × ${fB} + ${resto} × ${fB}</strong> = ?`;
             },
-
             pista3(p) {
                 const { fA, fB } = p;
                 const total = fA * fB;
                 return `Imagine ${fA} grupos de ${fB} objetos:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${total}</strong> objetos no total.`;
             },
-
             revelacao(p) {
                 const { fA, fB, ocultar } = p;
                 const produto = fA * fB;
@@ -20340,23 +20549,19 @@ window.addEventListener("DOMContentLoaded", async () => {
                 const enunciadoHtml = `${fA} × ${fB} = ${fA} × ${fC} + ${fA} × <span class="incognita">?</span>`;
                 return { fA, fB, fC, resto, produto, respostaCorreta, enunciadoHtml };
             },
-
             pista1(p) {
                 const { fB, fC } = p;
                 return `Conte de <strong>${fC}</strong> até <strong>${fB}</strong>: quantos passos você dá?`;
             },
-
             pista2(p) {
                 const { fA, fB, fC } = p;
                 return `${fA} × ${fB} = ${fA} × ${fC} + ${fA} × <strong>___</strong>`;
             },
-
             pista3(p) {
                 const { fA, fC, resto } = p;
                 const parcial = fA * fC;
                 return `Sabemos que <strong>${fA} × ${fC} = ${parcial}</strong>. Agora é só somar ${fA} <strong>${resto}</strong> ${resto === 1 ? "vez" : "vezes"}.`;
             },
-
             revelacao(p) {
                 const { fA, fB, fC, resto, produto } = p;
                 return `<strong>${fA} × ${fB} = ${fA} × ${fC} + ${fA} × ${resto} = ${fA * fC} + ${fA * resto} = ${produto}</strong>. A resposta é <strong>${resto}</strong>.`;
@@ -20364,7 +20569,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         },
 
         // ═══════════════════════════════════════════════════════════════
-        // 🪞 ESPELHO — flashcard com autoavaliação (sem input, sem pista)
+        // 🪞 ESPELHO — flashcard com autoavaliação
         // ═══════════════════════════════════════════════════════════════
         espelho: {
             id: "espelho",
@@ -20382,6 +20587,51 @@ window.addEventListener("DOMContentLoaded", async () => {
                     respostaCorreta: produto,
                     enunciadoHtml: `${fA} × ${fB} = <span class="incognita">?</span>`
                 };
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════════════
+        // 🧱 CHUNKING — uma tabuada isolada
+        // ═══════════════════════════════════════════════════════════════
+        chunking: {
+            id: "chunking",
+            nome: "Chunking",
+            icone: "🧱",
+            tipo: "input",
+            tamanhoSessaoPadrao: 10,
+            classeConta: "",
+
+            gerarPergunta(base) {
+                const { fA, fB } = base;
+                const produto = fA * fB;
+                return {
+                    fA, fB, produto,
+                    respostaCorreta: produto,
+                    enunciadoHtml: `${fA} × ${fB} = <span class="incognita">?</span>`
+                };
+            },
+
+            pista1(p) {
+                const { fA, fB } = p;
+                const metade = Math.max(1, Math.floor(fB / 2));
+                return `Pense em <strong>${fA} × ${metade}</strong> e dobre.`;
+            },
+            pista2(p) {
+                const { fA, fB } = p;
+                const metade = Math.max(1, Math.floor(fB / 2));
+                const resto = fB - metade;
+                return `${fA} × ${fB} = <strong>${fA} × ${metade} + ${fA} × ${resto}</strong> = ?`;
+            },
+            pista3(p) {
+                const { fA, fB } = p;
+                const total = fA * fB;
+                return `Imagine ${fA} grupos de ${fB} objetos:<br>${"🔵".repeat(Math.min(fA, 10))} × ${"🟡".repeat(Math.min(fB, 10))} = <strong>${total}</strong> objetos no total.`;
+            },
+            revelacao(p) {
+                const { fA, fB } = p;
+                const produto = fA * fB;
+                const metade = Math.max(1, Math.floor(fB / 2));
+                return `<strong>${fA} × ${fB} = ${produto}</strong>. Como ${fA} × ${metade} = ${fA * metade}, basta somar: ${fA * metade} + ${fA * (fB - metade)} = ${produto}.`;
             }
         }
     };
@@ -20439,6 +20689,44 @@ window.addEventListener("DOMContentLoaded", async () => {
         proximaPerguntaAprender();
     }
 
+    // Variante usada pelo Chunking: sessão gerada a partir de UMA tabuada.
+    async function abrirTreinoAprenderComTabuadaFixa(modoId, mod, tabuada) {
+        if (!MODALIDADES[mod]) return;
+        const cfg = APRENDER_MODOS[modoId];
+        if (!cfg) { notificarModoEmBreve(modoId); return; }
+
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { mostrarTela("tela-single"); return; }
+
+        // 10 operações: tabuada × 1..10, embaralhadas
+        const ops = [];
+        for (let fB = 1; fB <= 10; fB++) ops.push({ fA: tabuada, fB });
+        for (let i = ops.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ops[i], ops[j]] = [ops[j], ops[i]];
+        }
+
+        aprenderEstado = {
+            modoId, cfg, mod, nome, turma,
+            tamanhoSessao: ops.length,
+            indiceAtual: 0,
+            perguntaAtual: null,
+            pistaNivel: 0,
+            tentativas: 0,
+            acertou: false,
+            respondido: false,
+            revelada: false,
+            resultados: [],
+            aRevisar: [],
+            sessaoOps: ops,
+            tabuadaFixa: tabuada
+        };
+
+        mostrarTela("tela-aprender");
+        proximaPerguntaAprender();
+    }
+
     function proximaPerguntaAprender() {
         const e = aprenderEstado;
         if (!e) return;
@@ -20466,6 +20754,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const atual = e.indiceAtual + 1;
         const modNome = MODALIDADES[e.mod]?.nome || e.mod;
         const classeConta = e.cfg.classeConta ? ` ${e.cfg.classeConta}` : "";
+        const rotuloProgresso = e.modoId === "chunking" ? `Conta ${atual} de ${total} · Tabuada do ${e.tabuadaFixa}` : `Conta ${atual} de ${total}`;
 
         const blocos = e.sessaoOps.map((_, i) => {
             if (i < e.resultados.length) {
@@ -20487,7 +20776,7 @@ window.addEventListener("DOMContentLoaded", async () => {
                         <small>${escaparHtml(modNome)}</small>
                     </div>
                 </div>
-                <span class="aprender-progresso-num">Conta ${atual} de ${total}</span>
+                <span class="aprender-progresso-num">${rotuloProgresso}</span>
             </div>
             <div class="aprender-barra" aria-hidden="true">${blocos}</div>
             <div class="aprender-conta${classeConta}" id="aprender-conta">${p.enunciadoHtml}</div>
@@ -20509,7 +20798,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // ─── Fluxo específico do Espelho ───
     function renderizarPerguntaEspelho() {
         const e = aprenderEstado;
         const ctn = document.getElementById("aprender-conteudo");
@@ -20941,7 +21229,8 @@ window.addEventListener("DOMContentLoaded", async () => {
             indiceAtual: 0, perguntaAtual: null, pistaNivel: 0,
             tentativas: 0, acertou: false, respondido: false, revelada: false,
             resultados: [], aRevisar: [],
-            sessaoOps: ops.slice(0, Math.min(ops.length, e.cfg.tamanhoSessaoPadrao || APRENDER_SESSAO_PADRAO))
+            sessaoOps: ops.slice(0, Math.min(ops.length, e.cfg.tamanhoSessaoPadrao || APRENDER_SESSAO_PADRAO)),
+            tabuadaFixa: e.tabuadaFixa
         };
         proximaPerguntaAprender();
     }
@@ -20953,6 +21242,462 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (m && !m.classList.contains("hidden")) fecharMenuTreino();
     });
     // ▲▲▲ FIM [19.06]
+
+    // ▼▼▼ [19.07] Motor Progressivo — timer adaptativo ────── INÍCIO ───
+    // v10.5.8 · Motor próprio (não usa o Motor Aprender, porque tem
+    // cronômetro). Diferente do Desafio, os pontos NÃO contam no
+    // ranking — o foco é a fluência.
+    //
+    // Regra do timer:
+    //   · Começa em 10s.
+    //   · A cada 3 perguntas, reavalia as últimas 3.
+    //       3/3 acertos → tempo cai 2s (mínimo 4s)
+    //       2/3 acertos → mantém
+    //       0-1/3       → tempo sobe 2s (máximo 10s)
+    //   · Sem pistas: o timer pausaria e destruiria o propósito.
+    //   · Salva o tempo REAL de cada resposta no mapa (velocidade).
+
+    let progressivoEstado = null;
+    let progressivoTimerInterval = null;
+    let progressivoTimeoutId = null;
+
+    const PROGRESSIVO_TAMANHO_SESSAO = 10;
+    const PROGRESSIVO_TEMPO_MIN = 4;
+    const PROGRESSIVO_TEMPO_MAX = 10;
+    const PROGRESSIVO_JANELA = 3;
+
+    async function iniciarTreinoProgressivo(mod) {
+        if (!MODALIDADES[mod]) return;
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { mostrarTela("tela-single"); return; }
+
+        // Foco: operações pendentes (mesma seleção do Treino Inteligente)
+        let operacoesFoco = [];
+        try {
+            const lista = await montarListaTreinoInteligente(nome, turma, mod);
+            const comPeso = lista.filter(i => i.peso > 1);
+            operacoesFoco = comPeso.length ? comPeso.slice(0, 20) : lista.slice(0, 20);
+        } catch(e) { console.warn("[Progressivo] Falha ao montar foco:", e); }
+
+        if (!operacoesFoco.length) {
+            const fatores = MODALIDADES[mod].fatores;
+            for (const fA of fatores) {
+                for (let fB = 1; fB <= 10; fB++) operacoesFoco.push({ fA, fB, peso: 1 });
+            }
+        }
+
+        const sessaoOps = [];
+        for (let i = 0; i < PROGRESSIVO_TAMANHO_SESSAO; i++) {
+            const op = escolherPorPeso(operacoesFoco, o => o.peso || 1);
+            sessaoOps.push({ fA: op.fA, fB: op.fB });
+        }
+
+        progressivoEstado = {
+            mod, nome, turma,
+            tamanhoSessao: PROGRESSIVO_TAMANHO_SESSAO,
+            indiceAtual: 0,
+            perguntaAtual: null,
+            respondido: false,
+            tempoAtual: PROGRESSIVO_TEMPO_MAX,
+            tempoInicio: 0,
+            ultimosResultados: [],   // { acertou, tempo }
+            resultados: [],
+            aRevisar: [],
+            sessaoOps
+        };
+
+        mostrarTela("tela-aprender");
+        proximaPerguntaProgressivo();
+    }
+
+    function proximaPerguntaProgressivo() {
+        const e = progressivoEstado;
+        if (!e) return;
+        if (e.indiceAtual >= e.tamanhoSessao) { renderizarResumoProgressivo(false); return; }
+
+        const base = e.sessaoOps[e.indiceAtual] || { fA: 1, fB: 1 };
+        const fA = base.fA, fB = base.fB;
+        const produto = fA * fB;
+
+        e.perguntaAtual = {
+            fA, fB, produto,
+            respostaCorreta: produto,
+            enunciadoHtml: `${fA} × ${fB} = <span class="incognita">?</span>`
+        };
+        e.respondido = false;
+        e.tempoInicio = 0;
+
+        renderizarPerguntaProgressivo();
+        iniciarTimerProgressivo();
+    }
+
+    function renderizarPerguntaProgressivo() {
+        const e = progressivoEstado;
+        const ctn = document.getElementById("aprender-conteudo");
+        if (!e || !ctn) return;
+
+        const p = e.perguntaAtual;
+        const total = e.tamanhoSessao;
+        const atual = e.indiceAtual + 1;
+        const modNome = MODALIDADES[e.mod]?.nome || e.mod;
+
+        const blocos = e.sessaoOps.map((_, i) => {
+            if (i < e.resultados.length) {
+                const r = e.resultados[i];
+                return r.acertou ? `<div class="bloco ok"></div>` : `<div class="bloco erro"></div>`;
+            }
+            if (i === e.indiceAtual) return `<div class="bloco atual"></div>`;
+            return `<div class="bloco"></div>`;
+        }).join("");
+
+        const classeTimer = e.tempoAtual <= 4 ? "relampago" : e.tempoAtual <= 6 ? "apertado" : "";
+
+        ctn.innerHTML = `
+            <div class="aprender-cabecalho">
+                <div class="aprender-cabecalho-esq">
+                    <button class="aprender-btn-sair" onclick="sairProgressivo()" aria-label="Sair do treino">← Sair</button>
+                    <div class="aprender-titulo-modo">
+                        ⏱️ Progressivo
+                        <small>${escaparHtml(modNome)}</small>
+                    </div>
+                </div>
+                <span class="aprender-progresso-num">Conta ${atual} de ${total}</span>
+            </div>
+
+            <div class="aprender-barra" aria-hidden="true">${blocos}</div>
+
+            <div class="progressivo-timer ${classeTimer}" id="progressivo-timer">
+                <div class="progressivo-timer-info">
+                    <span class="progressivo-timer-rotulo">⏱️ Tempo desta conta</span>
+                    <span class="progressivo-timer-numero" id="progressivo-timer-numero">${e.tempoAtual}s</span>
+                </div>
+                <div class="progressivo-timer-barra">
+                    <div class="progressivo-timer-fill" id="progressivo-timer-fill" style="width:100%"></div>
+                </div>
+                <div class="progressivo-timer-aviso" id="progressivo-timer-aviso"></div>
+            </div>
+
+            <div class="aprender-conta" id="aprender-conta">${p.enunciadoHtml}</div>
+
+            <div class="aprender-input-linha">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false" id="progressivo-input" class="aprender-input" placeholder="?" aria-label="Sua resposta" maxlength="3">
+                <button class="aprender-btn-confirmar" id="progressivo-btn-confirmar" onclick="confirmarRespostaProgressivo()">Confirmar</button>
+            </div>
+
+            <div id="progressivo-feedback-area"></div>
+        `;
+
+        const input = document.getElementById("progressivo-input");
+        if (input) {
+            input.addEventListener("keydown", (ev) => {
+                if (ev.key === "Enter") { ev.preventDefault(); confirmarRespostaProgressivo(); }
+            });
+            setTimeout(() => input.focus(), 60);
+        }
+    }
+
+    function iniciarTimerProgressivo() {
+        const e = progressivoEstado;
+        if (!e) return;
+        pararTimerProgressivo();
+
+        e.tempoInicio = performance.now();
+        const duracaoMs = e.tempoAtual * 1000;
+
+        const fill = document.getElementById("progressivo-timer-fill");
+        const numero = document.getElementById("progressivo-timer-numero");
+
+        progressivoTimerInterval = setInterval(() => {
+            if (!progressivoEstado || progressivoEstado.respondido) return;
+            const decorrido = performance.now() - progressivoEstado.tempoInicio;
+            const restante = Math.max(0, duracaoMs - decorrido);
+            const pct = (restante / duracaoMs) * 100;
+            if (fill) fill.style.width = pct.toFixed(1) + "%";
+            if (numero) numero.textContent = (restante / 1000).toFixed(1) + "s";
+        }, 80);
+
+        progressivoTimeoutId = setTimeout(() => {
+            if (!progressivoEstado || progressivoEstado.respondido) return;
+            processarRespostaProgressivo(0, false, e.tempoAtual);
+        }, duracaoMs + 60);
+    }
+
+    function pararTimerProgressivo() {
+        if (progressivoTimerInterval) { clearInterval(progressivoTimerInterval); progressivoTimerInterval = null; }
+        if (progressivoTimeoutId) { clearTimeout(progressivoTimeoutId); progressivoTimeoutId = null; }
+    }
+
+    function confirmarRespostaProgressivo() {
+        const e = progressivoEstado;
+        if (!e || e.respondido) return;
+        const input = document.getElementById("progressivo-input");
+        if (!input) return;
+        const valor = parseInt(String(input.value || "").trim(), 10);
+        if (!Number.isFinite(valor) || valor <= 0 || valor > 100) {
+            input.classList.add("errado");
+            setTimeout(() => input.classList.remove("errado"), 400);
+            return;
+        }
+        const tempo = (performance.now() - e.tempoInicio) / 1000;
+        const acertou = valor === e.perguntaAtual.respostaCorreta;
+        processarRespostaProgressivo(valor, acertou, tempo);
+    }
+
+    function processarRespostaProgressivo(valor, acertou, tempo) {
+        const e = progressivoEstado;
+        if (!e || e.respondido) return;
+        e.respondido = true;
+        pararTimerProgressivo();
+
+        const input = document.getElementById("progressivo-input");
+        const btnConfirmar = document.getElementById("progressivo-btn-confirmar");
+        if (input) input.disabled = true;
+        if (btnConfirmar) btnConfirmar.disabled = true;
+
+        const tempoValido = Math.max(0.1, Math.min(e.tempoAtual, Number(tempo) || e.tempoAtual));
+
+        e.ultimosResultados.push({ acertou, tempo: tempoValido });
+        if (e.ultimosResultados.length > PROGRESSIVO_JANELA) {
+            e.ultimosResultados.shift();
+        }
+
+        e.resultados.push({
+            fA: e.perguntaAtual.fA,
+            fB: e.perguntaAtual.fB,
+            acertou,
+            tempo: tempoValido,
+            tentativas: 1,
+            pistaUsada: 0
+        });
+        if (!acertou) e.aRevisar.push({ fA: e.perguntaAtual.fA, fB: e.perguntaAtual.fB });
+
+        if (input && acertou) input.classList.add("certo");
+        if (input && !acertou) input.classList.add("errado");
+
+        // Ajuste do timer a cada 3 respostas completas
+        let mudancaTimer = null;
+        if (e.ultimosResultados.length === PROGRESSIVO_JANELA) {
+            const acertos = e.ultimosResultados.filter(r => r.acertou).length;
+            const tempoAntes = e.tempoAtual;
+            if (acertos === PROGRESSIVO_JANELA) {
+                e.tempoAtual = Math.max(PROGRESSIVO_TEMPO_MIN, e.tempoAtual - 2);
+            } else if (acertos === 0 || (acertos === 1 && PROGRESSIVO_JANELA >= 3)) {
+                e.tempoAtual = Math.min(PROGRESSIVO_TEMPO_MAX, e.tempoAtual + 2);
+            }
+            if (e.tempoAtual !== tempoAntes) {
+                mudancaTimer = { de: tempoAntes, para: e.tempoAtual, subiu: e.tempoAtual > tempoAntes };
+            }
+        }
+
+        renderizarFeedbackProgressivo(acertou, tempoValido, mudancaTimer);
+    }
+
+    function renderizarFeedbackProgressivo(acertou, tempo, mudancaTimer) {
+        const e = progressivoEstado;
+        const area = document.getElementById("progressivo-feedback-area");
+        if (!e || !area) return;
+
+        const isUltima = (e.indiceAtual + 1) >= e.tamanhoSessao;
+        const p = e.perguntaAtual;
+        const dica = gerarDicaDecomposicao(p.fA, p.fB);
+
+        let html = "";
+        if (acertou) {
+            html = `<div class="aprender-feedback ok">
+                <span class="aprender-feedback-titulo">✅ Boa! Em ${tempo.toFixed(2)}s</span>
+                Continue nesse ritmo para o timer cair.
+            </div>`;
+        } else {
+            const acertouTexto = p.produto;
+            html = `<div class="aprender-feedback erro">
+                <span class="aprender-feedback-titulo">⏱️ ${tempo >= e.tempoAtual - 0.1 ? "O tempo acabou" : "Ainda não é essa"}</span>
+                A resposta certa era <strong>${acertouTexto}</strong>.
+                <div class="aprender-feedback-dica">💡 ${dica}</div>
+            </div>`;
+        }
+
+        if (mudancaTimer) {
+            const cls = mudancaTimer.subiu ? "desceu" : "subiu";
+            const icone = mudancaTimer.subiu ? "🐢" : "🚀";
+            const txt = mudancaTimer.subiu
+                ? `Vamos com calma — o tempo subiu para ${mudancaTimer.para}s.`
+                : `Você está voando! O tempo agora é ${mudancaTimer.para}s.`;
+            html += `<div class="progressivo-timer-aviso ${cls}" style="margin:8px 0 0;">${icone} ${txt}</div>`;
+        }
+
+        html += `<div class="aprender-acoes uma-coluna" style="margin-top:14px;">
+            <button class="aprender-btn-principal" onclick="avancarProgressivo()">${isUltima ? "Ver resumo →" : "Próxima conta →"}</button>
+        </div>`;
+
+        area.innerHTML = html;
+    }
+
+    function avancarProgressivo() {
+        const e = progressivoEstado;
+        if (!e) return;
+        e.indiceAtual++;
+        proximaPerguntaProgressivo();
+    }
+
+    function sairProgressivo() {
+        const e = progressivoEstado;
+        if (!e) { mostrarTela("tela-inicial"); return; }
+        if (e.resultados.length === 0) {
+            pararTimerProgressivo();
+            progressivoEstado = null;
+            mostrarTela("tela-inicial");
+            return;
+        }
+        if (!confirm("Sair agora?\n\nO que você já fez nesta sessão vai ser contabilizado no seu mapa.")) return;
+        pararTimerProgressivo();
+        finalizarSessaoProgressivo(true);
+    }
+
+    async function finalizarSessaoProgressivo(saiuAntes) {
+        const e = progressivoEstado;
+        if (!e) return;
+        pararTimerProgressivo();
+
+        try { await persistirResultadosProgressivo(e); }
+        catch (err) { console.warn("[Progressivo] Falha ao persistir:", err); }
+
+        const completou = !saiuAntes && e.resultados.length >= e.tamanhoSessao;
+        if (completou) {
+            const chaveTreino = chaveAlbum(e.nome, e.turma);
+            try { await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1); }
+            catch(err) { console.warn("[Progressivo] Falha ao contabilizar treino geral:", err); }
+            try { await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chaveTreino}/${e.mod}`).transaction(n => (n || 0) + 1); }
+            catch(err) { console.warn("[Progressivo] Falha ao contabilizar treino por modalidade:", err); }
+            if (typeof albumSessaoCache !== "undefined") albumSessaoCache = { chave: null, ts: 0, resultado: null };
+        }
+        renderizarResumoProgressivo(saiuAntes);
+    }
+
+    async function persistirResultadosProgressivo(e) {
+        if (!e.resultados.length) return;
+        const deltas = {};
+        for (const r of e.resultados) {
+            const k = `${r.fA}x${r.fB}`;
+            if (!deltas[k]) deltas[k] = { respostas: [] };
+            deltas[k].respostas.push({
+                acertou: !!r.acertou,
+                tempo: Number(r.tempo) || 0,
+                tentativas: 1,
+                pistaUsada: 0
+            });
+        }
+        try { await incrementarMapaAluno(e.nome, e.turma, e.mod, deltas); }
+        catch(err) { console.warn("[Progressivo] incrementarMapaAluno falhou:", err); }
+
+        try {
+            mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(e.nome, e.turma);
+            await verificarPromocoes(e.nome, e.turma, e.mod, mapaFonteAgregada);
+        } catch(err) { console.warn("[Progressivo] verificarPromocoes falhou:", err); }
+
+        try { await verificarCertificadosPosPartida(e.nome, e.turma, e.mod); }
+        catch(err) { console.warn("[Progressivo] certificados falhou:", err); }
+    }
+
+    function renderizarResumoProgressivo(saiuAntes) {
+        const e = progressivoEstado;
+        const ctn = document.getElementById("aprender-conteudo");
+        if (!e || !ctn) return;
+
+        const total = e.resultados.length;
+        const acertos = e.resultados.filter(r => r.acertou).length;
+        const tempos = e.resultados.filter(r => r.acertou).map(r => r.tempo).filter(t => Number.isFinite(t) && t > 0);
+        const tempoMedio = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : 0;
+        const aRever = e.resultados.filter(r => !r.acertou).length;
+        const tempoFinal = e.tempoAtual;
+
+        let emojiHero = "⏱️";
+        let titulo = "Sessão concluída!";
+        let sub = `Seu tempo médio foi ${tempoMedio > 0 ? tempoMedio.toFixed(2) + "s" : "—"}.`;
+        if (saiuAntes) {
+            emojiHero = "⏸️";
+            titulo = "Sessão encerrada";
+            sub = `Você parou na conta ${total} de ${e.tamanhoSessao}.`;
+        } else if (tempoFinal === PROGRESSIVO_TEMPO_MIN && acertos === total) {
+            emojiHero = "🚀";
+            titulo = "Perfeito e veloz!";
+            sub = `Você terminou no tempo mais rápido: ${PROGRESSIVO_TEMPO_MIN}s por conta.`;
+        } else if (tempoFinal < PROGRESSIVO_TEMPO_MAX) {
+            emojiHero = "⚡";
+            titulo = "Você acelerou!";
+            sub = `Terminou a ${tempoFinal}s por conta (começou a ${PROGRESSIVO_TEMPO_MAX}s).`;
+        }
+
+        let listaRevisarHtml;
+        if (e.aRevisar.length > 0) {
+            const itens = e.aRevisar.slice(0, 6).map(r => `
+                <li>
+                    <span class="emoji">⏱️</span>
+                    <span class="op">${r.fA} × ${r.fB}</span>
+                    <span>precisa de mais prática</span>
+                </li>`).join("");
+            listaRevisarHtml = `<div class="aprender-resumo-lista">
+                <div class="aprender-resumo-lista-titulo">🔁 Contas para revisar</div>
+                <ul>${itens}</ul>
+            </div>`;
+        } else {
+            listaRevisarHtml = `<div class="aprender-resumo-vazio">✅ Nenhuma conta ficou pendente de revisão nesta sessão!</div>`;
+        }
+
+        const acoes = [];
+        if (e.aRevisar.length > 0) acoes.push(`<button class="aprender-btn-principal" onclick="reverContasProgressivo()">🔁 Rever estas contas</button>`);
+        acoes.push(`<button class="aprender-btn-secundario" onclick="sairResumoProgressivo()">Voltar ao início</button>`);
+
+        ctn.innerHTML = `
+            <div class="aprender-resumo">
+                <div class="aprender-resumo-hero">
+                    <span class="aprender-resumo-emoji">${emojiHero}</span>
+                    <h2 class="aprender-resumo-titulo">${titulo}</h2>
+                    <p class="aprender-resumo-sub">${sub}</p>
+                </div>
+                <div class="aprender-resumo-stats">
+                    <div class="aprender-resumo-stat ok"><span class="valor">${acertos}</span><span class="rotulo">Acertos</span></div>
+                    <div class="aprender-resumo-stat ajuda"><span class="valor">${tempoMedio > 0 ? tempoMedio.toFixed(2) + "s" : "—"}</span><span class="rotulo">Tempo médio</span></div>
+                    <div class="aprender-resumo-stat rever"><span class="valor">${aRever}</span><span class="rotulo">Para revisar</span></div>
+                </div>
+                ${listaRevisarHtml}
+                <div class="aprender-acoes ${acoes.length === 1 ? "uma-coluna" : ""}">${acoes.join("")}</div>
+            </div>
+        `;
+
+        try {
+            if (!saiuAntes && acertos === total && total > 0) { somSecaoCompleta(); dispararConfetes(); }
+            else if (!saiuAntes) { somConclusao(); }
+        } catch(err) {}
+    }
+
+    function sairResumoProgressivo() {
+        progressivoEstado = null;
+        mostrarTela("tela-inicial");
+        try { atualizarTelaInicialComEtapa(); } catch(err) {}
+    }
+
+    function reverContasProgressivo() {
+        const e = progressivoEstado;
+        if (!e || !e.aRevisar.length) return;
+        const ops = e.aRevisar.map(r => ({ fA: r.fA, fB: r.fB }));
+
+        progressivoEstado = {
+            mod: e.mod, nome: e.nome, turma: e.turma,
+            tamanhoSessao: ops.length,
+            indiceAtual: 0,
+            perguntaAtual: null,
+            respondido: false,
+            tempoAtual: PROGRESSIVO_TEMPO_MAX,
+            tempoInicio: 0,
+            ultimosResultados: [],
+            resultados: [],
+            aRevisar: [],
+            sessaoOps: ops
+        };
+        proximaPerguntaProgressivo();
+    }
+    // ▲▲▲ FIM [19.07]
     </script>
 </body>
 </html>
