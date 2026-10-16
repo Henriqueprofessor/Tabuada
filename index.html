@@ -8365,6 +8365,100 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 }
 /* ▲▲▲ FIM [02.79] */
 
+/* ▼▼▼ [02.80] Modal "Ritmo na Copa" + "Mapa de Tabuadas (Home)" ── */
+
+/* Reutiliza .home-descricao (de [02.76]). Aqui só classes extras. */
+
+/* ─── Mini-diagrama de barra treinos × oficiais ─── */
+.home-descricao .home-desc-barra-exemplo {
+    display: flex;
+    height: 14px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 10px 0 6px;
+    border: 1px solid rgba(148, 163, 184, 0.20);
+}
+.home-descricao .home-desc-barra-exemplo .parte-ofi {
+    background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
+    height: 100%;
+}
+.home-descricao .home-desc-barra-exemplo .parte-tre {
+    background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+    height: 100%;
+}
+
+/* ─── Mini-legenda para a barra ─── */
+.home-descricao .home-desc-barra-legenda {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+}
+.home-descricao .home-desc-barra-legenda .amostra {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+.home-descricao .home-desc-barra-legenda .amostra.ofi {
+    background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
+}
+.home-descricao .home-desc-barra-legenda .amostra.tre {
+    background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+}
+
+/* ─── Cores do Mapa de Tabuadas (mini-legenda) ─── */
+.home-descricao .home-desc-mapa-cores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+.home-descricao .home-desc-mapa-cor {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.home-descricao .home-desc-mapa-cor .bolinha {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.home-descricao .home-desc-mapa-cor.verde    .bolinha { background: #22c55e; }
+.home-descricao .home-desc-mapa-cor.parcial  .bolinha { background: #e2e8f0; border: 2px dashed #0ea5e9; }
+.home-descricao .home-desc-mapa-cor.azul     .bolinha { background: #38bdf8; }
+.home-descricao .home-desc-mapa-cor.amarelo  .bolinha { background: #facc15; }
+.home-descricao .home-desc-mapa-cor.vermelho .bolinha { background: #ef4444; }
+.home-descricao .home-desc-mapa-cor.cinza    .bolinha { background: #334155; }
+
+/* ─── Selo pequeno (usado nos dois modais) ─── */
+.home-descricao .home-desc-selo {
+    display: inline-block;
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    border-radius: 10px;
+    padding: 3px 10px;
+    margin-top: 10px;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #a5f3fc;
+    letter-spacing: 0.3px;
+}
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -9775,6 +9869,40 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 </div>
 <!-- ▲▲▲ FIM [04.25] -->
 
+<!-- ▼▼▼ [04.26] MODAL — Explicação do "Ritmo na Copa" ─────── -->
+<div id="modal-explicacao-ritmo"
+     class="modal-explicacao-overlay hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-explicacao-ritmo-corpo"
+     onclick="if (event.target === this) fecharModalComoFuncionaRitmo();">
+    <div class="modal-explicacao-caixa">
+        <button type="button"
+                class="modal-explicacao-fechar"
+                onclick="fecharModalComoFuncionaRitmo()"
+                aria-label="Fechar explicação">✕</button>
+        <div id="modal-explicacao-ritmo-corpo" class="home-descricao"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.26] -->
+
+<!-- ▼▼▼ [04.27] MODAL — Explicação do "Mapa de Tabuadas (Home)" ─ -->
+<div id="modal-explicacao-mapa-home"
+     class="modal-explicacao-overlay hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-explicacao-mapa-home-corpo"
+     onclick="if (event.target === this) fecharModalComoFuncionaMapaHome();">
+    <div class="modal-explicacao-caixa">
+        <button type="button"
+                class="modal-explicacao-fechar"
+                onclick="fecharModalComoFuncionaMapaHome()"
+                aria-label="Fechar explicação">✕</button>
+        <div id="modal-explicacao-mapa-home-corpo" class="home-descricao"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.27] -->
+
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -10432,6 +10560,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     //   · 6 ou mais pendentes                  → Treino Inteligente
     // v10.6.x · Adicionado botão "ℹ️ Como funciona o mapa?" dentro
     // do modal completo, abrindo o modal explicativo.
+    // v10.7.1 · Adicionado botão "ℹ️ Como funciona meu mapa?" também
+    // no card da Home, com modal próprio.
 
     let modalMapaMod = "todas";
     let modalMapaFonteAgregada = {};
@@ -10451,6 +10581,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             container.innerHTML = `<div class="mapa-home-card">
                 <div class="mapa-home-titulo">🗺️ Seu Mapa de Tabuadas</div>
                 <div class="mapa-home-vazio">Jogue uma partida para liberar seu mapa.</div>
+                <button type="button"
+                        id="btn-como-funciona-mapa-home"
+                        class="btn-como-funciona-menu"
+                        onclick="abrirModalComoFuncionaMapaHome()"
+                        aria-haspopup="dialog"
+                        aria-controls="modal-explicacao-mapa-home">
+                    ℹ️ Como funciona o Mapa de Tabuadas?
+                </button>
             </div>`;
             return;
         }
@@ -10546,6 +10684,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     ${seletorHtml}
                     ${botaoAcaoHtml}
                     <button class="home-btn-link" onclick="irParaMapaCompleto()">🗺️ Ver mapa completo →</button>
+                    <button type="button"
+                            id="btn-como-funciona-mapa-home"
+                            class="btn-como-funciona-menu"
+                            onclick="abrirModalComoFuncionaMapaHome()"
+                            aria-haspopup="dialog"
+                            aria-controls="modal-explicacao-mapa-home">
+                        ℹ️ Como funciona o Mapa de Tabuadas?
+                    </button>
                 </div>
             `;
 
@@ -10558,6 +10704,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             container.innerHTML = `<div class="mapa-home-card">
                 <div class="mapa-home-titulo">🗺️ Seu Mapa de Tabuadas</div>
                 <div class="mapa-home-vazio">Não foi possível carregar agora.</div>
+                <button type="button"
+                        id="btn-como-funciona-mapa-home"
+                        class="btn-como-funciona-menu"
+                        onclick="abrirModalComoFuncionaMapaHome()"
+                        aria-haspopup="dialog"
+                        aria-controls="modal-explicacao-mapa-home">
+                    ℹ️ Como funciona o Mapa de Tabuadas?
+                </button>
             </div>`;
         }
     }
@@ -10683,7 +10837,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         const area = document.getElementById("modal-mapa-completo-map-area");
         if (area) {
-            // Substitui só a área do mapa, preservando botão e abas
             area.innerHTML = renderizarMapa();
         } else {
             renderizarModalMapaCompleto();
@@ -10695,8 +10848,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const modal = document.getElementById("modal-mapa-completo");
         if (modal) modal.classList.add("hidden");
 
-        // Se o modal explicativo também estiver aberto, fecha ele junto
-        // (o mapa é o "pai" — se ele fecha, o filho também fecha).
         const modalExp = document.getElementById("modal-explicacao-mapa");
         if (modalExp && !modalExp.classList.contains("hidden")) {
             modalExp.classList.add("hidden");
@@ -10843,6 +10994,91 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         });
     }
     // ▲▲▲ FIM [07.08.ter]
+
+    // ▼▼▼ [07.08.quater] Modal "Como funciona · Mapa (Home)" ──────────
+    // v10.7.1 · Explicação pedagógica do card "Seu Mapa de Tabuadas"
+    // da Home. Versão resumida do modal do mapa completo — pensada
+    // para quem está começando e ainda não abriu o mapa detalhado.
+    // Reutiliza .home-descricao ([02.76]).
+
+    function construirConteudoComoFuncionaMapaHome() {
+        return `
+            <div class="home-desc-titulo"><span aria-hidden="true">🗺️</span> Como funciona o Mapa de Tabuadas</div>
+
+            <div class="home-desc-subtitulo">📊 O que é</div>
+            <p>O Mapa de Tabuadas mostra o seu <strong>domínio das 100 operações</strong> (1×1 até 10×10). Cada célula é uma operação, e a <strong>cor da célula diz o quanto você domina ela</strong> — com base nas suas últimas respostas. Não é uma média histórica: é o seu domínio <strong>recente</strong>.</p>
+
+            <div class="home-desc-subtitulo">🎨 As 6 cores</div>
+            <div class="home-desc-mapa-cores">
+                <span class="home-desc-mapa-cor verde">    <span class="bolinha"></span> Dominada</span>
+                <span class="home-desc-mapa-cor parcial">  <span class="bolinha"></span> A confirmar</span>
+                <span class="home-desc-mapa-cor azul">     <span class="bolinha"></span> Quase lá</span>
+                <span class="home-desc-mapa-cor amarelo">  <span class="bolinha"></span> Em treino</span>
+                <span class="home-desc-mapa-cor vermelho"> <span class="bolinha"></span> Reforçar</span>
+                <span class="home-desc-mapa-cor cinza">    <span class="bolinha"></span> Sem prática</span>
+            </div>
+
+            <div class="home-desc-subtitulo">📌 O número no canto</div>
+            <p>Cada célula mostra um <strong>numerozinho no canto inferior direito</strong> — é o total de vezes que você respondeu aquela operação.</p>
+
+            <div class="home-desc-subtitulo">🎯 O que os chips mostram</div>
+            <p>Os três chips abaixo da barra mostram quantas operações você já domina em cada modalidade:</p>
+            <ul>
+                <li>📚 <strong>2-5</strong> — operações das tabuadas 2, 3, 4 e 5</li>
+                <li>🎯 <strong>6-9</strong> — operações das tabuadas 6, 7, 8 e 9</li>
+                <li>⭐ <strong>1-10</strong> — todas as 100 operações</li>
+            </ul>
+            <p><strong>Importante:</strong> jogar uma modalidade também preenche as outras. O mapa é <strong>global</strong>.</p>
+
+            <div class="home-desc-subtitulo">🔄 O seletor de foco</div>
+            <p>Quando você tem pendências, aparece um <strong>seletor</strong> "🎯 Foco em qual modalidade?". Ele define qual modalidade aparece destacada nos botões abaixo — o botão de <strong>Foco Absoluto</strong> ou <strong>Treino Inteligente</strong> usa essa modalidade para escolher as operações.</p>
+
+            <div class="home-desc-subtitulo">🧠 Os botões de ação</div>
+            <ul>
+                <li><strong>🎯 Foco Absoluto</strong> — aparece quando faltam ≤5 operações. O treino mira 92% nessas pendentes.</li>
+                <li><strong>🧠 Treinar as X pendentes</strong> — aparece quando faltam 6 ou mais. Abre o Treino Inteligente.</li>
+                <li><strong>🗺️ Ver mapa completo →</strong> — abre o modal do mapa com abas por modalidade, detalhes por operação e dicas de decomposição.</li>
+            </ul>
+
+            <div class="home-desc-dica"><strong>💡 Dica:</strong> o objetivo é <strong>deixar todas as células verdes</strong>. Comece pelas vermelhas (piores), use o Foco Absoluto quando estiver perto do fim, e vá conquistando os certificados de maestria no caminho.</div>
+
+            <span class="home-desc-selo">🗺️ 100 operações · o mapa mostra o seu domínio real.</span>
+        `;
+    }
+
+    function abrirModalComoFuncionaMapaHome() {
+        const modal = document.getElementById("modal-explicacao-mapa-home");
+        const corpo = document.getElementById("modal-explicacao-mapa-home-corpo");
+        if (!modal || !corpo) return;
+        if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaMapaHome();
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+            modal.querySelector(".modal-explicacao-fechar")?.focus();
+        }, 30);
+    }
+
+    function fecharModalComoFuncionaMapaHome() {
+        const modal = document.getElementById("modal-explicacao-mapa-home");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        // Só libera o scroll se NÃO houver outro modal do mapa aberto por baixo
+        const mapModal = document.getElementById("modal-mapa-completo");
+        const mapAberto = mapModal && !mapModal.classList.contains("hidden");
+        document.body.style.overflow = mapAberto ? "hidden" : "";
+    }
+
+    if (!window._modalExplicacaoMapaHomeEscInstalado) {
+        window._modalExplicacaoMapaHomeEscInstalado = true;
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            const modal = document.getElementById("modal-explicacao-mapa-home");
+            if (modal && !modal.classList.contains("hidden")) {
+                fecharModalComoFuncionaMapaHome();
+            }
+        });
+    }
+    // ▲▲▲ FIM [07.08.quater]
 
     // ▼▼▼ [07.09] Auto-início, fechamento e encerramento da etapa ─────────
     async function verificarEIniciarEtapaSeNecessario() {
@@ -19227,6 +19463,8 @@ if (containerProg) {
     // autônomo em #ritmo-copa-container, logo abaixo do card
     // "Minhas Posições". O hero agora mostra apenas: saudação + subtítulo
     // dinâmico. A visão por modalidade vive no card "Minhas Posições".
+    // v10.7.1 · Adicionado botão "ℹ️ Como funciona o Ritmo na Copa?"
+    // dentro do card, abrindo modal explicativo.
 
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
@@ -19317,6 +19555,14 @@ if (containerProg) {
                     <span class="home-ritmo-titulo">🎯 Seu Ritmo na Copa</span>
                 </div>
                 <div class="home-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
+                <button type="button"
+                        id="btn-como-funciona-ritmo"
+                        class="btn-como-funciona-menu"
+                        onclick="abrirModalComoFuncionaRitmo()"
+                        aria-haspopup="dialog"
+                        aria-controls="modal-explicacao-ritmo">
+                    ℹ️ Como funciona o Ritmo na Copa?
+                </button>
             </div>`;
             return;
         }
@@ -19340,6 +19586,14 @@ if (containerProg) {
                 <span>🎯 Treinos <span class="pct">${pctTre}%</span></span>
                 <span>🎮 Oficiais <span class="pct">${pctOfi}%</span></span>
             </div>
+            <button type="button"
+                    id="btn-como-funciona-ritmo"
+                    class="btn-como-funciona-menu"
+                    onclick="abrirModalComoFuncionaRitmo()"
+                    aria-haspopup="dialog"
+                    aria-controls="modal-explicacao-ritmo">
+                ℹ️ Como funciona o Ritmo na Copa?
+            </button>
         </div>`;
     }
 
@@ -21965,6 +22219,88 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         });
     }
     // ▲▲▲ FIM [18.10]
+
+    // ▼▼▼ [18.11] Modal "Como funciona · Ritmo na Copa" ───────────────
+    // v10.7.1 · Explicação pedagógica do card "Seu Ritmo na Copa".
+    // Cobre: o que é a barra, o que significa cada cor, como
+    // interpretar a proporção treinos × oficiais, e como usar para
+    // equilibrar a rotina. Reutiliza .home-descricao ([02.76]).
+
+    function construirConteudoComoFuncionaRitmo() {
+        return `
+            <div class="home-desc-titulo"><span aria-hidden="true">🎯</span> Como funciona o Ritmo na Copa</div>
+
+            <div class="home-desc-subtitulo">📊 O que é</div>
+            <p>O <strong>Ritmo na Copa</strong> mostra a proporção entre <strong>treinos</strong> e <strong>partidas oficiais</strong> que você já fez. Não é uma nota, nem uma posição — é um <strong>espelho da sua rotina</strong>. Ajuda você a perceber se está treinando demais, jogando demais, ou no equilíbrio certo.</p>
+
+            <div class="home-desc-subtitulo">📊 Como ler a barra</div>
+            <p>A barra tem <strong>duas cores</strong>, e cada uma representa uma coisa:</p>
+            <div class="home-desc-barra-legenda">
+                <span><span class="amostra tre"></span> Treinos (roxo)</span>
+                <span><span class="amostra ofi"></span> Oficiais (azul)</span>
+            </div>
+            <div class="home-desc-barra-exemplo" role="img" aria-label="Exemplo de barra: 60% treinos, 40% oficiais">
+                <div class="parte-tre" style="width: 60%"></div>
+                <div class="parte-ofi" style="width: 40%"></div>
+            </div>
+            <p>A largura de cada cor mostra a <strong>fatia</strong> de cada tipo no seu total de partidas. Se a barra está quase toda roxa, você está treinando muito e jogando pouco oficial. Se está quase toda azul, o contrário.</p>
+
+            <div class="home-desc-subtitulo">🎮 O que conta como "oficial"</div>
+            <ul>
+                <li><strong>Partidas oficiais</strong> — iniciadas pelo botão <strong>▶ Jogar</strong> em "Minhas Posições", durante a etapa classificatória. Elas <strong>contam para o ranking</strong> e para a Final.</li>
+                <li>Inclui partidas <strong>completas</strong> (20/20) e <strong>parciais</strong> (canceladas com ✕). Ambas registram sua atividade.</li>
+            </ul>
+
+            <div class="home-desc-subtitulo">🎯 O que conta como "treino"</div>
+            <ul>
+                <li><strong>Treinos concluídos</strong> — de qualquer um dos 6 modos: 🧠 Inteligente · 🔄 Reverso · 🧩 Decomposição · 🪞 Espelho · 🧱 Chunking · ⏱️ Progressivo.</li>
+                <li>Conta apenas se você <strong>concluiu</strong> a sessão. Treino abandonado no meio não entra.</li>
+                <li>Treinos <strong>alimentam o mapa</strong> e os <strong>certificados</strong>, mas <strong>NÃO entram no ranking</strong>.</li>
+            </ul>
+
+            <div class="home-desc-subtitulo">⚖️ O que é "equilíbrio"</div>
+            <ul>
+                <li><strong>Muito treino, pouca oficial</strong> — você está aprendendo, mas não está testando sob pressão. Marque mais partidas oficiais para ver sua evolução real.</li>
+                <li><strong>Muita oficial, pouco treino</strong> — você joga muito, mas treina pouco. Pode estar <em>estagnado</em>: joga bem o que já sabe, mas não avança no mapa.</li>
+                <li><strong>Equilíbrio</strong> — o ideal. Alternar treino e oficial mantém o aprendizado e a performance ao mesmo tempo.</li>
+            </ul>
+
+            <div class="home-desc-dica"><strong>💡 Dica:</strong> use o Ritmo para calibrar. Se está mais roxo que azul, faça uma partida oficial. Se está mais azul que roxo, abra o treino inteligente em "Minhas Posições" e ataque as pendências do mapa. Equilíbrio é a chave para subir no ranking <strong>e</strong> conquistar certificados.</div>
+
+            <span class="home-desc-selo">🎯 Treinos alimentam o mapa · Oficiais definem sua posição.</span>
+        `;
+    }
+
+    function abrirModalComoFuncionaRitmo() {
+        const modal = document.getElementById("modal-explicacao-ritmo");
+        const corpo = document.getElementById("modal-explicacao-ritmo-corpo");
+        if (!modal || !corpo) return;
+        if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaRitmo();
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+            modal.querySelector(".modal-explicacao-fechar")?.focus();
+        }, 30);
+    }
+
+    function fecharModalComoFuncionaRitmo() {
+        const modal = document.getElementById("modal-explicacao-ritmo");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+    }
+
+    if (!window._modalExplicacaoRitmoEscInstalado) {
+        window._modalExplicacaoRitmoEscInstalado = true;
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            const modal = document.getElementById("modal-explicacao-ritmo");
+            if (modal && !modal.classList.contains("hidden")) {
+                fecharModalComoFuncionaRitmo();
+            }
+        });
+    }
+    // ▲▲▲ FIM [18.11]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
