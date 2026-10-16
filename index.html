@@ -7684,6 +7684,159 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 }
 /* ▲▲▲ FIM [02.73] */
 
+/* ▼▼▼ [02.74] Modal "Como funciona o Álbum" ────────────────── */
+
+/* Botão genérico reutilizável para futuros menus (Álbum, Hall, etc.) */
+.btn-como-funciona-menu {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    margin: 18px auto 6px;
+    padding: 12px 20px;
+    background: rgba(34, 211, 238, 0.08);
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    color: #22d3ee;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    font-family: inherit;
+}
+.btn-como-funciona-menu:hover,
+.btn-como-funciona-menu:focus-visible {
+    background: rgba(34, 211, 238, 0.18);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(34, 211, 238, 0.18);
+    outline: 2px solid rgba(34, 211, 238, 0.55);
+    outline-offset: 2px;
+}
+.btn-como-funciona-menu.hidden { display: none !important; }
+
+/* Neutraliza estilos externos dentro do modal (mesmo princípio do [02.73]) */
+.modal-explicacao-caixa .album-descricao {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* Conteúdo do modal do Álbum */
+.album-descricao {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+}
+.album-descricao .album-desc-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--neon-gold);
+    letter-spacing: 0.3px;
+    margin: 0 0 12px;
+    line-height: 1.2;
+}
+.album-descricao .album-desc-subtitulo {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--neon-cyan);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin: 14px 0 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
+}
+.album-descricao .album-desc-subtitulo:first-of-type { margin-top: 2px; }
+.album-descricao p {
+    margin: 0 0 6px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+.album-descricao p:last-child { margin-bottom: 0; }
+.album-descricao p strong { color: var(--text-primary); font-weight: 800; }
+.album-descricao ul {
+    margin: 0 0 6px;
+    padding-left: 18px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+.album-descricao ul li { margin-bottom: 3px; }
+.album-descricao ul li strong { color: var(--text-primary); font-weight: 800; }
+.album-descricao .album-desc-dica {
+    background: rgba(0, 0, 0, 0.25);
+    border-left: 3px solid var(--neon-gold);
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+.album-descricao .album-desc-dica strong { color: var(--neon-gold); font-weight: 800; }
+
+/* Grade de raridades */
+.album-descricao .album-desc-raridades {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+.album-descricao .album-desc-raridade {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.album-descricao .album-desc-raridade.comum    { border-color: rgba(148, 163, 184, 0.45); }
+.album-descricao .album-desc-raridade.incomum  { border-color: rgba(34, 197, 94, 0.45); }
+.album-descricao .album-desc-raridade.raro     { border-color: rgba(14, 165, 233, 0.5); }
+.album-descricao .album-desc-raridade.epico    { border-color: rgba(168, 85, 247, 0.5); }
+.album-descricao .album-desc-raridade.lendario { border-color: rgba(245, 158, 11, 0.55); }
+
+/* Lista de patentes */
+.album-descricao .album-desc-patentes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+.album-descricao .album-desc-patente {
+    padding: 5px 10px;
+    border-radius: 10px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+.album-descricao .album-desc-patente.imortal {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.22) 0%, rgba(217, 119, 6, 0.10) 100%);
+    border-color: rgba(251, 191, 36, 0.6);
+    color: #fcd34d;
+}
+
+@media (max-width: 520px) {
+    .album-descricao .album-desc-titulo { font-size: 14px; }
+    .album-descricao p,
+    .album-descricao ul,
+    .album-descricao .album-desc-dica { font-size: 12px; }
+}
+/* ▲▲▲ FIM [02.74] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -8180,46 +8333,61 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
     <!-- ▲▲▲ FIM [03.10] -->
 
-    <!-- ▼▼▼ [03.11] ÁLBUM ───────────────────────────────────── -->
-    <div id="tela-album" class="card hidden">
-        <div id="album-capa-view" class="album-view">
-            <div class="album-capa" id="album-capa-card">
-                <span class="album-capa-medalha">🏆</span>
-                <span class="album-capa-linha"></span>
-                <h1 class="album-capa-titulo">ÁLBUM DE CONQUISTAS</h1>
-                <p class="album-capa-sub">Copa Tabuada CEIB 2026</p>
-                <div class="album-capa-info" id="album-capa-info">
-                    <span class="rot">👤 Aluno</span><span class="val" id="album-capa-nome">—</span>
-                    <span class="rot">🏫 Turma</span><span class="val" id="album-capa-turma">—</span>
-                </div>
-                <div class="album-capa-prog">
-                    <div class="rotulo"><span>🏅 Medalhas coladas</span><span class="num" id="album-capa-prog-num">0 / 0</span></div>
-                    <div class="trilha"><div class="fill" id="album-capa-prog-fill" style="width:0%"></div></div>
-                </div>
-                <button class="album-capa-botao" id="album-btn-abrir" onclick="abrirAlbumConteudo()">Abrir Álbum →</button>
-                <div class="album-capa-rodape">
-                    <span id="album-capa-estrelas">⭐ 0 estrelas</span>
-                    <button class="voltar-inicio" onclick="mostrarTela('tela-inicial')">🏠 Início</button>
-                </div>
+<!-- ▼▼▼ [03.11] ÁLBUM ───────────────────────────────────── -->
+<div id="tela-album" class="card hidden">
+    <div id="album-capa-view" class="album-view">
+        <div class="album-capa" id="album-capa-card">
+            <span class="album-capa-medalha">🏆</span>
+            <span class="album-capa-linha"></span>
+            <h1 class="album-capa-titulo">ÁLBUM DE CONQUISTAS</h1>
+            <p class="album-capa-sub">Copa Tabuada CEIB 2026</p>
+            <div class="album-capa-info" id="album-capa-info">
+                <span class="rot">👤 Aluno</span><span class="val" id="album-capa-nome">—</span>
+                <span class="rot">🏫 Turma</span><span class="val" id="album-capa-turma">—</span>
             </div>
-        </div>
-        <div id="album-conteudo-view" class="album-view hidden">
-            <div class="album-bar-voltar">
-                <button class="album-btn-voltar-capa" onclick="abrirAlbumCapa()">← Voltar à capa</button>
-                <button class="album-btn-voltar-capa" onclick="mostrarTela('tela-inicial')">🏠 Início</button>
+            <div class="album-capa-prog">
+                <div class="rotulo"><span>🏅 Medalhas coladas</span><span class="num" id="album-capa-prog-num">0 / 0</span></div>
+                <div class="trilha"><div class="fill" id="album-capa-prog-fill" style="width:0%"></div></div>
             </div>
-            <div id="album-header"></div>
-            <div id="album-patente-banner-container"></div>
-            <div id="album-certificados-container"></div>
-            <div id="album-filtros"></div>
-            <div id="album-conteudo"></div>
-            <div style="margin-top: 28px; padding-top: 16px; border-top: 1px dashed var(--border-neon); text-align: center;">
-                <button class="album-btn-voltar-capa" style="width: 100%; justify-content: center; padding: 16px; font-size: 15px; background: rgba(34, 211, 238, 0.1); color: var(--neon-cyan); border-color: var(--neon-cyan);" onclick="mostrarTela('tela-inicial')">
-                    🏠 Voltar para o Início
-                </button>
+            <button class="album-capa-botao" id="album-btn-abrir" onclick="abrirAlbumConteudo()">Abrir Álbum →</button>
+            <div class="album-capa-rodape">
+                <span id="album-capa-estrelas">⭐ 0 estrelas</span>
+                <button class="voltar-inicio" onclick="mostrarTela('tela-inicial')">🏠 Início</button>
             </div>
         </div>
     </div>
+    <div id="album-conteudo-view" class="album-view hidden">
+        <div class="album-bar-voltar">
+            <button class="album-btn-voltar-capa" onclick="abrirAlbumCapa()">← Voltar à capa</button>
+            <button class="album-btn-voltar-capa" onclick="mostrarTela('tela-inicial')">🏠 Início</button>
+        </div>
+        <div id="album-header"></div>
+        <div id="album-patente-banner-container"></div>
+        <div id="album-certificados-container"></div>
+        <div id="album-filtros"></div>
+        <div id="album-conteudo"></div>
+
+        <!-- ▼ v10.6.x · Explicação migrou para modal. Este botão abre o
+             modal explicativo do Álbum (como funciona, o que são estrelas,
+             patentes, raridades, certificados e filtros). -->
+        <button type="button"
+                id="btn-como-funciona-album"
+                class="btn-como-funciona-menu"
+                onclick="abrirModalComoFuncionaAlbum()"
+                aria-haspopup="dialog"
+                aria-controls="modal-explicacao-album">
+            ℹ️ Como funciona o Álbum?
+        </button>
+        <!-- ▲ -->
+
+        <div style="margin-top: 28px; padding-top: 16px; border-top: 1px dashed var(--border-neon); text-align: center;">
+            <button class="album-btn-voltar-capa" style="width: 100%; justify-content: center; padding: 16px; font-size: 15px; background: rgba(34, 211, 238, 0.1); color: var(--neon-cyan); border-color: var(--neon-cyan);" onclick="mostrarTela('tela-inicial')">
+                🏠 Voltar para o Início
+            </button>
+        </div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [03.11] -->
 
     <!-- ▼▼▼ [03.12] PAINEL PROFESSOR ─────────────────────────── -->
     <div id="tela-painel" class="card hidden">
@@ -8936,6 +9104,23 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
 </div>
 <!-- ▲▲▲ FIM [04.19] -->
+
+<!-- ▼▼▼ [04.20] MODAL — Explicação do Álbum ───────────────── -->
+<div id="modal-explicacao-album"
+     class="modal-explicacao-overlay hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-explicacao-album-corpo"
+     onclick="if (event.target === this) fecharModalComoFuncionaAlbum();">
+    <div class="modal-explicacao-caixa">
+        <button type="button"
+                class="modal-explicacao-fechar"
+                onclick="fecharModalComoFuncionaAlbum()"
+                aria-label="Fechar explicação">✕</button>
+        <div id="modal-explicacao-album-corpo" class="album-descricao"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.20] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -12423,6 +12608,120 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         marcarOnboardingAlbumVisto();
     }
     // ▲▲▲ FIM [11.12]
+
+    // ▼▼▼ [11.13] Modal "Como funciona o Álbum" ──────────────────────
+    // v10.6.x · Explicação pedagógica do Álbum. Explica o que é, como
+    // conseguir medalhas, o que são estrelas, patentes, raridades,
+    // certificados e filtros. Reutiliza as classes genéricas do
+    // modal do Ranking ([02.73] / [04.19]) — só muda a id e o corpo.
+
+    function construirConteudoComoFuncionaAlbum() {
+        return `
+            <div class="album-desc-titulo"><span aria-hidden="true">🏅</span> Como funciona o Álbum</div>
+
+            <div class="album-desc-subtitulo">📊 O que é</div>
+            <p>O Álbum de Conquistas é onde ficam guardadas <strong>todas as medalhas</strong> que você conquistou na Copa. Diferente do ranking, aqui não competimos — cada medalha é <strong>sua, para sempre</strong>. Uma vez colada, não sai mais.</p>
+
+            <div class="album-desc-subtitulo">🎯 Como conseguir medalhas</div>
+            <p>Toque em qualquer medalha para ver o <strong>requisito exato</strong> e o seu progresso. As conquistas vêm de várias frentes:</p>
+            <ul>
+                <li><strong>Jogar partidas</strong> — a primeira, 5, 10, 20...</li>
+                <li><strong>Precisão</strong> — acertar 20/20, sequências longas de acertos</li>
+                <li><strong>Velocidade</strong> — tempos médios cada vez menores</li>
+                <li><strong>Dedicação</strong> — jogar em dias diferentes, voltar após uma partida ruim</li>
+                <li><strong>Explorar o app</strong> — jogar as 3 modalidades, fazer treinos focados</li>
+                <li><strong>Dominar o mapa</strong> — deixar todas as operações verdes</li>
+                <li><strong>Rumo à Final</strong> — chegar ao Top 4 da sua turma</li>
+                <li><strong>Consistência</strong> — manter média alta em cada modalidade</li>
+            </ul>
+
+            <div class="album-desc-subtitulo">⭐ Estrelas e Patentes</div>
+            <p>Cada medalha vale um número de <strong>estrelas</strong> (quanto mais rara, mais vale). Completar uma <strong>seção inteira</strong> dá bônus extra de estrelas. Suas estrelas definem sua patente:</p>
+            <div class="album-desc-patentes">
+                <span class="album-desc-patente">🥾 Reserva</span>
+                <span class="album-desc-patente">⚽ Titular</span>
+                <span class="album-desc-patente">⭐ Destaque</span>
+                <span class="album-desc-patente">🌟 Craque</span>
+                <span class="album-desc-patente">👑 Ídolo</span>
+                <span class="album-desc-patente imortal">🏆 Imortal</span>
+            </div>
+
+            <div class="album-desc-subtitulo">💎 Raridades das medalhas</div>
+            <div class="album-desc-raridades">
+                <span class="album-desc-raridade comum">⚪ Comum</span>
+                <span class="album-desc-raridade incomum">🟢 Incomum</span>
+                <span class="album-desc-raridade raro">🔵 Raro</span>
+                <span class="album-desc-raridade epico">🟣 Épico</span>
+                <span class="album-desc-raridade lendario">🟡 Lendário</span>
+            </div>
+
+            <div class="album-desc-subtitulo">🎓 Certificados de Maestria</div>
+            <p>Separados das medalhas, você pode conquistar <strong>3 certificados em CADA modalidade</strong> (2-5, 6-9 e 1-10):</p>
+            <ul>
+                <li>🥈 <strong>Prata</strong> — 85% do mapa, 5+ tentativas por operação, 80% de acerto</li>
+                <li>🥇 <strong>Ouro</strong> — 95% do mapa, 8+ tentativas, 90% de acerto + velocidade</li>
+                <li>💎 <strong>Lendária</strong> — 100% do mapa, 10+ tentativas, 90% de acerto + velocidade</li>
+            </ul>
+            <p>Os certificados ficam salvos para sempre — mesmo se você parar de jogar, a conquista não é perdida.</p>
+
+            <div class="album-desc-subtitulo">🎖️ Medalhas de Consistência</div>
+            <p>Seção especial com <strong>5 medalhas</strong> que premiam quem <strong>mantém uma média alta</strong> de pontos. Não basta uma partida excepcional — é preciso constância:</p>
+            <ul>
+                <li>🏅 <strong>Primeira Média</strong> — média ≥ 8.000 pts em qualquer modalidade</li>
+                <li>🎖️ <strong>Consistente</strong> — média ≥ 12.000 pts</li>
+                <li>🏆 <strong>Regular</strong> — média ≥ 15.000 pts</li>
+                <li>💎 <strong>Elite</strong> — média ≥ 17.000 pts</li>
+                <li>👑 <strong>Lenda da Média</strong> — média ≥ 17.000 pts nas 3 modalidades ao mesmo tempo</li>
+            </ul>
+
+            <div class="album-desc-subtitulo">📖 Filtros</div>
+            <p>No topo do Álbum você pode filtrar as medalhas por:</p>
+            <ul>
+                <li><strong>Status</strong> — todas, coladas ou faltantes</li>
+                <li><strong>Raridade</strong> — comum, incomum, raro, épico ou lendário</li>
+                <li><strong>Seção</strong> — Primeiros Passos, Velocidade, Precisão...</li>
+                <li><strong>Ordem</strong> — padrão, coladas primeiro ou recentes primeiro</li>
+            </ul>
+
+            <div class="album-desc-dica"><strong>💡 Dica:</strong> toque em qualquer medalha (mesmo bloqueada) para ver o requisito exato e uma barra com o seu progresso até conquistá-la.</div>
+
+            <span class="ranking-desc-escopo" style="display:inline-block;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.35);border-radius:10px;padding:3px 10px;margin-top:10px;font-size:11.5px;font-weight:800;color:#a5f3fc;letter-spacing:.3px;">🎯 Suas conquistas ficam salvas para sempre no seu Álbum.</span>
+        `;
+    }
+
+    function abrirModalComoFuncionaAlbum() {
+        const modal = document.getElementById("modal-explicacao-album");
+        const corpo = document.getElementById("modal-explicacao-album-corpo");
+        if (!modal || !corpo) return;
+        // Só monta o conteúdo na primeira abertura (evita recomputar HTML)
+        if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaAlbum();
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+            modal.querySelector(".modal-explicacao-fechar")?.focus();
+        }, 30);
+    }
+
+    function fecharModalComoFuncionaAlbum() {
+        const modal = document.getElementById("modal-explicacao-album");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+    }
+
+    // Fechar com tecla ESC (instalado uma única vez)
+    if (!window._modalExplicacaoAlbumEscInstalado) {
+        window._modalExplicacaoAlbumEscInstalado = true;
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            const modal = document.getElementById("modal-explicacao-album");
+            if (modal && !modal.classList.contains("hidden")) {
+                fecharModalComoFuncionaAlbum();
+            }
+        });
+    }
+    // ▲▲▲ FIM [11.13]
+
     // ═══════════════════════════════════════════════════════════════════════
     // [12] JS-MSG · Mensagens aluno ↔ professor
     // ═══════════════════════════════════════════════════════════════════════
