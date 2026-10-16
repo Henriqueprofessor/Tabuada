@@ -8458,7 +8458,103 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     color: #a5f3fc;
     letter-spacing: 0.3px;
 }
+/* ▲▲▲ FIM [02.80] */
 
+        /* ▼▼▼ [02.81] Botão inline "Como funciona?" — variante compacta ─── INÍCIO ─── */
+        /* v10.7.2 · Variante compacta do botão `.btn-como-funciona-menu`
+           para uso DENTRO de títulos de cards (ao lado do texto), em vez
+           do botão grande de largura total no rodapé.
+
+           Aplicada pela primeira vez no card "Minhas Posições" da Home
+           (ver [18.07]), substituindo o botão grande que ocupava o
+           rodapé inteiro do card. O modal continua sendo o mesmo
+           (#modal-explicacao-minhas-pos).
+
+           Se outros menus quiserem adotar esta variante, basta:
+             1) Remover a classe `.btn-como-funciona-menu` do botão
+             2) Aplicar `.btn-como-funciona-inline`
+             3) Colocar o botão DENTRO do título do card (o flex do título
+                cuida do alinhamento com gap automático). */
+
+        .btn-como-funciona-inline {
+            /* Reset de botão */
+            appearance: none;
+            -webkit-appearance: none;
+            font-family: inherit;
+
+            /* Layout circular compacto */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            padding: 0;
+            margin: 0;
+
+            /* Visual alinhado ao padrão ciano do app */
+            background: rgba(34, 211, 238, 0.12);
+            border: 1.5px solid rgba(34, 211, 238, 0.45);
+            border-radius: 50%;
+            color: var(--neon-cyan, #22d3ee);
+            font-size: 13px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 0;
+            text-transform: none;
+            cursor: pointer;
+            vertical-align: middle;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+
+            transition:
+                background 0.18s ease,
+                border-color 0.18s ease,
+                color 0.18s ease,
+                transform 0.15s ease;
+        }
+
+        .btn-como-funciona-inline:hover,
+        .btn-como-funciona-inline:focus-visible {
+            background: rgba(34, 211, 238, 0.24);
+            border-color: var(--neon-cyan, #22d3ee);
+            color: #a5f3fc;
+            transform: scale(1.08);
+        }
+
+        .btn-como-funciona-inline:focus-visible {
+            outline: 2px solid rgba(34, 211, 238, 0.65);
+            outline-offset: 2px;
+        }
+
+        .btn-como-funciona-inline:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        .btn-como-funciona-inline.hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 520px) {
+            .btn-como-funciona-inline {
+                width: 20px;
+                height: 20px;
+                min-width: 20px;
+                font-size: 12px;
+                border-width: 1.25px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-como-funciona-inline {
+                transition: none !important;
+            }
+            .btn-como-funciona-inline:hover,
+            .btn-como-funciona-inline:focus-visible {
+                transform: none;
+            }
+        }
+        /* ▲▲▲ FIM [02.81] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -20799,6 +20895,9 @@ if (containerProg) {
     // o acesso de 2 toques que existia antes do card antigo.
     // v10.6.x · Adicionado botão "ℹ️ Como funciona 'Minhas Posições'?"
     // no rodapé do card, abrindo o modal explicativo.
+    // v10.7.2 · O botão grande de explicação saiu do rodapé e virou um
+    // ícone circular compacto "?" ao lado do título do card, liberando
+    // espaço vertical. Usa .btn-como-funciona-inline (bloco [02.81]).
 
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
@@ -20961,19 +21060,21 @@ if (containerProg) {
         }
 
         ctn.innerHTML = `<div class="home-modalidades-card">
-            <div class="home-modalidades-titulo">🏆 ${escaparHtml(tituloAcao)}</div>
+            <div class="home-modalidades-titulo">
+                <span>🏆 ${escaparHtml(tituloAcao)}</span>
+                <button type="button"
+                        id="btn-como-funciona-minhas-pos"
+                        class="btn-como-funciona-inline"
+                        onclick="abrirModalComoFuncionaMinhasPos()"
+                        aria-haspopup="dialog"
+                        aria-controls="modal-explicacao-minhas-pos"
+                        aria-label="Como funciona Minhas Posições"
+                        title="Como funciona?">?</button>
+            </div>
             <div class="home-modalidades-sub">${subtitulo}</div>
             <div class="home-modalidades-lista">${linhas}</div>
             <div class="home-modalidades-rodape">⚠️ Classificação provisória · Top 4 de cada modalidade avança para a Final</div>
             ${atalhoHtml}
-            <button type="button"
-                    id="btn-como-funciona-minhas-pos"
-                    class="btn-como-funciona-menu"
-                    onclick="abrirModalComoFuncionaMinhasPos()"
-                    aria-haspopup="dialog"
-                    aria-controls="modal-explicacao-minhas-pos">
-                ℹ️ Como funciona "Minhas Posições"?
-            </button>
         </div>`;
     }
 
