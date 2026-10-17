@@ -20016,7 +20016,7 @@ if (containerProg) {
             CAMINHO_TREINOS_FOCADOS
         ];
         if (turma === "todas") {
-            for (const c of caminhos) { try { await database.ref(c).remove(); } catch(e) { console.warn(`Erro ao limpar ${c}:`, e); } }
+            for (const c of caminhos) { try { await database.ref(c).set({ _reset: true }); } catch(e) { console.warn(`Erro ao limpar ${c}:`, e); } }
             try { localStorage.removeItem("copa_album_vistas_count"); } catch(e) {}
             try { localStorage.removeItem(STORAGE_PATENTE_VISTA); } catch(e) {}
             try { localStorage.removeItem(STORAGE_ALBUM_ONBOARDING); } catch(e) {}
@@ -20028,17 +20028,17 @@ if (containerProg) {
                 const snap = await database.ref(c).once("value");
                 const dados = snap.val() || {};
                 const alvos = Object.keys(dados).filter(k => k.endsWith(sufixo));
-                for (const chave of alvos) { await database.ref(`${c}/${chave}`).remove(); }
+                for (const chave of alvos) { await database.ref(`${c}/${chave}`).set({ _reset: true }); }
             } catch(e) { console.warn(`Erro ao limpar ${c} da turma ${turma}:`, e); }
         }
     }
     async function limparMensagensPorFiltro(turma) {
-        if (turma === "todas") { try { await database.ref(CAMINHO_MENSAGENS).remove(); } catch(e) {} return; }
+        if (turma === "todas") { try { await database.ref(CAMINHO_MENSAGENS).set({ _reset: true }); } catch(e) {} return; }
         try {
             const snap = await database.ref(CAMINHO_MENSAGENS).once("value");
             const dados = snap.val() || {};
             const sufixo = `|${turma}`;
-            for (const chave of Object.keys(dados)) { if (chave.endsWith(sufixo)) { await database.ref(`${CAMINHO_MENSAGENS}/${chave}`).remove(); } }
+            for (const chave of Object.keys(dados)) { if (chave.endsWith(sufixo)) { await database.ref(`${CAMINHO_MENSAGENS}/${chave}`).set({ _reset: true }); } }
         } catch(e) {}
     }
     function abrirResetTurma() { if (!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
@@ -20054,20 +20054,16 @@ if (containerProg) {
         
         const rank = await obterRanking();
         const novos = rank.filter(r => !resultadoCombinaFiltro(r, turma, mod));
-        for (const item of rank) { if (!novos.includes(item)) { const c = criarChaveResultado(item); await database.ref(`${CAMINHO_RANKING}/${c}`).remove(); } }
+        for (const item of rank) { if (!novos.includes(item)) { const c = criarChaveResultado(item); await database.ref(`${CAMINHO_RANKING}/${c}`).set({ _reset: true }); } }
         
         const partidas = await obterPartidas();
         const partidasN = partidas.filter(p => !resultadoCombinaFiltro(p, turma, mod));
-        for (const p of partidas) { if (!partidasN.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).remove(); }
+        for (const p of partidas) { if (!partidasN.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).set({ _reset: true }); }
 
         // ▼ v10.9.0 · LIMPEZA DOS NOVOS NÓS DE OTIMIZAÇÃO ▼
         if (turma === "todas" && mod === "todas") {
-            // Reset geral (o que você usará antes da competição) -> apaga tudo
-            try { await database.ref(CAMINHO_PARTIDAS_POR_ALUNO).remove(); } catch(e) {}
-            try { await database.ref(CAMINHO_RANKING_RESUMO).remove(); } catch(e) {}
-        } else {
-            // Reset parcial -> avisa que precisará rodar o backfill para limpar os resumos
-            console.info("Reset parcial executado. Rode o backfill para sincronizar os resumos.");
+            try { await database.ref(CAMINHO_PARTIDAS_POR_ALUNO).set({ _reset: true }); } catch(e) {}
+            try { await database.ref(CAMINHO_RANKING_RESUMO).set({ _reset: true }); } catch(e) {}
         }
         // ▲▲▲
 
@@ -20077,7 +20073,7 @@ if (containerProg) {
         await limparMensagensPorFiltro(turma);
         
         if (limparVinculos) {
-            try { await database.ref(CAMINHO_VINCULOS).remove(); notificar("Todos os vínculos foram removidos.", "info", 4000); }
+            try { await database.ref(CAMINHO_VINCULOS).set({ _reset: true }); notificar("Todos os vínculos foram removidos.", "info", 4000); }
             catch(e) { console.warn("Erro ao limpar vínculos:", e); }
         }
         localStorage.setItem(STORAGE_RANKING, JSON.stringify(novos));
@@ -20143,25 +20139,24 @@ if (containerProg) {
         const reg = alunosData.find(a => a.modalidade === mod && a.turma === turma && normalizarNome(a.nome) === nome);
         if (reg) {
             const fc = criarChaveResultado({ modalidade: mod, turma, nome });
-            await database.ref(`${CAMINHO_RANKING}/${fc}`).remove();
+            await database.ref(`${CAMINHO_RANKING}/${fc}`).set({ _reset: true });
             let l = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
             localStorage.setItem(STORAGE_RANKING, JSON.stringify(l.filter(x => !(x.modalidade === mod && x.turma === turma && normalizarNome(x.nome) === normalizarNome(nome)))));
             const ps = await obterPartidas();
             const rest = ps.filter(p => !(p.modalidade === mod && p.turma === turma && normalizarNome(p.nome) === normalizarNome(nome)));
-            for (const p of ps) { if (!rest.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).remove(); }
+            for (const p of ps) { if (!rest.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).set({ _reset: true }); }
             localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(rest));
             await removerCopaV2Aluno(reg.nome, reg.turma);
             try {
                 localStorage.removeItem(chaveLocalMapa(reg.nome, reg.turma, mod));
                 localStorage.removeItem(chaveLocalCores(reg.nome, reg.turma, mod));
             } catch(e) {}
-            // v10.9.0 - Remove do resumo também
             const alunoKey = chaveAlbum(reg.nome, reg.turma);
             if (alunoKey) {
-                try { await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).remove(); } catch(e) {}
-                try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}/${alunoKey}`).remove(); } catch(e) {}
-                try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}/${alunoKey}`).remove(); } catch(e) {}
-                try { await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}/${alunoKey}`).remove(); } catch(e) {}
+                try { await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
+                try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
+                try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
+                try { await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
             }
             await carregarListaAlunos();
             renderizarRanking();
@@ -20183,7 +20178,7 @@ if (containerProg) {
                 const regs = alunosData.filter(a => a.modalidade === mod && a.turma === turma && normalizarNome(a.nome) === normalizarNome(nomeAntigo));
                 for (const reg of regs) {
                     const fc = criarChaveResultado({ modalidade: mod, turma, nome: nomeAntigo });
-                    await database.ref(`${CAMINHO_RANKING}/${fc}`).remove();
+                    await database.ref(`${CAMINHO_RANKING}/${fc}`).set({ _reset: true });
                     const nr = { ...reg, nome: nomeNovo };
                     const nc = criarChaveResultado(nr);
                     await database.ref(`${CAMINHO_RANKING}/${nc}`).set(nr);
@@ -20219,7 +20214,7 @@ if (containerProg) {
         if (!exigirProfessorAutenticado()) return;
         if (!confirm(`Desvincular ${nome} (Turma ${turma})?`)) return;
         const c = chaveVinculo(nome, turma);
-        await database.ref(`${CAMINHO_VINCULOS}/${c}`).remove();
+        await database.ref(`${CAMINHO_VINCULOS}/${c}`).set({ _reset: true });
         notificar(`Vínculo de ${nome} removido.`, "sucesso");
         await carregarListaAlunos();
     }
