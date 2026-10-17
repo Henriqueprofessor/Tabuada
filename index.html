@@ -21199,6 +21199,22 @@ if (containerProg) {
     // v10.7.2 · O botão grande de explicação saiu do rodapé e virou um
     // ícone circular compacto "?" ao lado do título do card, liberando
     // espaço vertical. Usa .btn-como-funciona-inline (bloco [02.81]).
+    // v10.7.3c · OTIMIZAÇÃO DE LCP (item B do pacote A+B):
+    //   1. O card "Minhas Posições" agora é renderizado IMEDIATAMENTE
+    //      após as leituras paralelas iniciais, SEM esperar as contagens
+    //      de pendência (que eram 3 chamadas SEQUENCIAIS ao Firebase).
+    //   2. As contagens de pendência rodam em Promise.all (paralelo)
+    //      e são injetadas DEPOIS, apenas no slot do atalho do rodapé —
+    //      sem re-renderizar o card inteiro.
+    //   3. Um placeholder cinza ocupa o slot do atalho enquanto as
+    //      pendências chegam, evitando CLS quando o botão real aparecer.
+    //   4. Um token incremental evita que renderizações concorrentes
+    //      apliquem um atalho obsoleto em cima de um card novo.
+    //   Efeito esperado (Lighthouse, 4G lenta, celular modesto):
+    //   LCP ~2,03s → ~1,5–1,7s. Nenhuma mudança visual perceptível no
+    //   card real; o atalho do rodapé entra suavemente.
+
+    let _homeModalidadesToken = 0;
 
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
@@ -21214,9 +21230,6 @@ if (containerProg) {
             : "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
 
         let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
-        let pendentesTotais = 0;
-        let modComMaisPend = null;
-        let pendentesDaMais = 0;
 
         if (nome && turma) {
             try {
@@ -21251,21 +21264,6 @@ if (containerProg) {
                 dadosPorMod["2-5"]  = montar("2-5",  r25);
                 dadosPorMod["6-9"]  = montar("6-9",  r69);
                 dadosPorMod["0-10"] = montar("0-10", r010);
-
-                // Conta pendências por modalidade para o atalho do rodapé
-                try {
-                    const pend = {};
-                    for (const m of Object.keys(MODALIDADES)) {
-                        const c = await contarPendentesTreino(nome, turma, m);
-                        pend[m] = c.pendentes || 0;
-                        pendentesTotais += pend[m];
-                    }
-                    const ordenado = Object.keys(pend).sort((a, b) => pend[b] - pend[a]);
-                    if (ordenado.length && pend[ordenado[0]] > 0) {
-                        modComMaisPend = ordenado[0];
-                        pendentesDaMais = pend[ordenado[0]];
-                    }
-                } catch(e) { console.warn("[Home/Modalidades] Falha ao contar pendências:", e); }
             } catch(e) {
                 console.warn("[Home/Modalidades] Falha ao montar dados:", e);
             }
@@ -21350,15 +21348,23 @@ if (containerProg) {
             </div>`;
         });
 
-        // ─── Atalho do rodapé — só aparece se o aluno tem pendências ───
-        let atalhoHtml = "";
-        if (modComMaisPend && pendentesDaMais > 0) {
-            const plural = pendentesDaMais === 1 ? "operação" : "operações";
-            const rotuloMod = rotulos[modComMaisPend] || modComMaisPend;
-            atalhoHtml = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">
-                🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →
-            </button>`;
-        }
+        // ─── v10.7.3c · Placeholder do slot do atalho enquanto as
+        //     pendências chegam em paralelo. Altura casa com o botão real
+        //     (.home-modalidades-atalho) para evitar CLS.
+        const placeholderAtalho = (nome && turma)
+            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="
+                    height: 44px;
+                    margin: 10px 0 0;
+                    background: linear-gradient(90deg,
+                        rgba(148,163,184,.06) 25%,
+                        rgba(148,163,184,.12) 50%,
+                        rgba(148,163,184,.06) 75%);
+                    background-size: 200% 100%;
+                    animation: skeleton-loading 1.5s infinite;
+                    border-radius: 10px;
+                    border: 1px dashed rgba(148,163,184,.18);
+                "></div>`
+            : "";
 
         ctn.innerHTML = `<div class="home-modalidades-card">
             <div class="home-modalidades-titulo">
@@ -21375,8 +21381,62 @@ if (containerProg) {
             <div class="home-modalidades-sub">${subtitulo}</div>
             <div class="home-modalidades-lista">${linhas}</div>
             <div class="home-modalidades-rodape">⚠️ Classificação provisória · Top 4 de cada modalidade avança para a Final</div>
-            ${atalhoHtml}
+            <div id="home-modalidades-atalho-slot">${placeholderAtalho}</div>
         </div>`;
+
+        // ─── v10.7.3c · Segundo estágio: contagens de pendência em
+        //     PARALELO. Não bloqueia o LCP, que já está pintado. Atualiza
+        //     apenas o slot do atalho — sem re-renderizar o card.
+        if (nome && turma) {
+            _carregarAtalhoModalidadesAsync(nome, turma, rotulos);
+        }
+    }
+
+    // ─── v10.7.3c · Carrega as pendências das 3 modalidades EM PARALELO
+    //     e injeta o atalho do rodapé no slot dedicado. Um token incremental
+    //     evita que renderizações concorrentes apliquem um atalho obsoleto
+    //     em cima de um card novo (ex: navegação rápida entre telas).
+    async function _carregarAtalhoModalidadesAsync(nome, turma, rotulos) {
+        const meuToken = ++_homeModalidadesToken;
+        try {
+            const [c25, c69, c010] = await Promise.all([
+                contarPendentesTreino(nome, turma, "2-5").catch(() => ({ pendentes: 0 })),
+                contarPendentesTreino(nome, turma, "6-9").catch(() => ({ pendentes: 0 })),
+                contarPendentesTreino(nome, turma, "0-10").catch(() => ({ pendentes: 0 }))
+            ]);
+
+            // Descarta este resultado se uma renderização mais nova já começou
+            if (meuToken !== _homeModalidadesToken) return;
+
+            const pend = {
+                "2-5": c25.pendentes || 0,
+                "6-9": c69.pendentes || 0,
+                "0-10": c010.pendentes || 0
+            };
+            const ordenado = Object.keys(pend).sort((a, b) => pend[b] - pend[a]);
+
+            const slot = document.getElementById("home-modalidades-atalho-slot");
+            if (!slot) return; // o card foi substituído por outro render — ignora
+
+            if (ordenado.length && pend[ordenado[0]] > 0) {
+                const modComMaisPend = ordenado[0];
+                const pendentesDaMais = pend[modComMaisPend];
+                const plural = pendentesDaMais === 1 ? "operação" : "operações";
+                const rotuloMod = rotulos[modComMaisPend] || modComMaisPend;
+                slot.innerHTML = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">
+                    🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →
+                </button>`;
+            } else {
+                // Sem pendências — limpa o placeholder para o card não
+                // carregar um bloco cinza vazio.
+                slot.innerHTML = "";
+            }
+        } catch(e) {
+            console.warn("[Home/Modalidades] Falha ao carregar pendências:", e);
+            if (meuToken !== _homeModalidadesToken) return;
+            const slot = document.getElementById("home-modalidades-atalho-slot");
+            if (slot) slot.innerHTML = "";
+        }
     }
 
     async function jogarModalidadeHome(mod) {
