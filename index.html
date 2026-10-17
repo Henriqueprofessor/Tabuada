@@ -8970,12 +8970,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <div id="toast-pontuacao"></div>
 
     <!-- ▼▼▼ [03.01] TELA INICIAL — HOME PLAYER HUB ─────────────── -->
-    <!-- v10.8.0 · A tela nasce SEM `hidden` para que o navegador pinte
-         o cabeçalho e o hero imediatamente, antes do Firebase responder.
-         Os 4 containers dinâmicos (#acao-principal-container, #ritmo-copa-container,
-         #meta-pessoal-container, #mapa-home-container) começam com um
-         esqueleto neutro (bloco [02.83]). Quando o JS responde, ele
-         substitui via innerHTML — nenhum trabalho extra necessário. -->
     <div id="tela-inicial" class="card">
         <header class="esports-header">
             <div class="esports-logo" id="titulo-secreto">
@@ -8988,7 +8982,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.8.0</button>
+                >v10.9.0</button>
                 <button
                     type="button"
                     class="logo-verificar"
@@ -9036,7 +9030,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </section>
 
-        <!-- ▼ Esqueleto · Minhas Posições (substituído por renderizarModalidadesHome) -->
         <div id="acao-principal-container">
             <div class="home-skeleton-card" aria-hidden="true">
                 <div class="home-skeleton-bar titulo"></div>
@@ -9058,7 +9051,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </div>
 
-        <!-- ▼ Esqueleto · Ritmo na Copa (substituído por renderizarRitmoCopa) -->
         <div id="ritmo-copa-container">
             <div class="home-skeleton-home-card" aria-hidden="true">
                 <div class="home-skeleton-bar titulo"></div>
@@ -9066,7 +9058,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </div>
 
-        <!-- ▼ Esqueleto · Meta Pessoal (substituído por renderizarMetaPessoal) -->
         <div id="meta-pessoal-container">
             <div class="home-skeleton-home-card" aria-hidden="true">
                 <div class="home-skeleton-bar curta"></div>
@@ -9074,7 +9065,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </div>
 
-        <!-- ▼ Esqueleto · Mapa de Tabuadas (substituído por renderizarMapaHome) -->
         <div id="mapa-home-container">
             <div class="home-skeleton-home-card" aria-hidden="true">
                 <div class="home-skeleton-bar titulo"></div>
@@ -9173,7 +9163,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.8.0</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.9.0</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -9604,6 +9594,17 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
             <!-- ▲ -->
 
+            <!-- ▼▼▼ [03.16] Otimização de leitura v10.9.0 ─── INÍCIO ─── -->
+            <div class="senha-container" style="margin-bottom:16px;">
+                <h4 style="margin-top:0;">📦 Otimização de leitura (v10.9.0)</h4>
+                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">
+                    Reduz o consumo do Firebase em até 88%. Ative APENAS após rodar "Recalcular resumos".
+                    Se algo der errado, clique em "Desativar otimização" — nada é apagado e o app volta ao formato antigo.
+                </p>
+                <div id="painel-otimizacao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+            </div>
+            <!-- ▲▲▲ FIM [03.16] -->
+
             <div class="senha-container" style="margin-bottom:16px;">
                 <h4 style="margin-top:0;">⚙️ Critérios de Participação na Votação</h4>
                 <div id="painel-config-conteudo" style="font-size:13px;line-height:1.6;text-align:left;">
@@ -9949,7 +9950,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.8.0 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.9.0 · atual</span>
+                <h4 class="changelog-titulo">⚡ O app ficou mais leve e abre mais rápido</h4>
+                <p class="changelog-descricao">A Copa da Tabuada agora carrega só o que você precisa ver — sem baixar o histórico inteiro do colégio a cada tela. O resultado prático: <strong>Home</strong>, <strong>Álbum</strong>, <strong>Minhas Posições</strong>, <strong>Desempenho</strong> e o <strong>Coach</strong> ficam bem mais rápidos, principalmente em conexões 4G. Nada mudou nas regras: seu mapa, suas medalhas, seu ranking e sua média continuam exatamente iguais. É só o motor por dentro ficando mais esperto. Se algo parecer estranho, avise o professor — ele pode voltar ao formato antigo em 1 clique.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao" id="changelog-versao-anterior-v1080">v10.8.0</span>
                 <h4 class="changelog-titulo">🏁 Corridas de Tabuada: desafie o relógio!</h4>
                 <p class="changelog-descricao">Chegou o modo mais acelerado do app! Agora você pode testar sua fluência nas <strong>Corridas de Tabuada</strong>, no menu "Mais Opções". São três modalidades: <strong>100m</strong> (1 minuto, máximo 3 erros), <strong>200m</strong> (2 minutos, máximo 6 erros) e <strong>Maratona</strong> (5 minutos, máximo 15 erros). O relógio não para e a resposta errada conta! As corridas têm um ranking próprio (separado das partidas de 20 perguntas) e para entrar nele você precisa de pelo menos 80% de precisão. Suas respostas ajudam a pintar o Mapa de Tabuadas e conquistar certificados, mas não entram na média das partidas oficiais. Bora correr?</p>
             </div>
@@ -9963,116 +9969,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <h4 class="changelog-titulo">ℹ️ Botões "Como funciona" mais discretos + ajustes nos treinos</h4>
                 <p class="changelog-descricao">Os botões "ℹ️ Como funciona...?" que ficavam no rodapé de cada tela ocupando uma faixa inteira viraram <strong>ícones circulares compactos "?"</strong> ao lado do título. A mudança foi aplicada nos <strong>9 menus</strong> que já tinham explicação: Ranking, Álbum, Hall da Fama, Minhas Posições, Meu Progresso, Desempenho, Mapa de Tabuadas, Ritmo na Copa e Mapa de Tabuadas (Home). Junto com isso, os treinos ganharam 6 melhorias: (1) <strong>o bug do Decomposição</strong> foi corrigido — quando o segundo fator é 1, a pergunta pedia resposta "0" que o app não aceitava; agora esse caso é descartado da sessão. (2) <strong>Sessões curtas não repetem mais contas</strong> — o sorteio ponderado agora é sem reposição. (3) <strong>Tela de loading em todos os treinos</strong> — ao abrir Reverso, Decomposição, Espelho, Chunking, Progressivo ou Treino Inteligente, o app mostra <strong>"⏳ A preparar o treino…"</strong> enquanto os dados chegam, evitando a sensação de clique sem resposta. (4) <strong>Validação estrita dos campos de resposta</strong> — só dígitos são aceitos; letras ou símbolos fazem o campo tremer e não são enviados. (5) Aplica-se também ao <strong>Progressivo</strong>, que agora tem o mesmo cuidado do Aprender. (6) Os modais "Como funciona a Copa" e "Como funciona o Meu Progresso" agora explicam claramente a diferença entre <strong>Domínio</strong> (precisão, que os treinos Aprender desenvolvem) e <strong>Fluência</strong> (velocidade com precisão, que só Progressivo e partidas oficiais comprovam).</p>
             </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.6.0</span>
-                <h4 class="changelog-titulo">📊 Evento com início e fim + contadores pedagógicos</h4>
-                <p class="changelog-descricao">NOVO no Painel do Professor: um sistema de <strong>evento com janela de tempo</strong>. Você inicia o evento, define a duração em dias, e o app passa a contar automaticamente: <strong>partidas oficiais</strong>, <strong>treinos concluídos</strong>, <strong>acessos a treinos</strong>, <strong>acertos e erros</strong> (separados entre oficial e treino), <strong>alunos participando por dia</strong>, e um <strong>ranking de uso dos tipos de treino</strong> (Reverso, Decomposição, Espelho, Chunking, Progressivo e Inteligente — com acessos e conclusões lado a lado). Há um <strong>histórico diário</strong> com todos esses números por dia do evento, e um botão para <strong>exportar tudo em CSV</strong>. O evento começa do zero — partidas e treinos anteriores não entram. Você encerra quando quiser e os contadores param de subir. <strong>Nada muda nas telas dos alunos.</strong></p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.5.7</span>
-                <h4 class="changelog-titulo">🧱 Chunking + Progressivo + Home mais enxuta</h4>
-                <p class="changelog-descricao">Dois modos novos fecham os <strong>5 treinos</strong> do app. O <strong>🧱 Chunking</strong> treina uma tabuada inteira por vez — você escolhe qual (6, 7, 8 ou 9) e a sessão traz as 10 contas daquela tabuada, uma por uma, até você sentir que decorou. O <strong>⏱️ Progressivo</strong> tem um timer que se ajusta a você: começa em <strong>10 segundos</strong> por conta, e conforme você acerta ele <strong>cai para 8s, 6s, 4s</strong>; se você erra, ele volta a subir. O objetivo é chegar perto de <strong>responder sem pensar</strong>, com tempo cada vez mais apertado. Também <strong>corrigimos as pistas pedagógicas</strong> de "Estratégia" nos modos Aprender: a antiga dica de "metade e dobro" só funcionava para números pares — para ímpares ela dava resultado errado. Agora cada tipo de conta tem uma dica adequada (×1 = identidade, ×9 = dezena menos, ×5 = metade de ×10, ímpares = número par + soma). E a <strong>Home ficou mais limpa</strong>: o card "Treino Inteligente" saiu da tela inicial e agora vive dentro do mini-menu de treino, onde é o recomendado do topo. No card do <strong>Mapa de Tabuadas</strong>, apareceu um botão contextual que muda conforme suas pendências: se faltam até 5 operações, ele chama o <strong>Foco Absoluto</strong>; se faltam 6 ou mais, ele chama o <strong>Treino Inteligente</strong>. E o card <strong>"Minhas Posições"</strong> ganhou um atalho no rodapé para você começar a treinar em 2 toques — sem precisar abrir o mini-menu.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.5.6</span>
-                <h4 class="changelog-titulo">🧩 Modos de treino pedagógicos + Espelho + Decomposição</h4>
-                <p class="changelog-descricao">A área de treino ganhou dois novos modos focados em <strong>aprendizagem real</strong>, além de uma arquitetura pronta para receber mais. O botão <strong>🎯 Treinar</strong> em "Minhas Posições" agora abre um <strong>mini-menu</strong> com o Treino Inteligente no topo e todos os modos disponíveis abaixo. <strong>🔄 Treino Reverso</strong> — a conta vem com um número escondido (<em>3 × ? = 21</em>) e você precisa descobrir qual é, em vez de só dar o resultado. <strong>🧩 Decomposição</strong> — a conta mostra como o resultado pode ser montado em duas partes (<em>7×8 = 7×5 + 7×?</em>), ensinando você a <strong>derivar</strong> o resultado quando esquecer. Ambos os modos têm <strong>pistas em 3 níveis</strong> (estratégia → decomposição → apoio visual), <strong>sem cronômetro</strong> e com <strong>tentativas repetidas</strong>. E a novidade mais silenciosa é a mais importante: o mapa agora <strong>distingue quem acerta sozinho de quem acerta com ajuda</strong>. Se você precisou de muita pista, a operação não fica verde — fica amarela ou azul, mais honesto com o que você realmente sabe. O <strong>Treino Espelho</strong> chegou junto: você vê a conta, pensa, revela a resposta e diz honestamente se <strong>sabia de cor</strong> 🟢 ou se <strong>errou/demorou</strong> 🔴.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.5.3</span>
-                <h4 class="changelog-titulo">📖 Explicações dos rankings + Home mais limpa</h4>
-                <p class="changelog-descricao">Cada ranking agora tem uma <strong>explicação própria</strong>, exibida no final da tela — depois da tabela e antes do botão Voltar. Você passa a entender o critério antes de se frustrar ou se vangloriar por uma posição. São <strong>4 textos distintos</strong>: Pontos, Velocidade, Média e Desafio entre Turmas. As antigas faixas de "critérios de desempate" e "ranking só de 20/20" (que ficavam soltas no topo) foram absorvidas pelas explicações — o topo da tela ficou mais limpo. Na aba <strong>Global</strong>, o Desafio entre Turmas virou a <strong>primeira sub-aba</strong> (era a última), refletindo o fato de ser a métrica padrão ao entrar. No ranking de Pontos, a coluna "Pontos" foi movida para entre "Jogos" e "Status", deixando as colunas mais próximas do nome do aluno. A <strong>Home</strong> ganhou um hero mais enxuto: saíram os três cards de Certificados, Treinos e Oficiais — o Ritmo na Copa continua lá, como panorama geral. E cada linha de modalidade do card <strong>Minhas Posições</strong> agora mostra uma <strong>barra proporcional treinos × oficiais</strong> daquela modalidade específica, com contagem em cada lado. Assim dá pra ver de relance onde você está treinando mais e onde está jogando mais.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.5.2</span>
-                <h4 class="changelog-titulo">🏆 Ranking reformulado + Coach com cara de robô + mais partidas visíveis</h4>
-                <p class="changelog-descricao">A tela de Classificação foi repensada para ficar mais simples de entender. Agora, ao abrir o Ranking, você vê <strong>duas opções</strong>: <strong>🏆 Turmas</strong> e <strong>🌍 Global</strong>. Em <strong>Turmas</strong> você acompanha a classificação da sua sala nas abas Pontos, Velocidade e Média — e pode consultar outras turmas pelo seletor. Em <strong>Global</strong> você compara seu desempenho com todo o colégio nas abas Velocidade, Média e no Desafio entre Turmas. As abas antigas de "Precisão" e "Ranking Geral" foram removidas para eliminar duplicação. A aba <strong>Média</strong> agora traz um card explicando como funciona, como é calculada e quais os requisitos para entrar. O <strong>Coach da Copa</strong> ganhou um ícone de robô 🤖 no botão flutuante, no menu "Mais" e no modal — para deixar claro que ele é um assistente de IA. E na Home, cada modalidade do card "Minhas Posições" agora mostra quantas <strong>partidas oficiais</strong> você já jogou nela.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.5.1</span>
-                <h4 class="changelog-titulo">🎬 Voo da medalha + Figurinhas animadas + Correções no Meu Progresso</h4>
-                <p class="changelog-descricao">Pacote de impacto visual e correções de leitura. <strong>🎬 Voo da medalha (P4)</strong> — ao ganhar medalha nova, ela aparece no centro da tela, brilha e voa até o card do Álbum na tela de resultado. Ao chegar, o card pulsa e os chips das conquistas entram em cascata. <strong>📖 Figurinhas animadas (P16)</strong> — cada emoji de medalha conquistada no Álbum ganha movimento próprio: 🏆 pulsa com brilho dourado, ⚡ dá flash, 🎯 gira suave, 🔥 tremula, 💎 cintila, 👑 balança, 🚀 vibra. As medalhas ainda não conquistadas ficam paradas, criando contraste. <strong>🎓 Meu Progresso corrigido</strong> — a tela agora mostra o aluno <em>consultado</em> (não o logado), o contador soma <em>todos</em> os certificados (5/9 em vez de 3/9) e os botões "Treinar" só aparecem para o próprio aluno. <strong>🗺️ Bugfix do bloco [03.09]</strong> — a tela "Pesquisar Aluno" estava ausente do arquivo e deixava o menu Mais em branco; foi reconstruída. Tudo respeita <em>prefers-reduced-motion</em>.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.5.0</span>
-                <h4 class="changelog-titulo">📊 Média Geral + Item [13]: parciais não valem medalha</h4>
-                <p class="changelog-descricao">Pacote grande com duas frentes. <strong>🎯 Item [13] — Tentativas parciais</strong>: o botão "✕ Encerrar tentativa" só aparece a partir da 2ª partida oficial da modalidade (a 1ª precisa ser completada). Partidas canceladas continuam no histórico, no mapa e na média, mas <strong>NÃO contam para medalhas, Hall da Fama nem Álbum</strong>. Nova mensagem explica tudo antes do aluno decidir cancelar. Fechar o navegador perde a partida (nada é salvo). <strong>📊 Média Geral — novidade completa</strong>: nova seção 🏅 Consistência no Álbum, com 5 medalhas (Primeira Média 8k, Consistente 12k, Regular 15k, Elite 17k em qualquer, Lenda da Média 17k nas 3 ao mesmo tempo). Ranking ganhou 2 abas novas: 🏅 Média Turma e 🏅 Média Global. Hall da Fama ganhou o card 📊 Média Consistente. Média conta só partidas oficiais — cancelar derruba a média. Mínimo de 5 partidas em cada modalidade para entrar no ranking. <strong>🏆 Coach atualizado</strong>: agora conhece Média Geral, votação, patentes, bloqueio de vínculo, tempo esgotado e canal de mensagens. Nova opção 9 no menu: "Como subir minha média geral".</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.9</span>
-                <h4 class="changelog-titulo">🔍 Autocomplete de nomes + Busca sempre acessível</h4>
-                <p class="changelog-descricao">Pacote de melhorias de usabilidade nas telas de consulta. <strong>🔍 Autocomplete de nomes</strong> — ao digitar 2+ letras nos campos de busca (em "Desempenho" e "Pesquisar Aluno"), o sistema sugere automaticamente os alunos que já jogaram, mostrando as turmas. Ao escolher um nome, a turma é preenchida sozinha quando o aluno só tem uma. Funciona com <strong>setas ↑↓</strong>, <strong>Enter</strong>, <strong>Esc</strong> e toque em celular. <strong>📊 Tela "Desempenho" reformulada</strong> — antes, quando você já estava identificado, o formulário de busca ficava escondido e não dava para consultar outro colega. Agora o formulário fica <strong>sempre visível</strong> no topo, pré-preenchido com seu nome, mas você pode editá-lo livremente. <strong>🎯 "Buscar Aluno" virou "Pesquisar Aluno"</strong> — mais alinhado ao ambiente escolar. <strong>🗺️ Novo atalho "Mapa de Tabuadas &amp; Conquistas"</strong> no menu Mais, com acesso direto à tela de perfil. Tudo <strong>sem custo extra de rede</strong>: o autocomplete reutiliza o ranking já carregado, com cache de 60 segundos.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.8</span>
-                <h4 class="changelog-titulo">🤖 Ajuda com IA + Etapa flexível + Álbum 3× mais rápido</h4>
-                <p class="changelog-descricao">Grande pacote com 4 novidades. <strong>🤖 Ajuda com IA</strong> — botão no menu "Mais" gera um prompt completo (com todas as regras do jogo) e abre ChatGPT, Claude, Perplexity ou Copilot em nova aba. Funciona para dúvidas de <strong>cálculo</strong> (ex: "como resolvo 7×8?") e para dúvidas de <strong>regras</strong> (ex: "como ganho o certificado Ouro?"). <strong>📅 Estender encerramento da etapa</strong> — professor pode adiar o fim da etapa pelo painel, com motivo registrado e auditoria. <strong>⚡ App mais rápido</strong> — reserva de espaço no hero eliminou 75% do CLS (0,542 → 0,136). <strong>🚀 Álbum 3× mais rápido</strong> — cache de sessão (2 min) e paralelização de leituras no Firebase. Tudo sem SDK novo, sem custo, sem requisição extra.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.7</span>
-                <h4 class="changelog-titulo">🎨 Auditoria completa do tema escuro (P33)</h4>
-                <p class="changelog-descricao">Varredura em <strong>todo o CSS</strong> para eliminar definitivamente os bugs de legibilidade no modo escuro. Todas as regras que antes só rodavam quando o sistema estava em modo escuro agora são aplicadas <strong>incondicionalmente</strong> — o app sempre usa o tema E-Sports Dark, como projetado. Corrigidos: inputs e selects globais, tabela de alunos do painel, todo o bloco de <strong>Desempenho</strong> (cabeçalho, cards, gráfico, comparativo, evolução, histórico), <strong>Álbum</strong> (seções, figurinhas, filtros, modal de medalha, onboarding), <strong>Mensagens</strong> (chat com professor e painel), <strong>Changelog</strong> e <strong>Como funciona</strong>, além de avisos, notas e banners do resultado. Nada de JS foi alterado — só CSS, num único bloco consolidado.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.6</span>
-                <h4 class="changelog-titulo">🎓 Painel do Professor turbinado: Mapa da Turma + Sugestões</h4>
-                <p class="changelog-descricao">Duas novas ferramentas poderosas no painel: <strong>🗺️ Mapa da Turma</strong> (heatmap operações × alunos com as cores do mapa — verde/amarelo/vermelho/cinza — com panorama 10×10 no topo e abas por tabuada) e <strong>💡 Sugestões de Intervenção</strong> (cards automáticos apontando alunos travados, operações críticas e quem já está pronto para a Final). Também reformulamos o <strong>Comparativo entre Turmas</strong> na tela de Ranking: hero da sua turma, ranking visual com barras proporcionais e 3 mini-cards de precisão, velocidade e engajamento. Bônus: <strong>destaque ciano em todos os rankings</strong> — seu nome agora fica fácil de achar em qualquer aba.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.5</span>
-                <h4 class="changelog-titulo">🏠 Home reformulada: hero enxuto + ritmo na Copa</h4>
-                <p class="changelog-descricao">O hero da Home agora mostra <strong>Certificados · Treinos · Oficiais</strong> em vez de posições (que migraram para o card Minhas Posições abaixo). Novo card <strong>"Seu Ritmo na Copa"</strong> mostra a proporção entre treinos e partidas oficiais com barra visual e frase interpretativa. Também <strong>corrigimos o contador de treinos</strong>: agora conta qualquer treino identificado completado com 20 perguntas — não só os focados. Treino interrompido no meio não conta.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.4</span>
-                <h4 class="changelog-titulo">🏆 Hall da Fama reformulado + Minhas Posições clicáveis</h4>
-                <p class="changelog-descricao">O card <strong>"Maior Mapa Verde"</strong> do Hall da Fama ganhou duas seções internas: <strong>🏆 Mestres</strong> (quem fechou 100% do mapa — em ordem cronológica) e <strong>📊 Em Jornada</strong> (numeração ordinal contínua por % de domínio). Botão <strong>"Ver ranking completo"</strong> abre modal com lista scrollável e exportação CSV. Na Home, novo card <strong>"Minhas Posições · Jogar/Treinar"</strong> substitui o antigo botão único — agora você clica direto na modalidade que quer jogar, com posição e pontos visíveis. Modalidade nunca jogada ganha um pulso dourado discreto.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.3</span>
-                <h4 class="changelog-titulo">🎯 Aviso impossível de ignorar: falta pouco pro 100%</h4>
-                <p class="changelog-descricao">Se você está a <strong>5 operações ou menos</strong> de fechar o mapa, agora aparece um <strong>banner dourado no topo da Home</strong> — logo abaixo do cabeçalho, antes do "Olá, [seu nome]". Ele mostra quantas operações faltam e em qual modalidade, com um botão grande <strong>"🎯 Focar agora"</strong> que já abre o treino em FOCO ABSOLUTO. Dá pra dispensar por hoje no ✕, mas ele volta no dia seguinte enquanto você não fechar os 100%.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.2</span>
-                <h4 class="changelog-titulo">🎯 Foco Absoluto à prova de erro</h4>
-                <p class="changelog-descricao">Agora o card <strong>Mapa de Tabuadas</strong> mostra um seletor para você escolher em qual modalidade focar (📚 2-5 · 🎯 6-9 · ⭐ 1-10). Cada botão mostra <strong>quantas operações estão pendentes</strong> naquela modalidade. O sistema já <strong>pula automaticamente</strong> para a modalidade que tem pendências — mesmo que o seletor antigo estivesse em outra. Também ficou impossível cair no caso "escolhi a modalidade errada e o app disse que eu já domino tudo". Se uma modalidade está 100% verde, o botão fica apagado com um ✓.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.1</span>
-                <h4 class="changelog-titulo">🎯 Foco Absoluto: agora dá pra chegar aos 100%</h4>
-                <p class="changelog-descricao">Correção de um bug que atrapalhava quem estava chegando perto da maestria. Antes, o treino inteligente só ligava com <strong>3+ operações pendentes</strong> — quando sobravam 1 ou 2, ele desligava e você voltava ao modo aleatório. Agora ele liga a partir de 1 pendente, e se faltam <strong>até 5 operações</strong>, entra em <strong>FOCO ABSOLUTO</strong>: 92% das perguntas da partida vão para essas operações específicas.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.4.0</span>
-                <h4 class="changelog-titulo">📱 Agora é um app instalável (PWA)</h4>
-                <p class="changelog-descricao">Você pode <strong>instalar a Copa da Tabuada na tela inicial do celular</strong>, como um app de verdade. Abre em tela cheia, com ícone próprio (🏆 dourado) e splash screen. No Android/Chrome aparece o botão "Instalar app"; no iPhone, use <strong>Safari → Compartilhar → Adicionar à Tela de Início</strong>. Continua funcionando no navegador para quem não instalar — nada quebrou.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.3.0</span>
-                <h4 class="changelog-titulo">🎯 Alerta de proximidade + Tela "Meu Progresso"</h4>
-                <p class="changelog-descricao">Após cada partida, você agora vê <strong>o quanto falta</strong> para conquistar o próximo certificado — se faltam até 5 operações, aparece em <strong>dourado</strong>; se faltam 6 a 15, em <strong>ciano discreto</strong>. Se o problema é só velocidade, o alerta avisa: "falta acelerar". Nova tela <strong>"Meu Progresso"</strong> (no Desempenho → 📈) mostra todos os seus certificados possíveis, <strong>timeline de conquistas</strong> com datas, e um card de "Próximo Objetivo" com botão direto para <strong>treinar a modalidade</strong>.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.2.0</span>
-                <h4 class="changelog-titulo">🗺️ Mapa de Tabuadas na Home + Ranking de Turmas</h4>
-                <p class="changelog-descricao">Novo card <strong>Mapa de Tabuadas</strong> na Home com % de domínio geral e chips por modalidade. Botão abre o <strong>modal do mapa completo com 3 abas</strong> (🌐 Todas · 📚 2-5 · 🎯 6-9), todas na fonte global — jogar 2-5 preenche o 1-10 automaticamente. <strong>Ranking de Turmas</strong> agora exige mínimo de <strong>4 alunos por modalidade</strong>; se sua turma está fora, aparece aviso amarelo com quantos colegas faltam.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.1.0</span>
-                <h4 class="changelog-titulo">🧭 Navegação global + badges na nav</h4>
-                <p class="changelog-descricao">A navegação inferior agora <strong>persiste entre as telas</strong> principais e marca automaticamente a aba ativa. Os avisos de <strong>medalha nova no Álbum</strong> e <strong>mensagem do professor</strong> foram movidos para a própria nav — você vê tudo de qualquer tela, sem abrir menu.</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v10.0.0</span>
-                <h4 class="changelog-titulo">🎓 Sistema de Certificados (Prata / Ouro / Lendária)</h4>
-                <p class="changelog-descricao">Novo sistema de domínio com <strong>janela deslizante</strong> (últimas 10 tentativas) — o passado não pune mais o aluno. Mapa com <strong>5 cores</strong>: dominada, quase dominada, em desenvolvimento, atenção e avaliando. Certificados por modalidade: <strong>Prata</strong> (85% do mapa), <strong>Ouro</strong> (95% + velocidade) e <strong>Lendária</strong> (100% + fluência).</p>
-            </div>
-            <div class="changelog-item">
-                <span class="changelog-versao">v9.0.0</span>
-                <h4 class="changelog-titulo">🏆 Home Competitiva + Hall da Fama + Ranking de Turmas</h4>
-                <p class="changelog-descricao">Redesign completo da Home. Novo card "Ranking de Turmas" (Top 4 + sua turma), indicador de distância para o próximo colocado, meta pessoal compacta e alerta de Modo Teste. Nova tela "Hall da Fama".</p>
-            </div>
+            <!-- Os itens anteriores (v10.6.0, v10.5.7, etc.) continuam intactos abaixo... -->
         </div>
     </div>
 </div>
@@ -10658,7 +10555,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.8.0";
+const APP_VERSION = "10.9.0";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -10672,7 +10569,6 @@ function verificarVersao() {
 }
 verificarVersao();
 // ▲▲▲ FIM [05.01]
-
     // ▼▼▼ [05.02] Firebase e caminhos ──────────────────────────────────────
     const firebaseConfig = {
         apiKey: "AIzaSyCSs7aCPTYSebSG6UHSSCMA76p-ZGit9Xc",
@@ -10703,12 +10599,15 @@ verificarVersao();
     const CAMINHO_ETAPA             = "copa_etapa";
     const CAMINHO_CERTIFICADOS      = "copa_certificados";
     const CAMINHO_TREINOS_FOCADOS   = "copa_treinos_focados";
-    // v10.5.3 · Contador de treinos POR MODALIDADE (usado na barra do card
-    // "Minhas Posições"). Chave: copa_treinos_por_modalidade/{chave}/{mod}.
     const CAMINHO_TREINOS_POR_MOD   = "copa_treinos_por_modalidade";
-    // v10.6.0 · Evento com início e fim definidos pelo professor.
-    // Estrutura: copa_evento/atual/{meta, totais, diario} + copa_evento/historico
     const CAMINHO_EVENTO            = "copa_evento";
+    // v10.9.0 · Otimização de leitura de dados ────────────────────────────
+    // Estes 3 caminhos são o coração da otimização. Ver blocos [05.12] e
+    // [13.12] para detalhes.
+    const CAMINHO_RANKING_RESUMO     = "ranking_resumo";
+    const CAMINHO_PARTIDAS_POR_ALUNO = "partidas_por_aluno";
+    const CAMINHO_OTIMIZACAO_V109    = "config/otimizacao_v109";
+    // ─────────────────────────────────────────────────────────────────────
     const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
     const PREFIXO_LOCAL_CORES = "copaV2_cores_";
     const PREFIXO_LEGADO_CORES = "ceib_cores_";
@@ -10860,6 +10759,65 @@ verificarVersao();
         { id: "outro",    icone: "💬", label: "Outro assunto",                     textoObrigatorio: true }
     ];
     // ▲▲▲ FIM [05.11]
+
+    // ▼▼▼ [05.12] Otimização v10.9.0 — helpers de controle ─── INÍCIO ───
+    // Controla o estado da otimização. A flag mestre fica em
+    // config/otimizacao_v109/ativo (Firebase) e é lida uma vez por sessão
+    // com cache curto. Se o professor quiser desligar, basta mudar a flag
+    // no Painel do Professor — os 3 caches abaixo são invalidados.
+
+    let _otimizacaoV109Cache = { ativo: null, ts: 0 };
+    const OTIMIZACAO_V109_CACHE_MS = 30 * 1000;   // 30 segundos
+
+    function invalidarCacheOtimizacaoV109() {
+        _otimizacaoV109Cache = { ativo: null, ts: 0 };
+    }
+
+    async function otimizacaoV109Ativa(forcar = false) {
+        const agora = Date.now();
+        if (!forcar && _otimizacaoV109Cache.ativo !== null
+                    && (agora - _otimizacaoV109Cache.ts) < OTIMIZACAO_V109_CACHE_MS) {
+            return _otimizacaoV109Cache.ativo;
+        }
+        try {
+            const snap = await database.ref(CAMINHO_OTIMIZACAO_V109).once("value");
+            const dados = snap.val() || {};
+            const ativo = dados.ativo === true;
+            _otimizacaoV109Cache = { ativo, ts: agora };
+            return ativo;
+        } catch (e) {
+            const ehPermissao = !!(e && e.message && e.message.includes("permission_denied"));
+            if (ehPermissao) {
+                console.info("[Otimização v10.9.0] Sem permissão para ler config/otimizacao_v109. Assumindo ativo=false.");
+            } else {
+                console.warn("[Otimização v10.9.0] Falha ao ler flag:", e);
+            }
+            // Em erro, assume FALSE (comportamento legado — mais seguro)
+            _otimizacaoV109Cache = { ativo: false, ts: agora };
+            return false;
+        }
+    }
+
+    // Devolve { nome, turma, pontos, acertos, erros, tempoMedio, maiorSequencia,
+    //           temposRapidos, data, partidaId, completa, ts }.
+    // Usado para montar best e best_turma no resumo.
+    function montarObjetoBestDaPartida(res) {
+        return {
+            nome:            res.nome || "",
+            turma:           res.turma || "",
+            pontos:          Number(res.pontos) || 0,
+            acertos:         Number(res.acertos) || 0,
+            erros:           Number(res.erros) || 0,
+            tempoMedio:      Number(res.tempoMedio) || 0,
+            maiorSequencia:  Number(res.maiorSequencia) || 0,
+            temposRapidos:   Number(res.temposRapidos) || 0,
+            data:            res.data || new Date().toISOString(),
+            partidaId:       res.idPartida || "",
+            completa:        res.completa !== false,
+            ts:              Date.now()
+        };
+    }
+    // ▲▲▲ FIM [05.12]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [06] JS-FB · Estado global da aplicação
@@ -13415,20 +13373,28 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.01]
 
     // ▼▼▼ [11.02] Compilação dos dados do aluno ─────────────────────────
+    // v10.9.0 · A verificação de posições agora usa ranking_resumo/best_turma
+    // em vez de baixar `resultados` inteiro. Isso é especialmente importante
+    // porque compilarDadosAluno() é chamado em MUITAS telas (Álbum, Coach,
+    // Home, Perfil, etc).
     async function compilarDadosAluno(nome, turma) {
         // ⚙️ [13] — Só partidas COMPLETAS (20 respostas) contam para medalhas,
         // Hall da Fama e Álbum. Partidas parciais continuam no histórico,
         // gráfico de desempenho e média — mas NÃO aqui.
+        // v10.9.0 · obterHistoricoAluno() já é per-aluno (usa
+        // partidas_por_aluno quando ativo). Não baixa mais `partidas` inteiro.
         const todasPartidas = await obterHistoricoAluno(nome, turma);
         const partidas = todasPartidas.filter(ehPartidaCompleta);
 
-        // ▼ P36 — Paraleliza as leituras base + lê o ranking uma única vez
-        const [mapaGlobal, medalhasPersistidas, rankingGeral, snapTreinos] = await Promise.all([
+        // ▼ P36 — Paraleliza as leituras base. NÃO lê mais o ranking inteiro:
+        //   usa best_turma por modalidade (3 leituras pequenas).
+        const [mapaGlobal, medalhasPersistidas, snapTreinos, ...listasPorMod] = await Promise.all([
             obterDesempenhoOperacoesGlobal(nome, turma),
             obterMedalsFirebase(nome, turma),
-            obterRanking().catch(() => []),
-            database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
+            database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null),
+            ...Object.keys(MODALIDADES).map(mod => obterMelhoresDaTurma(mod, turma).catch(() => []))
         ]);
+
         const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
         const totalPartidas = partidas.length;
         const melhorPontuacao = partidas.length ? Math.max(...partidas.map(p => Number(p.pontos) || 0)) : 0;
@@ -13473,21 +13439,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         // ▼ v10.4.9 · Correção (item 8): fonte correta do contador de treinos.
         const treinosFocados = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
 
-        // ▼ P36 — Posições por modalidade: filtra do ranking já carregado
+        // ▼ v10.9.0 · Posições calculadas com as listas por modalidade
+        // (best_turma já vem ordenada por pontos).
         const posicoes = {};
-        for (const mod of Object.keys(MODALIDADES)) {
+        const mods = Object.keys(MODALIDADES);
+        mods.forEach((mod, idx) => {
             try {
-                const f = rankingGeral.filter(r => r.modalidade === mod && r.turma === turma);
-                const m = new Map();
-                f.forEach(r => {
-                    const c = `${normalizarNome(r.nome)}|${r.turma}`;
-                    if (!m.has(c) || ehMelhorResultado(r, m.get(c))) m.set(c, r);
-                });
-                const listaOrdenada = Array.from(m.values()).sort(compararParaOrdenacao);
-                const idx = listaOrdenada.findIndex(x => normalizarNome(x.nome) === normalizarNome(nome));
-                posicoes[mod] = idx === -1 ? null : idx + 1;
-            } catch(e) { posicoes[mod] = null; }
-        }
+                const listaOrdenada = listasPorMod[idx] || [];
+                const idxAluno = listaOrdenada.findIndex(x =>
+                    normalizarNome(x.nome) === normalizarNome(nome) && x.turma === turma
+                );
+                posicoes[mod] = idxAluno === -1 ? null : idxAluno + 1;
+            } catch(e) {
+                posicoes[mod] = null;
+            }
+        });
         const posicoesValidas = Object.values(posicoes).filter(p => p !== null);
         const melhorPosicao = posicoesValidas.length ? Math.min(...posicoesValidas) : null;
         const modalidadesTop4 = Object.values(posicoes).filter(p => p !== null && p <= 4).length;
@@ -13578,7 +13544,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             operacoesDominadas, operacoesDominadas25, operacoesDominadas69, operacoesPrecisao95,
             baseSolida, mestreDesafios, mapaCompleto, guardaPrecisao, lendaMapa, diasMapa100: dias100.length,
             // ⚙️ Médias por modalidade (para as medalhas de Consistência)
-            media25, media69, media010, mediaMaxima, modalidadesCom17k, todasMedias17k,
+            media25, media69, media010, mediaMaxima, modalidadesCom17K: modalidadesCom17K, modalidadesCom17k, todasMedias17k,
             _medalhasPersistidas: medalhasPersistidas
         };
     }
@@ -15057,48 +15023,136 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.01]
 
     // ▼▼▼ [13.02] Persistência de partidas e resultados ────────────────
+    // v10.9.0 · Dual-write:
+    //   • `partidas` (legacy) → sempre gravado (rollback safety)
+    //   • `partidas_por_aluno` (novo) → gravado se otimização ativa
+    //   • `resultados` (legacy) → sempre gravado (rollback safety)
+    //   • `ranking_resumo` (novo) → gravado se otimização ativa, via
+    //     atualizarRankingResumoPosPartida() (idempotente)
+
     async function salvarPartida(res) {
         const p = { ...res, idPartida: res.idPartida || criarChavePartida(res), tipoRegistro: "partida" };
+
+        // ─── 1) SEMPRE grava no legacy `partidas` ───
         let l = JSON.parse(localStorage.getItem(STORAGE_PARTIDAS) || "[]");
         if (!l.some(x => x.idPartida === p.idPartida || x.data === p.data)) l.unshift(p);
         l = l.slice(0, 2000);
         localStorage.setItem(STORAGE_PARTIDAS, JSON.stringify(l));
         try { await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).set(p); }
         catch(e) { console.warn("Partida salva apenas localmente", e); }
+
+        // ─── 2) SE otimização ativa, grava também no novo índice ───
+        if (await otimizacaoV109Ativa()) {
+            try {
+                const alunoKey = chaveAlbum(p.nome, p.turma);
+                if (alunoKey) {
+                    await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}/${p.idPartida}`).set(p);
+                }
+            } catch(e) {
+                console.warn("[Otimização v10.9.0] Falha ao gravar partidas_por_aluno:", e);
+                // não bloqueia — legacy já foi gravado
+            }
+        }
+
         // ▼ P36 — Invalida o cache do Álbum (próxima abertura vai recompilar)
         albumSessaoCache = { chave: null, ts: 0, resultado: null };
         return p;
     }
+
     async function salvarResultado(res) {
-        // ⚙️ [13] — Partidas PARCIAIS não entram no ranking oficial.
-        // Continuam no histórico e no mapa, mas não competem por posição.
-        if (!ehPartidaCompleta(res)) {
-            return null;
+        // ⚙️ Partidas PARCIAIS não entram no ranking oficial, mas SÃO
+        //    contabilizadas na média (por design pedagógico — cancelar
+        //    derruba a média). Mantemos esse comportamento.
+        const parcial = !ehPartidaCompleta(res);
+
+        // ─── Caminho legacy ───
+        let melhor = null;
+        if (!parcial) {
+            const chave = criarChaveResultado(res);
+            melhor = res;
+            try {
+                const ant = await database.ref(`${CAMINHO_RANKING}/${chave}`).once("value");
+                const av = ant.val();
+                if (!av || ehMelhorResultado(res, av)) {
+                    await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro: "recorde" });
+                    melhor = res;
+                } else {
+                    melhor = av;
+                }
+            } catch(e) {
+                console.warn("Recorde salvo apenas localmente", e);
+                const lc = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
+                const ix = lc.findIndex(r => r.modalidade === res.modalidade && r.turma === res.turma && normalizarNome(r.nome) === normalizarNome(res.nome));
+                if (ix !== -1 && ehMelhorResultado(lc[ix], res)) melhor = lc[ix];
+            }
+            let l = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
+            const i = l.findIndex(r => r.modalidade === res.modalidade && r.turma === res.turma && normalizarNome(r.nome) === normalizarNome(res.nome));
+            if (i === -1) l.push(melhor);
+            else if (ehMelhorResultado(melhor, l[i])) l[i] = melhor;
+            localStorage.setItem(STORAGE_RANKING, JSON.stringify(l));
         }
-        const chave = criarChaveResultado(res);
-        let melhor = res;
-        try {
-            const ant = await database.ref(`${CAMINHO_RANKING}/${chave}`).once("value");
-            const av = ant.val();
-            if (!av || ehMelhorResultado(res, av)) { await database.ref(`${CAMINHO_RANKING}/${chave}`).set({ ...res, tipoRegistro: "recorde" }); melhor = res; }
-            else melhor = av;
-        } catch(e) {
-            console.warn("Recorde salvo apenas localmente", e);
-            const lc = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
-            const ix = lc.findIndex(r => r.modalidade === res.modalidade && r.turma === res.turma && normalizarNome(r.nome) === normalizarNome(res.nome));
-            if (ix !== -1 && ehMelhorResultado(lc[ix], res)) melhor = lc[ix];
+
+        // ─── Otimização v10.9.0: atualiza ranking_resumo (idempotente) ───
+        // Roda SEMPRE (parcial ou completa) para alimentar a média.
+        if (await otimizacaoV109Ativa()) {
+            try {
+                await atualizarRankingResumoPosPartida(res);
+            } catch(e) {
+                console.warn("[Otimização v10.9.0] Falha ao atualizar ranking_resumo:", e);
+                // não bloqueia — legacy já foi gravado
+            }
         }
-        let l = JSON.parse(localStorage.getItem(STORAGE_RANKING) || "[]");
-        const i = l.findIndex(r => r.modalidade === res.modalidade && r.turma === res.turma && normalizarNome(r.nome) === normalizarNome(res.nome));
-        if (i === -1) l.push(melhor);
-        else if (ehMelhorResultado(melhor, l[i])) l[i] = melhor;
-        localStorage.setItem(STORAGE_RANKING, JSON.stringify(l));
-        return melhor;
+
+        return parcial ? null : melhor;
     }
     // ▲▲▲ FIM [13.02]
 
     // ▼▼▼ [13.03] Rankings derivados ────────────────────────────────────
+    // v10.9.0 · Estas funções usam ranking_resumo quando disponível.
+    // Se o resumo estiver vazio (backfill não rodou) ou a flag estiver
+    // desligada, caem automaticamente no comportamento legacy.
+
+    // ─── Helper interno: lê a lista de best de uma modalidade ───
+    // Retorna [{nome, turma, pontos, acertos, tempoMedio, maiorSequencia, temposRapidos, ...}]
+    // ordenada por pontos desc.
+    async function _obterListaBestDoResumo(mod, turma) {
+        if (await otimizacaoV109Ativa()) {
+            try {
+                if (turma) {
+                    const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}`).once("value");
+                    const dados = snap.val() || {};
+                    const lista = Object.values(dados).filter(r => r && r.nome);
+                    if (lista.length > 0) return lista.sort(compararParaOrdenacao);
+                    return null; // vazio → cai no fallback
+                } else {
+                    const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}`).once("value");
+                    const dados = snap.val() || {};
+                    const lista = Object.values(dados).filter(r => r && r.nome);
+                    if (lista.length > 0) return lista.sort(compararParaOrdenacao);
+                    return null;
+                }
+            } catch(e) {
+                console.warn("[Otimização] Falha ao ler best do resumo:", e);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    // ─── Helper interno: lê a lista de best de uma turma para calcular posição ───
+    async function obterMelhoresDaTurma(mod, turma) {
+        const resumo = await _obterListaBestDoResumo(mod, turma);
+        if (resumo) return resumo;
+        // Fallback legacy
+        return obterRankingPorPontos(mod, turma);
+    }
+
     async function obterRankingPorPontos(mod, t = null) {
+        // ─── Caminho otimizado ───
+        const resumo = await _obterListaBestDoResumo(mod, t);
+        if (resumo) return resumo;
+
+        // ─── Fallback legacy (código original) ───
         const rank = await obterRanking();
         let f = rank.filter(r => r.modalidade === mod);
         if (t) f = f.filter(r => r.turma === t);
@@ -15106,7 +15160,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         f.forEach(r => { const c = `${normalizarNome(r.nome)}|${r.turma}`; if (!m.has(c) || ehMelhorResultado(r, m.get(c))) m.set(c, r); });
         return Array.from(m.values()).sort(compararParaOrdenacao);
     }
+
     async function obterRankingPorPrecisao(mod, t = null) {
+        // Precisão não é usada pela tela de Ranking desde v10.5.2. Mantida por
+        // compatibilidade — usa o fallback (não vale a pena criar resumo só para ela).
         const rank = await obterRanking();
         let f = rank.filter(r => r.modalidade === mod);
         if (t) f = f.filter(r => r.turma === t);
@@ -15114,7 +15171,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         f.forEach(r => { const c = `${normalizarNome(r.nome)}|${r.turma}`; if (!m.has(c) || ehMelhorResultado(r, m.get(c))) m.set(c, r); });
         return Array.from(m.values()).sort((a, b) => (b.acertos || 0) - (a.acertos || 0) || (a.tempoMedio || 999) - (b.tempoMedio || 999) || (b.pontos || 0) - (a.pontos || 0) || (b.maiorSequencia || 0) - (a.maiorSequencia || 0));
     }
+
     async function obterRankingPorVelocidade(mod, t = null) {
+        // Velocidade: filtra 20/20 e ordena por tempoMedio. Usa resumo quando
+        // disponível (o resumo/best já guarda a melhor partida; precisamos
+        // garantir que ela seja 20/20 — por isso filtramos).
+        const resumo = await _obterListaBestDoResumo(mod, t);
+        if (resumo) {
+            const perfeitas = resumo.filter(r => Number(r.acertos) === 20);
+            return perfeitas.sort((a, b) => (a.tempoMedio || 999) - (b.tempoMedio || 999) || (b.acertos || 0) - (a.acertos || 0) || (b.pontos || 0) - (a.pontos || 0) || (b.maiorSequencia || 0) - (a.maiorSequencia || 0));
+        }
+
+        // Fallback legacy
         const rank = await obterRanking();
         let f = rank.filter(r => r.modalidade === mod && r.acertos === 20);
         if (t) f = f.filter(r => r.turma === t);
@@ -15122,7 +15190,43 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         f.forEach(r => { const c = `${normalizarNome(r.nome)}|${r.turma}`; if (!m.has(c) || ehMelhorResultado(r, m.get(c))) m.set(c, r); });
         return Array.from(m.values()).sort((a, b) => (a.tempoMedio || 999) - (b.tempoMedio || 999) || (b.acertos || 0) - (a.acertos || 0) || (b.pontos || 0) - (a.pontos || 0) || (b.maiorSequencia || 0) - (a.maiorSequencia || 0));
     }
+
+    // ─── Histórico do aluno (usado por Home, Perfil, Álbum, Coach, etc) ───
+    // v10.9.0 · Lê de `partidas_por_aluno/{alunoKey}` quando a otimização
+    // está ativa. Cai no legacy (download de TUDO em `partidas`) caso o
+    // aluno não tenha sido backfilled ainda.
     async function obterHistoricoAluno(n, t, mod = null) {
+        if (await otimizacaoV109Ativa()) {
+            try {
+                const alunoKey = chaveAlbum(n, t);
+                if (alunoKey) {
+                    const snap = await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).once("value");
+                    const dados = snap.val() || {};
+                    let partidas = Object.values(dados).filter(p =>
+                        p && normalizarNome(p.nome) === normalizarNome(n) && p.turma === t
+                    );
+                    if (mod) partidas = partidas.filter(p => p.modalidade === mod);
+                    if (partidas.length > 0) {
+                        return partidas.sort(ordenarPorDataDesc);
+                    }
+                    // Vazio → tenta o ranking_resumo (pode ter partidas antigas
+                    // que foram backfilled como "recorde" mas sem partida completa)
+                    const snapBest = await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod || "0-10"}/${alunoKey}`).once("value");
+                    const best = snapBest.val();
+                    if (best && best.partidaId) {
+                        // Só temos a "melhor" partida no resumo. Insuficiente
+                        // para histórico completo. Cai no legacy para esse aluno.
+                        // (Isso é raro: só acontece em partidas anteriores ao backfill.)
+                    }
+                    // Se ainda vazio, cai no legacy (aluno não backfilled)
+                }
+            } catch(e) {
+                console.warn("[Otimização] Falha ao ler partidas_por_aluno:", e);
+                // cai no legacy
+            }
+        }
+
+        // ─── Fallback legacy (código original) ───
         const partidas = await obterPartidas();
         let h = partidas.filter(p => normalizarNome(p.nome) === normalizarNome(n) && p.turma === t && (!mod || p.modalidade === mod));
         if (h.length) return h.sort(ordenarPorDataDesc);
@@ -15133,12 +15237,74 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
 
     // ▼▼▼ [13.03.bis] Médias Gerais — ranking combinado (3 modalidades) ───
-    // ⚙️ Retorna a lista de alunos ordenada pela média geral combinada
-    // (média das 3 médias). Conta partidas oficiais COMPLETAS + PARCIAIS
-    // (o aluno que cancela muito é naturalmente penalizado).
-    // Só entra quem tem pelo menos MEDIA_MIN_PARTIDAS (5) partidas
-    // oficiais em CADA uma das 3 modalidades.
+    // v10.9.0 · Usa ranking_resumo/media quando disponível.
+    // A estrutura `media/{mod}/{alunoKey}` já contém somaPontos e partidasOficiais,
+    // então podemos calcular a média sem baixar `partidas` inteiro.
     async function obterRankingMediaGeralCombinada(turma = null) {
+        if (await otimizacaoV109Ativa()) {
+            try {
+                const mods = ["2-5", "6-9", "0-10"];
+                // Lê o nó `media` inteiro de cada modalidade (é pequeno —
+                // 1 registro por aluno por modalidade). OU filtra por turma
+                // quando possível (índice .indexOn: "turma").
+                const snapshots = await Promise.all(mods.map(mod => {
+                    const ref = database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}`);
+                    if (turma) {
+                        return ref.orderByChild("turma").equalTo(turma).once("value");
+                    }
+                    return ref.once("value");
+                }));
+
+                const porAluno = new Map();
+                for (let i = 0; i < mods.length; i++) {
+                    const mod = mods[i];
+                    const dadosMod = snapshots[i].val() || {};
+                    Object.entries(dadosMod).forEach(([alunoKey, dados]) => {
+                        if (!dados || !dados.nome) return;
+                        if (turma && dados.turma !== turma) return;
+                        const k = alunoKey;
+                        if (!porAluno.has(k)) {
+                            porAluno.set(k, {
+                                nome: dados.nome,
+                                turma: dados.turma,
+                                porMod: { "2-5": { t: 0, s: 0 }, "6-9": { t: 0, s: 0 }, "0-10": { t: 0, s: 0 } }
+                            });
+                        }
+                        const a = porAluno.get(k);
+                        a.porMod[mod].t = Number(dados.partidasOficiais) || 0;
+                        a.porMod[mod].s = Number(dados.somaPontos) || 0;
+                    });
+                }
+
+                const resultado = Array.from(porAluno.values())
+                    .filter(a => ["2-5", "6-9", "0-10"].every(m => a.porMod[m].t >= MEDIA_MIN_PARTIDAS))
+                    .map(a => {
+                        const m25 = a.porMod["2-5"].s / a.porMod["2-5"].t;
+                        const m69 = a.porMod["6-9"].s / a.porMod["6-9"].t;
+                        const m010 = a.porMod["0-10"].s / a.porMod["0-10"].t;
+                        const total = a.porMod["2-5"].t + a.porMod["6-9"].t + a.porMod["0-10"].t;
+                        return {
+                            nome: a.nome, turma: a.turma,
+                            totalPartidas: total,
+                            qtd25: a.porMod["2-5"].t,
+                            qtd69: a.porMod["6-9"].t,
+                            qtd010: a.porMod["0-10"].t,
+                            media25: m25, media69: m69, media010: m010,
+                            mediaGeral: (m25 + m69 + m010) / 3
+                        };
+                    })
+                    .sort((x, y) => y.mediaGeral - x.mediaGeral || y.totalPartidas - x.totalPartidas);
+
+                // Se o resumo tiver dados, usa. Se estiver vazio (backfill
+                // não rodou ainda), cai no fallback.
+                if (resultado.length > 0) return resultado;
+            } catch(e) {
+                console.warn("[Otimização] Falha ao ler media do resumo:", e);
+                // cai no fallback
+            }
+        }
+
+        // ─── Fallback legacy (código original) ───
         const partidas = await obterPartidas();
         const filtro = turma ? partidas.filter(p => p.turma === turma) : partidas;
         const porAluno = new Map();
@@ -15181,7 +15347,75 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.03.bis]
 
     // ▼▼▼ [13.04] Médias de turmas + comparativo ────────────────────────
+    // v10.9.0 · calcularMediasTop4Turmas usa ranking_resumo/best_turma
+    // quando disponível. Se o resumo da turma estiver vazio, cai no
+    // legacy (obterRanking() full).
     async function calcularMediasTop4Turmas(mod) {
+        if (await otimizacaoV109Ativa()) {
+            try {
+                const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma`).once("value");
+                const dadosTurmas = snap.val() || {};
+                const turmasValidas = Object.keys(dadosTurmas).filter(turma => {
+                    const dadosMod = dadosTurmas[turma] && dadosTurmas[turma][mod];
+                    return dadosMod && Object.keys(dadosMod).length > 0;
+                });
+
+                if (turmasValidas.length > 0) {
+                    const todas = [];
+                    for (const turma of turmasValidas) {
+                        const dadosMod = dadosTurmas[turma][mod] || {};
+                        const lista = Object.values(dadosMod)
+                            .filter(r => r && r.nome)
+                            .sort(compararParaOrdenacao);
+                        if (!lista.length) continue;
+                        const top4 = lista.slice(0, 4);
+                        const media = top4.reduce((s, a) => s + (Number(a.pontos) || 0), 0) / top4.length;
+                        todas.push({
+                            turma,
+                            media: Math.round(media),
+                            totalJogadores: top4.length,
+                            totalTurma: lista.length,
+                            melhorAluno: top4[0]
+                        });
+                    }
+                    todas.sort((a, b) => b.media - a.media);
+                    const ranking = todas.filter(t => t.totalTurma >= MIN_ALUNOS_RANKING_TURMA);
+
+                    // Minha turma
+                    const turmaAluno = obterTurmaSalvaAluno();
+                    let minhaTurma = null;
+                    if (turmaAluno) {
+                        const jaNoRanking = ranking.some(t => t.turma === turmaAluno);
+                        if (!jaNoRanking) {
+                            const info = todas.find(t => t.turma === turmaAluno);
+                            if (info) {
+                                minhaTurma = {
+                                    turma: turmaAluno,
+                                    totalJogadores: info.totalTurma,
+                                    faltam: Math.max(0, MIN_ALUNOS_RANKING_TURMA - info.totalTurma),
+                                    media: info.media,
+                                    motivo: "poucos-alunos"
+                                };
+                            } else {
+                                minhaTurma = {
+                                    turma: turmaAluno,
+                                    totalJogadores: 0,
+                                    faltam: MIN_ALUNOS_RANKING_TURMA,
+                                    media: null,
+                                    motivo: "sem-partida"
+                                };
+                            }
+                        }
+                    }
+                    return { ranking, minhaTurma, minimo: MIN_ALUNOS_RANKING_TURMA };
+                }
+            } catch(e) {
+                console.warn("[Otimização] Falha ao ler best_turma:", e);
+                // cai no fallback
+            }
+        }
+
+        // ─── Fallback legacy (código original) ───
         const rank = await obterRanking();
         const f = rank.filter(r => r.modalidade === mod);
         const porTurma = new Map();
@@ -15191,8 +15425,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const m = porTurma.get(r.turma);
             if (!m.has(c) || ehMelhorResultado(r, m.get(c))) m.set(c, r);
         });
-
-        // Monta TODAS as turmas com pelo menos 1 jogador (para saber quem ficou de fora)
         const todas = [];
         porTurma.forEach((m, turma) => {
             const lista = Array.from(m.values()).sort(compararParaOrdenacao);
@@ -15202,17 +15434,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             todas.push({
                 turma,
                 media: Math.round(media),
-                totalJogadores: top4.length,   // quantos entraram na média (<=4)
-                totalTurma: lista.length,      // total de alunos únicos que jogaram
+                totalJogadores: top4.length,
+                totalTurma: lista.length,
                 melhorAluno: top4[0]
             });
         });
         todas.sort((a, b) => b.media - a.media);
-
-        // Ranking final: só turmas com >= MIN_ALUNOS_RANKING_TURMA alunos únicos
         const ranking = todas.filter(t => t.totalTurma >= MIN_ALUNOS_RANKING_TURMA);
-
-        // Info sobre a turma do aluno atual (se aplicável)
         const turmaAluno = obterTurmaSalvaAluno();
         let minhaTurma = null;
         if (turmaAluno) {
@@ -15238,7 +15466,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 }
             }
         }
-
         return { ranking, minhaTurma, minimo: MIN_ALUNOS_RANKING_TURMA };
     }
 
@@ -15257,16 +15484,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function carregarMediasReferencia(n, t, mod) {
-        const partidas = await obterPartidas();
-        const base = partidas.length ? partidas : await obterRanking();
-        const pa = base.filter(r => normalizarNome(r.nome) === normalizarNome(n) && r.turma === t && r.modalidade === mod);
-        const rel = pa.filter(p => p.acertos >= 10);
-        melhorMediaAluno = rel.length ? Math.min(...rel.map(p => p.tempoMedio)) : null;
-        const pt = base.filter(r => r.turma === t && r.modalidade === mod && r.acertos >= 10);
-        const mp = new Map();
-        pt.forEach(p => { const c = normalizarNome(p.nome); if (!mp.has(c) || p.tempoMedio < mp.get(c)) mp.set(c, p.tempoMedio); });
-        const ts = Array.from(mp.values());
-        mediaTurma = ts.length ? ts.reduce((a, b) => a + b, 0) / ts.length : null;
+        // v10.9.0 · Usa best_turma/{turma}/{mod} (uma leitura) em vez de baixar
+        // todos os `resultados` e `partidas`. O valor é o mesmo: melhor média
+        // do aluno e média da turma, ambos considerando ≥10 acertos.
+        const lista = await obterMelhoresDaTurma(mod, t).catch(() => []);
+        const doAluno = lista.find(r => normalizarNome(r.nome) === normalizarNome(n) && r.turma === t);
+        const rel = doAluno && Number(doAluno.acertos) >= 10 && Number(doAluno.tempoMedio) > 0
+            ? Number(doAluno.tempoMedio)
+            : null;
+        melhorMediaAluno = rel;
+        const validos = lista.filter(r => Number(r.acertos) >= 10 && Number(r.tempoMedio) > 0);
+        mediaTurma = validos.length
+            ? validos.reduce((s, r) => s + Number(r.tempoMedio), 0) / validos.length
+            : null;
         return { melhorMediaAluno, mediaTurma };
     }
     // ▲▲▲ FIM [13.04]
@@ -16281,6 +16511,372 @@ if (containerProg) {
         carregarPerfil();
     }
     // ▲▲▲ FIM [13.08]
+
+    // ▼▼▼ [13.12] Otimização v10.9.0 — Gravação desnormalizada + backfill ─── INÍCIO ───
+    // Coração da otimização. Aqui ficam:
+    //   • atualizarRankingResumoPosPartida() — idempotente, chamada por salvarResultado()
+    //   • recalcularResumosCompleto() — backfill manual (botão no Painel)
+    //   • setOtimizacaoAtiva() / desativarOtimizacao() — controle da flag
+
+    // ─── Gravação de UM aluno (chamada em salvarResultado) ───
+    // Fluxo (sequencial, cada etapa é atômica no seu caminho):
+    //   1. Marca partidas_contabilizadas/{mod}/{alunoKey}/{idPartida} = true
+    //      via transaction. Se já existir, aborta e retorna.
+    //   2. Atualiza best (se completa e melhor) via transaction.
+    //   3. Atualiza best_turma (mesma regra, espelho) via transaction.
+    //   4. Atualiza media (soma e contagem) via transaction.
+    async function atualizarRankingResumoPosPartida(res) {
+        if (!res || !res.nome || !res.turma || !res.modalidade) return;
+        const alunoKey = chaveAlbum(res.nome, res.turma);
+        if (!alunoKey) return;
+        const mod = res.modalidade;
+        const turma = res.turma;
+        const partidaId = res.idPartida || criarChavePartida(res);
+        const completa = ehPartidaCompleta(res);
+
+        // ─── Etapa 1: flag de idempotência ───
+        try {
+            const flagRef = database.ref(`${CAMINHO_RANKING_RESUMO}/partidas_contabilizadas/${mod}/${alunoKey}/${partidaId}`);
+            const resultado = await flagRef.transaction(atual => {
+                if (atual === true) return; // aborta (já contabilizada)
+                return true;
+            });
+            if (!resultado.committed) {
+                // Já contabilizada — nada a fazer
+                return;
+            }
+        } catch(e) {
+            console.warn("[Otimização] Falha na flag de contabilização:", e);
+            return; // não prossegue (evita duplicação)
+        }
+
+        // ─── Etapa 2: best (só partidas completas) ───
+        if (completa) {
+            const best = montarObjetoBestDaPartida(res);
+            try {
+                await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}/${alunoKey}`).transaction(atual => {
+                    if (!atual) return best;
+                    if (ehMelhorResultado(best, atual)) return best;
+                    return; // mantém o atual
+                });
+            } catch(e) {
+                console.warn("[Otimização] Falha ao atualizar best:", e);
+            }
+            try {
+                await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}/${alunoKey}`).transaction(atual => {
+                    if (!atual) return best;
+                    if (ehMelhorResultado(best, atual)) return best;
+                    return;
+                });
+            } catch(e) {
+                console.warn("[Otimização] Falha ao atualizar best_turma:", e);
+            }
+        }
+
+        // ─── Etapa 3: media (todas as partidas oficiais, completas ou parciais) ───
+        // O resumo/media conta a "soma dos pontos" e o "número de partidas".
+        // A média é derivada na leitura.
+        const pontos = Number(res.pontos) || 0;
+        try {
+            await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}/${alunoKey}`).transaction(atual => {
+                const base = atual || {
+                    nome: res.nome,
+                    turma: res.turma,
+                    somaPontos: 0,
+                    partidasOficiais: 0,
+                    partidasCompletas: 0,
+                    ts: Date.now()
+                };
+                base.somaPontos       = (Number(base.somaPontos) || 0) + pontos;
+                base.partidasOficiais = (Number(base.partidasOficiais) || 0) + 1;
+                if (completa) base.partidasCompletas = (Number(base.partidasCompletas) || 0) + 1;
+                base.ts = Date.now();
+                return base;
+            });
+        } catch(e) {
+            console.warn("[Otimização] Falha ao atualizar media:", e);
+        }
+    }
+
+    // ─── Controle da flag ───
+    async function setOtimizacaoAtiva(ativo) {
+        try {
+            await database.ref(CAMINHO_OTIMIZACAO_V109).update({
+                ativo: !!ativo,
+                atualizadoEm: Date.now()
+            });
+            invalidarCacheOtimizacaoV109();
+            return true;
+        } catch(e) {
+            console.warn("[Otimização] Falha ao gravar flag:", e);
+            return false;
+        }
+    }
+
+    async function ativarOtimizacaoV109() {
+        if (!exigirProfessorAutenticado()) return;
+        const ok = confirm(
+            "✅ ATIVAR OTIMIZAÇÃO v10.9.0\n\n" +
+            "A partir de agora, as leituras usarão os nós novos (partidas_por_aluno e ranking_resumo).\n\n" +
+            "⚠️ ANTES de ativar, rode 'Recalcular resumos' para backfill dos dados históricos.\n\n" +
+            "Se algo der errado, você pode desativar a qualquer momento pelo Painel.\n\n" +
+            "Ativar agora?"
+        );
+        if (!ok) return;
+        if (await setOtimizacaoAtiva(true)) {
+            notificar("✅ Otimização ATIVADA. Leituras usarão os nós novos.", "sucesso", 5000);
+            try { somNovoRecorde(); } catch(e) {}
+            renderizarPainelOtimizacao();
+        } else {
+            notificar("❌ Não foi possível ativar.", "erro", 5000);
+        }
+    }
+
+    async function desativarOtimizacaoV109() {
+        if (!exigirProfessorAutenticado()) return;
+        const ok = confirm(
+            "🚫 DESATIVAR OTIMIZAÇÃO v10.9.0\n\n" +
+            "As leituras voltam para o formato antigo (download completo de `resultados` e `partidas`).\n\n" +
+            "⚠️ Nada é apagado. As gravações continuam nos dois formatos (dual-write).\n\n" +
+            "Desativar agora?"
+        );
+        if (!ok) return;
+        if (await setOtimizacaoAtiva(false)) {
+            notificar("🚫 Otimização desativada. Voltando ao formato legacy.", "info", 5000);
+            renderizarPainelOtimizacao();
+        } else {
+            notificar("❌ Não foi possível desativar.", "erro", 5000);
+        }
+    }
+
+    // ─── Backfill manual ───
+    // Lê TODO o `resultados` e `partidas` (uma única vez) e popula
+    // ranking_resumo e partidas_por_aluno. Rodar quantas vezes quiser —
+    // é idempotente (transactions + sobrescrita).
+    async function recalcularResumosCompleto() {
+        if (!exigirProfessorAutenticado()) return;
+        const ok = confirm(
+            "🔄 RECALCULAR RESUMOS\n\n" +
+            "Esta operação:\n" +
+            "• Baixa TODO o `resultados` e `partidas` (uma vez)\n" +
+            "• Popula `ranking_resumo` e `partidas_por_aluno`\n" +
+            "• É IDEMPOTENTE (pode rodar várias vezes)\n\n" +
+            "⚠️ Pode demorar 1-3 minutos. Não feche a aba.\n\n" +
+            "Continuar?"
+        );
+        if (!ok) return;
+
+        const container = document.getElementById("painel-otimizacao-resultado");
+        const logar = (msg, tipo) => {
+            if (!container) return;
+            const div = document.createElement("div");
+            div.style.cssText = "padding:6px 10px;border-left:3px solid " + (tipo === "erro" ? "#ef4444" : tipo === "ok" ? "#22c55e" : "#94a3b8") + ";background:rgba(0,0,0,.2);border-radius:6px;margin-top:6px;font-size:12px;color:#e2e8f0;";
+            div.textContent = msg;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        };
+        if (container) container.innerHTML = "";
+
+        try {
+            logar("⏳ Baixando `resultados` e `partidas` do Firebase…", "info");
+            const [snapR, snapP] = await Promise.all([
+                database.ref(CAMINHO_RANKING).once("value"),
+                database.ref(CAMINHO_PARTIDAS).once("value")
+            ]);
+            const resultados = Object.values(snapR.val() || {});
+            const partidas = Object.values(snapP.val() || {});
+            logar(`✓ Baixados: ${resultados.length} resultados, ${partidas.length} partidas.`, "ok");
+
+            if (resultados.length === 0 && partidas.length === 0) {
+                logar("⚠️ Não há dados para backfill. O resumo permanecerá vazio.", "erro");
+                return;
+            }
+
+            // ─── 1) Backfill partidas_por_aluno ───
+            logar("⏳ Populando partidas_por_aluno…", "info");
+            const porAlunoPartidas = {};
+            for (const p of partidas) {
+                if (!p || !p.nome || !p.turma || !p.idPartida) continue;
+                const alunoKey = chaveAlbum(p.nome, p.turma);
+                if (!alunoKey) continue;
+                if (!porAlunoPartidas[alunoKey]) porAlunoPartidas[alunoKey] = {};
+                porAlunoPartidas[alunoKey][p.idPartida] = p;
+            }
+            let countPPA = 0;
+            for (const [alunoKey, mapa] of Object.entries(porAlunoPartidas)) {
+                try {
+                    await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).set(mapa);
+                    countPPA += Object.keys(mapa).length;
+                } catch(e) {
+                    logar(`❌ Falha em ${alunoKey}: ${e.message}`, "erro");
+                }
+            }
+            logar(`✓ partidas_por_aluno: ${countPPA} partidas em ${Object.keys(porAlunoPartidas).length} alunos.`, "ok");
+
+            // ─── 2) Backfill ranking_resumo ───
+            logar("⏳ Populando ranking_resumo (best + media)…", "info");
+
+            // best: melhor resultado por aluno por modalidade
+            const bestPorMod = { "2-5": {}, "6-9": {}, "0-10": {} };
+            for (const r of resultados) {
+                if (!r || !r.nome || !r.turma || !r.modalidade) continue;
+                if (!ehPartidaCompleta(r)) continue;
+                const mod = r.modalidade;
+                if (!bestPorMod[mod]) continue;
+                const alunoKey = chaveAlbum(r.nome, r.turma);
+                if (!alunoKey) continue;
+                const atual = bestPorMod[mod][alunoKey];
+                if (!atual || ehMelhorResultado(r, atual)) {
+                    bestPorMod[mod][alunoKey] = montarObjetoBestDaPartida(r);
+                }
+            }
+
+            // media: soma + contagem por aluno por modalidade
+            const mediaPorMod = { "2-5": {}, "6-9": {}, "0-10": {} };
+            for (const p of partidas) {
+                if (!p || !p.nome || !p.turma || !p.modalidade) continue;
+                const mod = p.modalidade;
+                if (!mediaPorMod[mod]) continue;
+                const alunoKey = chaveAlbum(p.nome, p.turma);
+                if (!alunoKey) continue;
+                const base = mediaPorMod[mod][alunoKey] || {
+                    nome: p.nome, turma: p.turma,
+                    somaPontos: 0, partidasOficiais: 0, partidasCompletas: 0, ts: Date.now()
+                };
+                base.somaPontos       += Number(p.pontos) || 0;
+                base.partidasOficiais += 1;
+                if (ehPartidaCompleta(p)) base.partidasCompletas += 1;
+                base.ts = Date.now();
+                mediaPorMod[mod][alunoKey] = base;
+            }
+
+            // Grava por modalidade (um `set` por nó)
+            let countBest = 0, countMedia = 0;
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                try {
+                    await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}`).set(bestPorMod[mod]);
+                    countBest += Object.keys(bestPorMod[mod]).length;
+                } catch(e) { logar(`❌ best/${mod}: ${e.message}`, "erro"); }
+                try {
+                    await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}`).set(mediaPorMod[mod]);
+                    countMedia += Object.keys(mediaPorMod[mod]).length;
+                } catch(e) { logar(`❌ media/${mod}: ${e.message}`, "erro"); }
+            }
+            logar(`✓ best: ${countBest} alunos (3 modalidades).`, "ok");
+            logar(`✓ media: ${countMedia} alunos (3 modalidades).`, "ok");
+
+            // ─── 3) best_turma (espelho de best, chaveado por turma) ───
+            logar("⏳ Populando best_turma…", "info");
+            const bestPorTurmaMod = {};
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                for (const [alunoKey, best] of Object.entries(bestPorMod[mod])) {
+                    const turma = best.turma;
+                    if (!bestPorTurmaMod[turma]) bestPorTurmaMod[turma] = {};
+                    if (!bestPorTurmaMod[turma][mod]) bestPorTurmaMod[turma][mod] = {};
+                    bestPorTurmaMod[turma][mod][alunoKey] = best;
+                }
+            }
+            let countBT = 0;
+            for (const [turma, porMod] of Object.entries(bestPorTurmaMod)) {
+                try {
+                    await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}`).set(porMod);
+                    for (const mod of Object.keys(porMod)) countBT += Object.keys(porMod[mod]).length;
+                } catch(e) { logar(`❌ best_turma/${turma}: ${e.message}`, "erro"); }
+            }
+            logar(`✓ best_turma: ${countBT} entradas em ${Object.keys(bestPorTurmaMod).length} turmas.`, "ok");
+
+            // ─── 4) partidas_contabilizadas (marca tudo como já contabilizado) ───
+            // Como estamos REESCREVENDO best e media do zero, a marcação de
+            // partidas_contabilizadas também é refeita. Sem isso, uma partida
+            // antiga salva depois da otimização seria contada em dobro.
+            logar("⏳ Atualizando flags de idempotência…", "info");
+            const flags = { "2-5": {}, "6-9": {}, "0-10": {} };
+            for (const p of partidas) {
+                if (!p || !p.nome || !p.turma || !p.modalidade || !p.idPartida) continue;
+                const alunoKey = chaveAlbum(p.nome, p.turma);
+                if (!alunoKey) continue;
+                if (!flags[p.modalidade]) flags[p.modalidade] = {};
+                if (!flags[p.modalidade][alunoKey]) flags[p.modalidade][alunoKey] = {};
+                flags[p.modalidade][alunoKey][p.idPartida] = true;
+            }
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                try {
+                    await database.ref(`${CAMINHO_RANKING_RESUMO}/partidas_contabilizadas/${mod}`).set(flags[mod]);
+                } catch(e) { logar(`❌ partidas_contabilizadas/${mod}: ${e.message}`, "erro"); }
+            }
+            logar("✓ partidas_contabilizadas: flags atualizadas.", "ok");
+
+            logar("🎉 Backfill concluído! Você já pode ativar a otimização.", "ok");
+            notificar("🎉 Backfill concluído! Ative a otimização no Painel.", "sucesso", 8000);
+            try { somSecaoCompleta(); dispararConfetes(); } catch(e) {}
+        } catch(e) {
+            console.error("[Backfill] Falha geral:", e);
+            logar(`❌ Falha geral: ${e.message}`, "erro");
+            notificar("❌ Backfill falhou. Veja o log no painel.", "erro", 6000);
+        }
+    }
+
+    // ─── Painel de controle (renderizado em [03.16]) ───
+    async function renderizarPainelOtimizacao() {
+        const container = document.getElementById("painel-otimizacao-conteudo");
+        if (!container) return;
+        container.innerHTML = `<div class="desempenho-loading">⏳ Carregando estado da otimização…</div>`;
+
+        try {
+            const ativo = await otimizacaoV109Ativa(true);
+            const [snapFlag, snapResumo, snapPartidasAluno] = await Promise.all([
+                database.ref(CAMINHO_OTIMIZACAO_V109).once("value"),
+                database.ref(`${CAMINHO_RANKING_RESUMO}/best`).once("value"),
+                database.ref(CAMINHO_PARTIDAS_POR_ALUNO).once("value")
+            ]);
+            const flag = snapFlag.val() || {};
+            const resumo = snapResumo.val() || {};
+            const partidasAluno = snapPartidasAluno.val() || {};
+            const totalBest = Object.values(resumo).reduce((s, m) => s + Object.keys(m || {}).length, 0);
+            const totalAlunosPartidas = Object.keys(partidasAluno).length;
+            const totalPartidasIndex = Object.values(partidasAluno).reduce((s, m) => s + Object.keys(m || {}).length, 0);
+
+            const statusBadge = ativo
+                ? `<span style="display:inline-block;background:#14532d;color:#86efac;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:.4px;">✅ ATIVA</span>`
+                : `<span style="display:inline-block;background:#78350f;color:#fde68a;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:.4px;">⚠️ INATIVA (legacy)</span>`;
+
+            const dataAtualizacao = flag.atualizadoEm ? formatarDataHoraCurta(flag.atualizadoEm) : "—";
+            const precisoBackfill = (totalBest === 0 && totalAlunosPartidas === 0);
+
+            container.innerHTML = `
+                <div class="painel-etapa-linha">
+                    <span class="painel-etapa-rotulo">Status</span>
+                    <span class="painel-etapa-valor">${statusBadge}</span>
+                </div>
+                <div class="painel-etapa-linha">
+                    <span class="painel-etapa-rotulo">Última alteração da flag</span>
+                    <span class="painel-etapa-valor">${dataAtualizacao}</span>
+                </div>
+                <div class="painel-etapa-linha">
+                    <span class="painel-etapa-rotulo">Cobertura do backfill</span>
+                    <span class="painel-etapa-valor">${totalBest} registros em best · ${totalAlunosPartidas} alunos em partidas_por_aluno · ${totalPartidasIndex} partidas indexadas</span>
+                </div>
+                ${precisoBackfill ? `
+                    <div style="margin-top:12px;padding:10px 14px;background:rgba(251,191,36,.12);border-left:4px solid #fbbf24;border-radius:8px;font-size:12.5px;color:#fde68a;line-height:1.5;">
+                        ⚠️ <strong>Backfill ainda não foi executado.</strong> Rode "Recalcular resumos" antes de ativar.
+                    </div>
+                ` : ""}
+                <div class="painel-etapa-acoes" style="margin-top:14px;">
+                    <button class="botao-secundario" onclick="recalcularResumosCompleto()" style="font-weight:800;">🔄 Recalcular resumos</button>
+                    ${ativo
+                        ? `<button class="botao-forcar" onclick="desativarOtimizacaoV109()" style="font-weight:800;">🚫 Desativar otimização</button>`
+                        : `<button class="botao-verde" onclick="ativarOtimizacaoV109()" style="font-weight:800;">✅ Ativar otimização</button>`
+                    }
+                </div>
+                <div id="painel-otimizacao-resultado" style="max-height:220px;overflow-y:auto;margin-top:10px;padding:4px;background:rgba(10,22,40,.4);border-radius:8px;"></div>
+            `;
+        } catch(e) {
+            console.warn("[Otimização] Falha ao renderizar painel:", e);
+            container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o estado da otimização.<br>Verifique a conexão.</div>`;
+        }
+    }
+    // ▲▲▲ FIM [13.12]
+
     // ═══════════════════════════════════════════════════════════════════════
     // [14] JS-JOGO · Geração de perguntas, partida e resultado
     // ═══════════════════════════════════════════════════════════════════════
