@@ -23173,9 +23173,8 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [18.11]
 
     // ▼▼▼ [18.12] Motor da Corrida de Tabuada ───────────── INÍCIO ───
-    // v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros),
-    // 200m (2min/6 erros) e Maratona (5min/15 erros).
-    // Ranking próprio em copa_corridas.
+    // v10.8.1 · Bloqueio de acesso caso a etapa esteja encerrada (só treino livre)
+    // e correção do TypeError no setTimeout pós-corrida.
 
     const CAMINHO_CORRIDAS = "copa_corridas";
 
@@ -23209,9 +23208,9 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     let corridaEstado = null;
 
     // ─────────────────────────────────────────────────────────────────
-    // Abrir a tela (valida identificação, mostra view de seleção)
+    // Abrir a tela (valida identificação, bloqueia se a etapa fechou)
     // ─────────────────────────────────────────────────────────────────
-    function abrirCorrida() {
+    async function abrirCorrida() {
         const nome  = (typeof obterNomeSalvoAluno  === "function") ? obterNomeSalvoAluno()  : null;
         const turma = (typeof obterTurmaSalvaAluno === "function") ? obterTurmaSalvaAluno() : null;
 
@@ -23228,6 +23227,20 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             }
             return;
         }
+
+        // ─── v10.8.1 · Bloqueio de acesso fora da etapa ───
+        try {
+            const fase = await resolverFaseAtual();
+            if (!etapaPermiteClassificatoria(fase.tipo)) {
+                if (typeof notificar === "function") {
+                    notificar("⏸️ A Etapa Classificatória não está aberta. Use o Treino Livre na Home.", "aviso", 6000);
+                }
+                return;
+            }
+        } catch(e) {
+            console.warn("[Corrida] Falha ao validar etapa:", e);
+        }
+
         _mostrarViewCorrida("selecao");
         if (typeof mostrarTela === "function") mostrarTela("tela-corrida");
     }
@@ -23318,9 +23331,9 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Iniciar corrida
+    // Iniciar corrida (bloqueia se a etapa estiver fechada)
     // ─────────────────────────────────────────────────────────────────
-    function iniciarCorrida(distanciaId) {
+    async function iniciarCorrida(distanciaId) {
         const cfgDist = CORRIDA_DISTANCIAS[distanciaId];
         if (!cfgDist) return;
 
@@ -23330,6 +23343,19 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             if (typeof notificar === "function") notificar("Identifique-se primeiro.", "aviso");
             if (typeof mostrarTela === "function") mostrarTela("tela-single");
             return;
+        }
+
+        // ─── v10.8.1 · Bloqueio de acesso fora da etapa ───
+        try {
+            const fase = await resolverFaseAtual();
+            if (!etapaPermiteClassificatoria(fase.tipo)) {
+                if (typeof notificar === "function") {
+                    notificar("⏸️ A Etapa Classificatória não está disponível no momento. Use o Modo Treino Livre.", "aviso", 6000);
+                }
+                return;
+            }
+        } catch(e) {
+            console.warn("[Corrida] Falha ao validar etapa:", e);
         }
 
         const modBtn = document.querySelector(".corrida-mod-btn.ativa[data-mod]");
@@ -23567,7 +23593,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Finalizar corrida
+    // Finalizar corrida (captura dados antes de limpar o estado)
     // ─────────────────────────────────────────────────────────────────
     async function finalizarCorrida(motivo) {
         if (!corridaEstado || corridaEstado.finalizando) return;
@@ -23580,15 +23606,20 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
         document.body.classList.remove("corrida-ativa");
 
+        // ─── v10.8.1 · Captura os dados antes que o estado seja limpo ───
+        const _nome = corridaEstado.nome;
+        const _turma = corridaEstado.turma;
+        const _modalidade = corridaEstado.modalidade;
+
         const total = corridaEstado.totalRespondidas;
         const precisao = total > 0 ? (corridaEstado.acertos / total) : 0;
         const tempoMedioMs = total > 0 ? (corridaEstado.somaTemposMs / total) : 0;
         const elegivel = precisao >= 0.80 && total > 0;
 
         const resultado = {
-            nome: corridaEstado.nome,
-            turma: corridaEstado.turma,
-            modalidade: corridaEstado.modalidade,
+            nome: _nome,
+            turma: _turma,
+            modalidade: _modalidade,
             distanciaId: corridaEstado.distanciaId,
             distanciaLabel: corridaEstado.distancia.label,
             acertos: corridaEstado.acertos,
@@ -23622,12 +23653,12 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         setTimeout(async () => {
             try {
                 if (typeof verificarCertificadosPosPartida === "function") {
-                    await verificarCertificadosPosPartida(corridaEstado.nome, corridaEstado.turma, corridaEstado.modalidade);
+                    await verificarCertificadosPosPartida(_nome, _turma, _modalidade);
                 }
             } catch(e) { console.warn("[Corrida] Certificados:", e); }
             try {
                 if (typeof verificarAlbumPosPartida === "function") {
-                    await verificarAlbumPosPartida(corridaEstado.nome, corridaEstado.turma);
+                    await verificarAlbumPosPartida(_nome, _turma);
                 }
             } catch(e) { console.warn("[Corrida] Álbum:", e); }
         }, 900);
