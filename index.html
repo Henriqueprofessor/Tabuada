@@ -8734,9 +8734,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▲▲▲ FIM [02.83] */
 
         /* ▼▼▼ [02.84] Corridas de Tabuada ─────────────────────── INÍCIO ─── */
-        /* v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros) e
-           200m (2min/6 erros). Ranking próprio, elegibilidade de 80% de
-           precisão. Alimenta mapa de tabuadas e certificados como treino. */
+        /* v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros),
+           200m (2min/6 erros) e Maratona (5min/15 erros).
+           Ranking próprio, elegibilidade de 80% de precisão.
+           Alimenta mapa de tabuadas e certificados como treino. */
 
         /* ─── Wrapper das views ─── */
         .corrida-view { display: flex; flex-direction: column; gap: 14px; }
@@ -8798,22 +8799,26 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         .corrida-mod-btn.ativa small { color: #bae6fd; }
 
         /* ─── Cards de distância ─── */
-        .corrida-selecao-dists { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 4px; }
-        @media (max-width: 500px) { .corrida-selecao-dists { grid-template-columns: 1fr; } }
+        .corrida-selecao-dists { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 4px; }
         .corrida-dist-card { position: relative; overflow: hidden; background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 2px solid var(--border-neon); border-radius: 16px; padding: 18px 16px; text-align: left; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 10px; transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
         .corrida-dist-card:hover { transform: translateY(-2px); border-color: var(--neon-cyan); box-shadow: 0 8px 28px rgba(34, 211, 238, 0.22); }
         .corrida-dist-card.dist-100 { border-left: 4px solid #f59e0b; }
         .corrida-dist-card.dist-200 { border-left: 4px solid #22d3ee; }
+        .corrida-dist-card.dist-maratona { border-left: 4px solid #a855f7; }
         .corrida-dist-icone { font-size: 44px; line-height: 1; margin-bottom: 2px; }
         .corrida-dist-nome { font-size: 20px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.3px; margin: 0; line-height: 1.1; }
         .corrida-dist-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
         .corrida-dist-detalhes { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
         .corrida-dist-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 700; background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); color: #a5f3fc; }
         .corrida-dist-card.dist-100 .corrida-dist-chip { background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.4); color: #fde68a; }
+        .corrida-dist-card.dist-maratona .corrida-dist-chip { background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.4); color: #e9d5ff; }
+        
         .corrida-dist-btn { width: 100%; padding: 12px 18px; background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; letter-spacing: 0.4px; cursor: pointer; box-shadow: 0 3px 0 #07583d, 0 4px 12px rgba(11, 143, 100, 0.28); font-family: inherit; margin: 0; transition: all 0.15s ease; }
         .corrida-dist-btn:hover:not(:disabled) { background: linear-gradient(135deg, #0fa572 0%, #0a885e 100%); transform: translateY(-1px); }
         .corrida-dist-card.dist-200 .corrida-dist-btn { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28); }
         .corrida-dist-card.dist-200 .corrida-dist-btn:hover:not(:disabled) { background: linear-gradient(135deg, #0284c7 0%, #075985 100%); }
+        .corrida-dist-card.dist-maratona .corrida-dist-btn { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); box-shadow: 0 3px 0 #4c1d95, 0 4px 12px rgba(124, 58, 237, 0.28); }
+        .corrida-dist-card.dist-maratona .corrida-dist-btn:hover:not(:disabled) { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
 
         /* ─── Conteúdo do modal "Como funciona" ─── */
         .corrida-descricao { font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
@@ -8848,8 +8853,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         .corrida-timer-barra.urgente .corrida-timer-fill { background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); }
 
         /* ─── Dots de erros ─── */
-        .corrida-erros-dots { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 2px; }
-        .corrida-erro-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(148, 163, 184, 0.25); border: 2px solid rgba(148, 163, 184, 0.4); transition: all 0.2s ease; }
+        .corrida-erros-dots { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; margin-top: 2px; max-width: 120px; }
+        .corrida-erro-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(148, 163, 184, 0.25); border: 2px solid rgba(148, 163, 184, 0.4); transition: all 0.2s ease; }
         .corrida-erro-dot.usado { background: #ef4444; border-color: #dc2626; box-shadow: 0 0 8px rgba(239, 68, 68, 0.55); }
 
         /* ─── Área de jogo ─── */
@@ -9793,6 +9798,16 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                         <span class="corrida-dist-chip">❌ 6 erros</span>
                     </div>
                     <button class="corrida-dist-btn" onclick="iniciarCorrida('200m')">▶ Começar 200m</button>
+                </div>
+                <div class="corrida-dist-card dist-maratona">
+                    <span class="corrida-dist-icone" aria-hidden="true">🏃‍♀️</span>
+                    <div class="corrida-dist-nome">Maratona</div>
+                    <p class="corrida-dist-desc">Desafio de resistência. Termina no 15º erro.</p>
+                    <div class="corrida-dist-detalhes">
+                        <span class="corrida-dist-chip">⏱️ 5 minutos</span>
+                        <span class="corrida-dist-chip">❌ 15 erros</span>
+                    </div>
+                    <button class="corrida-dist-btn" onclick="iniciarCorrida('maratona')">▶ Começar Maratona</button>
                 </div>
             </div>
         </div>
@@ -21894,12 +21909,8 @@ if (containerProg) {
     // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
-    // v10.5.7 · Coach agora conhece os 5 modos de treino.
-    // Adicionados: Helper 8 (identificarModoRecomendado),
-    // Helper 9 (resumoUsoTreinos), seções novas em montarBlocoPerfil
-    // e no prompt (PRÓXIMOS ALVOS DE TREINO + menu 10 + playbook 10).
     // v10.8.0 · Coach atualizado para conhecer as Corridas de Tabuada
-    // (100m/200m, ranking próprio, 80% precisão).
+    // (100m, 200m e Maratona).
 
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
@@ -22175,7 +22186,6 @@ if (containerProg) {
             });
         }
 
-        // ─── NOVO v10.5.7: MÉDIA GERAL ───
         L.push("");
         L.push("📊 MÉDIA GERAL (só partidas oficiais — completas + parciais):");
         const m25  = Number(p.media25)  || 0;
@@ -22204,7 +22214,6 @@ if (containerProg) {
             L.push(`  • Medalhas de Consistência: nenhuma ainda`);
         }
 
-        // ─── NOVO v10.5.7: TREINOS USADOS + RECOMENDADO ───
         L.push("");
         L.push("🎯 TREINOS USADOS (histórico):");
         L.push(`  • ${resumoUsoTreinos(usos)}`);
@@ -22301,22 +22310,8 @@ if (containerProg) {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Helper 8 (NOVO v10.5.7): modo de treino recomendado para o perfil
+    // Helper 8: modo de treino recomendado para o perfil
     // ─────────────────────────────────────────────────────────────────
-    // Recebe os dados coletados + o histórico de uso dos modos.
-    // Retorna { modoId, nome, icone, motivo, quando } ou null.
-    //
-    // Diagnóstico:
-    //   · Primeira sessão              → Inteligente
-    //   · Domina tudo + velocidade é
-    //     o gargalo                    → Progressivo (ou Corrida)
-    //   · Uma tabuada muito fraca
-    //     (< 30%)                      → Chunking
-    //   · Muitas pendências (> 40%)    → Inteligente
-    //   · 3+ ops com < 50% de acerto   → Reverso
-    //   · 3+ ops entre 50 e 75%        → Decomposição
-    //   · Bom ritmo, poucas partidas   → Espelho
-    //   · Default                      → Inteligente
     function identificarModoRecomendado(dados, usosTreino) {
         const p = (dados && dados.perfil) || {};
         const probs = (dados && dados.operacoesProblematicas) || [];
@@ -22328,7 +22323,6 @@ if (containerProg) {
         const temposMedio = Number(p.melhorTempoMedio) || 999;
         const pendentes = 100 - pctDominio;
 
-        // Regra 1: primeira sessão
         if (totalPartidas === 0) {
             return {
                 modoId: "inteligente",
@@ -22339,7 +22333,6 @@ if (containerProg) {
             };
         }
 
-        // Regra 2: domina tudo + velocidade é o gargalo
         if (pctDominio >= 90 && temposMedio > 2.0) {
             return {
                 modoId: "progressivo",
@@ -22350,7 +22343,6 @@ if (containerProg) {
             };
         }
 
-        // Regra 3: domina tudo
         if (pctDominio >= 95) {
             return {
                 modoId: "progressivo",
@@ -22361,7 +22353,6 @@ if (containerProg) {
             };
         }
 
-        // Regra 4: tabuada muito fraca
         const fracas = Object.entries(porTab)
             .filter(([, d]) => d.pct < 30)
             .sort((a, b) => a[1].pct - b[1].pct);
@@ -22377,7 +22368,6 @@ if (containerProg) {
             };
         }
 
-        // Regra 5: muitas pendências
         if (pendentes >= 40) {
             return {
                 modoId: "inteligente",
@@ -22388,7 +22378,6 @@ if (containerProg) {
             };
         }
 
-        // Regra 6: operações com erro sistemático
         const muitoRuins = probs.filter(o => o.taxa < 0.5);
         if (muitoRuins.length >= 3) {
             return {
@@ -22400,7 +22389,6 @@ if (containerProg) {
             };
         }
 
-        // Regra 7: operações em zona intermediária
         const medias = probs.filter(o => o.taxa >= 0.5 && o.taxa < 0.75);
         if (medias.length >= 3) {
             return {
@@ -22412,7 +22400,6 @@ if (containerProg) {
             };
         }
 
-        // Regra 8: bom ritmo + poucas partidas
         if (pctDominio >= 60 && pctDominio < 95 && totalPartidas < 15) {
             return {
                 modoId: "espelho",
@@ -22423,7 +22410,6 @@ if (containerProg) {
             };
         }
 
-        // Default
         return {
             modoId: "inteligente",
             nome: "Treino Inteligente",
@@ -22434,7 +22420,7 @@ if (containerProg) {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Helper 9 (NOVO v10.5.7): resumo do uso dos modos
+    // Helper 9: resumo do uso dos modos
     // ─────────────────────────────────────────────────────────────────
     function resumoUsoTreinos(usos) {
         if (!usos || typeof usos !== "object") return "nenhum treino ainda";
@@ -22482,7 +22468,6 @@ if (containerProg) {
             ? `\n═══ PERFIL COMPLETO DO ATLETA ═══\n\n${montarBlocoPerfil(dadosPerfil)}\n`
             : "";
 
-        // ─── PRÓXIMO ALVO (certificado + medalha + treino) ───
         const proxCert = temDados ? identificarProximoCertificado(dadosPerfil) : null;
         const proxMedalha = temDados ? identificarProximaMedalhaConsistencia(dadosPerfil) : null;
         const proxTreino = temDados ? identificarModoRecomendado(dadosPerfil, dadosPerfil.usosTreino || {}) : null;
@@ -22576,7 +22561,7 @@ O MENU DEVE SER SEMPRE ESTE:
    Compare o melhor tempo médio do aluno com as metas dos certificados
    (2-5: 2,0s · 6-9: 2,5s · 1-10: 3,0s). Se está perto, diga quanto falta.
    Se já bateu, celebre e proponha metas mais ambiciosas.
-   Sugira também a **Corrida de Tabuada** (100m ou 200m) como forma de treinar a fluência sem pressão de ranking (se a precisão for ≥80%, até entra no ranking).
+   Sugira também a **Corrida de Tabuada** (100m, 200m ou Maratona) como forma de treinar a fluência sem pressão de ranking (se a precisão for ≥80%, até entra no ranking).
 
 7️⃣ PRÓXIMO CERTIFICADO:
    Use o bloco "PRÓXIMOS ALVOS" no topo. Diga o nome do certificado, o que
@@ -22627,9 +22612,9 @@ O MENU DEVE SER SEMPRE ESTE:
       sobe de novo. Quando: você domina o conteúdo (>90% do mapa) mas o
       tempo médio ainda é alto (>2,0s). Foco em automaticidade.
 
-   G) 🏁 CORRIDA DE TABUADA (100m/200m) — modo de jogo.
-      Você responde o máximo de contas em 1min (100m) ou 2min (200m).
-      O cronômetro não para e encerra no 3º/6º erro. Tem ranking próprio
+   G) 🏁 CORRIDA DE TABUADA (100m/200m/Maratona) — modo de jogo.
+      Você responde o máximo de contas em 1min (100m), 2min (200m) ou 5min (Maratona).
+      O cronômetro não para e encerra no 3º/6º/15º erro. Tem ranking próprio
       que exige 80% de precisão. Quando: aluno já domina o Progressivo
       e quer um desafio extra de velocidade com limite de erros.
       Onde encontrar: Menu "Mais Opções" -> "Corridas de Tabuada".
@@ -22705,8 +22690,8 @@ O MENU DEVE SER SEMPRE ESTE:
 • As sessões são curtas: 5 a 10 contas por vez.
 
 ▸ CORRIDAS DE TABUADA (novidade v10.8.0)
-• Modo focado em fluência: responder o máximo de contas em 1 minuto (100m) ou 2 minutos (200m).
-• O cronômetro NÃO para e encerra no 3º erro (100m) ou 6º erro (200m).
+• Modo focado em fluência: responder o máximo de contas em 1 minuto (100m), 2 minutos (200m) ou 5 minutos (Maratona).
+• O cronômetro NÃO para e encerra no 3º erro (100m), 6º erro (200m) ou 15º erro (Maratona).
 • Tem ranking próprio. Para entrar no ranking, precisa de no mínimo 80% de precisão.
 • As respostas da corrida alimentam o mapa de tabuadas e os certificados, mas NÃO contam para o ranking oficial das 20 perguntas (nem para o Hall da Fama, exceto pelo mapa).
 • Onde encontrar: Menu "Mais Opções" -> "Corridas de Tabuada".
@@ -23188,31 +23173,9 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [18.11]
 
     // ▼▼▼ [18.12] Motor da Corrida de Tabuada ───────────── INÍCIO ───
-    // v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros) e
-    // 200m (2min/6 erros). Ranking próprio em copa_corridas.
-    //
-    // Regras:
-    //   · Deck embaralhado das operações da modalidade (40 ou 100).
-    //     Reembaralhado se esgotar antes do tempo.
-    //   · Cronômetro regressivo que NÃO PARA no feedback.
-    //   · Tempo de cada pergunta medido por `performance.now()` no
-    //     início da pergunta → no clique da resposta. Feedback NÃO
-    //     entra na média de tempo.
-    //   · Erro conta e o tempo continua; limite de erros encerra.
-    //   · Tempo esgotado encerra.
-    //   · Elegível ao ranking só com precisão ≥ 80%.
-    //   · Desempate: mais acertos → maior precisão → menor tempo médio.
-    //   · Alimenta mapa + certificados como treino (não entra no
-    //     ranking das 20 perguntas nem no Hall da Fama).
-    //
-    // Firebase: copa_corridas/{distancia}__{modalidade}/{chaveAluno}
-    //
-    // Integração com mostrarTela: a tela #tela-corrida não está na
-    // lista original de [14.04]. Este bloco instala um patch
-    // defensivo que (a) esconde #tela-corrida quando o usuário
-    // navega para outra tela e (b) aborta uma corrida em andamento
-    // se o aluno tentar sair pelo meio. Nenhum outro comportamento
-    // de mostrarTela é alterado.
+    // v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros),
+    // 200m (2min/6 erros) e Maratona (5min/15 erros).
+    // Ranking próprio em copa_corridas.
 
     const CAMINHO_CORRIDAS = "copa_corridas";
 
@@ -23232,6 +23195,14 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             duracaoSeg: 120,
             errosMax: 6,
             subtitulo: "Meia distância · 2 minutos · até 6 erros"
+        },
+        "maratona": {
+            id: "maratona",
+            label: "Maratona",
+            icone: "🏃‍♀️",
+            duracaoSeg: 300,
+            errosMax: 15,
+            subtitulo: "Resistência · 5 minutos · até 15 erros"
         }
     };
 
@@ -23292,6 +23263,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             <ul>
                 <li><strong>100m Tabuada:</strong> 1 minuto de duração, encerra no 3º erro.</li>
                 <li><strong>200m Tabuada:</strong> 2 minutos de duração, encerra no 6º erro.</li>
+                <li><strong>Maratona:</strong> 5 minutos de duração, encerra no 15º erro. (O desafio de resistência!)</li>
             </ul>
 
             <div class="corrida-desc-subtitulo">⚙️ Regras da Corrida</div>
@@ -23311,7 +23283,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
             <div class="corrida-desc-dica"><strong>💡 Dica:</strong> como a corrida exige precisão para o ranking (80%), não adianta tentar chutar tudo muito rápido e errar. Acerte com segurança, mas sem hesitar!</div>
 
-            <span class="corrida-desc-selo">🏁 Corridas de Tabuada · 100m e 200m.</span>
+            <span class="corrida-desc-selo">🏁 Corridas de Tabuada · 100m, 200m e Maratona.</span>
         `;
     }
 
@@ -23499,8 +23471,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     function _gerarDistratoresCorrida(op) {
-        // Reaproveita o gerador central de distratores do app (melhor UX,
-        // sem reinventar). Fallback simples caso a função não exista.
         if (typeof gerarDistratoresInteligentes === "function") {
             try {
                 return gerarDistratoresInteligentes(op.fA, op.fB, op.produto, 4, corridaEstado.modalidade);
@@ -23534,7 +23504,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
         const acertou = (valor === op.produto);
 
-        // Marca visual (breve, sem pausar o timer)
         btn.disabled = true;
         document.querySelectorAll("#corrida-opcoes .corrida-opcao").forEach(b => { b.disabled = true; });
         if (acertou) {
@@ -23550,7 +23519,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             }
         }
 
-        // Deltas para o mapa (todas as respostas, certas e erradas)
         const k = `${op.fA}x${op.fB}`;
         if (!corridaEstado.deltasMapa[k]) corridaEstado.deltasMapa[k] = { respostas: [] };
         corridaEstado.deltasMapa[k].respostas.push({
@@ -23558,7 +23526,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             tempo: tempoContaMs / 1000
         });
 
-        // Contadores
         if (acertou) {
             corridaEstado.acertos++;
         } else {
@@ -23571,20 +23538,17 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             });
         }
 
-        // HUD
         const acertosEl = document.getElementById("corrida-hud-acertos");
         const errosEl = document.getElementById("corrida-hud-erros");
         if (acertosEl) acertosEl.textContent = String(corridaEstado.acertos);
         if (errosEl) errosEl.textContent = String(corridaEstado.erros);
         _atualizarDotsErrosCorrida();
 
-        // Limite de erros → encerra
         if (corridaEstado.erros >= corridaEstado.distancia.errosMax) {
             setTimeout(() => finalizarCorrida("erros"), 220);
             return;
         }
 
-        // Próxima conta (feedback curto, sem pausar o cronômetro)
         setTimeout(() => {
             if (!corridaEstado || !corridaEstado.ativa || corridaEstado.finalizando) return;
             _proximaContaCorrida();
@@ -23637,15 +23601,12 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             motivo
         };
 
-        // ─── Salva no mapa em background (não bloqueia a tela) ───
         _persistirMapaCorrida(resultado).catch(err => {
             console.warn("[Corrida] Falha ao persistir mapa:", err);
         });
 
-        // ─── Renderiza resultado ───
         _renderizarResultadoCorrida(resultado);
 
-        // ─── Atualiza ranking em background ───
         _persistirRankingCorrida(resultado).then(record => {
             _renderizarRankingCorrida(resultado, record).catch(err => {
                 console.warn("[Corrida] Falha ao renderizar ranking:", err);
@@ -23656,10 +23617,8 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             if (rank) rank.innerHTML = `<div class="corrida-revisao-vazio">Ranking indisponível agora.</div>`;
         });
 
-        // ─── Revisão de erros ───
         _renderizarRevisaoErrosCorrida(resultado);
 
-        // ─── Feed do mapa + certificados ───
         setTimeout(async () => {
             try {
                 if (typeof verificarCertificadosPosPartida === "function") {
@@ -23673,7 +23632,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             } catch(e) { console.warn("[Corrida] Álbum:", e); }
         }, 900);
 
-        // ─── Som + view ───
         try {
             if (corridaEstado.acertos > 0 && corridaEstado.erros === 0 && motivo === "tempo") {
                 if (typeof somConclusao === "function") somConclusao();
@@ -23913,7 +23871,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // Navegação do resultado
     // ─────────────────────────────────────────────────────────────────
     function novaCorridaResultado() {
-        // Limpa estado e volta para seleção (mantém modalidade selecionada)
         if (corridaEstado && corridaEstado.timerIntervalId) {
             clearInterval(corridaEstado.timerIntervalId);
         }
@@ -23926,7 +23883,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
     function treinarCorridaResultado() {
         const mod = corridaEstado?.modalidade || "0-10";
-        // Corrida já finalizada — pode abrir o menu de treino
         if (typeof abrirMenuTreino === "function") {
             abrirMenuTreino(mod);
         }
@@ -23944,16 +23900,11 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ─────────────────────────────────────────────────────────────────
     // Patch defensivo em mostrarTela
     // ─────────────────────────────────────────────────────────────────
-    // Não reescreve [14.04]. Adiciona:
-    //   · esconder #tela-corrida quando o usuário navega para outra tela;
-    //   · abortar uma corrida em andamento se o aluno "sair por fora".
-    // Idempotente via guarda `_corridaPatch`.
     (function _patchMostrarTelaParaCorrida() {
         if (typeof mostrarTela !== "function") return;
         if (window.mostrarTela && window.mostrarTela._corridaPatch) return;
         const original = window.mostrarTela;
         window.mostrarTela = function(id) {
-            // Se está saindo de tela-corrida com corrida ativa, aborta
             if (id !== "tela-corrida" && corridaEstado && corridaEstado.ativa) {
                 try {
                     if (corridaEstado.timerIntervalId) clearInterval(corridaEstado.timerIntervalId);
