@@ -8611,6 +8611,106 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             }
         }
         /* ▲▲▲ FIM [02.82] */
+
+        /* ▼▼▼ [02.83] Esqueleto da Home — FCP imediato ─────────── INÍCIO ─── */
+        /* v10.7.3 · Exibido no HTML antes do JS rodar. Reduz o FCP/LCP
+           em conexões lentas (medição Lighthouse 16/10/2026: FCP 3,4s →
+           estimado ~1s em Slow 4G, celular modesto).
+
+           O JS substitui via innerHTML quando os dados chegam. Nenhuma
+           interação é necessária. O esqueleto NUNCA inventa números
+           falsos — só mostra placeholders neutros com a mesma silhueta
+           dos cards finais, evitando CLS e "flash de conteúdo".
+
+           Regras:
+             · .home-skeleton-card      → cards grandes (Minhas Posições)
+             · .home-skeleton-home-card → cards menores (Ritmo/Meta/Mapa)
+             · .home-skeleton-bar       → linha com shimmer reaproveitando
+                                          a animação skeleton-loading
+                                          definida em [02.08]
+             · .home-skeleton-linha-mod → linha de modalidade (dentro do
+                                          card Minhas Posições)
+           Não interferem com .home-card, .home-ritmo-card, .meta-compacta
+           nem .mapa-home-card — que continuam sendo os cards reais após
+           o JS substituir o esqueleto. */
+
+        .home-skeleton-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.72;
+        }
+
+        .home-skeleton-home-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.72;
+        }
+
+        .home-skeleton-bar {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg,
+                rgba(148, 163, 184, 0.14) 25%,
+                rgba(148, 163, 184, 0.28) 50%,
+                rgba(148, 163, 184, 0.14) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        .home-skeleton-bar.titulo { height: 14px; width: 45%; margin-bottom: 2px; }
+        .home-skeleton-bar.curta  { width: 30%; }
+        .home-skeleton-bar.media  { width: 65%; }
+        .home-skeleton-bar.longa  { width: 100%; }
+
+        /* Container das 3 linhas de modalidade dentro do card Minhas Posições.
+           Em telas largas (≥900px) casa com o grid 3 colunas real de [02.46];
+           no celular, empilha como o layout real também faz. */
+        .home-skeleton-linhas-mod {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .home-skeleton-linha-mod {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px 12px;
+            padding: 12px 14px;
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.10);
+            border-radius: 10px;
+        }
+
+        @media (min-width: 900px) {
+            .home-skeleton-linhas-mod {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .home-skeleton-bar { animation: none; }
+        }
+        /* ▲▲▲ FIM [02.83] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -8620,7 +8720,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <div id="toast-pontuacao"></div>
 
     <!-- ▼▼▼ [03.01] TELA INICIAL — HOME PLAYER HUB ─────────────── -->
-    <div id="tela-inicial" class="card hidden">
+    <!-- v10.7.3 · A tela nasce SEM `hidden` para que o navegador pinte
+         o cabeçalho e o hero imediatamente, antes do Firebase responder.
+         Os 4 containers dinâmicos (#acao-principal-container, #ritmo-copa-container,
+         #meta-pessoal-container, #mapa-home-container) começam com um
+         esqueleto neutro (bloco [02.83]). Quando o JS responde, ele
+         substitui via innerHTML — nenhum trabalho extra necessário. -->
+    <div id="tela-inicial" class="card">
         <header class="esports-header">
             <div class="esports-logo" id="titulo-secreto">
                 <span class="emoji-logo">🏆</span>
@@ -8680,10 +8786,52 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </section>
 
-        <div id="acao-principal-container"></div>
-        <div id="ritmo-copa-container"></div>
-        <div id="meta-pessoal-container"></div>
-        <div id="mapa-home-container"></div>
+        <!-- ▼ Esqueleto · Minhas Posições (substituído por renderizarModalidadesHome) -->
+        <div id="acao-principal-container">
+            <div class="home-skeleton-card" aria-hidden="true">
+                <div class="home-skeleton-bar titulo"></div>
+                <div class="home-skeleton-bar curta"></div>
+                <div class="home-skeleton-linhas-mod">
+                    <div class="home-skeleton-linha-mod">
+                        <div class="home-skeleton-bar media"></div>
+                        <div class="home-skeleton-bar curta"></div>
+                    </div>
+                    <div class="home-skeleton-linha-mod">
+                        <div class="home-skeleton-bar media"></div>
+                        <div class="home-skeleton-bar curta"></div>
+                    </div>
+                    <div class="home-skeleton-linha-mod">
+                        <div class="home-skeleton-bar media"></div>
+                        <div class="home-skeleton-bar curta"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ▼ Esqueleto · Ritmo na Copa (substituído por renderizarRitmoCopa) -->
+        <div id="ritmo-copa-container">
+            <div class="home-skeleton-home-card" aria-hidden="true">
+                <div class="home-skeleton-bar titulo"></div>
+                <div class="home-skeleton-bar longa"></div>
+            </div>
+        </div>
+
+        <!-- ▼ Esqueleto · Meta Pessoal (substituído por renderizarMetaPessoal) -->
+        <div id="meta-pessoal-container">
+            <div class="home-skeleton-home-card" aria-hidden="true">
+                <div class="home-skeleton-bar curta"></div>
+                <div class="home-skeleton-bar longa"></div>
+            </div>
+        </div>
+
+        <!-- ▼ Esqueleto · Mapa de Tabuadas (substituído por renderizarMapaHome) -->
+        <div id="mapa-home-container">
+            <div class="home-skeleton-home-card" aria-hidden="true">
+                <div class="home-skeleton-bar titulo"></div>
+                <div class="home-skeleton-bar longa"></div>
+                <div class="home-skeleton-bar media"></div>
+            </div>
+        </div>
 
         <div class="home-card">
             <div class="home-card-titulo">📅 Etapa Classificatória</div>
@@ -8693,7 +8841,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [03.01] -->
-
 
     <!-- ▼▼▼ [03.01.bis] NAVEGAÇÃO INFERIOR GLOBAL ─────────── INÍCIO ─── -->
     <nav id="bottom-nav-global" class="bottom-nav hidden" aria-label="Navegação principal">
