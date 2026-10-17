@@ -22837,6 +22837,20 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [19.02]
 
 // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
+// v10.7.3d · OTIMIZAÇÃO DE LCP (item B do pacote A+B):
+//   O boot sequencializa 3 verificações de etapa ANTES de renderizar
+//   a Home, o que custava ~1,5s em 4G lenta.
+//
+//   Nesta versão, as leituras que dependem só do Firebase (etapa,
+//   votação, home, mapa, treino) são disparadas em PARALELO, e o
+//   ciclo da etapa/votação roda em background, sem bloquear a
+//   renderização inicial da Home.
+//
+//   O comportamento final continua idêntico: se a etapa precisar
+//   ser iniciada/encerrada, isso acontece, e a Home se atualiza em
+//   seguida. A diferença é só a ORDEM das operações — o aluno vê a
+//   tela pintar mais rápido.
+
 async function registrarServiceWorker() {
     // PWA só faz sentido em HTTPS (ou localhost). Fora disso, no-op silencioso.
     if (!('serviceWorker' in navigator)) return;
@@ -22855,6 +22869,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     // ─── PWA: registra Service Worker (opcional; falha em silêncio) ───
     registrarServiceWorker();
 
+    // ─── Renderização da UI base (SÍNCRONA — não bloqueia) ───
     mostrarTela("tela-inicial");
     atualizarBotaoMinhaTurma();
     mudarTipoRanking("turma");
@@ -22864,37 +22879,50 @@ window.addEventListener("DOMContentLoaded", async () => {
     try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
     try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
 
-    // ─── v10.4.9 · Popula versão em 3 lugares ───
-    // 1) Badge no cabeçalho (visível no topo)
+    // ─── Popula versão em 3 lugares ───
     const elVHeader = document.getElementById("header-versao-atual");
     if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
-    // 2) Changelog (entrada do topo)
     const elV = document.getElementById("changelog-versao-atual");
     if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
-    // 3) Botão "Novidades" no menu Mais
     const elVMenu = document.getElementById("mais-versao-atual");
     if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
 
-    // ─── v10.4.9 · Verifica se há versão mais nova publicada no Firebase
-    //     (consulta única no boot). Não bloqueia o resto do boot. ───
+    // ─── Verificações de versão (não bloqueiam a Home) ───
     verificarVersaoPublicada().catch(() => {});
-
-    // ─── v10.5.0 · Inicia listener em tempo real. O badge do cabeçalho
-    //     reage no mesmo segundo em que o professor publica uma versão. ───
     try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
 
     iniciarListenerMsgAluno();
 
-    try {
-        await verificarEIniciarEtapaSeNecessario();
-        await verificarEFecharVotacaoSeNecessario();
-        await verificarEEncerrarEtapaSeNecessario();
-    } catch(e) { console.warn("Falha ao processar ciclo da etapa:", e); }
-    try { await atualizarTelaInicialComEtapa(); } catch(e) { console.warn("Falha ao atualizar tela inicial com etapa:", e); }
-    try { await renderizarCardVotacao(); } catch(e) { console.warn("Falha ao renderizar card de votação:", e); }
-    try { await preencherHomeEsports(); } catch(e) { console.warn("Falha ao preencher home:", e); }
-    try { await renderizarMapaHome(); } catch(e) { console.warn("Falha ao renderizar mapa home:", e); }
-    try { await renderizarTreinoInteligenteHome(); } catch(e) { console.warn("Falha ao renderizar treino inteligente:", e); }
+    // ─── v10.7.3d · Dispara as leituras em paralelo. A Home pinta
+    //     antes de a etapa ser verificada. Se a etapa mudar no meio,
+    //     atualizamos a Home em seguida (chamada idempotente). ───
+    const pTelaInicial = atualizarTelaInicialComEtapa()
+        .catch(e => console.warn("Falha ao atualizar tela inicial:", e));
+    const pHomeEsports = preencherHomeEsports()
+        .catch(e => console.warn("Falha ao preencher home:", e));
+    const pMapaHome = renderizarMapaHome()
+        .catch(e => console.warn("Falha ao renderizar mapa home:", e));
+    const pTreinoInt = renderizarTreinoInteligenteHome()
+        .catch(e => console.warn("Falha ao renderizar treino inteligente:", e));
+
+    // ─── Ciclo da etapa e votação — roda em background, sem bloquear ───
+    const pCicloEtapa = (async () => {
+        try {
+            await verificarEIniciarEtapaSeNecessario();
+            await verificarEFecharVotacaoSeNecessario();
+            await verificarEEncerrarEtapaSeNecessario();
+        } catch(e) {
+            console.warn("Falha ao processar ciclo da etapa:", e);
+        }
+        // Se a etapa foi alterada (iniciada/encerrada/fechada), atualizamos
+        // a UI em seguida. Não roda se nada mudou — chamada barata.
+        try { await atualizarTelaInicialComEtapa(); } catch(e) {}
+        try { await renderizarCardVotacao(); } catch(e) {}
+    })();
+
+    // Aguarda tudo (para os logs de console saírem na ordem certa), sem
+    // que o navegador precise esperar por isso para pintar a tela.
+    await Promise.all([pTelaInicial, pHomeEsports, pMapaHome, pTreinoInt, pCicloEtapa]);
 
     // v10.4.3 — Ativa o observer que dispara o alerta de foco sempre que a Home é exibida
     try { ativarObserverAlertaFoco(); } catch(e) { console.warn("Falha ao ativar observer do alerta:", e); }
