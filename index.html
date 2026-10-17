@@ -8736,11 +8736,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▼▼▼ [02.84] Corridas de Tabuada ─────────────────────── INÍCIO ─── */
         /* v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros) e
            200m (2min/6 erros). Ranking próprio, elegibilidade de 80% de
-           precisão. Alimenta mapa de tabuadas e certificados como treino.
-           Arquitetura: uma tela #tela-corrida com 3 views internos
-           (seleção · jogo · resultado). Nenhuma tela existente é
-           reescrita — a navegação é patcheada ao final do bloco JS
-           [18.12]. */
+           precisão. Alimenta mapa de tabuadas e certificados como treino. */
 
         /* ─── Wrapper das views ─── */
         .corrida-view { display: flex; flex-direction: column; gap: 14px; }
@@ -8819,10 +8815,20 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         .corrida-dist-card.dist-200 .corrida-dist-btn { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28); }
         .corrida-dist-card.dist-200 .corrida-dist-btn:hover:not(:disabled) { background: linear-gradient(135deg, #0284c7 0%, #075985 100%); }
 
-        /* ─── Regras ─── */
-        .corrida-regras { background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%); border: 1px solid var(--border-neon); border-radius: 12px; padding: 14px 16px; text-align: left; margin-top: 4px; }
-        .corrida-regras-titulo { font-size: 12px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: var(--neon-cyan); margin: 0 0 8px; }
-        .corrida-regras p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+        /* ─── Conteúdo do modal "Como funciona" ─── */
+        .corrida-descricao { font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
+        .corrida-descricao .corrida-desc-titulo { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 900; color: var(--neon-gold); letter-spacing: 0.3px; margin: 0 0 12px; line-height: 1.2; }
+        .corrida-descricao .corrida-desc-subtitulo { font-size: 11.5px; font-weight: 800; color: var(--neon-cyan); letter-spacing: 0.5px; text-transform: uppercase; margin: 14px 0 5px; display: flex; align-items: center; gap: 6px; line-height: 1.2; }
+        .corrida-descricao .corrida-desc-subtitulo:first-of-type { margin-top: 2px; }
+        .corrida-descricao p { margin: 0 0 6px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+        .corrida-descricao p:last-child { margin-bottom: 0; }
+        .corrida-descricao p strong { color: var(--text-primary); font-weight: 800; }
+        .corrida-descricao ul { margin: 0 0 6px; padding-left: 18px; font-size: 12.5px; line-height: 1.6; color: var(--text-secondary); }
+        .corrida-descricao ul li { margin-bottom: 3px; }
+        .corrida-descricao ul li strong { color: var(--text-primary); font-weight: 800; }
+        .corrida-descricao .corrida-desc-dica { background: rgba(0, 0, 0, 0.25); border-left: 3px solid var(--neon-gold); border-radius: 8px; padding: 9px 12px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+        .corrida-descricao .corrida-desc-dica strong { color: var(--neon-gold); font-weight: 800; }
+        .corrida-descricao .corrida-desc-selo { display: inline-block; background: rgba(34, 211, 238, 0.12); border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 10px; padding: 3px 10px; margin-top: 10px; font-size: 11.5px; font-weight: 800; color: #a5f3fc; letter-spacing: 0.3px; }
 
         /* ─── HUD de corrida ─── */
         .corrida-hud { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 1px solid var(--border-neon); border-radius: 14px; padding: 12px 16px; box-shadow: var(--shadow-card); }
@@ -9732,10 +9738,20 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <div class="corrida-cabecalho">
                 <div class="corrida-cabecalho-esq">
                     <button class="corrida-btn-sair" onclick="mostrarTela('tela-mais')">← Voltar</button>
-                    <h2 class="corrida-titulo-tela">🏁 Corridas de Tabuada</h2>
+                    <div class="card-titulo-com-ajuda" style="margin:0;">
+                        <h2 class="corrida-titulo-tela" style="margin:0;">🏁 Corridas de Tabuada</h2>
+                        <button type="button"
+                                id="btn-como-funciona-corrida"
+                                class="btn-como-funciona-inline"
+                                onclick="abrirModalComoFuncionaCorrida()"
+                                aria-haspopup="dialog"
+                                aria-controls="modal-explicacao-corrida"
+                                aria-label="Como funciona a Corrida de Tabuada"
+                                title="Como funciona?">?</button>
+                    </div>
                 </div>
             </div>
-            <p class="corrida-subtitulo">Escolha a modalidade e a distância. Responda o máximo de contas antes do tempo acabar — cada erro conta e o cronômetro não para.</p>
+            <p class="corrida-subtitulo">Escolha a modalidade e a distância. Responda o máximo de contas antes do tempo acabar.</p>
 
             <!-- Modalidade -->
             <div class="corrida-selecao-secao">
@@ -9778,12 +9794,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     </div>
                     <button class="corrida-dist-btn" onclick="iniciarCorrida('200m')">▶ Começar 200m</button>
                 </div>
-            </div>
-
-            <!-- Regras -->
-            <div class="corrida-regras">
-                <div class="corrida-regras-titulo">📖 Como funciona a corrida</div>
-                <p>Responda ao maior número de contas antes do tempo acabar. Cada erro conta e o cronômetro não para. A corrida termina ao atingir o limite de erros. No ranking, fica à frente quem tiver mais acertos; em caso de empate, conta a maior precisão e, depois, a menor velocidade média por resposta. Apenas alunos com pelo menos 80% de precisão entram no ranking.</p>
             </div>
         </div>
 
@@ -10601,6 +10611,23 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
 </div>
 <!-- ▲▲▲ FIM [04.27] -->
+
+<!-- ▼▼▼ [04.28] MODAL — Explicação da Corrida de Tabuada ─── -->
+<div id="modal-explicacao-corrida"
+     class="modal-explicacao-overlay hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-explicacao-corrida-corpo"
+     onclick="if (event.target === this) fecharModalComoFuncionaCorrida();">
+    <div class="modal-explicacao-caixa">
+        <button type="button"
+                class="modal-explicacao-fechar"
+                onclick="fecharModalComoFuncionaCorrida()"
+                aria-label="Fechar explicação">✕</button>
+        <div id="modal-explicacao-corrida-corpo" class="corrida-descricao"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.28] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -21871,6 +21898,8 @@ if (containerProg) {
     // Adicionados: Helper 8 (identificarModoRecomendado),
     // Helper 9 (resumoUsoTreinos), seções novas em montarBlocoPerfil
     // e no prompt (PRÓXIMOS ALVOS DE TREINO + menu 10 + playbook 10).
+    // v10.8.0 · Coach atualizado para conhecer as Corridas de Tabuada
+    // (100m/200m, ranking próprio, 80% precisão).
 
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
@@ -22280,7 +22309,7 @@ if (containerProg) {
     // Diagnóstico:
     //   · Primeira sessão              → Inteligente
     //   · Domina tudo + velocidade é
-    //     o gargalo                    → Progressivo
+    //     o gargalo                    → Progressivo (ou Corrida)
     //   · Uma tabuada muito fraca
     //     (< 30%)                      → Chunking
     //   · Muitas pendências (> 40%)    → Inteligente
@@ -22547,6 +22576,7 @@ O MENU DEVE SER SEMPRE ESTE:
    Compare o melhor tempo médio do aluno com as metas dos certificados
    (2-5: 2,0s · 6-9: 2,5s · 1-10: 3,0s). Se está perto, diga quanto falta.
    Se já bateu, celebre e proponha metas mais ambiciosas.
+   Sugira também a **Corrida de Tabuada** (100m ou 200m) como forma de treinar a fluência sem pressão de ranking (se a precisão for ≥80%, até entra no ranking).
 
 7️⃣ PRÓXIMO CERTIFICADO:
    Use o bloco "PRÓXIMOS ALVOS" no topo. Diga o nome do certificado, o que
@@ -22596,6 +22626,13 @@ O MENU DEVE SER SEMPRE ESTE:
       Começa em 10s, cai para 8s, 6s, 4s conforme você acerta. Se erra,
       sobe de novo. Quando: você domina o conteúdo (>90% do mapa) mas o
       tempo médio ainda é alto (>2,0s). Foco em automaticidade.
+
+   G) 🏁 CORRIDA DE TABUADA (100m/200m) — modo de jogo.
+      Você responde o máximo de contas em 1min (100m) ou 2min (200m).
+      O cronômetro não para e encerra no 3º/6º erro. Tem ranking próprio
+      que exige 80% de precisão. Quando: aluno já domina o Progressivo
+      e quer um desafio extra de velocidade com limite de erros.
+      Onde encontrar: Menu "Mais Opções" -> "Corridas de Tabuada".
 
    COMO RESPONDER:
    Use o bloco "🏋️ TREINO RECOMENDADO AGORA" do perfil. Diga:
@@ -22666,6 +22703,13 @@ O MENU DEVE SER SEMPRE ESTE:
 • ⏱️ Progressivo: timer que cai (10s → 8s → 6s → 4s) conforme você acerta.
 • TODOS alimentam o mapa e os certificados. NENHUM entra no ranking oficial.
 • As sessões são curtas: 5 a 10 contas por vez.
+
+▸ CORRIDAS DE TABUADA (novidade v10.8.0)
+• Modo focado em fluência: responder o máximo de contas em 1 minuto (100m) ou 2 minutos (200m).
+• O cronômetro NÃO para e encerra no 3º erro (100m) ou 6º erro (200m).
+• Tem ranking próprio. Para entrar no ranking, precisa de no mínimo 80% de precisão.
+• As respostas da corrida alimentam o mapa de tabuadas e os certificados, mas NÃO contam para o ranking oficial das 20 perguntas (nem para o Hall da Fama, exceto pelo mapa).
+• Onde encontrar: Menu "Mais Opções" -> "Corridas de Tabuada".
 
 ▸ ÁLBUM E PATENTES
 • Álbum: medalhas (comum/incomum/raro/épico/lendário) → viram estrelas → definem a patente.
@@ -23231,6 +23275,73 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             const ativa = btn.dataset.mod === mod;
             btn.classList.toggle("ativa", ativa);
             btn.setAttribute("aria-pressed", String(ativa));
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Modal "Como funciona a Corrida"
+    // ─────────────────────────────────────────────────────────────────
+    function construirConteudoComoFuncionaCorrida() {
+        return `
+            <div class="corrida-desc-titulo"><span aria-hidden="true">🏁</span> Como funciona a Corrida de Tabuada</div>
+
+            <div class="corrida-desc-subtitulo">🎯 O que é</div>
+            <p>É um modo de jogo focado em <strong>fluência</strong> (responder o máximo possível em um tempo fixo). Diferente das partidas de 20 perguntas, a corrida não é adaptativa e o cronômetro não para no feedback. É você contra o tempo!</p>
+
+            <div class="corrida-desc-subtitulo">🏃 As modalidades</div>
+            <ul>
+                <li><strong>100m Tabuada:</strong> 1 minuto de duração, encerra no 3º erro.</li>
+                <li><strong>200m Tabuada:</strong> 2 minutos de duração, encerra no 6º erro.</li>
+            </ul>
+
+            <div class="corrida-desc-subtitulo">⚙️ Regras da Corrida</div>
+            <ul>
+                <li>O app embaralha as 100 operações (ou as 40 da modalidade escolhida). Se você for rápido demais, ele reembaralha para você não ficar sem contas.</li>
+                <li>O cronômetro é regressivo e <strong>não para</strong> durante a transição de perguntas.</li>
+                <li>Resposta errada conta como erro, e o tempo continua correndo.</li>
+                <li>O cálculo de velocidade média inclui <strong>todas as respostas</strong> (certas e erradas). O tempo entre uma pergunta e outra (feedback) não entra no cálculo.</li>
+            </ul>
+
+            <div class="corrida-desc-subtitulo">🏆 Ranking e Elegibilidade</div>
+            <p>As Corridas têm o seu próprio ranking (separado das partidas de 20 perguntas). Só entra no ranking quem terminar a corrida com <strong>no mínimo 80% de precisão</strong>.</p>
+            <p>Critérios de desempate: 1º Mais acertos → 2º Maior precisão → 3º Menor tempo médio por resposta.</p>
+
+            <div class="corrida-desc-subtitulo">🎓 Integração</div>
+            <p>As respostas da Corrida alimentam o <strong>Mapa de Tabuadas</strong> e os <strong>Certificados de Maestria</strong> como se fossem respostas de treino. Elas não entram no ranking oficial das 20 perguntas.</p>
+
+            <div class="corrida-desc-dica"><strong>💡 Dica:</strong> como a corrida exige precisão para o ranking (80%), não adianta tentar chutar tudo muito rápido e errar. Acerte com segurança, mas sem hesitar!</div>
+
+            <span class="corrida-desc-selo">🏁 Corridas de Tabuada · 100m e 200m.</span>
+        `;
+    }
+
+    function abrirModalComoFuncionaCorrida() {
+        const modal = document.getElementById("modal-explicacao-corrida");
+        const corpo = document.getElementById("modal-explicacao-corrida-corpo");
+        if (!modal || !corpo) return;
+        if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaCorrida();
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+            modal.querySelector(".modal-explicacao-fechar")?.focus();
+        }, 30);
+    }
+
+    function fecharModalComoFuncionaCorrida() {
+        const modal = document.getElementById("modal-explicacao-corrida");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+    }
+
+    if (!window._modalExplicacaoCorridaEscInstalado) {
+        window._modalExplicacaoCorridaEscInstalado = true;
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            const modal = document.getElementById("modal-explicacao-corrida");
+            if (modal && !modal.classList.contains("hidden")) {
+                fecharModalComoFuncionaCorrida();
+            }
         });
     }
 
