@@ -8733,6 +8733,223 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.83] */
 
+        /* ▼▼▼ [02.84] Corridas de Tabuada ─────────────────────── INÍCIO ─── */
+        /* v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros) e
+           200m (2min/6 erros). Ranking próprio, elegibilidade de 80% de
+           precisão. Alimenta mapa de tabuadas e certificados como treino.
+           Arquitetura: uma tela #tela-corrida com 3 views internos
+           (seleção · jogo · resultado). Nenhuma tela existente é
+           reescrita — a navegação é patcheada ao final do bloco JS
+           [18.12]. */
+
+        /* ─── Wrapper das views ─── */
+        .corrida-view { display: flex; flex-direction: column; gap: 14px; }
+        .corrida-view.hidden { display: none !important; }
+
+        /* ─── Botão de acesso no menu Mais ─── */
+        .mais-grid button.botao-corrida {
+            grid-column: 1 / -1;
+            min-height: 88px;
+            border: 2px solid rgba(249, 115, 22, 0.55);
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.14) 0%, rgba(220, 38, 38, 0.08) 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 3px 14px rgba(249, 115, 22, 0.15);
+        }
+        .mais-grid button.botao-corrida::after {
+            content: "";
+            position: absolute;
+            top: -20px; right: -20px;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.35) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .mais-grid button.botao-corrida:hover {
+            border-color: rgba(249, 115, 22, 0.9);
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.22) 0%, rgba(220, 38, 38, 0.14) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px rgba(249, 115, 22, 0.25);
+        }
+        .mais-grid button.botao-corrida .icone { font-size: 32px; }
+        .mais-grid button.botao-corrida .subtitulo-botao {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            line-height: 1.3;
+            margin-top: 4px;
+            color: #fed7aa;
+            opacity: 0.9;
+        }
+
+        /* ─── Cabeçalho comum das views ─── */
+        .corrida-cabecalho { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+        .corrida-cabecalho-esq { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .corrida-titulo-tela { font-size: clamp(18px, 4vw, 22px); font-weight: 900; color: var(--text-primary); margin: 0; line-height: 1.2; letter-spacing: -0.3px; }
+        .corrida-subtitulo { font-size: 13px; color: var(--text-secondary); line-height: 1.55; text-align: left; margin: 0 0 8px; }
+        .corrida-btn-sair { width: auto; margin: 0; padding: 7px 12px; background: transparent; color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer; box-shadow: none; font-family: inherit; }
+        .corrida-btn-sair:hover:not(:disabled) { background: rgba(148, 163, 184, 0.1); color: var(--text-primary); }
+
+        /* ─── Seleção de modalidade ─── */
+        .corrida-selecao-secao { background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 1px solid var(--border-neon); border-radius: 14px; padding: 16px; text-align: left; box-shadow: var(--shadow-card); }
+        .corrida-selecao-rotulo { font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: var(--neon-gold); margin: 0 0 8px; line-height: 1.2; }
+        .corrida-selecao-mods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        @media (max-width: 500px) { .corrida-selecao-mods { grid-template-columns: 1fr; } }
+        .corrida-mod-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 10px; background: rgba(10, 22, 40, 0.6); border: 1.5px solid rgba(56, 189, 248, 0.25); border-radius: 12px; color: var(--text-secondary); font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; text-align: center; transition: all 0.15s ease; margin: 0; line-height: 1.3; }
+        .corrida-mod-btn small { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+        .corrida-mod-btn:hover:not(:disabled) { background: rgba(34, 211, 238, 0.10); border-color: rgba(34, 211, 238, 0.5); color: var(--text-primary); transform: translateY(-1px); }
+        .corrida-mod-btn.ativa { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); border-color: var(--neon-cyan); color: #fff; box-shadow: 0 3px 12px rgba(14, 165, 233, 0.4); }
+        .corrida-mod-btn.ativa small { color: #bae6fd; }
+
+        /* ─── Cards de distância ─── */
+        .corrida-selecao-dists { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 4px; }
+        @media (max-width: 500px) { .corrida-selecao-dists { grid-template-columns: 1fr; } }
+        .corrida-dist-card { position: relative; overflow: hidden; background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 2px solid var(--border-neon); border-radius: 16px; padding: 18px 16px; text-align: left; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 10px; transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+        .corrida-dist-card:hover { transform: translateY(-2px); border-color: var(--neon-cyan); box-shadow: 0 8px 28px rgba(34, 211, 238, 0.22); }
+        .corrida-dist-card.dist-100 { border-left: 4px solid #f59e0b; }
+        .corrida-dist-card.dist-200 { border-left: 4px solid #22d3ee; }
+        .corrida-dist-icone { font-size: 44px; line-height: 1; margin-bottom: 2px; }
+        .corrida-dist-nome { font-size: 20px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.3px; margin: 0; line-height: 1.1; }
+        .corrida-dist-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+        .corrida-dist-detalhes { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+        .corrida-dist-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 700; background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); color: #a5f3fc; }
+        .corrida-dist-card.dist-100 .corrida-dist-chip { background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.4); color: #fde68a; }
+        .corrida-dist-btn { width: 100%; padding: 12px 18px; background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; letter-spacing: 0.4px; cursor: pointer; box-shadow: 0 3px 0 #07583d, 0 4px 12px rgba(11, 143, 100, 0.28); font-family: inherit; margin: 0; transition: all 0.15s ease; }
+        .corrida-dist-btn:hover:not(:disabled) { background: linear-gradient(135deg, #0fa572 0%, #0a885e 100%); transform: translateY(-1px); }
+        .corrida-dist-card.dist-200 .corrida-dist-btn { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28); }
+        .corrida-dist-card.dist-200 .corrida-dist-btn:hover:not(:disabled) { background: linear-gradient(135deg, #0284c7 0%, #075985 100%); }
+
+        /* ─── Regras ─── */
+        .corrida-regras { background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%); border: 1px solid var(--border-neon); border-radius: 12px; padding: 14px 16px; text-align: left; margin-top: 4px; }
+        .corrida-regras-titulo { font-size: 12px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: var(--neon-cyan); margin: 0 0 8px; }
+        .corrida-regras p { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+
+        /* ─── HUD de corrida ─── */
+        .corrida-hud { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 1px solid var(--border-neon); border-radius: 14px; padding: 12px 16px; box-shadow: var(--shadow-card); }
+        .corrida-hud-lado { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .corrida-hud-rotulo { font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); line-height: 1.2; }
+        .corrida-hud-valor { font-size: 26px; font-weight: 900; line-height: 1.05; letter-spacing: -0.5px; }
+        .corrida-hud-valor.acertos { color: #6ee7b7; }
+        .corrida-hud-valor.erros { color: #fca5a5; }
+        .corrida-hud-centro { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 100px; }
+        .corrida-timer-display { font-size: 32px; font-weight: 900; color: var(--neon-gold); line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+        .corrida-timer-display.apertado { color: #fde68a; }
+        .corrida-timer-display.urgente { color: #fca5a5; animation: corridaPulse 0.8s ease-in-out infinite; }
+        @keyframes corridaPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .corrida-timer-barra { height: 6px; background: rgba(0, 0, 0, 0.35); border-radius: 4px; overflow: hidden; width: 100%; }
+        .corrida-timer-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #22c55e 0%, #22d3ee 100%); border-radius: 4px; transition: width 0.1s linear, background 0.3s ease; }
+        .corrida-timer-barra.apertado .corrida-timer-fill { background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); }
+        .corrida-timer-barra.urgente .corrida-timer-fill { background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); }
+
+        /* ─── Dots de erros ─── */
+        .corrida-erros-dots { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 2px; }
+        .corrida-erro-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(148, 163, 184, 0.25); border: 2px solid rgba(148, 163, 184, 0.4); transition: all 0.2s ease; }
+        .corrida-erro-dot.usado { background: #ef4444; border-color: #dc2626; box-shadow: 0 0 8px rgba(239, 68, 68, 0.55); }
+
+        /* ─── Área de jogo ─── */
+        .corrida-jogo-card { background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 1px solid var(--border-neon); border-radius: 16px; padding: 18px 16px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 14px; }
+        .corrida-conta { font-size: clamp(38px, 9vw, 56px); font-weight: 900; color: #f8fafc; text-align: center; letter-spacing: 2px; line-height: 1.1; margin: 4px 0 8px; font-variant-numeric: tabular-nums; word-break: break-word; }
+        .corrida-conta.erro-visual { animation: corridaShake 0.3s ease; }
+        @keyframes corridaShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        .corrida-opcoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .corrida-opcao { padding: 18px 12px; background: rgba(10, 22, 40, 0.7); color: var(--text-primary); border: 2px solid rgba(56, 189, 248, 0.3); border-radius: 12px; font-size: clamp(20px, 5vw, 26px); font-weight: 900; cursor: pointer; font-family: inherit; transition: all 0.12s ease; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25); margin: 0; }
+        .corrida-opcao:hover:not(:disabled) { background: rgba(34, 211, 238, 0.14); border-color: var(--neon-cyan); transform: translateY(-1px); }
+        .corrida-opcao:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.25); }
+        .corrida-opcao.certo { background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%); border-color: #10b981; color: #fff; }
+        .corrida-opcao.errado { background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%); border-color: #ef4444; color: #fff; }
+        .corrida-opcao:disabled { cursor: not-allowed; }
+
+        /* ─── Resultado ─── */
+        .corrida-resultado-hero { background: linear-gradient(135deg, #0d2a4d 0%, #174a73 55%, #1e3a8a 100%); border: 1px solid var(--border-neon); border-radius: 18px; padding: 22px 20px 20px; text-align: center; box-shadow: var(--shadow-card), inset 0 0 60px rgba(34, 211, 238, 0.06); }
+        .corrida-resultado-emoji { font-size: 60px; line-height: 1; margin-bottom: 8px; display: inline-block; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35)); }
+        .corrida-resultado-titulo { font-size: clamp(20px, 5vw, 26px); font-weight: 900; color: #fff; margin: 0 0 4px; line-height: 1.15; }
+        .corrida-resultado-sub { font-size: 13.5px; color: #cbd5e1; line-height: 1.5; margin: 0; }
+        .corrida-resultado-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0; }
+        @media (min-width: 640px) { .corrida-resultado-stats { grid-template-columns: repeat(4, 1fr); } }
+        .corrida-stat-card { background: rgba(10, 22, 40, 0.6); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 12px; padding: 14px 12px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+        .corrida-stat-rotulo { font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-secondary); line-height: 1.2; }
+        .corrida-stat-valor { font-size: 22px; font-weight: 900; line-height: 1.05; letter-spacing: -0.4px; }
+        .corrida-stat-valor.acertos { color: #6ee7b7; }
+        .corrida-stat-valor.erros { color: #fca5a5; }
+        .corrida-stat-valor.precisao { color: var(--neon-cyan); }
+        .corrida-stat-valor.tempo { color: var(--neon-gold); }
+
+        /* ─── Elegibilidade ─── */
+        .corrida-eleg-card { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 12px; margin: 12px 0; text-align: left; line-height: 1.5; }
+        .corrida-eleg-card.eleg { background: linear-gradient(135deg, rgba(34, 197, 94, 0.16) 0%, rgba(22, 163, 74, 0.08) 100%); border: 1px solid rgba(34, 197, 94, 0.5); border-left: 4px solid #22c55e; }
+        .corrida-eleg-card.ineleg { background: linear-gradient(135deg, rgba(251, 191, 36, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%); border: 1px solid rgba(251, 191, 36, 0.4); border-left: 4px solid #fbbf24; }
+        .corrida-eleg-icone { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .corrida-eleg-titulo { font-size: 14px; font-weight: 900; margin: 0 0 4px; line-height: 1.2; }
+        .corrida-eleg-card.eleg .corrida-eleg-titulo { color: #86efac; }
+        .corrida-eleg-card.ineleg .corrida-eleg-titulo { color: #fde68a; }
+        .corrida-eleg-desc { font-size: 12.5px; margin: 0; line-height: 1.5; }
+        .corrida-eleg-card.eleg .corrida-eleg-desc { color: #bbf7d0; }
+        .corrida-eleg-card.ineleg .corrida-eleg-desc { color: #fef3c7; }
+
+        /* ─── Ranking mini ─── */
+        .corrida-rank-card { background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 1px solid var(--border-neon); border-radius: 14px; padding: 14px 16px; text-align: left; margin: 12px 0; }
+        .corrida-rank-titulo { font-size: 12px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: var(--neon-gold); margin: 0 0 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .corrida-rank-titulo small { font-size: 10.5px; color: var(--text-muted); font-weight: 700; letter-spacing: 0.3px; text-transform: none; }
+        .corrida-rank-linha { display: grid; grid-template-columns: 32px 1fr auto auto auto; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; color: var(--text-primary); background: rgba(10, 22, 40, 0.5); margin-bottom: 4px; }
+        @media (max-width: 520px) { .corrida-rank-linha { grid-template-columns: 26px 1fr auto auto; } }
+        .corrida-rank-linha.voce { background: linear-gradient(90deg, rgba(34, 211, 238, 0.16) 0%, rgba(34, 211, 238, 0.04) 100%); border: 1px solid rgba(34, 211, 238, 0.5); }
+        .corrida-rank-pos { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 11px; font-weight: 900; background: rgba(34, 211, 238, 0.15); color: var(--neon-cyan); }
+        .corrida-rank-linha:nth-child(1) .corrida-rank-pos { background: linear-gradient(135deg, #fbbf24, #d97706); color: #422006; }
+        .corrida-rank-linha:nth-child(2) .corrida-rank-pos { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: #1e293b; }
+        .corrida-rank-linha:nth-child(3) .corrida-rank-pos { background: linear-gradient(135deg, #b45309, #78350f); color: #fef3c7; }
+        .corrida-rank-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+        .corrida-rank-nome small { color: var(--text-muted); font-weight: 600; margin-left: 4px; font-size: 10.5px; }
+        .corrida-rank-metric { font-size: 11px; font-weight: 800; color: var(--text-secondary); white-space: nowrap; text-align: right; }
+        .corrida-rank-metric strong { color: var(--text-primary); }
+        @media (max-width: 520px) { .corrida-rank-metric.oculto-mob { display: none; } }
+
+        /* ─── Revisão de erros ─── */
+        .corrida-revisao-card { background: linear-gradient(160deg, rgba(19, 42, 71, 0.9) 0%, rgba(15, 35, 64, 0.9) 100%); border: 1px solid var(--border-neon); border-radius: 14px; padding: 14px 16px; text-align: left; margin: 12px 0; }
+        .corrida-revisao-titulo { font-size: 12px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; color: var(--neon-gold); margin: 0 0 10px; display: flex; align-items: center; gap: 6px; }
+        .corrida-revisao-lista { display: flex; flex-direction: column; gap: 6px; }
+        .corrida-revisao-item { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px 12px; background: rgba(10, 22, 40, 0.5); border-radius: 8px; border-left: 3px solid #ef4444; font-size: 12.5px; align-items: center; }
+        .corrida-revisao-op { font-family: ui-monospace, monospace; font-weight: 900; color: var(--text-primary); letter-spacing: 0.3px; }
+        .corrida-revisao-sua { color: #fca5a5; font-weight: 700; text-align: center; font-family: ui-monospace, monospace; }
+        .corrida-revisao-certa { color: #6ee7b7; font-weight: 700; text-align: center; font-family: ui-monospace, monospace; }
+        .corrida-revisao-vazio { padding: 16px 12px; text-align: center; color: var(--text-muted); font-size: 12.5px; line-height: 1.5; font-style: italic; }
+
+        /* ─── Ações ─── */
+        .corrida-acoes { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 8px; }
+        @media (min-width: 500px) { .corrida-acoes.duas-colunas { grid-template-columns: 1fr 1fr; } }
+        .corrida-acoes button { width: 100%; margin: 0; padding: 13px 16px; border-radius: 10px; font-size: 14px; font-weight: 800; letter-spacing: 0.3px; font-family: inherit; cursor: pointer; border: none; transition: all 0.15s ease; }
+        .corrida-btn-principal { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); color: #fff; box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.28); }
+        .corrida-btn-principal:hover:not(:disabled) { background: linear-gradient(135deg, #0284c7 0%, #075985 100%); transform: translateY(-1px); }
+        .corrida-btn-secundario { background: transparent; color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.3); box-shadow: none; }
+        .corrida-btn-secundario:hover:not(:disabled) { background: rgba(148, 163, 184, 0.1); color: var(--text-primary); }
+        .corrida-btn-treinar { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: #fff; box-shadow: 0 3px 0 #4c1d95, 0 4px 12px rgba(124, 58, 237, 0.28); }
+        .corrida-btn-treinar:hover:not(:disabled) { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); transform: translateY(-1px); }
+
+        /* ─── Loading ─── */
+        .corrida-loading { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13.5px; line-height: 1.5; }
+
+        /* ─── Ocultar FAB do Coach durante a corrida ─── */
+        body.corrida-ativa .coach-fab { display: none !important; }
+
+        /* ─── Acessibilidade ─── */
+        @media (prefers-reduced-motion: reduce) {
+            .corrida-timer-display.urgente { animation: none; }
+            .corrida-conta.erro-visual { animation: none; }
+            .corrida-opcao, .corrida-dist-card, .corrida-mod-btn, .corrida-btn-principal, .corrida-btn-treinar, .corrida-btn-secundario, .corrida-btn-sair { transition: none !important; }
+            .corrida-dist-card:hover, .corrida-opcao:hover:not(:disabled), .corrida-mod-btn:hover:not(:disabled) { transform: none; }
+        }
+
+        @media (max-width: 520px) {
+            .corrida-jogo-card { padding: 14px 12px; }
+            .corrida-hud { padding: 10px 12px; }
+            .corrida-hud-valor { font-size: 22px; }
+            .corrida-timer-display { font-size: 26px; }
+            .corrida-opcao { padding: 14px 10px; font-size: 20px; }
+            .corrida-resultado-hero { padding: 18px 16px; }
+            .corrida-resultado-emoji { font-size: 48px; }
+            .corrida-revisao-item { padding: 8px 10px; font-size: 12px; }
+        }
+        /* ▲▲▲ FIM [02.84] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -8905,6 +9122,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <div id="tela-mais" class="card hidden">
         <h2>⚙️ Mais Opções</h2>
         <div class="mais-grid">
+            <button onclick="abrirCorrida()" class="botao-corrida" aria-label="Abrir o modo Corridas de Tabuada">
+                <span class="icone">🏁</span>
+                <span>
+                    Corridas de Tabuada
+                    <small class="subtitulo-botao">responda o máximo em 1 ou 2 minutos</small>
+                </span>
+            </button>
             <button onclick="iniciarTreinoAnonimo()" class="botao-treino">
                 <span class="icone">🎯</span>
                 <span>Treino Livre</span>
@@ -9492,6 +9716,156 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div class="aprender-tela" id="aprender-conteudo"></div>
     </div>
     <!-- ▲▲▲ FIM [03.14] -->
+
+    <!-- ▼▼▼ [03.15] TELA CORRIDA DE TABUADA ──────────── INÍCIO ─── -->
+    <!-- v10.8.0 · Tela única com 3 views internos:
+           · #corrida-view-selecao   — modalidade + distância + regras
+           · #corrida-view-jogo      — HUD + conta + 4 opções
+           · #corrida-view-resultado — resultado + elegibilidade + ranking + revisão
+         O ciclo de vida (mostrar / esconder views) é feito pelo JS em [18.12]. -->
+    <div id="tela-corrida" class="card hidden" style="background:transparent;box-shadow:none;padding:0;">
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             VIEW 1 · SELEÇÃO
+             ═══════════════════════════════════════════════════════════════ -->
+        <div id="corrida-view-selecao" class="corrida-view">
+            <div class="corrida-cabecalho">
+                <div class="corrida-cabecalho-esq">
+                    <button class="corrida-btn-sair" onclick="mostrarTela('tela-mais')">← Voltar</button>
+                    <h2 class="corrida-titulo-tela">🏁 Corridas de Tabuada</h2>
+                </div>
+            </div>
+            <p class="corrida-subtitulo">Escolha a modalidade e a distância. Responda o máximo de contas antes do tempo acabar — cada erro conta e o cronômetro não para.</p>
+
+            <!-- Modalidade -->
+            <div class="corrida-selecao-secao">
+                <div class="corrida-selecao-rotulo">📚 Modalidade</div>
+                <div class="corrida-selecao-mods" role="radiogroup" aria-label="Escolha da modalidade">
+                    <button type="button" class="corrida-mod-btn" data-mod="2-5" onclick="selecionarModCorrida('2-5')" aria-pressed="false">
+                        📚 Tabuadas 2-5
+                        <small>40 operações</small>
+                    </button>
+                    <button type="button" class="corrida-mod-btn" data-mod="6-9" onclick="selecionarModCorrida('6-9')" aria-pressed="false">
+                        🎯 Tabuadas 6-9
+                        <small>40 operações</small>
+                    </button>
+                    <button type="button" class="corrida-mod-btn ativa" data-mod="0-10" onclick="selecionarModCorrida('0-10')" aria-pressed="true">
+                        ⭐ Tabuadas 1-10
+                        <small>100 operações</small>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Distâncias -->
+            <div class="corrida-selecao-dists">
+                <div class="corrida-dist-card dist-100">
+                    <span class="corrida-dist-icone" aria-hidden="true">🏃</span>
+                    <div class="corrida-dist-nome">100m Tabuada</div>
+                    <p class="corrida-dist-desc">Sprint rápido. Termina no 3º erro.</p>
+                    <div class="corrida-dist-detalhes">
+                        <span class="corrida-dist-chip">⏱️ 1 minuto</span>
+                        <span class="corrida-dist-chip">❌ 3 erros</span>
+                    </div>
+                    <button class="corrida-dist-btn" onclick="iniciarCorrida('100m')">▶ Começar 100m</button>
+                </div>
+                <div class="corrida-dist-card dist-200">
+                    <span class="corrida-dist-icone" aria-hidden="true">🏃‍♂️</span>
+                    <div class="corrida-dist-nome">200m Tabuada</div>
+                    <p class="corrida-dist-desc">Meia distância. Termina no 6º erro.</p>
+                    <div class="corrida-dist-detalhes">
+                        <span class="corrida-dist-chip">⏱️ 2 minutos</span>
+                        <span class="corrida-dist-chip">❌ 6 erros</span>
+                    </div>
+                    <button class="corrida-dist-btn" onclick="iniciarCorrida('200m')">▶ Começar 200m</button>
+                </div>
+            </div>
+
+            <!-- Regras -->
+            <div class="corrida-regras">
+                <div class="corrida-regras-titulo">📖 Como funciona a corrida</div>
+                <p>Responda ao maior número de contas antes do tempo acabar. Cada erro conta e o cronômetro não para. A corrida termina ao atingir o limite de erros. No ranking, fica à frente quem tiver mais acertos; em caso de empate, conta a maior precisão e, depois, a menor velocidade média por resposta. Apenas alunos com pelo menos 80% de precisão entram no ranking.</p>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             VIEW 2 · JOGO
+             ═══════════════════════════════════════════════════════════════ -->
+        <div id="corrida-view-jogo" class="corrida-view hidden">
+            <div class="corrida-hud">
+                <div class="corrida-hud-lado">
+                    <span class="corrida-hud-rotulo">✅ Acertos</span>
+                    <span class="corrida-hud-valor acertos" id="corrida-hud-acertos">0</span>
+                </div>
+                <div class="corrida-hud-centro">
+                    <div class="corrida-timer-display" id="corrida-timer-display">1:00</div>
+                    <div class="corrida-timer-barra" id="corrida-timer-barra">
+                        <div class="corrida-timer-fill" id="corrida-timer-fill"></div>
+                    </div>
+                </div>
+                <div class="corrida-hud-lado">
+                    <span class="corrida-hud-rotulo">❌ Erros</span>
+                    <span class="corrida-hud-valor erros" id="corrida-hud-erros">0</span>
+                    <div class="corrida-erros-dots" id="corrida-erros-dots" aria-hidden="true"></div>
+                </div>
+            </div>
+
+            <div class="corrida-jogo-card">
+                <div class="corrida-conta" id="corrida-conta">× = ?</div>
+                <div class="corrida-opcoes" id="corrida-opcoes">
+                    <button type="button" class="corrida-opcao" onclick="responderCorrida(this)"></button>
+                    <button type="button" class="corrida-opcao" onclick="responderCorrida(this)"></button>
+                    <button type="button" class="corrida-opcao" onclick="responderCorrida(this)"></button>
+                    <button type="button" class="corrida-opcao" onclick="responderCorrida(this)"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             VIEW 3 · RESULTADO
+             ═══════════════════════════════════════════════════════════════ -->
+        <div id="corrida-view-resultado" class="corrida-view hidden">
+            <div class="corrida-resultado-hero">
+                <span class="corrida-resultado-emoji" id="corrida-resultado-emoji" aria-hidden="true">🏁</span>
+                <h2 class="corrida-resultado-titulo" id="corrida-resultado-titulo">Corrida encerrada</h2>
+                <p class="corrida-resultado-sub" id="corrida-resultado-sub">Tempo esgotado.</p>
+            </div>
+
+            <div class="corrida-resultado-stats">
+                <div class="corrida-stat-card">
+                    <span class="corrida-stat-rotulo">✅ Acertos</span>
+                    <span class="corrida-stat-valor acertos" id="corrida-resultado-acertos">0</span>
+                </div>
+                <div class="corrida-stat-card">
+                    <span class="corrida-stat-rotulo">❌ Erros</span>
+                    <span class="corrida-stat-valor erros" id="corrida-resultado-erros">0</span>
+                </div>
+                <div class="corrida-stat-card">
+                    <span class="corrida-stat-rotulo">🎯 Precisão</span>
+                    <span class="corrida-stat-valor precisao" id="corrida-resultado-precisao">0%</span>
+                </div>
+                <div class="corrida-stat-card">
+                    <span class="corrida-stat-rotulo">⚡ Tempo médio</span>
+                    <span class="corrida-stat-valor tempo" id="corrida-resultado-tempo">—</span>
+                </div>
+            </div>
+
+            <div id="corrida-resultado-eleg"></div>
+
+            <div class="corrida-rank-card" id="corrida-rank-container">
+                <div class="corrida-loading">⏳ Carregando ranking…</div>
+            </div>
+
+            <div class="corrida-revisao-card" id="corrida-revisao-container"></div>
+
+            <div class="corrida-acoes duas-colunas">
+                <button class="corrida-btn-principal" onclick="novaCorridaResultado()">🏁 Nova corrida</button>
+                <button class="corrida-btn-treinar" onclick="treinarCorridaResultado()">🎯 Treinar essa modalidade</button>
+            </div>
+            <button class="corrida-btn-secundario" style="margin-top:6px;width:100%;padding:13px 16px;border-radius:10px;font-weight:800;font-size:14px;" onclick="sairCorridaResultado()">🏠 Voltar ao início</button>
+        </div>
+
+    </div>
+    <!-- ▲▲▲ FIM [03.15] -->
 
     <!-- ▼▼▼ [04.01] MODAL OPERAÇÃO ───────────────────────────── -->
     <div id="modal-operacao" class="modal-overlay hidden" onclick="fecharModalOperacao(event)">
@@ -22768,6 +23142,725 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         });
     }
     // ▲▲▲ FIM [18.11]
+
+    // ▼▼▼ [18.12] Motor da Corrida de Tabuada ───────────── INÍCIO ───
+    // v10.8.0 · Modo "Corridas de Tabuada" — 100m (1min/3 erros) e
+    // 200m (2min/6 erros). Ranking próprio em copa_corridas.
+    //
+    // Regras:
+    //   · Deck embaralhado das operações da modalidade (40 ou 100).
+    //     Reembaralhado se esgotar antes do tempo.
+    //   · Cronômetro regressivo que NÃO PARA no feedback.
+    //   · Tempo de cada pergunta medido por `performance.now()` no
+    //     início da pergunta → no clique da resposta. Feedback NÃO
+    //     entra na média de tempo.
+    //   · Erro conta e o tempo continua; limite de erros encerra.
+    //   · Tempo esgotado encerra.
+    //   · Elegível ao ranking só com precisão ≥ 80%.
+    //   · Desempate: mais acertos → maior precisão → menor tempo médio.
+    //   · Alimenta mapa + certificados como treino (não entra no
+    //     ranking das 20 perguntas nem no Hall da Fama).
+    //
+    // Firebase: copa_corridas/{distancia}__{modalidade}/{chaveAluno}
+    //
+    // Integração com mostrarTela: a tela #tela-corrida não está na
+    // lista original de [14.04]. Este bloco instala um patch
+    // defensivo que (a) esconde #tela-corrida quando o usuário
+    // navega para outra tela e (b) aborta uma corrida em andamento
+    // se o aluno tentar sair pelo meio. Nenhum outro comportamento
+    // de mostrarTela é alterado.
+
+    const CAMINHO_CORRIDAS = "copa_corridas";
+
+    const CORRIDA_DISTANCIAS = {
+        "100m": {
+            id: "100m",
+            label: "100m Tabuada",
+            icone: "🏃",
+            duracaoSeg: 60,
+            errosMax: 3,
+            subtitulo: "Sprint · 1 minuto · até 3 erros"
+        },
+        "200m": {
+            id: "200m",
+            label: "200m Tabuada",
+            icone: "🏃‍♂️",
+            duracaoSeg: 120,
+            errosMax: 6,
+            subtitulo: "Meia distância · 2 minutos · até 6 erros"
+        }
+    };
+
+    let corridaEstado = null;
+
+    // ─────────────────────────────────────────────────────────────────
+    // Abrir a tela (valida identificação, mostra view de seleção)
+    // ─────────────────────────────────────────────────────────────────
+    function abrirCorrida() {
+        const nome  = (typeof obterNomeSalvoAluno  === "function") ? obterNomeSalvoAluno()  : null;
+        const turma = (typeof obterTurmaSalvaAluno === "function") ? obterTurmaSalvaAluno() : null;
+
+        if (!nome || !turma) {
+            if (typeof notificar === "function") {
+                notificar("Para participar das Corridas, identifique-se primeiro.", "aviso", 5000);
+            }
+            if (typeof mostrarTela === "function") mostrarTela("tela-single");
+            return;
+        }
+        if (corridaEstado && corridaEstado.ativa) {
+            if (typeof notificar === "function") {
+                notificar("Você já tem uma corrida em andamento.", "aviso", 3500);
+            }
+            return;
+        }
+        _mostrarViewCorrida("selecao");
+        if (typeof mostrarTela === "function") mostrarTela("tela-corrida");
+    }
+
+    function _mostrarViewCorrida(viewId) {
+        const ids = ["selecao", "jogo", "resultado"];
+        ids.forEach(id => {
+            const el = document.getElementById(`corrida-view-${id}`);
+            if (el) el.classList.toggle("hidden", id !== viewId);
+        });
+    }
+
+    function selecionarModCorrida(mod) {
+        if (!MODALIDADES[mod]) return;
+        document.querySelectorAll(".corrida-mod-btn[data-mod]").forEach(btn => {
+            const ativa = btn.dataset.mod === mod;
+            btn.classList.toggle("ativa", ativa);
+            btn.setAttribute("aria-pressed", String(ativa));
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Iniciar corrida
+    // ─────────────────────────────────────────────────────────────────
+    function iniciarCorrida(distanciaId) {
+        const cfgDist = CORRIDA_DISTANCIAS[distanciaId];
+        if (!cfgDist) return;
+
+        const nome  = (typeof obterNomeSalvoAluno  === "function") ? obterNomeSalvoAluno()  : null;
+        const turma = (typeof obterTurmaSalvaAluno === "function") ? obterTurmaSalvaAluno() : null;
+        if (!nome || !turma) {
+            if (typeof notificar === "function") notificar("Identifique-se primeiro.", "aviso");
+            if (typeof mostrarTela === "function") mostrarTela("tela-single");
+            return;
+        }
+
+        const modBtn = document.querySelector(".corrida-mod-btn.ativa[data-mod]");
+        const modalidade = modBtn && MODALIDADES[modBtn.dataset.mod] ? modBtn.dataset.mod : "0-10";
+
+        // Limpa estado anterior
+        if (corridaEstado && corridaEstado.timerIntervalId) {
+            clearInterval(corridaEstado.timerIntervalId);
+        }
+
+        corridaEstado = {
+            distanciaId,
+            distancia: cfgDist,
+            modalidade,
+            nome,
+            turma,
+            deck: _gerarDeckCorrida(modalidade),
+            deckIndex: 0,
+            perguntaAtual: null,
+            tempoInicioConta: 0,
+
+            acertos: 0,
+            erros: 0,
+            totalRespondidas: 0,
+            somaTemposMs: 0,
+
+            errosDetalhes: [],
+            deltasMapa: {},
+
+            timerInicioMs: 0,
+            timerMs: cfgDist.duracaoSeg * 1000,
+            timerIntervalId: null,
+
+            ativa: true,
+            finalizando: false
+        };
+
+        // Reset visual
+        document.getElementById("corrida-hud-acertos").textContent = "0";
+        document.getElementById("corrida-hud-erros").textContent = "0";
+        _atualizarDotsErrosCorrida();
+        _atualizarDisplayTimer(corridaEstado.timerMs);
+
+        // Marca corpo (esconde FAB do Coach via CSS)
+        document.body.classList.add("corrida-ativa");
+
+        // Mostra view de jogo e dispara
+        _mostrarViewCorrida("jogo");
+        _iniciarTimerCorrida();
+        _proximaContaCorrida();
+    }
+
+    function _gerarDeckCorrida(modalidade) {
+        const fatores = MODALIDADES[modalidade]?.fatores || [];
+        const ops = [];
+        fatores.forEach(a => {
+            for (let b = 1; b <= 10; b++) ops.push({ fA: a, fB: b, produto: a * b });
+        });
+        for (let i = ops.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ops[i], ops[j]] = [ops[j], ops[i]];
+        }
+        return ops;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Timer principal (regressivo, sem pausa)
+    // ─────────────────────────────────────────────────────────────────
+    function _iniciarTimerCorrida() {
+        if (!corridaEstado) return;
+        corridaEstado.timerInicioMs = performance.now();
+        corridaEstado.timerIntervalId = setInterval(_tickTimerCorrida, 100);
+    }
+
+    function _tickTimerCorrida() {
+        if (!corridaEstado || !corridaEstado.ativa || corridaEstado.finalizando) return;
+        const decorrido = performance.now() - corridaEstado.timerInicioMs;
+        const restante = corridaEstado.timerMs - decorrido;
+        if (restante <= 0) {
+            _atualizarDisplayTimer(0);
+            finalizarCorrida("tempo");
+            return;
+        }
+        _atualizarDisplayTimer(restante);
+    }
+
+    function _atualizarDisplayTimer(restanteMs) {
+        const display = document.getElementById("corrida-timer-display");
+        const barra   = document.getElementById("corrida-timer-barra");
+        const fill    = document.getElementById("corrida-timer-fill");
+        if (!display) return;
+
+        const seg = Math.max(0, Math.ceil(restanteMs / 1000));
+        const min = Math.floor(seg / 60);
+        const s   = seg % 60;
+        display.textContent = `${min}:${String(s).padStart(2, "0")}`;
+
+        const pct = corridaEstado ? (restanteMs / corridaEstado.timerMs) : 0;
+        if (fill) fill.style.width = Math.max(0, Math.min(100, pct * 100)) + "%";
+
+        const urgente = pct <= 0.15;
+        const apertado = pct <= 0.35 && !urgente;
+        display.classList.toggle("urgente", urgente);
+        display.classList.toggle("apertado", apertado);
+        if (barra) {
+            barra.classList.toggle("urgente", urgente);
+            barra.classList.toggle("apertado", apertado);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Próxima conta
+    // ─────────────────────────────────────────────────────────────────
+    function _proximaContaCorrida() {
+        if (!corridaEstado || !corridaEstado.ativa || corridaEstado.finalizando) return;
+
+        if (corridaEstado.deckIndex >= corridaEstado.deck.length) {
+            corridaEstado.deck = _gerarDeckCorrida(corridaEstado.modalidade);
+            corridaEstado.deckIndex = 0;
+        }
+        const op = corridaEstado.deck[corridaEstado.deckIndex++];
+        corridaEstado.perguntaAtual = op;
+
+        const contaEl = document.getElementById("corrida-conta");
+        if (contaEl) {
+            contaEl.textContent = `${op.fA} × ${op.fB} = ?`;
+            contaEl.classList.remove("erro-visual");
+        }
+
+        const opcoes = _gerarDistratoresCorrida(op);
+        const btns = document.querySelectorAll("#corrida-opcoes .corrida-opcao");
+        btns.forEach((btn, i) => {
+            btn.classList.remove("certo", "errado");
+            btn.disabled = false;
+            btn.textContent = (opcoes[i] !== undefined) ? String(opcoes[i]) : "";
+        });
+
+        corridaEstado.tempoInicioConta = performance.now();
+    }
+
+    function _gerarDistratoresCorrida(op) {
+        // Reaproveita o gerador central de distratores do app (melhor UX,
+        // sem reinventar). Fallback simples caso a função não exista.
+        if (typeof gerarDistratoresInteligentes === "function") {
+            try {
+                return gerarDistratoresInteligentes(op.fA, op.fB, op.produto, 4, corridaEstado.modalidade);
+            } catch(e) { /* cai no fallback */ }
+        }
+        const arr = [op.produto];
+        while (arr.length < 4) {
+            const delta = (Math.floor(Math.random() * 7) - 3) || 2;
+            const v = op.produto + delta;
+            if (v > 0 && v <= 100 && !arr.includes(v)) arr.push(v);
+        }
+        return arr.sort((a, b) => a - b);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Responder
+    // ─────────────────────────────────────────────────────────────────
+    function responderCorrida(btn) {
+        if (!corridaEstado || !corridaEstado.ativa || corridaEstado.finalizando) return;
+        if (btn.disabled) return;
+
+        const valor = parseInt(btn.textContent, 10);
+        if (!Number.isFinite(valor)) return;
+
+        const op = corridaEstado.perguntaAtual;
+        if (!op) return;
+
+        const tempoContaMs = Math.max(1, performance.now() - corridaEstado.tempoInicioConta);
+        corridaEstado.somaTemposMs += tempoContaMs;
+        corridaEstado.totalRespondidas++;
+
+        const acertou = (valor === op.produto);
+
+        // Marca visual (breve, sem pausar o timer)
+        btn.disabled = true;
+        document.querySelectorAll("#corrida-opcoes .corrida-opcao").forEach(b => { b.disabled = true; });
+        if (acertou) {
+            btn.classList.add("certo");
+            if (typeof somAcerto === "function") { try { somAcerto(); } catch(e) {} }
+        } else {
+            btn.classList.add("errado");
+            if (typeof somErro === "function") { try { somErro(); } catch(e) {} }
+            const contaEl = document.getElementById("corrida-conta");
+            if (contaEl) {
+                contaEl.classList.add("erro-visual");
+                setTimeout(() => contaEl.classList.remove("erro-visual"), 320);
+            }
+        }
+
+        // Deltas para o mapa (todas as respostas, certas e erradas)
+        const k = `${op.fA}x${op.fB}`;
+        if (!corridaEstado.deltasMapa[k]) corridaEstado.deltasMapa[k] = { respostas: [] };
+        corridaEstado.deltasMapa[k].respostas.push({
+            acertou,
+            tempo: tempoContaMs / 1000
+        });
+
+        // Contadores
+        if (acertou) {
+            corridaEstado.acertos++;
+        } else {
+            corridaEstado.erros++;
+            corridaEstado.errosDetalhes.push({
+                fA: op.fA,
+                fB: op.fB,
+                produto: op.produto,
+                respostaDada: valor
+            });
+        }
+
+        // HUD
+        const acertosEl = document.getElementById("corrida-hud-acertos");
+        const errosEl = document.getElementById("corrida-hud-erros");
+        if (acertosEl) acertosEl.textContent = String(corridaEstado.acertos);
+        if (errosEl) errosEl.textContent = String(corridaEstado.erros);
+        _atualizarDotsErrosCorrida();
+
+        // Limite de erros → encerra
+        if (corridaEstado.erros >= corridaEstado.distancia.errosMax) {
+            setTimeout(() => finalizarCorrida("erros"), 220);
+            return;
+        }
+
+        // Próxima conta (feedback curto, sem pausar o cronômetro)
+        setTimeout(() => {
+            if (!corridaEstado || !corridaEstado.ativa || corridaEstado.finalizando) return;
+            _proximaContaCorrida();
+        }, 220);
+    }
+
+    function _atualizarDotsErrosCorrida() {
+        const dots = document.getElementById("corrida-erros-dots");
+        if (!dots || !corridaEstado) return;
+        const max = corridaEstado.distancia.errosMax;
+        let html = "";
+        for (let i = 0; i < max; i++) {
+            html += `<span class="corrida-erro-dot ${i < corridaEstado.erros ? "usado" : ""}"></span>`;
+        }
+        dots.innerHTML = html;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Finalizar corrida
+    // ─────────────────────────────────────────────────────────────────
+    async function finalizarCorrida(motivo) {
+        if (!corridaEstado || corridaEstado.finalizando) return;
+        corridaEstado.finalizando = true;
+        corridaEstado.ativa = false;
+
+        if (corridaEstado.timerIntervalId) {
+            clearInterval(corridaEstado.timerIntervalId);
+            corridaEstado.timerIntervalId = null;
+        }
+        document.body.classList.remove("corrida-ativa");
+
+        const total = corridaEstado.totalRespondidas;
+        const precisao = total > 0 ? (corridaEstado.acertos / total) : 0;
+        const tempoMedioMs = total > 0 ? (corridaEstado.somaTemposMs / total) : 0;
+        const elegivel = precisao >= 0.80 && total > 0;
+
+        const resultado = {
+            nome: corridaEstado.nome,
+            turma: corridaEstado.turma,
+            modalidade: corridaEstado.modalidade,
+            distanciaId: corridaEstado.distanciaId,
+            distanciaLabel: corridaEstado.distancia.label,
+            acertos: corridaEstado.acertos,
+            erros: corridaEstado.erros,
+            totalRespondidas: total,
+            precisao: Math.round(precisao * 10000) / 10000,
+            tempoMedioMs: Math.round(tempoMedioMs),
+            data: new Date().toISOString(),
+            elegivel,
+            motivo
+        };
+
+        // ─── Salva no mapa em background (não bloqueia a tela) ───
+        _persistirMapaCorrida(resultado).catch(err => {
+            console.warn("[Corrida] Falha ao persistir mapa:", err);
+        });
+
+        // ─── Renderiza resultado ───
+        _renderizarResultadoCorrida(resultado);
+
+        // ─── Atualiza ranking em background ───
+        _persistirRankingCorrida(resultado).then(record => {
+            _renderizarRankingCorrida(resultado, record).catch(err => {
+                console.warn("[Corrida] Falha ao renderizar ranking:", err);
+            });
+        }).catch(err => {
+            console.warn("[Corrida] Falha ao persistir ranking:", err);
+            const rank = document.getElementById("corrida-rank-container");
+            if (rank) rank.innerHTML = `<div class="corrida-revisao-vazio">Ranking indisponível agora.</div>`;
+        });
+
+        // ─── Revisão de erros ───
+        _renderizarRevisaoErrosCorrida(resultado);
+
+        // ─── Feed do mapa + certificados ───
+        setTimeout(async () => {
+            try {
+                if (typeof verificarCertificadosPosPartida === "function") {
+                    await verificarCertificadosPosPartida(corridaEstado.nome, corridaEstado.turma, corridaEstado.modalidade);
+                }
+            } catch(e) { console.warn("[Corrida] Certificados:", e); }
+            try {
+                if (typeof verificarAlbumPosPartida === "function") {
+                    await verificarAlbumPosPartida(corridaEstado.nome, corridaEstado.turma);
+                }
+            } catch(e) { console.warn("[Corrida] Álbum:", e); }
+        }, 900);
+
+        // ─── Som + view ───
+        try {
+            if (corridaEstado.acertos > 0 && corridaEstado.erros === 0 && motivo === "tempo") {
+                if (typeof somConclusao === "function") somConclusao();
+                if (typeof dispararConfetes === "function") dispararConfetes();
+            } else if (typeof somConclusao === "function") {
+                somConclusao();
+            }
+        } catch(e) {}
+
+        _mostrarViewCorrida("resultado");
+    }
+
+    async function _persistirMapaCorrida(resultado) {
+        if (!corridaEstado || !corridaEstado.deltasMapa) return;
+        if (Object.keys(corridaEstado.deltasMapa).length === 0) return;
+        if (typeof incrementarMapaAluno !== "function") return;
+        try {
+            await incrementarMapaAluno(
+                resultado.nome,
+                resultado.turma,
+                resultado.modalidade,
+                corridaEstado.deltasMapa
+            );
+        } catch(e) {
+            console.warn("[Corrida] incrementarMapaAluno falhou:", e);
+        }
+        try {
+            if (typeof verificarPromocoes === "function" && typeof obterDesempenhoOperacoesGlobal === "function") {
+                const mapa = await obterDesempenhoOperacoesGlobal(resultado.nome, resultado.turma);
+                await verificarPromocoes(resultado.nome, resultado.turma, resultado.modalidade, mapa);
+            }
+        } catch(e) { console.warn("[Corrida] verificarPromocoes falhou:", e); }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Ranking próprio das corridas
+    // ─────────────────────────────────────────────────────────────────
+    async function _persistirRankingCorrida(resultado) {
+        if (!resultado.elegivel) return null;
+        if (typeof database === "undefined") return null;
+
+        const chave = chaveAlbum(resultado.nome, resultado.turma);
+        const pathKey = `${resultado.distanciaId}__${resultado.modalidade}`;
+        const ref = database.ref(`${CAMINHO_CORRIDAS}/${pathKey}/${chave}`);
+
+        try {
+            const snap = await ref.once("value");
+            const existente = snap.val();
+            if (existente && !_ehMelhorCorrida(resultado, existente)) {
+                return existente;
+            }
+            const record = {
+                nome: resultado.nome,
+                turma: resultado.turma,
+                modalidade: resultado.modalidade,
+                distanciaId: resultado.distanciaId,
+                acertos: resultado.acertos,
+                erros: resultado.erros,
+                totalRespondidas: resultado.totalRespondidas,
+                precisao: resultado.precisao,
+                tempoMedioMs: resultado.tempoMedioMs,
+                data: resultado.data,
+                elegivel: true
+            };
+            await ref.set(record);
+            return record;
+        } catch(e) {
+            console.warn("[Corrida] Falha ao salvar ranking:", e);
+            return null;
+        }
+    }
+
+    function _ehMelhorCorrida(novo, existente) {
+        if (!existente) return true;
+        if (novo.acertos !== existente.acertos) return novo.acertos > existente.acertos;
+        if (Math.abs(novo.precisao - existente.precisao) > 0.0001) return novo.precisao > existente.precisao;
+        if (novo.tempoMedioMs !== existente.tempoMedioMs) return novo.tempoMedioMs < existente.tempoMedioMs;
+        return false;
+    }
+
+    async function obterRankingCorrida(distanciaId, modalidade, limite) {
+        if (typeof database === "undefined") return [];
+        const pathKey = `${distanciaId}__${modalidade}`;
+        try {
+            const snap = await database.ref(`${CAMINHO_CORRIDAS}/${pathKey}`).once("value");
+            const dados = snap.val() || {};
+            const lista = Object.values(dados).filter(r => r && r.elegivel);
+            lista.sort((a, b) => {
+                if (b.acertos !== a.acertos) return b.acertos - a.acertos;
+                if (Math.abs(b.precisao - a.precisao) > 0.0001) return b.precisao - a.precisao;
+                return a.tempoMedioMs - b.tempoMedioMs;
+            });
+            return limite ? lista.slice(0, limite) : lista;
+        } catch(e) {
+            console.warn("[Corrida] Falha ao ler ranking:", e);
+            return [];
+        }
+    }
+
+    async function _renderizarRankingCorrida(resultado, recordeAtual) {
+        const container = document.getElementById("corrida-rank-container");
+        if (!container) return;
+
+        container.innerHTML = `<div class="corrida-loading">⏳ Carregando ranking…</div>`;
+        const lista = await obterRankingCorrida(resultado.distanciaId, resultado.modalidade, 8);
+        const nomeAluno = resultado.nome;
+        const turmaAluno = resultado.turma;
+
+        const titulo = `
+            <div class="corrida-rank-titulo">
+                <span>🏆 Ranking · ${escaparHtml(resultado.distanciaLabel)} · ${escaparHtml(MODALIDADES[resultado.modalidade]?.nome || resultado.modalidade)}</span>
+                <small>${lista.length ? `Top ${lista.length}` : ""}</small>
+            </div>`;
+
+        if (!lista.length) {
+            container.innerHTML = `${titulo}<div class="corrida-revisao-vazio">Ninguém entrou no ranking ainda — seja o primeiro!</div>`;
+            return;
+        }
+
+        const linhas = lista.map((r, i) => {
+            const ehVoce = normalizarNome(r.nome) === normalizarNome(nomeAluno) && r.turma === turmaAluno;
+            const pos = i + 1;
+            const posTxt = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `${pos}º`;
+            const precisaoPct = Math.round((r.precisao || 0) * 100);
+            const tempoMedio = r.tempoMedioMs ? (r.tempoMedioMs / 1000).toFixed(2) : "—";
+            return `<div class="corrida-rank-linha ${ehVoce ? "voce" : ""}">
+                <span class="corrida-rank-pos">${posTxt}</span>
+                <span class="corrida-rank-nome">${escaparHtml(r.nome)}<small>${escaparHtml(r.turma)}${ehVoce ? " · você" : ""}</small></span>
+                <span class="corrida-rank-metric"><strong>${r.acertos}</strong> acertos</span>
+                <span class="corrida-rank-metric oculto-mob">${precisaoPct}% prec.</span>
+                <span class="corrida-rank-metric">${tempoMedio}s</span>
+            </div>`;
+        }).join("");
+
+        container.innerHTML = titulo + linhas;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Renderização do resultado
+    // ─────────────────────────────────────────────────────────────────
+    function _renderizarResultadoCorrida(resultado) {
+        const emojiEl   = document.getElementById("corrida-resultado-emoji");
+        const tituloEl  = document.getElementById("corrida-resultado-titulo");
+        const subEl     = document.getElementById("corrida-resultado-sub");
+        const acertosEl = document.getElementById("corrida-resultado-acertos");
+        const errosEl   = document.getElementById("corrida-resultado-erros");
+        const precEl    = document.getElementById("corrida-resultado-precisao");
+        const tempoEl   = document.getElementById("corrida-resultado-tempo");
+        const elegEl    = document.getElementById("corrida-resultado-eleg");
+
+        const precisaoPct = Math.round((resultado.precisao || 0) * 100);
+        const tempoMedioSeg = resultado.tempoMedioMs ? (resultado.tempoMedioMs / 1000) : 0;
+
+        let emoji = "💪";
+        let titulo = "Corrida encerrada";
+        let sub = resultado.motivo === "erros"
+            ? `Você atingiu o limite de ${resultado.erros} erros.`
+            : `O tempo acabou.`;
+
+        if (resultado.acertos === 0) {
+            emoji = "💪";
+            titulo = "Bora treinar!";
+        } else if (resultado.erros === 0 && resultado.motivo === "tempo") {
+            emoji = "🏆";
+            titulo = "Corrida perfeita!";
+            sub = `Você respondeu ${resultado.acertos} contas certas sem errar nenhuma.`;
+        } else if (resultado.precisao >= 0.80) {
+            emoji = "🌟";
+            titulo = "Boa corrida!";
+        } else if (resultado.precisao >= 0.50) {
+            emoji = "👏";
+            titulo = "Corrida concluída";
+        }
+
+        if (emojiEl) emojiEl.textContent = emoji;
+        if (tituloEl) tituloEl.textContent = titulo;
+        if (subEl) subEl.textContent = sub;
+        if (acertosEl) acertosEl.textContent = String(resultado.acertos);
+        if (errosEl) errosEl.textContent = String(resultado.erros);
+        if (precEl) precEl.textContent = `${precisaoPct}%`;
+        if (tempoEl) tempoEl.textContent = tempoMedioSeg > 0 ? `${tempoMedioSeg.toFixed(2)}s` : "—";
+
+        if (elegEl) {
+            if (resultado.elegivel) {
+                elegEl.innerHTML = `
+                    <div class="corrida-eleg-card eleg">
+                        <span class="corrida-eleg-icone" aria-hidden="true">🏅</span>
+                        <div>
+                            <div class="corrida-eleg-titulo">Elegível para o ranking!</div>
+                            <p class="corrida-eleg-desc">Sua precisão (${precisaoPct}%) atingiu o mínimo de 80%. Sua corrida foi registrada.</p>
+                        </div>
+                    </div>`;
+            } else {
+                const faltam = Math.max(0, 80 - precisaoPct);
+                elegEl.innerHTML = `
+                    <div class="corrida-eleg-card ineleg">
+                        <span class="corrida-eleg-icone" aria-hidden="true">🎯</span>
+                        <div>
+                            <div class="corrida-eleg-titulo">Ainda não elegível para o ranking</div>
+                            <p class="corrida-eleg-desc">Sua precisão foi de <strong>${precisaoPct}%</strong>. Faltaram <strong>${faltam} pontos percentuais</strong> para o mínimo de 80%. Sua corrida contou para o mapa e certificados.</p>
+                        </div>
+                    </div>`;
+            }
+        }
+    }
+
+    function _renderizarRevisaoErrosCorrida(resultado) {
+        const container = document.getElementById("corrida-revisao-container");
+        if (!container) return;
+
+        if (!corridaEstado || !corridaEstado.errosDetalhes || corridaEstado.errosDetalhes.length === 0) {
+            container.innerHTML = `
+                <div class="corrida-revisao-titulo">🔁 Revisão de erros</div>
+                <div class="corrida-revisao-vazio">✨ Nenhum erro nesta corrida!</div>`;
+            return;
+        }
+
+        const itens = corridaEstado.errosDetalhes.slice(0, 12).map(e => `
+            <div class="corrida-revisao-item">
+                <span class="corrida-revisao-op">${e.fA} × ${e.fB}</span>
+                <span class="corrida-revisao-sua">${e.respostaDada}</span>
+                <span class="corrida-revisao-certa">${e.produto}</span>
+            </div>
+        `).join("");
+
+        const extra = corridaEstado.errosDetalhes.length > 12
+            ? `<div class="corrida-revisao-vazio" style="padding-top:6px;">…e mais ${corridaEstado.errosDetalhes.length - 12} erro(s).</div>`
+            : "";
+
+        container.innerHTML = `
+            <div class="corrida-revisao-titulo">🔁 Revisão de erros <small style="font-weight:700;color:var(--text-muted);text-transform:none;font-size:10.5px;letter-spacing:0;">sua resposta · resposta certa</small></div>
+            <div class="corrida-revisao-lista">${itens}</div>
+            ${extra}`;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Navegação do resultado
+    // ─────────────────────────────────────────────────────────────────
+    function novaCorridaResultado() {
+        // Limpa estado e volta para seleção (mantém modalidade selecionada)
+        if (corridaEstado && corridaEstado.timerIntervalId) {
+            clearInterval(corridaEstado.timerIntervalId);
+        }
+        const modAntiga = corridaEstado?.modalidade || "0-10";
+        corridaEstado = null;
+        document.body.classList.remove("corrida-ativa");
+        _mostrarViewCorrida("selecao");
+        selecionarModCorrida(modAntiga);
+    }
+
+    function treinarCorridaResultado() {
+        const mod = corridaEstado?.modalidade || "0-10";
+        // Corrida já finalizada — pode abrir o menu de treino
+        if (typeof abrirMenuTreino === "function") {
+            abrirMenuTreino(mod);
+        }
+    }
+
+    function sairCorridaResultado() {
+        if (corridaEstado && corridaEstado.timerIntervalId) {
+            clearInterval(corridaEstado.timerIntervalId);
+        }
+        corridaEstado = null;
+        document.body.classList.remove("corrida-ativa");
+        if (typeof mostrarTela === "function") mostrarTela("tela-inicial");
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Patch defensivo em mostrarTela
+    // ─────────────────────────────────────────────────────────────────
+    // Não reescreve [14.04]. Adiciona:
+    //   · esconder #tela-corrida quando o usuário navega para outra tela;
+    //   · abortar uma corrida em andamento se o aluno "sair por fora".
+    // Idempotente via guarda `_corridaPatch`.
+    (function _patchMostrarTelaParaCorrida() {
+        if (typeof mostrarTela !== "function") return;
+        if (window.mostrarTela && window.mostrarTela._corridaPatch) return;
+        const original = window.mostrarTela;
+        window.mostrarTela = function(id) {
+            // Se está saindo de tela-corrida com corrida ativa, aborta
+            if (id !== "tela-corrida" && corridaEstado && corridaEstado.ativa) {
+                try {
+                    if (corridaEstado.timerIntervalId) clearInterval(corridaEstado.timerIntervalId);
+                    corridaEstado.ativa = false;
+                    corridaEstado.finalizando = true;
+                    document.body.classList.remove("corrida-ativa");
+                    corridaEstado = null;
+                } catch(e) { /* silencioso */ }
+            }
+            original(id);
+            if (id !== "tela-corrida") {
+                const tela = document.getElementById("tela-corrida");
+                if (tela) tela.classList.add("hidden");
+            }
+        };
+        window.mostrarTela._corridaPatch = true;
+    })();
+    // ▲▲▲ FIM [18.12]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
