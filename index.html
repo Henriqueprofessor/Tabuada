@@ -21077,6 +21077,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [18.01]
 
     // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
+    // v10.9.1 · Hotfix: Cards agora mostram os 3 primeiros colocados
+    // (pódio) em vez de apenas 1.
+
     async function abrirHallDaFama() {
         mostrarTela("tela-hall-fama");
         await renderizarHallDaFama();
@@ -21338,20 +21341,27 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             }
 
             const totalGeral = lista.length;
-            const primeiro = lista[0];
-            const ehVocePrimeiro = nomeAluno && turmaAluno &&
-                normalizarNome(primeiro.nome) === normalizarNome(nomeAluno) &&
-                primeiro.turma === turmaAluno;
+            const top3 = lista.slice(0, 3); // Pega o pódio
+            
+            // Renderiza os 3 primeiros
+            const itensHtml = top3.map((item, i) => {
+                const pos = i + 1;
+                const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : "🥉";
+                const ehVoce = nomeAluno && turmaAluno &&
+                    normalizarNome(item.nome) === normalizarNome(nomeAluno) &&
+                    item.turma === turmaAluno;
 
-            const itensHtml = `<li class="hall-item" ${ehVocePrimeiro ? `style="${ehVoceStyle}"` : ""}>
-                <span class="hall-item-pos">🥇</span>
-                <span class="hall-item-nome">${escaparHtml(primeiro.nome)}${ehVocePrimeiro ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>${hallFormatarSubLinha(primeiro, tipoValor)}</small></span>
-                <span class="hall-item-valor">${hallFormatarValor(primeiro, tipoValor)}</span>
-            </li>`;
+                return `<li class="hall-item" ${ehVoce ? `style="${ehVoceStyle}"` : ""}>
+                    <span class="hall-item-pos">${medal}</span>
+                    <span class="hall-item-nome">${escaparHtml(item.nome)}${ehVoce ? ' <span style="color:var(--neon-green);font-weight:800;">← Você</span>' : ''}<small>${hallFormatarSubLinha(item, tipoValor)}</small></span>
+                    <span class="hall-item-valor">${hallFormatarValor(item, tipoValor)}</span>
+                </li>`;
+            }).join("");
 
             const linhaPosicao = hallLinhaPosicao(lista, tipoValor);
 
-            const botao = totalGeral > 1
+            // O botão de ver ranking completo só aparece se houver MAIS de 3 alunos (já que os 3 primeiros já estão na tela)
+            const botao = totalGeral > 3
                 ? `<button class="hall-ver-ranking-btn" onclick="abrirHallCategoria('${categoriaId}')">🏆 Ver ranking completo (${totalGeral}) →</button>`
                 : "";
 
