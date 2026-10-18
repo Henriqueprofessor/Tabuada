@@ -13373,21 +13373,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.01]
 
     // ▼▼▼ [11.02] Compilação dos dados do aluno ─────────────────────────
-    // v10.9.0 · A verificação de posições agora usa ranking_resumo/best_turma
-    // em vez de baixar `resultados` inteiro. Isso é especialmente importante
-    // porque compilarDadosAluno() é chamado em MUITAS telas (Álbum, Coach,
-    // Home, Perfil, etc).
     async function compilarDadosAluno(nome, turma) {
-        // ⚙️ [13] — Só partidas COMPLETAS (20 respostas) contam para medalhas,
-        // Hall da Fama e Álbum. Partidas parciais continuam no histórico,
-        // gráfico de desempenho e média — mas NÃO aqui.
-        // v10.9.0 · obterHistoricoAluno() já é per-aluno (usa
-        // partidas_por_aluno quando ativo). Não baixa mais `partidas` inteiro.
         const todasPartidas = await obterHistoricoAluno(nome, turma);
         const partidas = todasPartidas.filter(ehPartidaCompleta);
 
-        // ▼ P36 — Paraleliza as leituras base. NÃO lê mais o ranking inteiro:
-        //   usa best_turma por modalidade (3 leituras pequenas).
         const [mapaGlobal, medalhasPersistidas, snapTreinos, ...listasPorMod] = await Promise.all([
             obterDesempenhoOperacoesGlobal(nome, turma),
             obterMedalsFirebase(nome, turma),
@@ -13433,14 +13422,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const melhorouNaSegundaTentativa = Object.values(porMod).some(l => l.length >= 2 && Number(l[1].pontos) > Number(l[0].pontos));
         const modalidadesJogadas = new Set(partidas.map(p => p.modalidade)).size;
 
-        // Contagem de operações exploradas / dominadas (formato novo — janela)
         const operacoesExploradas = Object.values(mapaGlobal).filter(d => normalizarHistoricoOperacao(d).length > 0).length;
-
-        // ▼ v10.4.9 · Correção (item 8): fonte correta do contador de treinos.
         const treinosFocados = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
 
-        // ▼ v10.9.0 · Posições calculadas com as listas por modalidade
-        // (best_turma já vem ordenada por pontos).
         const posicoes = {};
         const mods = Object.keys(MODALIDADES);
         mods.forEach((mod, idx) => {
@@ -13471,7 +13455,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const diasNoTop4 = await contarDiasNoTop4(nome, turma);
         const conquistasCount = Object.keys(medalhasPersistidas).length;
 
-        // Contagem de operações dominadas no formato NOVO
         const chavesValidas = [];
         FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => chavesValidas.push(`${a}x${b}`)));
 
@@ -13503,7 +13486,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const mapaCompleto   = operacoesDominadas   === 100;
         const guardaPrecisao = operacoesPrecisao95  === 100;
 
-        // Lenda do mapa: mantém 100% em 3 dias diferentes
         const chaveDiasLenda = chaveAlbum(nome, turma) + "|lenda";
         let dias100 = [];
         try { dias100 = JSON.parse(localStorage.getItem(chaveDiasLenda) || "[]"); } catch(e) { dias100 = []; }
@@ -13516,8 +13498,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
         const lendaMapa = dias100.length >= 3;
 
-        // ⚙️ Média Geral — por modalidade. Conta partidas COMPLETAS + PARCIAIS.
-        // Usa `todasPartidas` (não filtrado), pois a média deve refletir tudo.
         const somaPorMod = { "2-5": { total: 0, soma: 0 }, "6-9": { total: 0, soma: 0 }, "0-10": { total: 0, soma: 0 } };
         todasPartidas.forEach(p => {
             const m = p.modalidade;
@@ -13543,8 +13523,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             posicoes, melhorPosicao, modalidadesTop4, subiuRanking, diasNoTop4,
             operacoesDominadas, operacoesDominadas25, operacoesDominadas69, operacoesPrecisao95,
             baseSolida, mestreDesafios, mapaCompleto, guardaPrecisao, lendaMapa, diasMapa100: dias100.length,
-            // ⚙️ Médias por modalidade (para as medalhas de Consistência)
-            media25, media69, media010, mediaMaxima, modalidadesCom17K: modalidadesCom17K, modalidadesCom17k, todasMedias17k,
+            // ⚙️ AQUI ESTAVA O ERRO: Foi corrigido para "modalidadesCom17k" (minúsculo)
+            media25, media69, media010, mediaMaxima, modalidadesCom17K: modalidadesCom17k, modalidadesCom17k, todasMedias17k,
             _medalhasPersistidas: medalhasPersistidas
         };
     }
