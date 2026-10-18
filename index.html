@@ -21889,6 +21889,179 @@ if (containerProg) {
     });
     // ▲▲▲ FIM [18.06]
 
+    // ▼▼▼ [18.06.bis] Hall da Fama — Modal Categoria (Ranking Completo) ─── INÍCIO ───
+    // Implementa as funções que estavam faltando e causavam o erro
+    // "abrirHallCategoria is not defined". O modal já existe no HTML ([04.17]).
+
+    let hallCategoriaAtual = null;
+
+    function abrirHallCategoria(categoriaId) {
+        const modal = document.getElementById("modal-hall-categoria");
+        if (!modal) return;
+        
+        hallCategoriaAtual = categoriaId;
+        
+        const titulos = {
+            medalhas: "Mais Medalhas",
+            estrelas: "Mais Estrelas",
+            album: "Álbum de Elite",
+            velocidade: "Mestre da Velocidade",
+            acertos: "Total de Acertos",
+            maratonista: "Maratonista da Copa",
+            presenca: "Presença VIP",
+            treino: "Mestre do Treino",
+            media: "Média Consistente",
+            turmas: "Turma de Elite"
+        };
+        
+        const elTitulo = document.getElementById("hall-categoria-titulo");
+        if (elTitulo) elTitulo.textContent = "🏆 " + (titulos[categoriaId] || "Ranking");
+        
+        modal.classList.remove("hidden");
+        renderizarModalHallCategoria();
+        setTimeout(() => { document.querySelector("#modal-hall-categoria .modal-close")?.focus(); }, 80);
+    }
+
+    function fecharModalHallCategoria(e) {
+        if (e && e.target && e.target.closest(".hall-categoria-modal-card")) return;
+        document.getElementById("modal-hall-categoria")?.classList.add("hidden");
+        hallCategoriaAtual = null;
+    }
+
+    function renderizarModalHallCategoria() {
+        const container = document.getElementById("hall-categoria-conteudo");
+        if (!container || !hallFamaCache || !hallCategoriaAtual) return;
+        
+        const lista = hallFamaCache[hallCategoriaAtual];
+        if (!lista || !lista.length) {
+            container.innerHTML = `<div class="hall-vazio">Nenhum aluno nesta categoria ainda.</div>`;
+            return;
+        }
+        
+        const nomeAluno = obterNomeSalvoAluno();
+        const turmaAluno = obterTurmaSalvaAluno();
+        const ehVoceStyle = 'border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);';
+        
+        const tipoValor = hallCategoriaAtual;
+        
+        let html = `<div class="hall-categoria-resumo">
+            <strong>${lista.length}</strong> ${lista.length === 1 ? "participante" : "participantes"} nesta categoria.<br>
+            ${hallCategoriaAtual === "turmas" ? "Média dos melhores alunos de cada turma." : "Ranking completo com todos os alunos."}
+        </div>`;
+        
+        html += `<ul class="hall-categoria-lista">`;
+        
+        // Podium
+        const top3 = lista.slice(0, 3);
+        const rest = lista.slice(3);
+        
+        top3.forEach((item, i) => {
+            const pos = i + 1;
+            const ehVoce = hallCategoriaAtual !== "turmas" && normalizarNome(item.nome) === normalizarNome(nomeAluno) && item.turma === turmaAluno;
+            const podioCls = `podio-${pos}`;
+            const voceCls = ehVoce ? ' voce' : '';
+            const voceTag = ehVoce ? `<span class="hall-categoria-voce-tag">Você</span>` : '';
+            
+            const nomeExibicao = hallCategoriaAtual === "turmas" ? `Turma ${escaparHtml(item.turma)}` : `${escaparHtml(item.nome)}${voceTag}`;
+            const subLinha = hallCategoriaAtual === "turmas" ? `Média dos ${item.totalJogadores} melhores de ${item.totalTurma} alunos` : hallFormatarSubLinha(item, tipoValor);
+            
+            html += `<li class="hall-categoria-item ${podioCls}${voceCls}" ${ehVoce ? `style="${ehVoceStyle}"` : ""}>
+                <span class="hall-categoria-pos">${pos}º</span>
+                <span class="hall-categoria-info">
+                    <span class="hall-categoria-nome">${nomeExibicao}</span>
+                    <span class="hall-categoria-sub">${subLinha}</span>
+                </span>
+                <span class="hall-categoria-valor">${hallFormatarValor(item, tipoValor)}</span>
+            </li>`;
+        });
+        
+        if (rest.length > 0) {
+            html += `<li class="hall-categoria-divisor">Outros participantes</li>`;
+            rest.forEach((item, i) => {
+                const pos = i + 4;
+                const ehVoce = hallCategoriaAtual !== "turmas" && normalizarNome(item.nome) === normalizarNome(nomeAluno) && item.turma === turmaAluno;
+                const voceCls = ehVoce ? ' voce' : '';
+                const voceTag = ehVoce ? `<span class="hall-categoria-voce-tag">Você</span>` : '';
+                
+                const nomeExibicao = hallCategoriaAtual === "turmas" ? `Turma ${escaparHtml(item.turma)}` : `${escaparHtml(item.nome)}${voceTag}`;
+                const subLinha = hallCategoriaAtual === "turmas" ? `Média dos ${item.totalJogadores} melhores de ${item.totalTurma} alunos` : hallFormatarSubLinha(item, tipoValor);
+                
+                html += `<li class="hall-categoria-item${voceCls}" ${ehVoce ? `style="${ehVoceStyle}"` : ""}>
+                    <span class="hall-categoria-pos">${pos}º</span>
+                    <span class="hall-categoria-info">
+                        <span class="hall-categoria-nome">${nomeExibicao}</span>
+                        <span class="hall-categoria-sub">${subLinha}</span>
+                    </span>
+                    <span class="hall-categoria-valor">${hallFormatarValor(item, tipoValor)}</span>
+                </li>`;
+            });
+        }
+        html += `</ul>`;
+        
+        // Botão de navegação "Ir para minha posição"
+        if (hallCategoriaAtual !== "turmas") {
+            const idxVoce = lista.findIndex(i => normalizarNome(i.nome) === normalizarNome(nomeAluno) && i.turma === turmaAluno);
+            if (idxVoce >= 0) {
+                html += `<button class="hall-categoria-nav-btn" onclick="irParaMinhaPosicaoHallCategoria(${idxVoce})">⬇️ Ir para minha posição</button>`;
+            }
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function irParaMinhaPosicaoHallCategoria(idx) {
+        const itens = document.querySelectorAll(".hall-categoria-item");
+        if (itens && itens[idx]) {
+            itens[idx].scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+    function exportarCSVHallCategoria() {
+        if (!hallFamaCache || !hallCategoriaAtual) {
+            notificar("Ranking ainda não carregado. Abra o modal primeiro.", "aviso");
+            return;
+        }
+        
+        const lista = hallFamaCache[hallCategoriaAtual];
+        if (!lista || !lista.length) {
+            notificar("Nenhum dado para exportar.", "aviso");
+            return;
+        }
+        
+        const esc = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
+        let csv = "Posicao,Nome,Turma,Valor\n";
+        
+        lista.forEach((item, i) => {
+            const pos = i + 1;
+            const nome = hallCategoriaAtual === "turmas" ? `Turma ${item.turma}` : item.nome;
+            const turma = hallCategoriaAtual === "turmas" ? "-" : item.turma;
+            const valor = hallFormatarValor(item, hallCategoriaAtual).replace(/<[^>]*>?/gm, '');
+            csv += `${pos},${esc(nome)},${esc(turma)},${esc(valor)}\n`;
+        });
+        
+        const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `hall_${hallCategoriaAtual}_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        notificar("CSV exportado!", "sucesso");
+    }
+
+    // ESC fecha o modal (listener auto-contido)
+    if (!window._modalHallCategoriaEscInstalado) {
+        window._modalHallCategoriaEscInstalado = true;
+        document.addEventListener("keydown", (e) => {
+            if (e.key !== "Escape") return;
+            const m = document.getElementById("modal-hall-categoria");
+            if (m && !m.classList.contains("hidden")) fecharModalHallCategoria();
+        });
+    }
+    // ▲▲▲ FIM [18.06.bis]
+
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
     // v10.5.7 · Rodapé do card "Minhas Posições" ganha um atalho para
     // o Treino Inteligente da modalidade com mais pendências — preserva
