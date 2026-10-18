@@ -20797,6 +20797,8 @@ if (containerProg) {
     // dentro do card, abrindo modal explicativo.
     // v10.7.2 · Botão de ajuda virou ícone circular compacto "?" ao lado
     // do título, nos 2 caminhos (vazio e com dados).
+    // v10.9.1 · Hotfix: A barra de proporção (oficiais x treinos) foi
+    // invertida para manter a consistência com o card "Minhas Posições".
 
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
@@ -20918,17 +20920,17 @@ if (containerProg) {
                             title="Como funciona?">?</button>
                 </span>
                 <span class="home-ritmo-numeros">
-                    <span><span class="num gold">${treinos.toLocaleString("pt-BR")}</span>${treinos === 1 ? "treino" : "treinos"}</span>
                     <span><span class="num cyan">${oficiais.toLocaleString("pt-BR")}</span>${oficiais === 1 ? "partida oficial" : "partidas oficiais"}</span>
+                    <span><span class="num gold">${treinos.toLocaleString("pt-BR")}</span>${treinos === 1 ? "treino" : "treinos"}</span>
                 </span>
             </div>
-            <div class="home-ritmo-barra" role="img" aria-label="Proporção: ${pctTre}% treinos, ${pctOfi}% partidas oficiais">
-                <div class="home-ritmo-fill treinos" style="width: ${pctTre}%"></div>
+            <div class="home-ritmo-barra" role="img" aria-label="Proporção: ${pctOfi}% partidas oficiais, ${pctTre}% treinos">
                 <div class="home-ritmo-fill oficiais" style="width: ${pctOfi}%"></div>
+                <div class="home-ritmo-fill treinos" style="width: ${pctTre}%"></div>
             </div>
             <div class="home-ritmo-legenda">
-                <span>🎯 Treinos <span class="pct">${pctTre}%</span></span>
                 <span>🎮 Oficiais <span class="pct">${pctOfi}%</span></span>
+                <span>🎯 Treinos <span class="pct">${pctTre}%</span></span>
             </div>
         </div>`;
     }
