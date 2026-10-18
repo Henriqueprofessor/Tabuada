@@ -16250,40 +16250,47 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.07]
 
     // ▼▼▼ [13.08] Perfil de aluno (busca) ─────────────────────────────
+    // v10.9.1 · Hotfix: Adicionadas as abas (Todas, 2-5, 6-9) no mapa
+    // do perfil para que o aluno/professor possa ver todas as modalidades
+    // sem ficar preso à última partida jogada.
+
+    let perfilMapaMod = "todas";
+
     async function carregarPerfil() {
-    const nome = document.getElementById("perfil-nome").value.trim();
-    const turma = document.getElementById("perfil-turma").value;
-    if (!nome || !turma) { notificar("Digite nome e turma", "aviso"); return; }
-    const partidas = await obterHistoricoAluno(nome, turma);
-    if (!partidas.length) { notificar("Nenhuma partida encontrada.", "aviso"); return; }
-    const melhor = partidas.reduce((a, b) => a.pontos > b.pontos ? a : b);
+        const nome = document.getElementById("perfil-nome").value.trim();
+        const turma = document.getElementById("perfil-turma").value;
+        if (!nome || !turma) { notificar("Digite nome e turma", "aviso"); return; }
+        const partidas = await obterHistoricoAluno(nome, turma);
+        if (!partidas.length) { notificar("Nenhuma partida encontrada.", "aviso"); return; }
+        const melhor = partidas.reduce((a, b) => a.pontos > b.pontos ? a : b);
 
-    // ▼ Sincroniza medalhas/seções/estrelas antes de ler (garante dados frescos)
-    let dadosCompilados = null;
-    try {
-        const chave = `${normalizarNome(melhor.nome)}|${melhor.turma}`;
-        const agora = Date.now();
-        const precisaSincronizar = perfilSyncCache.chave !== chave
-            || (agora - perfilSyncCache.ts) > PERFIL_SYNC_CACHE_MS;
+        // ▼ Sincroniza medalhas/seções/estrelas antes de ler (garante dados frescos)
+        let dadosCompilados = null;
+        try {
+            const chave = `${normalizarNome(melhor.nome)}|${melhor.turma}`;
+            const agora = Date.now();
+            const precisaSincronizar = perfilSyncCache.chave !== chave
+                || (agora - perfilSyncCache.ts) > PERFIL_SYNC_CACHE_MS;
 
-        if (precisaSincronizar) {
-            notificar("🔄 Sincronizando conquistas…", "info", 1500);
-            const r = await Promise.race([
-                sincronizarMedalhas(melhor.nome, melhor.turma),
-                new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000))
-            ]);
-            dadosCompilados = r?.dados || null;
-            perfilSyncCache = { chave, ts: agora };
-        } else {
-            // Cache válido — mas ainda precisamos dos dados compilados para calcular progresso
-            dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma);
+            if (precisaSincronizar) {
+                notificar("🔄 Sincronizando conquistas…", "info", 1500);
+                const r = await Promise.race([
+                    sincronizarMedalhas(melhor.nome, melhor.turma),
+                    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000))
+                ]);
+                dadosCompilados = r?.dados || null;
+                perfilSyncCache = { chave, ts: agora };
+            } else {
+                // Cache válido — mas ainda precisamos dos dados compilados para calcular progresso
+                dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma);
+            }
+        } catch (e) {
+            console.warn("Sync do perfil falhou ou expirou:", e);
+            // fallback: tenta compilar direto (pode ser mais lento, mas garante progresso)
+            try { dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma); } catch(_) {}
         }
-    } catch (e) {
-        console.warn("Sync do perfil falhou ou expirou:", e);
-        // fallback: tenta compilar direto (pode ser mais lento, mas garante progresso)
-        try { dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma); } catch(_) {}
-    }
-    // ▲
+        // ▲
+
         const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
         document.getElementById("perfil-melhor-pontos").innerHTML = `<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
         document.getElementById("perfil-media-acertos").innerHTML = `<span class="estatistica-destaque">${ma.toFixed(1)}</span> /20`;
@@ -16296,65 +16303,101 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const status = pos <= VAGAS_CLASSIFICACAO ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
         document.getElementById("perfil-melhor-status").innerHTML = `<span class="tag tag-${status === 'Classificado' ? 'classificado' : status === 'Reserva' ? 'reserva' : 'participante'}">${status}</span>`;
         const medalhasAluno = await obterMedalsFirebase(melhor.nome, melhor.turma);
-const idsMedalhas = Object.keys(medalhasAluno || {}).filter(id => MEDALS_POR_ID[id]);
+        const idsMedalhas = Object.keys(medalhasAluno || {}).filter(id => MEDALS_POR_ID[id]);
 
-// ─── Bloco 1: conquistadas (como hoje)
-if (idsMedalhas.length > 0) {
-    document.getElementById("perfil-conquistas").innerHTML = idsMedalhas.map(id => {
-        const m = MEDALS_POR_ID[id];
-        const rar = RARIDADES[m.raridade];
-        return `<div class="conquista-card desbloqueada" title="${escaparHtml(m.descricao)} · ${rar.nome}">${m.icone} ${escaparHtml(m.nome)}</div>`;
-    }).join("");
-} else {
-    document.getElementById("perfil-conquistas").innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Nenhuma medalha conquistada ainda. <button onclick="abrirAlbum()" style="width:auto;background:transparent;color:#0066cc;text-decoration:underline;padding:0;margin:0 0 0 4px;font-size:13px;font-weight:700;box-shadow:none;border:none;cursor:pointer;">Ver no Álbum →</button></div>`;
-}
+        // ─── Bloco 1: conquistadas (como hoje)
+        if (idsMedalhas.length > 0) {
+            document.getElementById("perfil-conquistas").innerHTML = idsMedalhas.map(id => {
+                const m = MEDALS_POR_ID[id];
+                const rar = RARIDADES[m.raridade];
+                return `<div class="conquista-card desbloqueada" title="${escaparHtml(m.descricao)} · ${rar.nome}">${m.icone} ${escaparHtml(m.nome)}</div>`;
+            }).join("");
+        } else {
+            document.getElementById("perfil-conquistas").innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Nenhuma medalha conquistada ainda. <button onclick="abrirAlbum()" style="width:auto;background:transparent;color:#0066cc;text-decoration:underline;padding:0;margin:0 0 0 4px;font-size:13px;font-weight:700;box-shadow:none;border:none;cursor:pointer;">Ver no Álbum →</button></div>`;
+        }
 
-// ─── Bloco 2: em progresso (só as 6 mais próximas de desbloquear)
-const containerProg = document.getElementById("perfil-conquistas-progresso");
-if (containerProg) {
-    const dados = dadosCompilados || {};
-    const idsConquistados = new Set(idsMedalhas);
+        // ─── Bloco 2: em progresso (só as 6 mais próximas de desbloquear)
+        const containerProg = document.getElementById("perfil-conquistas-progresso");
+        if (containerProg) {
+            const dados = dadosCompilados || {};
+            const idsConquistados = new Set(idsMedalhas);
 
-    const emProgresso = MEDALS
-        .filter(m => !idsConquistados.has(m.id))
-        .map(m => {
-            const prog = calcularProgressoMedalha(m, dados);
-            if (!prog || prog.pct <= 0 || prog.pct >= 100) return null;
-            return { medalha: m, prog };
-        })
-        .filter(Boolean)
-        .sort((a, b) => b.prog.pct - a.prog.pct)   // mais perto de conquistar primeiro
-        .slice(0, 6);                               // mostra só as 6 melhores
+            const emProgresso = MEDALS
+                .filter(m => !idsConquistados.has(m.id))
+                .map(m => {
+                    const prog = calcularProgressoMedalha(m, dados);
+                    if (!prog || prog.pct <= 0 || prog.pct >= 100) return null;
+                    return { medalha: m, prog };
+                })
+                .filter(Boolean)
+                .sort((a, b) => b.prog.pct - a.prog.pct)   // mais perto de conquistar primeiro
+                .slice(0, 6);                               // mostra só as 6 melhores
 
-    if (emProgresso.length === 0) {
-        containerProg.innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Todas as medalhas foram conquistadas! 🏆</div>`;
-    } else {
-        containerProg.innerHTML = emProgresso.map(({ medalha, prog }) => {
-            const pct = Math.max(0, Math.min(100, prog.pct));
-            const cls = pct >= 85 ? "perto" : pct >= 60 ? "quase" : "";
-            const rar = RARIDADES[medalha.raridade];
-            const titulo = `${medalha.descricao} · ${rar.nome} · ${Math.round(pct)}% completo`;
-            return `<div class="conquista-card em-progresso" title="${escaparHtml(titulo)}">
-                <div class="prog-linha">
-                    <span class="prog-nome">${medalha.icone} ${escaparHtml(medalha.nome)}</span>
-                    <span class="prog-pct">${Math.round(pct)}%</span>
-                </div>
-                <div class="prog-barra">
-                    <div class="prog-fill ${cls}" style="width:${pct}%"></div>
-                </div>
-            </div>`;
-        }).join("");
-    }
-}
+            if (emProgresso.length === 0) {
+                containerProg.innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Todas as medalhas foram conquistadas! 🏆</div>`;
+            } else {
+                containerProg.innerHTML = emProgresso.map(({ medalha, prog }) => {
+                    const pct = Math.max(0, Math.min(100, prog.pct));
+                    const cls = pct >= 85 ? "perto" : pct >= 60 ? "quase" : "";
+                    const rar = RARIDADES[medalha.raridade];
+                    const titulo = `${medalha.descricao} · ${rar.nome} · ${Math.round(pct)}% completo`;
+                    return `<div class="conquista-card em-progresso" title="${escaparHtml(titulo)}">
+                        <div class="prog-linha">
+                            <span class="prog-nome">${medalha.icone} ${escaparHtml(medalha.nome)}</span>
+                            <span class="prog-pct">${Math.round(pct)}%</span>
+                        </div>
+                        <div class="prog-barra">
+                            <div class="prog-fill ${cls}" style="width:${pct}%"></div>
+                        </div>
+                    </div>`;
+                }).join("");
+            }
+        }
+
         if (melhor.desempenhoTabuadas) desempenhoTabuadas = melhor.desempenhoTabuadas;
-        alunoAtual = melhor.nome; turmaAtual = melhor.turma; modalidadeAtual = melhor.modalidade;
+        alunoAtual = melhor.nome; turmaAtual = melhor.turma;
         treinoFocoOperacoes = null; promocoesRecentes = [];
         mapaFonteUltima = melhor.desempenhoOperacoes || {};
         mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(melhor.nome, melhor.turma);
         if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
-        document.getElementById("perfil-mapa").innerHTML = renderizarMapa();
+
+        // Inicializa o mapa do perfil na aba "Todas"
+        perfilMapaMod = "todas";
+        renderizarMapaPerfil();
+
         document.getElementById("perfil-conteudo").classList.remove("hidden");
     }
+
+    function renderizarMapaPerfil() {
+        const container = document.getElementById("perfil-mapa");
+        if (!container) return;
+
+        const abas = [
+            { id: "todas", label: "🌐 Todas", titulo: "Todas as tabuadas (1 a 10)" },
+            { id: "2-5",   label: "📚 2-5",   titulo: "Só as tabuadas 2, 3, 4 e 5" },
+            { id: "6-9",   label: "🎯 6-9",   titulo: "Só as tabuadas 6, 7, 8 e 9" }
+        ];
+
+        const tabsHtml = abas.map(a => {
+            const ativa = perfilMapaMod === a.id ? "ativa" : "";
+            return `<button class="mapa-completo-tab ${ativa}" onclick="trocarModMapaPerfil('${a.id}')" aria-pressed="${perfilMapaMod === a.id}" title="${escaparHtml(a.titulo)}">${a.label}</button>`;
+        }).join("");
+
+        // Define modalidadeAtual para o renderizador global
+        modalidadeAtual = perfilMapaMod === "todas" ? "0-10" : perfilMapaMod;
+
+        container.innerHTML = `
+            <div class="mapa-completo-tabs" role="tablist" aria-label="Visão do mapa" style="margin-bottom:12px;">${tabsHtml}</div>
+            <div>${renderizarMapa()}</div>
+        `;
+    }
+
+    function trocarModMapaPerfil(mod) {
+        if (mod !== "todas" && mod !== "2-5" && mod !== "6-9") return;
+        perfilMapaMod = mod;
+        renderizarMapaPerfil();
+    }
+
     function abrirBuscarAluno() {
         mostrarTela("tela-perfil");
         const nome = obterNomeSalvoAluno();
