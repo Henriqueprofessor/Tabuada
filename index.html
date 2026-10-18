@@ -15555,21 +15555,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [13.05]
 
-// ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
-    // v10.5.2 · Combina escopo (turma/global) × métrica.
-    //   Se tipoRankingAtual === null → tela limpa, não renderiza nada.
-    //   A métrica "precisao" e o "Ranking Geral" (pontos global) foram
-    //   removidos em v10.5.2 — funções obterRankingPorPrecisao e
-    //   obterRankingPorPontos(mod, null) continuam no arquivo, mas não
-    //   são mais usadas pela tela de Ranking.
-    // v10.5.3 · P38 — cada ranking ganha descrição própria.
-    // v10.6.x · A descrição inline migrou para um MODAL (#modal-explicacao-ranking).
-    //   A função renderizarDescricaoRanking() agora:
-    //     • Preenche o corpo do modal (#modal-explicacao-ranking-corpo);
-    //     • Controla a visibilidade do botão #btn-explicar-ranking;
-    //     • NÃO escreve mais nada na tela do ranking.
-    //   O botão "Voltar" continua sendo o último elemento visual.
-
+    // ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
         const n = obterNomeSalvoAluno(), t = obterTurmaSalvaAluno();
@@ -15776,24 +15762,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // [13.06.desc] Descrições dos rankings (P38 + modal v10.6.x)
-    // ─────────────────────────────────────────────────────────────────
-    // 4 textos distintos (Velocidade e Média reaproveitam entre escopos;
-    // Pontos só existe em Turmas; Desafio só existe em Global).
-    //
-    // v10.6.x · O conteúdo deixou de ser exibido inline na tela do ranking
-    // e passou a habitar o modal #modal-explicacao-ranking. O botão
-    // #btn-explicar-ranking (dentro de #ranking-conteudo-escopo) só fica
-    // visível quando há uma explicação aplicável ao combo escopo/métrica.
-
     function descreverRankingPontos() {
         return `
             <div class="ranking-desc-titulo"><span aria-hidden="true">🏆</span> Como funciona o Ranking de Pontos</div>
-
             <div class="ranking-desc-subtitulo">📊 O que é</div>
             <p>Mostra a <strong>sua melhor pontuação</strong> em cada modalidade. De todas as suas partidas oficiais completas, só a que rendeu mais pontos entra na tabela — as demais ficam guardadas no seu histórico.</p>
-
             <div class="ranking-desc-subtitulo">🧮 Como se pontua</div>
             <ul>
                 <li>Cada acerto vale <strong>300 pontos</strong>.</li>
@@ -15801,17 +15774,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 <li>Acertos seguidos geram <strong>bônus de combo</strong>.</li>
                 <li>Errar zera o combo e não gera pontos.</li>
             </ul>
-
             <div class="ranking-desc-subtitulo">✅ Para entrar no ranking</div>
             <p>Ter pelo menos <strong>1 partida oficial completa</strong> na modalidade. Qualquer aluno que já tenha jogado aparece — mesmo com poucos pontos.</p>
-
             <div class="ranking-desc-subtitulo">📈 Como subir</div>
             <p>Acerte rápido e sem errar. Quanto mais longa a sequência de acertos, maior o bônus acumulado.</p>
-
             <div class="ranking-desc-dica"><strong>💡 Empate?</strong> Desempatamos por: pontos → acertos → menor tempo médio dos acertos → maior sequência → partida mais antiga.</div>
-
             <p style="margin-top:8px;">ℹ️ O <strong>tempo médio dos acertos</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</p>
-
             <span class="ranking-desc-escopo">🎟️ Os 4 melhores de cada turma/modalidade avançam para a Final.</span>
         `;
     }
@@ -15822,25 +15790,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             : `<span class="ranking-desc-escopo">🌍 Este ranking compara <strong>todas as turmas do colégio</strong>.</span>`;
         return `
             <div class="ranking-desc-titulo"><span aria-hidden="true">⚡</span> Como funciona o Ranking de Velocidade</div>
-
             <div class="ranking-desc-subtitulo">📊 O que é</div>
             <p>É o ranking de <strong>quem acerta rápido</strong>. Não basta acertar tudo — aqui contamos o tempo que você levou para responder as questões certas.</p>
-
             <div class="ranking-desc-subtitulo">🚧 Filtro obrigatório</div>
             <p>Só entram alunos que fizeram pelo menos uma <strong>partida perfeita (20/20 acertos)</strong>. Se você errou alguma questão, aquela partida não conta para este ranking.</p>
-
             <div class="ranking-desc-subtitulo">🧮 Como é calculada</div>
             <ul>
                 <li>Medimos o <strong>tempo médio das respostas corretas</strong> na sua melhor partida perfeita.</li>
                 <li>Respostas erradas <strong>não contam</strong> — nem ajudam, nem atrapalham.</li>
                 <li>Partidas canceladas (✕) <strong>não valem</strong> para este ranking.</li>
             </ul>
-
             <div class="ranking-desc-subtitulo">📈 Como subir</div>
             <p>Memorize as tabuadas para responder cada vez mais rápido <strong>sem perder a precisão</strong>. Um único erro tira você da lista.</p>
-
             <div class="ranking-desc-dica"><strong>💡 Empate?</strong> Menor tempo médio dos acertos → maior número de partidas perfeitas. E lembre-se: <strong>errar rápido não prejudica sua velocidade</strong> — só acertos entram na conta.</div>
-
             ${linhaEscopo}
         `;
     }
@@ -15851,28 +15813,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             : `<span class="ranking-desc-escopo">🌍 Este ranking compara <strong>todas as turmas do colégio</strong>.</span>`;
         return `
             <div class="ranking-desc-titulo"><span aria-hidden="true">🏅</span> Como funciona o Ranking de Média</div>
-
             <div class="ranking-desc-subtitulo">📊 O que é</div>
             <p>É o ranking da <strong>consistência</strong>. Não basta uma partida excepcional isolada — aqui contamos quantos pontos você mantém, em média, ao longo do tempo.</p>
-
             <div class="ranking-desc-subtitulo">🧮 Como é calculada</div>
             <p>Em cada modalidade: <strong>soma dos pontos das partidas oficiais ÷ número de partidas oficiais</strong>. A coluna <strong>Média Geral</strong> é a média das três modalidades (📚 2-5 · 🎯 6-9 · ⭐ 1-10).</p>
-
             <div class="ranking-desc-subtitulo">📋 Regras importantes</div>
             <ul>
                 <li>Só <strong>partidas oficiais</strong> contam. Treinos <strong>NÃO</strong> entram na média.</li>
                 <li>Partidas <strong>canceladas (✕)</strong> contam — cancelar muito <strong>derruba</strong> sua média.</li>
                 <li>Tempo esgotado conta como resposta errada e também reduz a média.</li>
             </ul>
-
             <div class="ranking-desc-subtitulo">✅ Para entrar no ranking</div>
             <p>Mínimo de <strong>5 partidas oficiais em CADA uma das 3 modalidades</strong> (2-5, 6-9 e 1-10). Não dá para entrar jogando só uma modalidade.</p>
-
             <div class="ranking-desc-subtitulo">📈 Como subir</div>
             <p>Jogue muitas partidas oficiais com bom desempenho. Evite cancelar tentativas — elas puxam a média para baixo.</p>
-
             <div class="ranking-desc-dica"><strong>💡 Dica:</strong> quanto mais partidas com bom desempenho, mais estável fica sua média.</div>
-
             ${linhaEscopo}
         `;
     }
@@ -15880,41 +15835,30 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function descreverRankingDesafio() {
         return `
             <div class="ranking-desc-titulo"><span aria-hidden="true">🏫</span> Como funciona o Desafio entre Turmas</div>
-
             <div class="ranking-desc-subtitulo">📊 O que é</div>
             <p>É a <strong>força coletiva de cada turma</strong>. Aqui não competem alunos individuais — competem as turmas, representadas pelos seus melhores jogadores.</p>
-
             <div class="ranking-desc-subtitulo">🧮 Como é calculado</div>
             <ul>
                 <li>Para cada turma, pegamos os <strong>4 alunos com maior pontuação</strong> na modalidade <strong>1-10 (completa)</strong>.</li>
                 <li>Calculamos a <strong>média dos pontos</strong> desses 4 alunos.</li>
                 <li>A turma com a maior média ocupa o 1º lugar.</li>
             </ul>
-
             <div class="ranking-desc-subtitulo">✅ Para sua turma entrar</div>
             <p>É preciso que <strong>pelo menos 4 alunos</strong> da turma tenham jogado a modalidade 1-10. Turmas com menos de 4 alunos ficam de fora — um aviso amarelo aparece informando quantos ainda faltam.</p>
-
             <div class="ranking-desc-subtitulo">📈 Como ajudar sua turma a subir</div>
             <p>Jogue a modalidade <strong>1-10</strong> com boa pontuação. Sua melhor partida pode entrar entre as 4 melhores da turma e puxar a média para cima.</p>
-
             <div class="ranking-desc-dica"><strong>💡 Dica:</strong> não precisa ser o melhor aluno — precisa ter <strong>4 colegas jogando</strong> a modalidade completa.</div>
-
             <span class="ranking-desc-escopo">🌍 Este ranking compara <strong>todas as turmas do colégio</strong>.</span>
         `;
     }
 
-    // v10.6.x · Preenche o modal com o conteúdo do ranking ativo e controla
-    // a visibilidade do botão #btn-explicar-ranking. NÃO escreve mais nada
-    // na tela do ranking (a antiga #ranking-descricao foi removida).
     function renderizarDescricaoRanking(escopo, metrica) {
         const btn   = document.getElementById("btn-explicar-ranking");
         const corpo = document.getElementById("modal-explicacao-ranking-corpo");
         const modal = document.getElementById("modal-explicacao-ranking");
 
-        // Decide o HTML aplicável
         let html = "";
         if (escopo && metrica) {
-            // Escopo turma sem aluno identificado → não há descrição (a tela mostra o hint)
             if (escopo === "turma" && !obterTurmaSalvaAluno()) {
                 html = "";
             }
@@ -15924,30 +15868,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             else if (metrica === "desafio"    && escopo === "global") html = descreverRankingDesafio();
         }
 
-        // Botão: só aparece quando há conteúdo
         if (btn) btn.classList.toggle("hidden", !html);
-
-        // Corpo do modal: atualiza sempre que houver conteúdo novo
         if (corpo && html) corpo.innerHTML = html;
-
-        // Se o modal estiver aberto e o conteúdo virou vazio, fecha
         if (modal && !modal.classList.contains("hidden") && !html) {
             fecharModalExplicacaoRanking();
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // [13.06.modal] Abrir / fechar o modal de explicação
-    // ─────────────────────────────────────────────────────────────────
-
     function abrirModalExplicacaoRanking() {
         const modal = document.getElementById("modal-explicacao-ranking");
         const corpo = document.getElementById("modal-explicacao-ranking-corpo");
         if (!modal || !corpo) return;
-        if (!corpo.innerHTML.trim()) return; // nada para mostrar
+        if (!corpo.innerHTML.trim()) return;
         modal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
-        // Foco no botão de fechar por acessibilidade
         setTimeout(() => {
             modal.querySelector(".modal-explicacao-fechar")?.focus();
         }, 30);
@@ -15960,7 +15894,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.body.style.overflow = "";
     }
 
-    // Fechar com tecla ESC (instalado uma única vez)
     if (!window._modalExplicacaoRankingEscInstalado) {
         window._modalExplicacaoRankingEscInstalado = true;
         document.addEventListener("keydown", function (e) {
@@ -15979,10 +15912,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const ti = document.getElementById("titulo-ranking");
             if (!tb || !ti) return;
 
-            // ─── Guarda: tela limpa (nenhum escopo selecionado) ───
             if (!tipoRankingAtual) return;
 
-            // ─── Estado inicial: esconde auxiliares ───
             const bannerEl = document.getElementById("banner-posicao-global");
             const mediasCtnEl = document.getElementById("medias-turmas-container");
             const tabelaWrap = document.querySelector("#tela-ranking .tabela-container");
@@ -16015,9 +15946,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                        && r.turma === turmaAluno;
             }
 
-            // ═══════════════════════════════════════════════════════════
-            // CASO 1 · ESCOPO TURMA + aluno SEM turma salva
-            // ═══════════════════════════════════════════════════════════
             if (tipoRankingAtual === "turma" && !turmaAluno) {
                 ti.innerText = "🏆 Turmas";
                 th.innerHTML = "";
@@ -16026,10 +15954,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 return;
             }
 
-            // ═══════════════════════════════════════════════════════════
-            // CASO 2 · MÉTRICA "DESAFIO" (só existe no escopo global)
-            // → mostra apenas o comparativo entre turmas
-            // ═══════════════════════════════════════════════════════════
             if (metricaRankingAtual === "desafio" && tipoRankingAtual === "global") {
                 ti.innerText = `🏫 Desafio entre Turmas — ${MODALIDADES[mod]?.nome || mod}`;
                 th.innerHTML = "";
@@ -16039,21 +15963,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 return;
             }
 
-            // ═══════════════════════════════════════════════════════════
-            // Demais combinações: renderiza tabela normal
-            // ═══════════════════════════════════════════════════════════
             let rank = [], tit = "";
 
             // ─── Pontos (só no escopo turma) ───
             if (metricaRankingAtual === "pontos" && tipoRankingAtual === "turma") {
-                const tp = await obterPartidas();
-                const mj = new Map();
-                tp.forEach(p => {
-                    if (p.modalidade === mod && p.turma === turma) {
-                        const k = `${normalizarNome(p.nome)}|${p.turma}`;
-                        mj.set(k, (mj.get(k) || 0) + 1);
-                    }
-                });
+                // v10.9.0-fix: otimizado para não baixar `partidas` inteiro.
                 rank = await obterRankingPorPontos(mod, turma);
                 tit = `🏆 Turmas · ${turma} — ${MODALIDADES[mod]?.nome}`;
                 th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Tempo médio dos acertos</th><th>Jogos</th><th>Pontos</th><th>Status</th>`;
@@ -16068,7 +15982,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     const r = rank[i], p = i + 1;
                     const sc = p <= VAGAS_CLASSIFICACAO ? "tag-classificado" : (p <= 6 ? "tag-reserva" : "tag-participante");
                     const st = p <= VAGAS_CLASSIFICACAO ? "Zona de classificação" : (p <= 6 ? "Zona de reserva" : "Participante");
-                    const j = mj.get(`${normalizarNome(r.nome)}|${r.turma}`) || 0;
+                    
+                    // Lê a contagem de jogos do resumo (se disponível) ou assume 1
+                    const j = r.totalPartidas || 1; 
+                    
                     const pc = p <= 4 ? `podio-${p}` : "";
                     const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : p === 4 ? "🎫" : "";
                     const vc = ehVoce(r);
@@ -16141,8 +16058,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             tb.innerHTML = h;
 
         } finally {
-            // v10.6.x · Sempre (re)avalia o botão e o conteúdo do modal,
-            // em qualquer caminho de saída do renderizador.
             renderizarDescricaoRanking(tipoRankingAtual, metricaRankingAtual);
         }
     }
@@ -21696,52 +21611,84 @@ if (containerProg) {
 
     // ▼▼▼ [18.02.bis] Métricas acumulativas do Hall da Fama
     async function calcularMetricasHallFama() {
-        // ⚙️ [13] — Só partidas COMPLETAS contam para o Hall da Fama.
-        const todasPartidas = await obterPartidas();
-        const partidas = todasPartidas.filter(ehPartidaCompleta);
+        // v10.9.0-fix: Otimizado para ler do ranking_resumo em vez de obterPartidas()
         const porAluno = new Map();
-
-        partidas.forEach(p => {
-            const k = `${normalizarNome(p.nome)}|${p.turma}`;
-            if (!porAluno.has(k)) {
-                porAluno.set(k, {
-                    nome: p.nome,
-                    turma: p.turma,
-                    totalAcertos: 0,
-                    totalPartidas: 0,
-                    somaPontos: 0,
-                    partidasPerfeitas: 0,
-                    maxTemposRapidosPerfeito: 0,
-                    melhorTempoPerfeito: Infinity,
-                    diasSet: new Set(),
-                    treinosFocados: 0
+        
+        if (await otimizacaoV109Ativa()) {
+            // Lê o "media" (que tem o total real de partidas) e o "best" (que tem a melhor partida)
+            const [snapBest, snapMedia] = await Promise.all([
+                database.ref(`${CAMINHO_RANKING_RESUMO}/best`).once("value"),
+                database.ref(`${CAMINHO_RANKING_RESUMO}/media`).once("value")
+            ]);
+            const dadosBest = snapBest.val() || {};
+            const dadosMedia = snapMedia.val() || {};
+            
+            // Inicializa com o total de partidas do nó 'media'
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                const alunosMedia = dadosMedia[mod] || {};
+                Object.values(alunosMedia).forEach(m => {
+                    if (!m || !m.nome) return;
+                    const k = `${normalizarNome(m.nome)}|${m.turma}`;
+                    if (!porAluno.has(k)) {
+                        porAluno.set(k, {
+                            nome: m.nome, turma: m.turma,
+                            totalAcertos: 0, totalPartidas: 0, somaPontos: 0,
+                            partidasPerfeitas: 0, maxTemposRapidosPerfeito: 0,
+                            melhorTempoPerfeito: Infinity, diasSet: new Set(), treinosFocados: 0
+                        });
+                    }
+                    const a = porAluno.get(k);
+                    a.totalPartidas += (Number(m.partidasOficiais) || 0);
+                    a.somaPontos += (Number(m.somaPontos) || 0);
                 });
             }
-            const a = porAluno.get(k);
-            const acertos = Number(p.acertos) || 0;
-            const pontos  = Number(p.pontos)  || 0;
-            const tm      = Number(p.tempoMedio) || 0;
-            const tr      = Number(p.temposRapidos) || 0;
 
-            a.totalAcertos += acertos;
-            a.totalPartidas++;
-            a.somaPontos += pontos;
-
-            if (acertos === 20) {
-                a.partidasPerfeitas++;
-                if (tr > a.maxTemposRapidosPerfeito) {
-                    a.maxTemposRapidosPerfeito = tr;
-                    a.melhorTempoPerfeito = tm;
-                } else if (tr === a.maxTemposRapidosPerfeito && tm > 0 && tm < a.melhorTempoPerfeito) {
-                    a.melhorTempoPerfeito = tm;
+            // Adiciona os dados da melhor partida do nó 'best' (para acertos e velocidade)
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                const alunosBest = dadosBest[mod] || {};
+                Object.values(alunosBest).forEach(b => {
+                    if (!b || !b.nome) return;
+                    const k = `${normalizarNome(b.nome)}|${b.turma}`;
+                    if (!porAluno.has(k)) return; // já foi criado pelo 'media'
+                    
+                    const a = porAluno.get(k);
+                    const acertos = Number(b.acertos) || 0;
+                    const tm = Number(b.tempoMedio) || 0;
+                    const tr = Number(b.temposRapidos) || 0;
+                    
+                    a.totalAcertos += acertos;
+                    if (acertos === 20) {
+                        a.partidasPerfeitas++;
+                        if (tr > a.maxTemposRapidosPerfeito) {
+                            a.maxTemposRapidosPerfeito = tr;
+                            a.melhorTempoPerfeito = tm;
+                        }
+                    }
+                    if (b.data) {
+                        const d = new Date(b.data);
+                        a.diasSet.add(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
+                    }
+                });
+            }
+        } else {
+            // Fallback legado (baixa tudo)
+            const todasPartidas = await obterPartidas();
+            todasPartidas.filter(ehPartidaCompleta).forEach(p => {
+                const k = `${normalizarNome(p.nome)}|${p.turma}`;
+                if (!porAluno.has(k)) porAluno.set(k, { nome: p.nome, turma: p.turma, totalAcertos: 0, totalPartidas: 0, somaPontos: 0, partidasPerfeitas: 0, maxTemposRapidosPerfeito: 0, melhorTempoPerfeito: Infinity, diasSet: new Set(), treinosFocados: 0 });
+                const a = porAluno.get(k);
+                const acertos = Number(p.acertos) || 0;
+                const pontos = Number(p.pontos) || 0;
+                const tm = Number(p.tempoMedio) || 0;
+                const tr = Number(p.temposRapidos) || 0;
+                a.totalAcertos += acertos; a.totalPartidas++; a.somaPontos += pontos;
+                if (acertos === 20) {
+                    a.partidasPerfeitas++;
+                    if (tr > a.maxTemposRapidosPerfeito) { a.maxTemposRapidosPerfeito = tr; a.melhorTempoPerfeito = tm; }
                 }
-            }
-
-            if (p.data) {
-                const d = new Date(p.data);
-                a.diasSet.add(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
-            }
-        });
+                if (p.data) { const d = new Date(p.data); a.diasSet.add(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`); }
+            });
+        }
 
         try {
             const snapTreinos = await database.ref(CAMINHO_TREINOS_FOCADOS).once("value");
@@ -21750,82 +21697,22 @@ if (containerProg) {
                 const chave = chaveAlbum(a.nome, a.turma);
                 if (treinosFirebase[chave]) a.treinosFocados = Number(treinosFirebase[chave]) || 0;
             });
-        } catch(e) {
-            console.warn("Falha ao ler contador de treinos:", e);
-        }
+        } catch(e) {}
 
-        const lista = Array.from(porAluno.values()).map(a => ({
-            ...a,
-            diasDistintos: a.diasSet.size,
-            mediaPontos: a.totalPartidas > 0 ? a.somaPontos / a.totalPartidas : 0
+        const lista = Array.from(porAluno.values()).map(a => ({ 
+            ...a, 
+            diasDistintos: a.diasSet.size, 
+            mediaPontos: a.totalPartidas > 0 ? a.somaPontos / a.totalPartidas : 0 
         }));
 
-        // ⚙️ Média Geral (combinada) — usa TODAS as partidas oficiais (completas + parciais).
-        // Só entra quem tem ≥ 5 partidas oficiais em CADA uma das 3 modalidades.
-        const mapaMedia = new Map();
-        todasPartidas.forEach(p => {
-            const k = `${normalizarNome(p.nome)}|${p.turma}`;
-            if (!mapaMedia.has(k)) {
-                mapaMedia.set(k, {
-                    nome: p.nome,
-                    turma: p.turma,
-                    porMod: { "2-5": { t: 0, s: 0 }, "6-9": { t: 0, s: 0 }, "0-10": { t: 0, s: 0 } }
-                });
-            }
-            const a = mapaMedia.get(k);
-            if (a.porMod[p.modalidade]) {
-                a.porMod[p.modalidade].t++;
-                a.porMod[p.modalidade].s += Number(p.pontos) || 0;
-            }
-        });
-
-        const listaMedia = Array.from(mapaMedia.values())
-            .filter(a => ["2-5","6-9","0-10"].every(m => a.porMod[m].t >= MEDIA_MIN_PARTIDAS))
-            .map(a => {
-                const m25  = a.porMod["2-5"].s  / a.porMod["2-5"].t;
-                const m69  = a.porMod["6-9"].s  / a.porMod["6-9"].t;
-                const m010 = a.porMod["0-10"].s / a.porMod["0-10"].t;
-                const total = a.porMod["2-5"].t + a.porMod["6-9"].t + a.porMod["0-10"].t;
-                return {
-                    nome: a.nome, turma: a.turma,
-                    media25: m25, media69: m69, media010: m010,
-                    totalPartidas: total,
-                    mediaGeral: (m25 + m69 + m010) / 3
-                };
-            })
-            .sort((x, y) => y.mediaGeral - x.mediaGeral);
+        const listaMedia = await obterRankingMediaGeralCombinada(null);
 
         return {
-            velocidade: [...lista]
-                .filter(a => a.partidasPerfeitas >= 1)
-                .sort((a, b) =>
-                    b.maxTemposRapidosPerfeito - a.maxTemposRapidosPerfeito ||
-                    a.melhorTempoPerfeito - b.melhorTempoPerfeito ||
-                    b.partidasPerfeitas - a.partidasPerfeitas
-                ),
-            acertos: [...lista]
-                .sort((a, b) =>
-                    b.totalAcertos - a.totalAcertos ||
-                    b.totalPartidas - a.totalPartidas
-                ),
-            maratonista: [...lista]
-                .sort((a, b) =>
-                    b.totalPartidas - a.totalPartidas ||
-                    b.mediaPontos - a.mediaPontos
-                ),
-            presenca: [...lista]
-                .sort((a, b) =>
-                    b.diasDistintos - a.diasDistintos ||
-                    b.totalPartidas - a.totalPartidas ||
-                    b.mediaPontos - a.mediaPontos
-                ),
-            treino: [...lista]
-                .filter(a => a.treinosFocados > 0)
-                .sort((a, b) =>
-                    b.treinosFocados - a.treinosFocados ||
-                    b.totalAcertos - a.totalAcertos
-                ),
-            // ⚙️ NOVO: Média Consistente
+            velocidade: [...lista].filter(a => a.partidasPerfeitas >= 1).sort((a, b) => b.maxTemposRapidosPerfeito - a.maxTemposRapidosPerfeito || a.melhorTempoPerfeito - b.melhorTempoPerfeito || b.partidasPerfeitas - a.partidasPerfeitas),
+            acertos: [...lista].sort((a, b) => b.totalAcertos - a.totalAcertos || b.totalPartidas - a.totalPartidas),
+            maratonista: [...lista].sort((a, b) => b.totalPartidas - a.totalPartidas || b.mediaPontos - a.mediaPontos),
+            presenca: [...lista].sort((a, b) => b.diasDistintos - a.diasDistintos || b.totalPartidas - a.totalPartidas || b.mediaPontos - a.mediaPontos),
+            treino: [...lista].filter(a => a.treinosFocados > 0).sort((a, b) => b.treinosFocados - a.treinosFocados || b.totalAcertos - a.totalAcertos),
             media: listaMedia
         };
     }
