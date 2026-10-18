@@ -21998,13 +21998,27 @@ if (containerProg) {
         }
         html += `</ul>`;
         
-        // Botão de navegação "Ir para minha posição"
+        // ─── Botões de navegação (Ir para a posição / Voltar ao topo) ───
+        let botoesNavHtml = "";
+        
         if (hallCategoriaAtual !== "turmas") {
             const idxVoce = lista.findIndex(i => normalizarNome(i.nome) === normalizarNome(nomeAluno) && i.turma === turmaAluno);
             if (idxVoce >= 0) {
-                html += `<button class="hall-categoria-nav-btn" onclick="irParaMinhaPosicaoHallCategoria(${idxVoce})">⬇️ Ir para minha posição</button>`;
+                // Se o usuário está no Top 3, não precisa do botão "Ir para minha posição"
+                // pois ele já está visível no topo.
+                if (idxVoce >= 3) {
+                    botoesNavHtml += `<button class="hall-categoria-nav-btn" onclick="irParaMinhaPosicaoHallCategoria(${idxVoce})" style="flex:1;">⬇️ Ir para minha posição</button>`;
+                }
             }
         }
+        
+        // Adiciona o botão "Voltar ao topo"
+        botoesNavHtml += `<button class="hall-categoria-nav-btn topo" onclick="voltarAoTopoHallCategoria()" style="flex:1;">⬆️ Voltar ao topo</button>`;
+
+        // Envolve os botões num container flexível para não sobreporemos o "sticky"
+        html += `<div style="display: flex; gap: 8px; margin-top: 12px; position: sticky; bottom: 0; z-index: 10; flex-wrap: wrap;">
+            ${botoesNavHtml}
+        </div>`;
         
         container.innerHTML = html;
     }
@@ -22012,7 +22026,15 @@ if (containerProg) {
     function irParaMinhaPosicaoHallCategoria(idx) {
         const itens = document.querySelectorAll(".hall-categoria-item");
         if (itens && itens[idx]) {
+            // scrollIntoView centraliza o item na lista, sem rolar a página toda
             itens[idx].scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+    function voltarAoTopoHallCategoria() {
+        const listaEl = document.querySelector(".hall-categoria-lista");
+        if (listaEl) {
+            listaEl.scrollTo({ top: 0, behavior: "smooth" });
         }
     }
 
