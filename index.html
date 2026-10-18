@@ -15108,51 +15108,38 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.02]
 
     // ▼▼▼ [13.03] Rankings derivados ────────────────────────────────────
-    // v10.9.0 · Estas funções usam ranking_resumo quando disponível.
-    // Se o resumo estiver vazio (backfill não rodou) ou a flag estiver
-    // desligada, caem automaticamente no comportamento legacy.
+    // v10.9.0-fix: Fallback corrigido. Se o resumo estiver vazio, assume
+    // lista vazia ([]). Só usa o legado (download pesado) se der erro de rede.
 
-    // ─── Helper interno: lê a lista de best de uma modalidade ───
-    // Retorna [{nome, turma, pontos, acertos, tempoMedio, maiorSequencia, temposRapidos, ...}]
-    // ordenada por pontos desc.
     async function _obterListaBestDoResumo(mod, turma) {
         if (await otimizacaoV109Ativa()) {
             try {
-                if (turma) {
-                    const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}`).once("value");
-                    const dados = snap.val() || {};
-                    const lista = Object.values(dados).filter(r => r && r.nome);
-                    if (lista.length > 0) return lista.sort(compararParaOrdenacao);
-                    return null; // vazio → cai no fallback
-                } else {
-                    const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}`).once("value");
-                    const dados = snap.val() || {};
-                    const lista = Object.values(dados).filter(r => r && r.nome);
-                    if (lista.length > 0) return lista.sort(compararParaOrdenacao);
-                    return null;
-                }
+                const ref = turma
+                    ? database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}`)
+                    : database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}`);
+                const snap = await ref.once("value");
+                const dados = snap.val() || {};
+                const lista = Object.values(dados).filter(r => r && r.nome);
+                return lista.sort(compararParaOrdenacao); // Retorna [] se vazio, nunca null
             } catch(e) {
                 console.warn("[Otimização] Falha ao ler best do resumo:", e);
-                return null;
+                return null; // Só cai no fallback se der erro na rede
             }
         }
         return null;
     }
 
-    // ─── Helper interno: lê a lista de best de uma turma para calcular posição ───
     async function obterMelhoresDaTurma(mod, turma) {
         const resumo = await _obterListaBestDoResumo(mod, turma);
-        if (resumo) return resumo;
-        // Fallback legacy
+        if (resumo !== null) return resumo;
         return obterRankingPorPontos(mod, turma);
     }
 
     async function obterRankingPorPontos(mod, t = null) {
-        // ─── Caminho otimizado ───
         const resumo = await _obterListaBestDoResumo(mod, t);
-        if (resumo) return resumo;
+        if (resumo !== null) return resumo;
 
-        // ─── Fallback legacy (código original) ───
+        // ─── Fallback legacy (só roda se otimização inativa ou erro) ───
         const rank = await obterRanking();
         let f = rank.filter(r => r.modalidade === mod);
         if (t) f = f.filter(r => r.turma === t);
@@ -15162,8 +15149,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function obterRankingPorPrecisao(mod, t = null) {
-        // Precisão não é usada pela tela de Ranking desde v10.5.2. Mantida por
-        // compatibilidade — usa o fallback (não vale a pena criar resumo só para ela).
         const rank = await obterRanking();
         let f = rank.filter(r => r.modalidade === mod);
         if (t) f = f.filter(r => r.turma === t);
@@ -15173,16 +15158,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function obterRankingPorVelocidade(mod, t = null) {
-        // Velocidade: filtra 20/20 e ordena por tempoMedio. Usa resumo quando
-        // disponível (o resumo/best já guarda a melhor partida; precisamos
-        // garantir que ela seja 20/20 — por isso filtramos).
         const resumo = await _obterListaBestDoResumo(mod, t);
-        if (resumo) {
+        if (resumo !== null) {
             const perfeitas = resumo.filter(r => Number(r.acertos) === 20);
             return perfeitas.sort((a, b) => (a.tempoMedio || 999) - (b.tempoMedio || 999) || (b.acertos || 0) - (a.acertos || 0) || (b.pontos || 0) - (a.pontos || 0) || (b.maiorSequencia || 0) - (a.maiorSequencia || 0));
         }
 
-        // Fallback legacy
+        // ─── Fallback legacy ───
         const rank = await obterRanking();
         let f = rank.filter(r => r.modalidade === mod && r.acertos === 20);
         if (t) f = f.filter(r => r.turma === t);
@@ -15191,42 +15173,25 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return Array.from(m.values()).sort((a, b) => (a.tempoMedio || 999) - (b.tempoMedio || 999) || (b.acertos || 0) - (a.acertos || 0) || (b.pontos || 0) - (a.pontos || 0) || (b.maiorSequencia || 0) - (a.maiorSequencia || 0));
     }
 
-    // ─── Histórico do aluno (usado por Home, Perfil, Álbum, Coach, etc) ───
-    // v10.9.0 · Lê de `partidas_por_aluno/{alunoKey}` quando a otimização
-    // está ativa. Cai no legacy (download de TUDO em `partidas`) caso o
-    // aluno não tenha sido backfilled ainda.
     async function obterHistoricoAluno(n, t, mod = null) {
         if (await otimizacaoV109Ativa()) {
             try {
                 const alunoKey = chaveAlbum(n, t);
-                if (alunoKey) {
-                    const snap = await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).once("value");
-                    const dados = snap.val() || {};
-                    let partidas = Object.values(dados).filter(p =>
-                        p && normalizarNome(p.nome) === normalizarNome(n) && p.turma === t
-                    );
-                    if (mod) partidas = partidas.filter(p => p.modalidade === mod);
-                    if (partidas.length > 0) {
-                        return partidas.sort(ordenarPorDataDesc);
-                    }
-                    // Vazio → tenta o ranking_resumo (pode ter partidas antigas
-                    // que foram backfilled como "recorde" mas sem partida completa)
-                    const snapBest = await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod || "0-10"}/${alunoKey}`).once("value");
-                    const best = snapBest.val();
-                    if (best && best.partidaId) {
-                        // Só temos a "melhor" partida no resumo. Insuficiente
-                        // para histórico completo. Cai no legacy para esse aluno.
-                        // (Isso é raro: só acontece em partidas anteriores ao backfill.)
-                    }
-                    // Se ainda vazio, cai no legacy (aluno não backfilled)
-                }
+                if (!alunoKey) return [];
+                const snap = await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).once("value");
+                const dados = snap.val() || {};
+                let partidas = Object.values(dados).filter(p =>
+                    p && normalizarNome(p.nome) === normalizarNome(n) && p.turma === t
+                );
+                if (mod) partidas = partidas.filter(p => p.modalidade === mod);
+                return partidas.sort(ordenarPorDataDesc); // Retorna [] se vazio
             } catch(e) {
                 console.warn("[Otimização] Falha ao ler partidas_por_aluno:", e);
-                // cai no legacy
+                // Cai no legacy se der erro
             }
         }
 
-        // ─── Fallback legacy (código original) ───
+        // ─── Fallback legacy ───
         const partidas = await obterPartidas();
         let h = partidas.filter(p => normalizarNome(p.nome) === normalizarNome(n) && p.turma === t && (!mod || p.modalidade === mod));
         if (h.length) return h.sort(ordenarPorDataDesc);
