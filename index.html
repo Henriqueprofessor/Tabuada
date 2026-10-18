@@ -16029,21 +16029,54 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.06]
 
     // ▼▼▼ [13.06.bis] Métricas do comparativo entre turmas ───────────
-    // v10.5.2 · Corrige ReferenceError pré-existente: a função
-    // calcularMetricasComparativo() era chamada por renderizarMediasTurmas()
-    // mas nunca havia sido definida no arquivo. Também é usada pela aba
-    // "Desafio entre turmas" (renderizarRanking → ramo "global").
-    // Retorna uma lista de objetos, um por turma, com as métricas usadas
-    // pelo comparativo: pontuação, precisão, velocidade e engajamento.
-
     async function calcularMetricasComparativo(mod, apenasCompletas) {
+        if (await otimizacaoV109Ativa()) {
+            try {
+                const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma`).once("value");
+                const dadosTurmas = snap.val() || {};
+                const resultado = [];
+
+                Object.keys(dadosTurmas).forEach(turma => {
+                    const dadosMod = dadosTurmas[turma] && dadosTurmas[turma][mod];
+                    if (!dadosMod) return;
+                    
+                    const lista = Object.values(dadosMod).filter(r => r && r.nome).sort(compararParaOrdenacao);
+                    const top4 = lista.slice(0, 4);
+                    if (!top4.length) return;
+
+                    const mediaPontos = top4.reduce((s, a) => s + (Number(a.pontos) || 0), 0) / top4.length;
+                    const pctPrecisao = top4.reduce((s, a) => s + (Number(a.acertos) || 0), 0) / top4.length / 20 * 100;
+                    
+                    const velocidades = top4.map(a => Number(a.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
+                    const mediaVelocidade = velocidades.length ? velocidades.reduce((s, v) => s + v, 0) / velocidades.length : Infinity;
+
+                    // O Engajamento (partidas por aluno) não está no best_turma. Usaremos a contagem do top4 como aproximação.
+                    const mediaPartidas = 1; 
+
+                    resultado.push({
+                        turma,
+                        totalAlunos: lista.length,
+                        totalJogadores: top4.length,
+                        mediaPontos: Math.round(mediaPontos),
+                        pctPrecisao,
+                        mediaVelocidade,
+                        mediaPartidas,
+                        melhorAluno: top4[0]
+                    });
+                });
+
+                if (resultado.length > 0) return resultado;
+            } catch(e) {
+                console.warn("[Otimização] Falha ao ler best_turma para comparativo:", e);
+            }
+        }
+
+        // Fallback legado (baixa tudo)
         const partidas = await obterPartidas();
         const filtradas = (apenasCompletas
             ? partidas.filter(p => p.modalidade === mod && ehPartidaCompleta(p))
             : partidas.filter(p => p.modalidade === mod)
         );
-
-        // Agrupa por turma → por aluno → melhor resultado
         const porTurma = new Map();
         filtradas.forEach(p => {
             if (!porTurma.has(p.turma)) porTurma.set(p.turma, new Map());
@@ -16051,45 +16084,23 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const m = porTurma.get(p.turma);
             if (!m.has(c) || ehMelhorResultado(p, m.get(c))) m.set(c, p);
         });
-
         const resultado = [];
         porTurma.forEach((mapaAlunos, turma) => {
             const lista = Array.from(mapaAlunos.values()).sort(compararParaOrdenacao);
             const top4 = lista.slice(0, 4);
             if (!top4.length) return;
-
-            // Pontuação: média dos pontos dos 4 melhores
             const mediaPontos = top4.reduce((s, a) => s + (Number(a.pontos) || 0), 0) / top4.length;
-
-            // Precisão: média de acertos dos 4 melhores (em %)
             const pctPrecisao = top4.reduce((s, a) => s + (Number(a.acertos) || 0), 0) / top4.length / 20 * 100;
-
-            // Velocidade: média do tempo médio dos acertos dos 4 melhores
-            // (Infinity se nenhum tem tempo válido — o chamador filtra)
-            const velocidades = top4
-                .map(a => Number(a.tempoMedio))
-                .filter(t => Number.isFinite(t) && t > 0);
-            const mediaVelocidade = velocidades.length
-                ? velocidades.reduce((s, v) => s + v, 0) / velocidades.length
-                : Infinity;
-
-            // Engajamento: média de partidas por aluno na turma
+            const velocidades = top4.map(a => Number(a.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
+            const mediaVelocidade = velocidades.length ? velocidades.reduce((s, v) => s + v, 0) / velocidades.length : Infinity;
             const totalPartidasTurma = filtradas.filter(p => p.turma === turma).length;
             const totalAlunosTurma = mapaAlunos.size;
             const mediaPartidas = totalAlunosTurma > 0 ? totalPartidasTurma / totalAlunosTurma : 0;
-
             resultado.push({
-                turma,
-                totalAlunos: totalAlunosTurma,
-                totalJogadores: top4.length,
-                mediaPontos: Math.round(mediaPontos),
-                pctPrecisao,
-                mediaVelocidade,
-                mediaPartidas,
-                melhorAluno: top4[0]
+                turma, totalAlunos: totalAlunosTurma, totalJogadores: top4.length,
+                mediaPontos: Math.round(mediaPontos), pctPrecisao, mediaVelocidade, mediaPartidas, melhorAluno: top4[0]
             });
         });
-
         return resultado;
     }
     // ▲▲▲ FIM [13.06.bis]
@@ -19629,14 +19640,19 @@ if (containerProg) {
         try { const snap = await database.ref(CAMINHO_VOTACAO).once("value"); return snap.val() || {}; }
         catch(e) { console.warn("Falha ao ler votação:", e); return {}; }
     }
+    
     async function calcularElegibilidadeVoto(nome, turma) {
         const cfg = await obterConfiguracao();
         const minVerdes = calcularMinVerdes(cfg.percentualMapa);
+        
+        // v10.9.0-fix: Bloqueia se o aluno não está identificado (evita baixar banco inteiro no modo anônimo)
+        if (!nome || !turma) {
+            return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
+        }
+
         try {
-            // ⚙️ [13] — Só partidas COMPLETAS contam para elegibilidade da votação
             const partidas = (await obterHistoricoAluno(nome, turma)).filter(ehPartidaCompleta);
             const totalPartidas = partidas.length;
-            // Conta operações dominadas no novo formato (via mapa)
             const mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
             let verdes = 0;
             const chaves = [];
@@ -19670,6 +19686,7 @@ if (containerProg) {
             await renderizarPainelVotacao();
         } catch(e) { notificar("Não foi possível registrar seu voto. Tente novamente.", "erro"); console.warn(e); }
     }
+    
     function tempoRestanteHumano(ms) {
         if (ms <= 0) return "encerrada";
         const dias = Math.floor(ms / (1000*60*60*24));
@@ -19679,10 +19696,12 @@ if (containerProg) {
         if (horas > 0) return `${horas}h ${minutos}min`;
         return `${minutos}min`;
     }
+    
     function renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos) {
         if (totalVotos === 0) return `<div class="votacao-grafico"><div style="text-align:center;color:#ede9fe;font-size:13px;padding:14px 0;">Nenhum voto ainda. Seja o primeiro!</div></div>`;
         return `<div class="votacao-grafico"><div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div><div class="barra-voto"><div class="rotulo-barra"><span>🗓️ 7 dias (encerrar na 1ª semana)</span><span class="num">${pct7}% · ${votos7} ${votos7 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento set" style="width:${pct7}%"></div></div></div><div class="barra-voto"><div class="rotulo-barra"><span>📆 14 dias (estender +1 semana)</span><span class="num">${pct14}% · ${votos14} ${votos14 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento qua" style="width:${pct14}%"></div></div></div><div style="text-align:center;color:#ede9fe;font-size:11.5px;margin-top:8px;">${totalVotos} ${totalVotos === 1 ? "voto computado" : "votos computados"} até agora</div></div>`;
     }
+    
     async function renderizarCardVotacao() {
         const card = document.getElementById("card-votacao");
         const timerContainer = document.getElementById("votacao-timer-container");
@@ -19743,6 +19762,7 @@ if (containerProg) {
         }
         corpo.innerHTML = `<div class="votacao-botoes"><button class="btn-voto" onclick="registrarVoto('7')"><strong>7</strong>dias<small>encerrar na 1ª semana</small></button><button class="btn-voto" onclick="registrarVoto('14')"><strong>14</strong>dias<small>estender +1 semana</small></button></div><div style="font-size:12px;color:#ede9fe;text-align:center;margin-top:10px;line-height:1.5;">Após votar, você verá o resultado parcial. Sua escolha não pode ser alterada.</div>`;
     }
+    
     async function abrirVotacaoProfessor() {
         if (!exigirProfessorAutenticado()) return;
         const dados = await obterDadosVotacao();
@@ -19758,6 +19778,7 @@ if (containerProg) {
             await renderizarCardVotacao();
         } catch(e) { notificar("Não foi possível abrir a votação.", "erro"); console.warn(e); }
     }
+    
     async function resetarVotacao() {
         if (!exigirProfessorAutenticado()) return;
         if (!confirm("⚠️ Resetar votação? Todos os votos serão apagados.\n\nObs: NÃO apaga o histórico de partidas nem o ranking.")) return;
@@ -19770,6 +19791,7 @@ if (containerProg) {
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível resetar.", "erro"); console.warn(e); }
     }
+    
     async function abrirVotacao() {
         const modal = document.getElementById("modal-votacao");
         if (!modal) return;
@@ -19777,10 +19799,12 @@ if (containerProg) {
         modal.classList.remove("hidden");
         setTimeout(() => { document.querySelector("#modal-votacao .votacao-modal-close")?.focus(); }, 80);
     }
+    
     function fecharModalVotacao(e) {
         if (e && e.target && e.target.closest(".votacao-modal-card")) return;
         document.getElementById("modal-votacao")?.classList.add("hidden");
     }
+    
     async function renderizarPainelVotacao() {
         const container = document.getElementById("painel-votacao-conteudo");
         if (!container) return;
@@ -21116,12 +21140,26 @@ if (containerProg) {
         try {
             const metricas = await calcularMetricasHallFama();
 
-            const ranking = await obterRanking();
+            // v10.9.0-fix: Não usa mais obterRanking(). Lê os alunos únicos do resumo.
             const alunosUnicos = new Map();
-            ranking.forEach(r => {
-                const k = `${normalizarNome(r.nome)}|${r.turma}`;
-                if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: r.nome, turma: r.turma });
-            });
+            if (await otimizacaoV109Ativa()) {
+                const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/media`).once("value");
+                const dados = snap.val() || {};
+                for (const mod of ["2-5", "6-9", "0-10"]) {
+                    const alunosMod = dados[mod] || {};
+                    Object.values(alunosMod).forEach(a => {
+                        if (!a || !a.nome) return;
+                        const k = `${normalizarNome(a.nome)}|${a.turma}`;
+                        if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: a.nome, turma: a.turma });
+                    });
+                }
+            } else {
+                const ranking = await obterRanking();
+                ranking.forEach(r => {
+                    const k = `${normalizarNome(r.nome)}|${r.turma}`;
+                    if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: r.nome, turma: r.turma });
+                });
+            }
 
             const alunosParaProcessar = Array.from(alunosUnicos.values()).slice(0, 200);
 
@@ -21244,7 +21282,7 @@ if (containerProg) {
                 turmas:       turmaInfo ? turmaInfo.ranking : [],
                 minhaTurmaTurmas: turmaInfo ? turmaInfo.minhaTurma : null,
                 minimoTurma:  turmaInfo ? turmaInfo.minimo : MIN_ALUNOS_RANKING_TURMA,
-                totalAlunos:  ranking.length
+                totalAlunos:  alunosUnicos.size
             };
 
             hallFamaUltimaAtualizacao = Date.now();
@@ -21313,7 +21351,6 @@ if (containerProg) {
         html += buildCard("Presença VIP", "Quem jogou em mais dias diferentes. Constância é a chave!", "📅", dados.presenca, "presenca", "presenca");
         html += buildCard("Mestre do Treino", "Quem mais completou treinos identificados. Constância é a chave!", "🧠", dados.treino, "treino", "treino");
 
-        // ⚙️ NOVO: Média Consistente (média combinada das 3 modalidades, mínimo 5 partidas em cada)
         html += buildCard("Média Consistente", "Quem mantém a maior média geral somando as 3 modalidades (mínimo de 5 partidas em cada).", "📊", dados.media, "media", "media");
 
         const minimo = dados.minimoTurma || MIN_ALUNOS_RANKING_TURMA;
@@ -21346,231 +21383,6 @@ if (containerProg) {
 
         container.innerHTML = html;
     }
-
-    const HALL_CATEGORIAS_META = {
-        medalhas:    { icone: "🏅", titulo: "Mais Medalhas",      tipoValor: "medalhas",    descricao: "Quem colecionou o maior número de medalhas no Álbum." },
-        estrelas:    { icone: "⭐", titulo: "Mais Estrelas",      tipoValor: "estrelas",    descricao: "Quem acumulou mais estrelas — as medalhas raras valem mais." },
-        album:       { icone: "💎", titulo: "Álbum de Elite",     tipoValor: "album",       descricao: "Raridade das medalhas + bônus por seções completas." },
-        velocidade:  { icone: "🏆", titulo: "Mestre da Velocidade", tipoValor: "velocidade", descricao: "Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas abaixo de 0,8s." },
-        acertos:     { icone: "✅", titulo: "Total de Acertos",   tipoValor: "acertos",     descricao: "Soma de todos os acertos acumulados." },
-        maratonista: { icone: "🏃", titulo: "Maratonista da Copa", tipoValor: "maratonista", descricao: "Quem jogou o maior número de partidas." },
-        presenca:    { icone: "📅", titulo: "Presença VIP",       tipoValor: "presenca",    descricao: "Quem jogou em mais dias diferentes." },
-        treino:      { icone: "🧠", titulo: "Mestre do Treino",   tipoValor: "treino",      descricao: "Quem mais completou treinos identificados." },
-        turmas:      { icone: "🏫", titulo: "Turma de Elite",     tipoValor: "turmas",      descricao: "Turma com a melhor média dos 4 melhores alunos (modalidade completa 1-10)." },
-        media:       { icone: "📊", titulo: "Média Consistente",  tipoValor: "media",       descricao: "Quem mantém a maior média geral somando as 3 modalidades (mínimo de 5 partidas em cada)." }
-    };
-
-    let hallCategoriaAtual = null;
-    let hallCategoriaNavEstado = "voce";
-
-    function abrirHallCategoria(categoriaId) {
-        const modal = document.getElementById("modal-hall-categoria");
-        if (!modal) return;
-
-        hallCategoriaAtual = categoriaId;
-        hallCategoriaNavEstado = "voce";
-        modal.classList.remove("hidden");
-        renderizarModalHallCategoria();
-
-        setTimeout(() => {
-            const lista = document.querySelector("#hall-categoria-conteudo .hall-categoria-lista");
-            const voce  = lista && lista.querySelector(".hall-categoria-item.voce");
-            if (!lista || !voce) return;
-            const pos = Number(voce.dataset.pos || 0);
-            if (pos <= 3) return;
-            hallCategoriaScrollPara(lista, voce);
-            atualizarBotaoNavModal();
-        }, 320);
-
-        setTimeout(() => { document.querySelector("#modal-hall-categoria .modal-close")?.focus(); }, 80);
-    }
-
-    function fecharModalHallCategoria(e) {
-        if (e && e.target && e.target.closest(".hall-categoria-modal-card")) return;
-        const modal = document.getElementById("modal-hall-categoria");
-        if (modal) modal.classList.add("hidden");
-        hallCategoriaAtual = null;
-    }
-
-    function hallCategoriaScrollPara(lista, el) {
-        if (!lista || !el) return;
-        const listaRect = lista.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        const alvo = lista.scrollTop + (elRect.top - listaRect.top)
-                     - (lista.clientHeight / 2) + (el.clientHeight / 2);
-        lista.scrollTo({ top: Math.max(0, alvo), behavior: "smooth" });
-    }
-
-    function hallCategoriaNavToggle() {
-        const lista = document.querySelector("#hall-categoria-conteudo .hall-categoria-lista");
-        const voce  = lista && lista.querySelector(".hall-categoria-item.voce");
-        if (!lista || !voce) return;
-
-        if (hallCategoriaNavEstado === "voce") {
-            hallCategoriaScrollPara(lista, voce);
-            hallCategoriaNavEstado = "topo";
-        } else {
-            lista.scrollTo({ top: 0, behavior: "smooth" });
-            hallCategoriaNavEstado = "voce";
-        }
-        atualizarBotaoNavModal();
-    }
-
-    function atualizarBotaoNavModal() {
-        const btn = document.getElementById("hall-categoria-nav");
-        if (!btn) return;
-        if (hallCategoriaNavEstado === "voce") {
-            btn.classList.remove("topo");
-            btn.innerHTML = `⬇ Ir para minha posição`;
-        } else {
-            btn.classList.add("topo");
-            btn.innerHTML = `⬆ Voltar ao topo`;
-        }
-    }
-
-    function renderizarModalHallCategoria() {
-        const container = document.getElementById("hall-categoria-conteudo");
-        const tituloEl = document.getElementById("hall-categoria-titulo");
-        if (!container || !tituloEl) return;
-
-        if (!hallCategoriaAtual || !hallFamaCache) {
-            container.innerHTML = `<div class="hall-vazio">Não foi possível carregar o ranking agora.</div>`;
-            return;
-        }
-
-        const meta = HALL_CATEGORIAS_META[hallCategoriaAtual];
-        if (!meta) {
-            container.innerHTML = `<div class="hall-vazio">Categoria desconhecida.</div>`;
-            return;
-        }
-
-        const lista = hallFamaCache[hallCategoriaAtual] || [];
-        tituloEl.textContent = `${meta.icone} ${meta.titulo}`;
-
-        if (!lista.length) {
-            container.innerHTML = `<div class="hall-vazio">Nenhum participante nesta categoria ainda.</div>`;
-            return;
-        }
-
-        const nomeAluno = obterNomeSalvoAluno();
-        const turmaAluno = obterTurmaSalvaAluno();
-        const total = lista.length;
-
-        let idxAluno = -1;
-        if (nomeAluno && turmaAluno && meta.tipoValor !== "turmas") {
-            idxAluno = lista.findIndex(item =>
-                normalizarNome(item.nome) === normalizarNome(nomeAluno) &&
-                item.turma === turmaAluno
-            );
-        }
-
-        function renderItem(item, idx) {
-            const pos = idx + 1;
-            const ehVoce = idx === idxAluno;
-            let classePodio = "";
-            if (pos === 1) classePodio = "podio-1";
-            else if (pos === 2) classePodio = "podio-2";
-            else if (pos === 3) classePodio = "podio-3";
-            const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : String(pos);
-
-            let nomeLinha, subLinha;
-            if (meta.tipoValor === "turmas") {
-                nomeLinha = `Turma ${escaparHtml(item.turma)}`;
-                subLinha = hallFormatarSubLinha(item, "turmas");
-            } else {
-                nomeLinha = escaparHtml(item.nome);
-                subLinha = hallFormatarSubLinha(item, meta.tipoValor);
-            }
-
-            const voceTag = ehVoce ? '<span class="hall-categoria-voce-tag">Você</span>' : '';
-
-            return `<li class="hall-categoria-item ${classePodio} ${ehVoce ? "voce" : ""}" data-pos="${pos}" ${ehVoce ? 'data-voce="1"' : ''}>
-                <span class="hall-categoria-pos">${medal}</span>
-                <span class="hall-categoria-info">
-                    <span class="hall-categoria-nome">${nomeLinha}${voceTag}</span>
-                    <span class="hall-categoria-sub">${subLinha}</span>
-                </span>
-                <span class="hall-categoria-valor">${hallFormatarValor(item, meta.tipoValor)}</span>
-            </li>`;
-        }
-
-        const podium = lista.slice(0, 3);
-        const resto  = lista.slice(3);
-
-        let itensHtml = "";
-        podium.forEach((item, i) => { itensHtml += renderItem(item, i); });
-        if (resto.length) {
-            itensHtml += `<li class="hall-categoria-divisor">Demais participantes</li>`;
-            resto.forEach((item, i) => { itensHtml += renderItem(item, i + 3); });
-        }
-
-        const precisaNavegar = (idxAluno >= 3);
-        const navBtn = precisaNavegar
-            ? `<button class="hall-categoria-nav-btn" id="hall-categoria-nav" onclick="hallCategoriaNavToggle()">⬇ Ir para minha posição</button>`
-            : "";
-
-        container.innerHTML = `
-            <div class="hall-categoria-resumo">
-                ${escaparHtml(meta.descricao)}<br>
-                Total: <strong>${total}</strong> ${total === 1 ? "participante" : "participantes"}.
-            </div>
-            <ul class="hall-categoria-lista">${itensHtml}</ul>
-            ${navBtn}
-        `;
-    }
-
-    function exportarCSVHallCategoria() {
-        const categoriaId = hallCategoriaAtual;
-        if (!categoriaId || !hallFamaCache) {
-            notificar("Nenhuma categoria aberta para exportar.", "aviso");
-            return;
-        }
-        const meta = HALL_CATEGORIAS_META[categoriaId];
-        const lista = hallFamaCache[categoriaId] || [];
-        if (!meta || !lista.length) {
-            notificar("Categoria vazia.", "aviso");
-            return;
-        }
-
-        const esc = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
-
-        function valorCru(item) {
-            if (categoriaId === "medalhas")      return item.qtdMedalhas;
-            if (categoriaId === "estrelas")      return item.qtdEstrelas;
-            if (categoriaId === "album")         return item.scoreAlbum;
-            if (categoriaId === "velocidade")    return item.maxTemposRapidosPerfeito;
-            if (categoriaId === "acertos")       return item.totalAcertos;
-            if (categoriaId === "maratonista")   return item.totalPartidas;
-            if (categoriaId === "presenca")      return item.diasDistintos;
-            if (categoriaId === "treino")        return item.treinosFocados;
-            if (categoriaId === "turmas")        return item.media;
-            if (categoriaId === "media")         return Math.round(item.mediaGeral);
-            return "";
-        }
-
-        let csv = `Posicao,Nome,Turma,Valor\n`;
-        lista.forEach((item, i) => {
-            const nome = categoriaId === "turmas" ? `Turma ${item.turma}` : item.nome;
-            csv += `${i + 1},${esc(nome)},${esc(item.turma)},${valorCru(item)}\n`;
-        });
-
-        const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `hall_${categoriaId}_${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-        notificar("CSV exportado!", "sucesso");
-    }
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key !== "Escape") return;
-        const m = document.getElementById("modal-hall-categoria");
-        if (m && !m.classList.contains("hidden")) fecharModalHallCategoria();
-    });
     // ▲▲▲ FIM [18.02]
 
 
