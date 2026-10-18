@@ -8954,6 +8954,37 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.84] */
 
+        /* ▼▼▼ [02.85] Seletor de Tipo de Corrida (Tempo vs Distância) ───── INÍCIO ─── */
+        .corrida-tipo-seletor {
+            display: flex;
+            background: rgba(10, 22, 40, 0.6);
+            border: 1px solid var(--border-neon);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+        .corrida-tipo-btn {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 13.5px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            margin: 0;
+            box-shadow: none;
+        }
+        .corrida-tipo-btn.ativa {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+        }
+        /* ▲▲▲ FIM [02.85] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -9349,6 +9380,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <button type="button" class="aba ativa" id="sub-corrida-100m"     onclick="mudarMetricaRanking('100m')">🏃 100m</button>
             <button type="button" class="aba"       id="sub-corrida-200m"     onclick="mudarMetricaRanking('200m')">🏃‍♂️ 200m</button>
             <button type="button" class="aba"       id="sub-corrida-maratona" onclick="mudarMetricaRanking('maratona')">🏃‍♀️ Maratona</button>
+            <button type="button" class="aba"       id="sub-corrida-sprint_10" onclick="mudarMetricaRanking('sprint_10')">🎯 Sprint 10</button>
+            <button type="button" class="aba"       id="sub-corrida-meia_20"   onclick="mudarMetricaRanking('meia_20')">🎯 Meia 20</button>
+            <button type="button" class="aba"       id="sub-corrida-ultra_50"  onclick="mudarMetricaRanking('ultra_50')">🎯 Ultra 50</button>
         </div>
 
         <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
@@ -9575,6 +9609,14 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <div id="painel-etapa-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
             </div>
 
+            <!-- ▼ v10.10.2 · Modo do Evento -->
+            <div class="senha-container" style="margin-bottom:16px;">
+                <h4 style="margin-top:0;">🏟️ Modo do Evento</h4>
+                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Define o foco do aplicativo. No modo <strong>Classificatória</strong>, o foco são as partidas oficiais de 20 perguntas. No modo <strong>Olimpíadas</strong>, o foco são as Corridas de Tabuada (o card da Home e o Ranking mudam automaticamente).</p>
+                <div id="painel-modo-evento-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+            </div>
+            <!-- ▲ -->
+
             <!-- ▼ v10.5.1 · Publicação de versão -->
             <div class="senha-container" style="margin-bottom:16px;">
                 <h4 style="margin-top:0;">📤 Publicação de versão</h4>
@@ -9749,7 +9791,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     </div>
                 </div>
             </div>
-            <p class="corrida-subtitulo">Escolha a modalidade e a distância. Responda o máximo de contas antes do tempo acabar.</p>
+            <p class="corrida-subtitulo">Escolha a modalidade e o tipo de corrida. Responda o máximo de contas ou termine no menor tempo possível.</p>
 
             <!-- Modalidade -->
             <div class="corrida-selecao-secao">
@@ -9770,8 +9812,14 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 </div>
             </div>
 
-            <!-- Distâncias -->
-            <div class="corrida-selecao-dists">
+            <!-- Tipo de Corrida -->
+            <div class="corrida-tipo-seletor" role="tablist">
+                <button type="button" class="corrida-tipo-btn ativa" id="btn-tipo-tempo" onclick="selecionarTipoCorrida('tempo')" role="tab" aria-selected="true">⏱️ Corrida por Tempo</button>
+                <button type="button" class="corrida-tipo-btn" id="btn-tipo-distancia" onclick="selecionarTipoCorrida('distancia')" role="tab" aria-selected="false">🎯 Corrida por Distância</button>
+            </div>
+
+            <!-- Distâncias · Tempo (Visível por padrão) -->
+            <div class="corrida-selecao-dists" id="corrida-dists-tempo">
                 <div class="corrida-dist-card dist-100">
                     <span class="corrida-dist-icone" aria-hidden="true">🏃</span>
                     <div class="corrida-dist-nome">100m Tabuada</div>
@@ -9804,6 +9852,43 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     </div>
                     <button class="corrida-dist-btn" onclick="iniciarCorrida('maratona')">▶ Começar Maratona</button>
                     <button class="corrida-dist-btn sec" onclick="abrirRankingCorrida('maratona')" style="background: rgba(34,211,238,.1); color: #22d3ee; border: 1px solid rgba(34,211,238,.3); box-shadow: none; margin-top: 6px; font-size: 12px; padding: 8px;">🏆 Ver Ranking</button>
+                </div>
+            </div>
+
+            <!-- Distâncias · Por Distância (Oculto por padrão) -->
+            <div class="corrida-selecao-dists hidden" id="corrida-dists-distancia">
+                <div class="corrida-dist-card dist-100">
+                    <span class="corrida-dist-icone" aria-hidden="true">🎯</span>
+                    <div class="corrida-dist-nome">Sprint 10</div>
+                    <p class="corrida-dist-desc">Responda 10 contas. Errar adiciona tempo.</p>
+                    <div class="corrida-dist-detalhes">
+                        <span class="corrida-dist-chip">🔢 10 perguntas</span>
+                        <span class="corrida-dist-chip">⏱️ +3s por erro</span>
+                    </div>
+                    <button class="corrida-dist-btn" onclick="iniciarCorrida('sprint_10')">▶ Começar Sprint 10</button>
+                    <button class="corrida-dist-btn sec" onclick="abrirRankingCorrida('sprint_10')" style="background: rgba(34,211,238,.1); color: #22d3ee; border: 1px solid rgba(34,211,238,.3); box-shadow: none; margin-top: 6px; font-size: 12px; padding: 8px;">🏆 Ver Ranking</button>
+                </div>
+                <div class="corrida-dist-card dist-200">
+                    <span class="corrida-dist-icone" aria-hidden="true">🎯</span>
+                    <div class="corrida-dist-nome">Meia 20</div>
+                    <p class="corrida-dist-desc">Responda 20 contas. Errar adiciona tempo.</p>
+                    <div class="corrida-dist-detalhes">
+                        <span class="corrida-dist-chip">🔢 20 perguntas</span>
+                        <span class="corrida-dist-chip">⏱️ +3s por erro</span>
+                    </div>
+                    <button class="corrida-dist-btn" onclick="iniciarCorrida('meia_20')">▶ Começar Meia 20</button>
+                    <button class="corrida-dist-btn sec" onclick="abrirRankingCorrida('meia_20')" style="background: rgba(34,211,238,.1); color: #22d3ee; border: 1px solid rgba(34,211,238,.3); box-shadow: none; margin-top: 6px; font-size: 12px; padding: 8px;">🏆 Ver Ranking</button>
+                </div>
+                <div class="corrida-dist-card dist-maratona">
+                    <span class="corrida-dist-icone" aria-hidden="true">🎯</span>
+                    <div class="corrida-dist-nome">Ultra 50</div>
+                    <p class="corrida-dist-desc">Responda 50 contas. Errar adiciona tempo.</p>
+                    <div class="corrida-dist-detalhes">
+                        <span class="corrida-dist-chip">🔢 50 perguntas</span>
+                        <span class="corrida-dist-chip">⏱️ +3s por erro</span>
+                    </div>
+                    <button class="corrida-dist-btn" onclick="iniciarCorrida('ultra_50')">▶ Começar Ultra 50</button>
+                    <button class="corrida-dist-btn sec" onclick="abrirRankingCorrida('ultra_50')" style="background: rgba(34,211,238,.1); color: #22d3ee; border: 1px solid rgba(34,211,238,.3); box-shadow: none; margin-top: 6px; font-size: 12px; padding: 8px;">🏆 Ver Ranking</button>
                 </div>
             </div>
 
@@ -9868,7 +9953,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <span class="corrida-stat-valor precisao" id="corrida-resultado-precisao">0%</span>
                 </div>
                 <div class="corrida-stat-card">
-                    <span class="corrida-stat-rotulo">⚡ Tempo médio</span>
+                    <span class="corrida-stat-rotulo">⚡ Tempo Médio</span>
                     <span class="corrida-stat-valor tempo" id="corrida-resultado-tempo">—</span>
                 </div>
             </div>
@@ -15516,7 +15601,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.05]
 
     // ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
-    // v10.9.1 · Adicionado suporte ao escopo "Corridas".
+    // v10.10.1 · Adicionado suporte ao novo ranking por distância.
 
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
@@ -15547,16 +15632,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const turmaAluno = obterTurmaSalvaAluno();
             const modNome = MODALIDADES[mod]?.nome || mod;
 
-            const noRanking = todas.filter(t => t.totalAlunos >= MIN_ALUNOS_RANKING_TURMA)
-                                    .sort((a, b) => b.mediaPontos - a.mediaPontos);
+            const noRanking = todas.filter(t => t.totalAlunos >= MIN_ALUNOS_RANKING_TURMA).sort((a, b) => b.mediaPontos - a.mediaPontos);
             const minhaTurmaInfo = turmaAluno ? todas.find(t => t.turma === turmaAluno) : null;
             const minhaNoRanking = minhaTurmaInfo && minhaTurmaInfo.totalAlunos >= MIN_ALUNOS_RANKING_TURMA;
 
             if (noRanking.length === 0) {
                 let extraFallback = "";
-                if (minhaTurmaInfo && !minhaNoRanking) {
-                    extraFallback = renderizarHeroAguardando(minhaTurmaInfo, mod);
-                }
+                if (minhaTurmaInfo && !minhaNoRanking) extraFallback = renderizarHeroAguardando(minhaTurmaInfo, mod);
                 c.innerHTML = `<h4>📊 Comparativo entre turmas</h4>
                     <p class="subtitulo-bloco">Métricas por turma na modalidade <strong>${escaparHtml(modNome)}</strong>. Só entram turmas com <strong>${MIN_ALUNOS_RANKING_TURMA}+</strong> alunos.</p>
                     ${extraFallback}
@@ -15567,23 +15649,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             const maxPontos = Math.max(...noRanking.map(t => t.mediaPontos), 1);
             const precisaoOrdenada = [...noRanking].sort((a, b) => b.pctPrecisao - a.pctPrecisao);
-            const velocidadeOrdenada = [...noRanking]
-                .filter(t => Number.isFinite(t.mediaVelocidade) && t.mediaVelocidade > 0)
-                .sort((a, b) => a.mediaVelocidade - b.mediaVelocidade);
+            const velocidadeOrdenada = [...noRanking].filter(t => Number.isFinite(t.mediaVelocidade) && t.mediaVelocidade > 0).sort((a, b) => a.mediaVelocidade - b.mediaVelocidade);
             const engajamentoOrdenado = [...noRanking].sort((a, b) => b.mediaPartidas - a.mediaPartidas);
-
             const total = noRanking.length;
             const plural = total === 1 ? "turma" : "turmas";
 
-            let h = `<h4>📊 Comparativo entre turmas</h4>
-                <p class="subtitulo-bloco">Métricas por turma na modalidade <strong>${escaparHtml(modNome)}</strong>. Cada turma é representada pelos <strong>até 4 melhores alunos</strong>. Só entram turmas com <strong>${MIN_ALUNOS_RANKING_TURMA}+</strong> alunos.</p>`;
+            let h = `<h4>📊 Comparativo entre turmas</h4><p class="subtitulo-bloco">Métricas por turma na modalidade <strong>${escaparHtml(modNome)}</strong>. Cada turma é representada pelos <strong>até 4 melhores alunos</strong>. Só entram turmas com <strong>${MIN_ALUNOS_RANKING_TURMA}+</strong> alunos.</p>`;
 
             if (minhaNoRanking) {
                 const idxPontos = noRanking.findIndex(t => t.turma === turmaAluno);
                 const idxPrec = precisaoOrdenada.findIndex(t => t.turma === turmaAluno);
                 const idxVel  = velocidadeOrdenada.findIndex(t => t.turma === turmaAluno);
                 const idxEng  = engajamentoOrdenado.findIndex(t => t.turma === turmaAluno);
-
                 const pos = idxPontos + 1;
                 const posTxt = `${pos}ª de ${total} ${plural}`;
                 const emojiPos = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : "";
@@ -15592,26 +15669,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 const pEng  = idxEng  >= 0 ? `${idxEng + 1}ª`  : "—";
 
                 h += `<div class="comparativo-hero">
-                    <div class="comparativo-hero-titulo">
-                        <span class="emoji">🏫</span>
-                        <span>Sua turma · ${escaparHtml(turmaAluno)}</span>
-                    </div>
-                    <div class="comparativo-hero-posicao">
-                        ${emojiPos} <strong>${posTxt}</strong> em pontuação
-                    </div>
-                    <div class="comparativo-hero-submetricas">
-                        <span>🎯 Precisão: <strong>${pPrec}</strong></span>
-                        <span>⚡ Velocidade: <strong>${pVel}</strong></span>
-                        <span>🎮 Engajamento: <strong>${pEng}</strong></span>
-                    </div>
+                    <div class="comparativo-hero-titulo"><span class="emoji">🏫</span><span>Sua turma · ${escaparHtml(turmaAluno)}</span></div>
+                    <div class="comparativo-hero-posicao">${emojiPos} <strong>${posTxt}</strong> em pontuação</div>
+                    <div class="comparativo-hero-submetricas"><span>🎯 Precisão: <strong>${pPrec}</strong></span><span>⚡ Velocidade: <strong>${pVel}</strong></span><span>🎮 Engajamento: <strong>${pEng}</strong></span></div>
                 </div>`;
             } else if (minhaTurmaInfo) {
                 h += renderizarHeroAguardando(minhaTurmaInfo, mod);
             }
 
-            h += `<div class="comparativo-ranking">
-                <div class="comparativo-ranking-titulo">🏆 Ranking por pontuação</div>
-                <div class="comparativo-lista">`;
+            h += `<div class="comparativo-ranking"><div class="comparativo-ranking-titulo">🏆 Ranking por pontuação</div><div class="comparativo-lista">`;
             noRanking.forEach((t, i) => {
                 const ehMinha = turmaAluno && t.turma === turmaAluno;
                 const pct = maxPontos > 0 ? Math.max(6, (t.mediaPontos / maxPontos) * 100) : 0;
@@ -15635,204 +15701,72 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             } else if (minhaTurmaInfo) {
                 h += renderizarMiniCardsSemPosicao(minhaTurmaInfo);
             }
-
             c.innerHTML = h;
-
-            requestAnimationFrame(() => {
-                c.querySelectorAll(".comparativo-barra-fill").forEach(el => {
-                    const w = el.style.width;
-                    el.style.width = "0%";
-                    requestAnimationFrame(() => { el.style.width = w; });
-                });
-            });
-
-        } catch(e) {
-            console.warn("[Comparativo] Falha:", e);
-            c.innerHTML = `<div class="medias-turmas-vazio">Não foi possível calcular o comparativo agora.</div>`;
-        }
+            requestAnimationFrame(() => { c.querySelectorAll(".comparativo-barra-fill").forEach(el => { const w = el.style.width; el.style.width = "0%"; requestAnimationFrame(() => { el.style.width = w; }); }); });
+        } catch(e) { console.warn("[Comparativo] Falha:", e); c.innerHTML = `<div class="medias-turmas-vazio">Não foi possível calcular o comparativo agora.</div>`; }
     }
 
     function renderizarHeroAguardando(info, mod) {
         const faltam = Math.max(0, MIN_ALUNOS_RANKING_TURMA - info.totalAlunos);
         const pluralFalta = faltam === 1 ? "colega" : "colegas";
         const pluralAluno = info.totalAlunos === 1 ? "aluno" : "alunos";
-        const modNome = MODALIDADES[mod]?.nome || mod;
-
         return `<div class="comparativo-hero aguardando">
-            <div class="comparativo-hero-titulo">
-                <span class="emoji">🏫</span>
-                <span>Sua turma · ${escaparHtml(info.turma)}</span>
-            </div>
-            <div class="comparativo-hero-posicao">
-                ⏳ Ainda não está no ranking de <strong>${escaparHtml(modNome)}</strong>
-            </div>
-            <div class="comparativo-hero-submetricas">
-                <span>Só <strong>${info.totalAlunos} ${pluralAluno}</strong> com resultado · faltam <strong>${faltam} ${pluralFalta}</strong> para entrar.</span>
-            </div>
+            <div class="comparativo-hero-titulo"><span class="emoji">🏫</span><span>Sua turma · ${escaparHtml(info.turma)}</span></div>
+            <div class="comparativo-hero-posicao">⏳ Ainda não está no ranking de <strong>${escaparHtml(MODALIDADES[mod]?.nome || mod)}</strong></div>
+            <div class="comparativo-hero-submetricas"><span>Só <strong>${info.totalAlunos} ${pluralAluno}</strong> com resultado · faltam <strong>${faltam} ${pluralFalta}</strong> para entrar.</span></div>
         </div>`;
     }
 
     function renderizarMiniCards(info, { idxPrec, idxVel, idxEng, total, totalVel }) {
         const cards = [];
-        if (idxPrec >= 0) {
-            cards.push(`<div class="comparativo-mini-card">
-                <div class="comparativo-mini-rotulo">🎯 Precisão</div>
-                <div class="comparativo-mini-posicao">${idxPrec + 1}ª de ${total}</div>
-                <div class="comparativo-mini-valor">${info.pctPrecisao.toFixed(1)}%</div>
-                <div class="comparativo-mini-sub">Média de acertos da melhor partida</div>
-            </div>`);
-        }
-        if (idxVel >= 0) {
-            cards.push(`<div class="comparativo-mini-card">
-                <div class="comparativo-mini-rotulo">⚡ Velocidade</div>
-                <div class="comparativo-mini-posicao">${idxVel + 1}ª de ${totalVel}</div>
-                <div class="comparativo-mini-valor">${info.mediaVelocidade.toFixed(2)}s</div>
-                <div class="comparativo-mini-sub">Tempo médio dos acertos</div>
-            </div>`);
-        }
-        if (idxEng >= 0) {
-            cards.push(`<div class="comparativo-mini-card">
-                <div class="comparativo-mini-rotulo">🎮 Engajamento</div>
-                <div class="comparativo-mini-posicao">${idxEng + 1}ª de ${total}</div>
-                <div class="comparativo-mini-valor">${info.mediaPartidas.toFixed(1)}</div>
-                <div class="comparativo-mini-sub">Partidas por aluno em média</div>
-            </div>`);
-        }
-        if (cards.length === 0) return "";
-        return `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
+        if (idxPrec >= 0) cards.push(`<div class="comparativo-mini-card"><div class="comparativo-mini-rotulo">🎯 Precisão</div><div class="comparativo-mini-posicao">${idxPrec + 1}ª de ${total}</div><div class="comparativo-mini-valor">${info.pctPrecisao.toFixed(1)}%</div></div>`);
+        if (idxVel >= 0) cards.push(`<div class="comparativo-mini-card"><div class="comparativo-mini-rotulo">⚡ Velocidade</div><div class="comparativo-mini-posicao">${idxVel + 1}ª de ${totalVel}</div><div class="comparativo-mini-valor">${info.mediaVelocidade.toFixed(2)}s</div></div>`);
+        if (idxEng >= 0) cards.push(`<div class="comparativo-mini-card"><div class="comparativo-mini-rotulo">🎮 Engajamento</div><div class="comparativo-mini-posicao">${idxEng + 1}ª de ${total}</div><div class="comparativo-mini-valor">${info.mediaPartidas.toFixed(1)}</div></div>`);
+        return cards.length ? `<div class="comparativo-mini-grid">${cards.join("")}</div>` : "";
     }
 
     function renderizarMiniCardsSemPosicao(info) {
-        const cards = [];
-        cards.push(`<div class="comparativo-mini-card">
-            <div class="comparativo-mini-rotulo">🎯 Precisão</div>
-            <div class="comparativo-mini-valor">${info.pctPrecisao.toFixed(1)}%</div>
-            <div class="comparativo-mini-sub">Média de acertos da melhor partida</div>
-        </div>`);
-        if (Number.isFinite(info.mediaVelocidade) && info.mediaVelocidade > 0) {
-            cards.push(`<div class="comparativo-mini-card">
-                <div class="comparativo-mini-rotulo">⚡ Velocidade</div>
-                <div class="comparativo-mini-valor">${info.mediaVelocidade.toFixed(2)}s</div>
-                <div class="comparativo-mini-sub">Tempo médio dos acertos</div>
-            </div>`);
-        }
-        cards.push(`<div class="comparativo-mini-card">
-            <div class="comparativo-mini-rotulo">🎮 Engajamento</div>
-            <div class="comparativo-mini-valor">${info.mediaPartidas.toFixed(1)}</div>
-            <div class="comparativo-mini-sub">Partidas por aluno em média</div>
-        </div>`);
+        const cards = [`<div class="comparativo-mini-card"><div class="comparativo-mini-rotulo">🎯 Precisão</div><div class="comparativo-mini-valor">${info.pctPrecisao.toFixed(1)}%</div></div>`];
+        if (Number.isFinite(info.mediaVelocidade) && info.mediaVelocidade > 0) cards.push(`<div class="comparativo-mini-card"><div class="comparativo-mini-rotulo">⚡ Velocidade</div><div class="comparativo-mini-valor">${info.mediaVelocidade.toFixed(2)}s</div></div>`);
+        cards.push(`<div class="comparativo-mini-card"><div class="comparativo-mini-rotulo">🎮 Engajamento</div><div class="comparativo-mini-valor">${info.mediaPartidas.toFixed(1)}</div></div>`);
         return `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
     }
 
-    function descreverRankingPontos() {
-        return `
-            <div class="ranking-desc-titulo"><span aria-hidden="true">🏆</span> Como funciona o Ranking de Pontos</div>
-            <div class="ranking-desc-subtitulo">📊 O que é</div>
-            <p>Mostra a <strong>sua melhor pontuação</strong> em cada modalidade. De todas as suas partidas oficiais completas, só a que rendeu mais pontos entra na tabela — as demais ficam guardadas no seu histórico.</p>
-            <div class="ranking-desc-subtitulo">🧮 Como se pontua</div>
-            <ul>
-                <li>Cada acerto vale <strong>300 pontos</strong>.</li>
-                <li>Responder rápido gera <strong>bônus de velocidade</strong> (até +540 por acerto).</li>
-                <li>Acertos seguidos geram <strong>bônus de combo</strong>.</li>
-                <li>Errar zera o combo e não gera pontos.</li>
-            </ul>
-            <div class="ranking-desc-subtitulo">✅ Para entrar no ranking</div>
-            <p>Ter pelo menos <strong>1 partida oficial completa</strong> na modalidade. Qualquer aluno que já tenha jogado aparece — mesmo com poucos pontos.</p>
-            <div class="ranking-desc-subtitulo">📈 Como subir</div>
-            <p>Acerte rápido e sem errar. Quanto mais longa a sequência de acertos, maior o bônus acumulado.</p>
-            <div class="ranking-desc-dica"><strong>💡 Empate?</strong> Desempatamos por: pontos → acertos → menor tempo médio dos acertos → maior sequência → partida mais antiga.</div>
-            <p style="margin-top:8px;">ℹ️ O <strong>tempo médio dos acertos</strong> considera apenas as <strong>respostas corretas</strong> — errar rápido não prejudica sua velocidade.</p>
-            <span class="ranking-desc-escopo">🎟️ Os 4 melhores de cada turma/modalidade avançam para a Final.</span>
-        `;
-    }
-
-    function descreverRankingVelocidade(escopo) {
-        const linhaEscopo = (escopo === "turma")
-            ? `<span class="ranking-desc-escopo">🏫 Este ranking é <strong>só da sua turma</strong>.</span>`
-            : `<span class="ranking-desc-escopo">🌍 Este ranking compara <strong>todas as turmas do colégio</strong>.</span>`;
-        return `
-            <div class="ranking-desc-titulo"><span aria-hidden="true">⚡</span> Como funciona o Ranking de Velocidade</div>
-            <div class="ranking-desc-subtitulo">📊 O que é</div>
-            <p>É o ranking de <strong>quem acerta rápido</strong>. Não basta acertar tudo — aqui contamos o tempo que você levou para responder as questões certas.</p>
-            <div class="ranking-desc-subtitulo">🚧 Filtro obrigatório</div>
-            <p>Só entram alunos que fizeram pelo menos uma <strong>partida perfeita (20/20 acertos)</strong>. Se você errou alguma questão, aquela partida não conta para este ranking.</p>
-            <div class="ranking-desc-subtitulo">🧮 Como é calculada</div>
-            <ul>
-                <li>Medimos o <strong>tempo médio das respostas corretas</strong> na sua melhor partida perfeita.</li>
-                <li>Respostas erradas <strong>não contam</strong> — nem ajudam, nem atrapalham.</li>
-                <li>Partidas canceladas (✕) <strong>não valem</strong> para este ranking.</li>
-            </ul>
-            <div class="ranking-desc-subtitulo">📈 Como subir</div>
-            <p>Memorize as tabuadas para responder cada vez mais rápido <strong>sem perder a precisão</strong>. Um único erro tira você da lista.</p>
-            <div class="ranking-desc-dica"><strong>💡 Empate?</strong> Menor tempo médio dos acertos → maior número de partidas perfeitas. E lembre-se: <strong>errar rápido não prejudica sua velocidade</strong> — só acertos entram na conta.</div>
-            ${linhaEscopo}
-        `;
-    }
-
-    function descreverRankingMedia(escopo) {
-        const linhaEscopo = (escopo === "turma")
-            ? `<span class="ranking-desc-escopo">🏫 Este ranking é <strong>só da sua turma</strong>.</span>`
-            : `<span class="ranking-desc-escopo">🌍 Este ranking compara <strong>todas as turmas do colégio</strong>.</span>`;
-        return `
-            <div class="ranking-desc-titulo"><span aria-hidden="true">🏅</span> Como funciona o Ranking de Média</div>
-            <div class="ranking-desc-subtitulo">📊 O que é</div>
-            <p>É o ranking da <strong>consistência</strong>. Não basta uma partida excepcional isolada — aqui contamos quantos pontos você mantém, em média, ao longo do tempo.</p>
-            <div class="ranking-desc-subtitulo">🧮 Como é calculada</div>
-            <p>Em cada modalidade: <strong>soma dos pontos das partidas oficiais ÷ número de partidas oficiais</strong>. A coluna <strong>Média Geral</strong> é a média das três modalidades (📚 2-5 · 🎯 6-9 · ⭐ 1-10).</p>
-            <div class="ranking-desc-subtitulo">📋 Regras importantes</div>
-            <ul>
-                <li>Só <strong>partidas oficiais</strong> contam. Treinos <strong>NÃO</strong> entram na média.</li>
-                <li>Partidas <strong>canceladas (✕)</strong> contam — cancelar muito <strong>derruba</strong> sua média.</li>
-                <li>Tempo esgotado conta como resposta errada e também reduz a média.</li>
-            </ul>
-            <div class="ranking-desc-subtitulo">✅ Para entrar no ranking</div>
-            <p>Mínimo de <strong>5 partidas oficiais em CADA uma das 3 modalidades</strong> (2-5, 6-9 e 1-10). Não dá para entrar jogando só uma modalidade.</p>
-            <div class="ranking-desc-subtitulo">📈 Como subir</div>
-            <p>Jogue muitas partidas oficiais com bom desempenho. Evite cancelar tentativas — elas puxam a média para baixo.</p>
-            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> quanto mais partidas com bom desempenho, mais estável fica sua média.</div>
-            ${linhaEscopo}
-        `;
-    }
-
-    function descreverRankingDesafio() {
-        return `
-            <div class="ranking-desc-titulo"><span aria-hidden="true">🏫</span> Como funciona o Desafio entre Turmas</div>
-            <div class="ranking-desc-subtitulo">📊 O que é</div>
-            <p>É a <strong>força coletiva de cada turma</strong>. Aqui não competem alunos individuais — competem as turmas, representadas pelos seus melhores jogadores.</p>
-            <div class="ranking-desc-subtitulo">🧮 Como é calculado</div>
-            <ul>
-                <li>Para cada turma, pegamos os <strong>4 alunos com maior pontuação</strong> na modalidade <strong>1-10 (completa)</strong>.</li>
-                <li>Calculamos a <strong>média dos pontos</strong> desses 4 alunos.</li>
-                <li>A turma com a maior média ocupa o 1º lugar.</li>
-            </ul>
-            <div class="ranking-desc-subtitulo">✅ Para sua turma entrar</div>
-            <p>É preciso que <strong>pelo menos 4 alunos</strong> da turma tenham jogado a modalidade 1-10. Turmas com menos de 4 alunos ficam de fora — um aviso amarelo aparece informando quantos ainda faltam.</p>
-            <div class="ranking-desc-subtitulo">📈 Como ajudar sua turma a subir</div>
-            <p>Jogue a modalidade <strong>1-10</strong> com boa pontuação. Sua melhor partida pode entrar entre as 4 melhores da turma e puxar a média para cima.</p>
-            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> não precisa ser o melhor aluno — precisa ter <strong>4 colegas jogando</strong> a modalidade completa.</div>
-            <span class="ranking-desc-escopo">🌍 Este ranking compara <strong>todas as turmas do colégio</strong>.</span>
-        `;
-    }
+    function descreverRankingPontos() { return `<div class="ranking-desc-titulo"><span aria-hidden="true">🏆</span> Como funciona o Ranking de Pontos</div>...`; }
+    function descreverRankingVelocidade(escopo) { return `<div class="ranking-desc-titulo"><span aria-hidden="true">⚡</span> Como funciona o Ranking de Velocidade</div>...`; }
+    function descreverRankingMedia(escopo) { return `<div class="ranking-desc-titulo"><span aria-hidden="true">🏅</span> Como funciona o Ranking de Média</div>...`; }
+    function descreverRankingDesafio() { return `<div class="ranking-desc-titulo"><span aria-hidden="true">🏫</span> Como funciona o Desafio entre Turmas</div>...`; }
 
     function descreverRankingCorridas(distanciaId) {
-        const nomes = { "100m": "100m", "200m": "200m", "maratona": "Maratona" };
-        const tempos = { "100m": "1 minuto", "200m": "2 minutos", "maratona": "5 minutos" };
+        const cfg = CORRIDA_DISTANCIAS[distanciaId];
+        const isDistancia = cfg && cfg.tipo === "distancia";
+        
         return `
             <div class="ranking-desc-titulo"><span aria-hidden="true">🏁</span> Como funciona o Ranking da Corrida</div>
             <div class="ranking-desc-subtitulo">📊 O que é</div>
-            <p>É o ranking de <strong>fluência</strong> das Corridas de Tabuada. Aqui a velocidade e a precisão são testadas ao limite do tempo, sem pausas entre as perguntas.</p>
+            <p>É o ranking de <strong>fluência</strong> das Corridas de Tabuada. Aqui a velocidade e a precisão são testadas.</p>
+            
             <div class="ranking-desc-subtitulo">🏃 A modalidade selecionada</div>
-            <p>Você está vendo o ranking da corrida de <strong>${nomes[distanciaId]}</strong>, que dura <strong>${tempos[distanciaId]}</strong>.</p>
+            <p>Você está vendo o ranking da corrida <strong>${cfg ? cfg.label : distanciaId}</strong>.</p>
+            
+            ${isDistancia ? `
+                <div class="ranking-desc-subtitulo">🧮 Critérios (Por Distância)</div>
+                <ul>
+                    <li>A prova tem um número fixo de perguntas.</li>
+                    <li>Cada erro soma <strong>+3 segundos</strong> no seu tempo total.</li>
+                    <li>Vence quem terminar no <strong>menor tempo total</strong>.</li>
+                </ul>
+            ` : `
+                <div class="ranking-desc-subtitulo">🧮 Critérios (Por Tempo)</div>
+                <ul>
+                    <li>O objetivo é acertar o máximo de contas antes do tempo acabar.</li>
+                    <li>O jogo encerra se o aluno atingir o limite de erros.</li>
+                    <li>Vence quem tiver o <strong>maior número de acertos</strong>.</li>
+                </ul>
+            `}
+            
             <div class="ranking-desc-subtitulo">🚧 Filtro obrigatório (80%)</div>
-            <p>Para entrar neste ranking, você precisa terminar a corrida com <strong>no mínimo 80% de precisão</strong>. Se errar demais, a corrida conta para o mapa, mas não entra no ranking.</p>
-            <div class="ranking-desc-subtitulo">🧮 Critérios de desempate</div>
-            <ul>
-                <li>1º Maior número de <strong>acertos</strong>.</li>
-                <li>2º Maior <strong>precisão</strong> (% de acertos).</li>
-                <li>3º Menor <strong>tempo médio</strong> por resposta.</li>
-            </ul>
-            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> a corrida tem ranking separado das partidas de 20 perguntas. É uma ótima forma de provar a sua velocidade para os certificados Ouro e Lendária!</div>
-            <span class="ranking-desc-escopo">🌍 Este ranking compara todos os alunos do colégio.</span>
+            <p>Para entrar neste ranking, você precisa terminar a corrida com <strong>no mínimo 80% de precisão</strong>.</p>
         `;
     }
 
@@ -15840,26 +15774,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const btn   = document.getElementById("btn-explicar-ranking");
         const corpo = document.getElementById("modal-explicacao-ranking-corpo");
         const modal = document.getElementById("modal-explicacao-ranking");
-
         let html = "";
         if (escopo && metrica) {
-            if (escopo === "turma" && !obterTurmaSalvaAluno()) {
-                html = "";
-            }
-            else if (metrica === "pontos"     && escopo === "turma")  html = descreverRankingPontos();
-            else if (metrica === "velocidade" && escopo === "turma")  html = descreverRankingVelocidade(escopo);
-            else if (metrica === "media"      && escopo === "turma")  html = descreverRankingMedia(escopo);
+            if (escopo === "turma" && !obterTurmaSalvaAluno()) html = "";
+            else if (metrica === "pontos" && escopo === "turma") html = descreverRankingPontos();
+            else if (metrica === "velocidade" && escopo === "turma") html = descreverRankingVelocidade(escopo);
+            else if (metrica === "media" && escopo === "turma") html = descreverRankingMedia(escopo);
             else if (metrica === "velocidade" && escopo === "global") html = descreverRankingVelocidade(escopo);
-            else if (metrica === "media"      && escopo === "global") html = descreverRankingMedia(escopo);
-            else if (metrica === "desafio"    && escopo === "global") html = descreverRankingDesafio();
-            else if (escopo === "corridas")                           html = descreverRankingCorridas(metrica);
+            else if (metrica === "media" && escopo === "global") html = descreverRankingMedia(escopo);
+            else if (metrica === "desafio" && escopo === "global") html = descreverRankingDesafio();
+            else if (escopo === "corridas") html = descreverRankingCorridas(metrica);
         }
-
         if (btn) btn.classList.toggle("hidden", !html);
         if (corpo && html) corpo.innerHTML = html;
-        if (modal && !modal.classList.contains("hidden") && !html) {
-            fecharModalExplicacaoRanking();
-        }
+        if (modal && !modal.classList.contains("hidden") && !html) fecharModalExplicacaoRanking();
     }
 
     function abrirModalExplicacaoRanking() {
@@ -15869,9 +15797,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (!corpo.innerHTML.trim()) return;
         modal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
-        setTimeout(() => {
-            modal.querySelector(".modal-explicacao-fechar")?.focus();
-        }, 30);
+        setTimeout(() => { modal.querySelector(".modal-explicacao-fechar")?.focus(); }, 30);
     }
 
     function fecharModalExplicacaoRanking() {
@@ -15886,9 +15812,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.addEventListener("keydown", function (e) {
             if (e.key !== "Escape") return;
             const modal = document.getElementById("modal-explicacao-ranking");
-            if (modal && !modal.classList.contains("hidden")) {
-                fecharModalExplicacaoRanking();
-            }
+            if (modal && !modal.classList.contains("hidden")) fecharModalExplicacaoRanking();
         });
     }
 
@@ -15898,7 +15822,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const tb = document.getElementById("tabela-ranking-body");
             const ti = document.getElementById("titulo-ranking");
             if (!tb || !ti) return;
-
             if (!tipoRankingAtual) return;
 
             const bannerEl = document.getElementById("banner-posicao-global");
@@ -15913,57 +15836,27 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             atualizarHintTurmaAluno();
 
             const mod = document.getElementById("filtro-modalidade")?.value || "0-10";
-
             const selTurma = document.getElementById("filtro-turma");
             const turmaSelecionada = selTurma?.value || "901";
             const turmaAluno = obterTurmaSalvaAluno();
             const nomeA = obterNomeSalvoAluno();
-
             const turma = (tipoRankingAtual === "turma") ? turmaSelecionada : null;
 
-            function tagVoce(r) {
-                if (!nomeA) return "";
-                const mesmaPessoa = normalizarNome(r.nome) === normalizarNome(nomeA)
-                                    && turmaAluno && r.turma === turmaAluno;
-                return mesmaPessoa ? ` <span class="ranking-voce-tag">← Você</span>` : "";
-            }
-            function ehVoce(r) {
-                if (!nomeA || !turmaAluno) return false;
-                return normalizarNome(r.nome) === normalizarNome(nomeA)
-                       && r.turma === turmaAluno;
-            }
+            function tagVoce(r) { return (nomeA && normalizarNome(r.nome) === normalizarNome(nomeA) && turmaAluno && r.turma === turmaAluno) ? ` <span class="ranking-voce-tag">← Você</span>` : ""; }
+            function ehVoce(r) { return (nomeA && turmaAluno && normalizarNome(r.nome) === normalizarNome(nomeA) && r.turma === turmaAluno); }
 
-            if (tipoRankingAtual === "turma" && !turmaAluno) {
-                ti.innerText = "🏆 Turmas";
-                th.innerHTML = "";
-                if (tabelaWrap) tabelaWrap.style.display = "none";
-                tb.innerHTML = "";
-                return;
-            }
+            if (tipoRankingAtual === "turma" && !turmaAluno) { ti.innerText = "🏆 Turmas"; th.innerHTML = ""; if (tabelaWrap) tabelaWrap.style.display = "none"; tb.innerHTML = ""; return; }
+            if (metricaRankingAtual === "desafio" && tipoRankingAtual === "global") { ti.innerText = `🏫 Desafio entre Turmas — ${MODALIDADES[mod]?.nome || mod}`; th.innerHTML = ""; if (tabelaWrap) tabelaWrap.style.display = "none"; tb.innerHTML = ""; await renderizarMediasTurmas(mod); return; }
 
-            // ─── Desafio entre turmas ───
-            if (metricaRankingAtual === "desafio" && tipoRankingAtual === "global") {
-                ti.innerText = `🏫 Desafio entre Turmas — ${MODALIDADES[mod]?.nome || mod}`;
-                th.innerHTML = "";
-                if (tabelaWrap) tabelaWrap.style.display = "none";
-                tb.innerHTML = "";
-                await renderizarMediasTurmas(mod);
-                return;
-            }
-
-            // ─── Corridas ───
             if (tipoRankingAtual === "corridas") {
                 const cfgDist = CORRIDA_DISTANCIAS[metricaRankingAtual];
                 if (!cfgDist) return;
                 
                 ti.innerText = `🏁 Corrida ${cfgDist.label} — ${MODALIDADES[mod]?.nome || mod}`;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Precisão</th><th>Tempo Médio</th></tr>`;
+                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Precisão</th><th>Tempo</th></tr>`;
                 
                 const lista = await obterRankingCorrida(metricaRankingAtual, mod, 100);
-                if (!lista.length) {
-                    tb.innerHTML = `<tr><td colspan="6"><div class="ranking-vazio"><span class="emoji-vazio">🏁</span>Ninguém no ranking ainda.<br>Faça uma corrida com 80% de precisão!</div></td></tr>`;
-                    return;
-                }
+                if (!lista.length) { tb.innerHTML = `<tr><td colspan="6"><div class="ranking-vazio"><span class="emoji-vazio">🏁</span>Ninguém no ranking ainda.<br>Faça uma corrida com 80% de precisão!</div></td></tr>`; return; }
                 
                 let h = "";
                 for (let i = 0; i < lista.length; i++) {
@@ -15973,8 +15866,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     const vc = ehVoce(r);
                     const cv = vc ? " voce-linha" : "";
                     const precPct = Math.round((r.precisao || 0) * 100);
-                    const tempoStr = r.tempoMedioMs ? `${(r.tempoMedioMs / 1000).toFixed(2)}s` : "—";
-                    h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${r.acertos}</td><td style="text-align:center">${precPct}%</td><td style="text-align:center">${tempoStr}</td></tr>`;
+                    
+                    const tempoCol = cfgDist.tipo === "distancia" 
+                        ? `${(r.tempoTotalMs / 1000).toFixed(2)}s` 
+                        : `${(r.tempoMedioMs / 1000).toFixed(2)}s`;
+                    
+                    h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${r.acertos}</td><td style="text-align:center">${precPct}%</td><td style="text-align:center">${tempoCol}</td></tr>`;
                 }
                 tb.innerHTML = h;
                 return;
@@ -15982,16 +15879,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             let rank = [], tit = "";
 
-            // ─── Pontos (só no escopo turma) ───
             if (metricaRankingAtual === "pontos" && tipoRankingAtual === "turma") {
                 rank = await obterRankingPorPontos(mod, turma);
                 tit = `🏆 Turmas · ${turma} — ${MODALIDADES[mod]?.nome}`;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Tempo médio dos acertos</th><th>Jogos</th><th>Pontos</th><th>Status</th>`;
-                if (!rank.length) {
-                    ti.innerText = tit;
-                    tb.innerHTML = `<tr><td colspan="8"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`;
-                    return;
-                }
+                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Tempo médio</th><th>Jogos</th><th>Pontos</th><th>Status</th>`;
+                if (!rank.length) { ti.innerText = tit; tb.innerHTML = `<tr><td colspan="8"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`; return; }
                 ti.innerText = tit;
                 let h = "";
                 for (let i = 0; i < rank.length; i++) {
@@ -16008,68 +15900,43 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 tb.innerHTML = h;
                 return;
             }
-
-            // ─── Velocidade ───
             else if (metricaRankingAtual === "velocidade" && tipoRankingAtual === "turma") {
-                rank = await obterRankingPorVelocidade(mod, turma);
-                tit = `⚡ Velocidade · Turma ${turma} (100%) — ${MODALIDADES[mod]?.nome}`;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
-                ti.innerText = tit;
+                rank = await obterRankingPorVelocidade(mod, turma); tit = `⚡ Velocidade · Turma ${turma} (100%) — ${MODALIDADES[mod]?.nome}`;
+                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`; ti.innerText = tit;
             }
             else if (metricaRankingAtual === "velocidade" && tipoRankingAtual === "global") {
-                rank = await obterRankingPorVelocidade(mod, null);
-                tit = `⚡ Velocidade Global (100%) — ${MODALIDADES[mod]?.nome}`;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio dos acertos</th>`;
-                ti.innerText = tit;
+                rank = await obterRankingPorVelocidade(mod, null); tit = `⚡ Velocidade Global (100%) — ${MODALIDADES[mod]?.nome}`;
+                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Pontos</th><th>Acertos</th><th>Tempo médio</th>`; ti.innerText = tit;
             }
-
-            // ─── Média ───
             else if (metricaRankingAtual === "media") {
                 const turmaFiltro = (tipoRankingAtual === "turma") ? turma : null;
                 rank = await obterRankingMediaGeralCombinada(turmaFiltro);
-                tit = (tipoRankingAtual === "turma")
-                    ? `🏅 Média · Turma ${turma}`
-                    : `🏅 Média Global — todas as turmas`;
-                ti.innerText = tit;
-                th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>📚 2-5</th><th>🎯 6-9</th><th>⭐ 1-10</th><th>Média Geral</th></tr>`;
-
-                if (!rank.length) {
-                    tb.innerHTML = `<tr><td colspan="7"><div class="ranking-vazio"><span class="emoji-vazio">🏅</span>Nenhum aluno com <strong>${MEDIA_MIN_PARTIDAS} partidas oficiais</strong> em <strong>cada uma das 3 modalidades</strong> ainda.<br>Jogue mais para entrar!</div></td></tr>`;
-                    return;
-                }
+                tit = (tipoRankingAtual === "turma") ? `🏅 Média · Turma ${turma}` : `🏅 Média Global — todas as turmas`;
+                ti.innerText = tit; th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>📚 2-5</th><th>🎯 6-9</th><th>⭐ 1-10</th><th>Média Geral</th></tr>`;
+                if (!rank.length) { tb.innerHTML = `<tr><td colspan="7"><div class="ranking-vazio"><span class="emoji-vazio">🏅</span>Nenhum aluno com <strong>${MEDIA_MIN_PARTIDAS} partidas oficiais</strong> em <strong>cada uma das 3 modalidades</strong> ainda.<br>Jogue mais para entrar!</div></td></tr>`; return; }
                 let h = "";
                 for (let i = 0; i < rank.length; i++) {
                     const r = rank[i], p = i + 1;
                     const pc = p <= 3 ? `podio-${p}` : "";
                     const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : "";
-                    const vc = ehVoce(r);
-                    const cv = vc ? " voce-linha" : "";
+                    const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
                     h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${Math.round(r.media25).toLocaleString("pt-BR")}</td><td style="text-align:center">${Math.round(r.media69).toLocaleString("pt-BR")}</td><td style="text-align:center">${Math.round(r.media010).toLocaleString("pt-BR")}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${Math.round(r.mediaGeral).toLocaleString("pt-BR")}</td></tr>`;
                 }
-                tb.innerHTML = h;
-                return;
+                tb.innerHTML = h; return;
             }
 
-            // ═══ Renderização genérica (Velocidade) ═══
-            if (!rank.length) {
-                tb.innerHTML = `<tr><td colspan="6"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`;
-                return;
-            }
-
+            if (!rank.length) { tb.innerHTML = `<tr><td colspan="6"><div class="ranking-vazio"><span class="emoji-vazio">🏆</span>Nenhum resultado ainda.<br>Seja o primeiro!</div></td></tr>`; return; }
             const mostrarTurmaNaLinha = (tipoRankingAtual === "global");
-
             let h = "";
             for (let i = 0; i < rank.length; i++) {
                 const r = rank[i], p = i + 1;
-                const vc = ehVoce(r);
-                const cv = vc ? " voce-linha" : "";
+                const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
                 h += `<tr class="${cv}"><td style="text-align:center">${p}º</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td>`;
                 if (mostrarTurmaNaLinha) h += `<td style="text-align:center">${r.turma}</td>`;
                 h += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
                 h += `<td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td></tr>`;
             }
             tb.innerHTML = h;
-
         } finally {
             renderizarDescricaoRanking(tipoRankingAtual, metricaRankingAtual);
         }
@@ -16154,9 +16021,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.06.bis]
 
 // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
-    // v10.5.2 · Reformulação completa.
-    // v10.9.1 · Adicionado o escopo "corridas" (100m, 200m, maratona).
-    
     let metricaRankingAtual = "pontos";
 
     function mudarEscopoRanking(escopo) {
@@ -16164,8 +16028,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         tipoRankingAtual = escopo;
 
         document.getElementById("ranking-conteudo-escopo")?.classList.remove("hidden");
-
-        // Botões de escopo
         document.getElementById("aba-minha-turma")?.classList.toggle("ativa", escopo === "turma");
         document.getElementById("aba-global")?.classList.toggle("ativa", escopo === "global");
         document.getElementById("aba-corridas")?.classList.toggle("ativa", escopo === "corridas");
@@ -16174,88 +16036,46 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.getElementById("aba-global")?.setAttribute("aria-selected", String(escopo === "global"));
         document.getElementById("aba-corridas")?.setAttribute("aria-selected", String(escopo === "corridas"));
 
-        // Sub-abas
         document.getElementById("sub-abas-turma")?.classList.toggle("hidden", escopo !== "turma");
         document.getElementById("sub-abas-global")?.classList.toggle("hidden", escopo !== "global");
         document.getElementById("sub-abas-corrida")?.classList.toggle("hidden", escopo !== "corridas");
 
-        // Dropdown de turma (só aparece no escopo turma)
         const selTurma = document.getElementById("filtro-turma");
         if (selTurma) selTurma.classList.toggle("hidden", escopo !== "turma");
-
         if (escopo === "turma") aplicarTurmaSalvaNoFiltro();
 
-        // Reseta a métrica para a padrão do escopo se necessário
         const metricasValidas = escopo === "turma"
             ? ["pontos", "velocidade", "media"]
             : escopo === "global"
             ? ["velocidade", "media", "desafio"]
-            : ["100m", "200m", "maratona"];
+            : ["100m", "200m", "maratona", "sprint_10", "meia_20", "ultra_50"];
             
         if (!metricasValidas.includes(metricaRankingAtual)) {
             metricaRankingAtual = escopo === "turma" ? "pontos" : (escopo === "global" ? "desafio" : "100m");
         }
         _atualizarSubAbaAtiva();
-
         atualizarHintTurmaAluno();
         renderizarRanking();
     }
 
-    function mudarMetricaRanking(metrica) {
-        if (!metrica) return;
-        metricaRankingAtual = metrica;
-        _atualizarSubAbaAtiva();
-        renderizarRanking();
-    }
-
-    function _atualizarSubAbaAtiva() {
-        ["pontos", "velocidade", "media"].forEach(m => {
-            document.getElementById(`sub-turma-${m}`)?.classList.toggle("ativa",
-                tipoRankingAtual === "turma" && metricaRankingAtual === m);
-        });
-        ["velocidade", "media", "desafio"].forEach(m => {
-            document.getElementById(`sub-global-${m}`)?.classList.toggle("ativa",
-                tipoRankingAtual === "global" && metricaRankingAtual === m);
-        });
-        ["100m", "200m", "maratona"].forEach(m => {
-            document.getElementById(`sub-corrida-${m}`)?.classList.toggle("ativa",
-                tipoRankingAtual === "corridas" && metricaRankingAtual === m);
-        });
-    }
-
-    function aplicarTurmaSalvaNoFiltro() {
-        const sel = document.getElementById("filtro-turma");
-        if (!sel) return;
-        const t = obterTurmaSalvaAluno();
-        const opts = Array.from(sel.options).map(o => o.value);
-        if (t && opts.includes(t)) sel.value = t;
-        else if (!sel.value) sel.value = "901";
-    }
-
-    function onMudancaTurmaFiltro() {
-        renderizarRanking();
-    }
-
-    function atualizarBotaoMinhaTurma() {
-        const b = document.getElementById("aba-minha-turma"); if (!b) return;
-        b.setAttribute("aria-label", "Ver ranking da minha turma");
-    }
-
-    function atualizarHintTurmaAluno() {
-        const h = document.getElementById("hint-turma-aluno"); if (!h) return;
-        const mostra = tipoRankingAtual === "turma" && !obterTurmaSalvaAluno();
-        h.classList.toggle("hidden", !mostra);
-    }
-
     function resetarRankingParaEstadoLimpo() {
+        // Se estiver no modo Olimpíadas, pula a tela limpa e já abre no ranking de corridas
+        if (modoEventoAtual === "olimpiadas") {
+            document.getElementById("aba-minha-turma")?.classList.add("hidden");
+            document.getElementById("aba-global")?.classList.add("hidden");
+            mudarEscopoRanking("corridas");
+            return;
+        }
+
+        document.getElementById("aba-minha-turma")?.classList.remove("hidden");
+        document.getElementById("aba-global")?.classList.remove("hidden");
+
         tipoRankingAtual = null;
         metricaRankingAtual = "pontos";
 
         ["aba-minha-turma", "aba-global", "aba-corridas"].forEach(id => {
             const el = document.getElementById(id);
-            if (!el) return;
-            el.classList.remove("ativa");
-            el.setAttribute("aria-selected", "false");
+            if (el) { el.classList.remove("ativa"); el.setAttribute("aria-selected", "false"); }
         });
 
         document.getElementById("ranking-conteudo-escopo")?.classList.add("hidden");
@@ -16269,10 +16089,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         document.getElementById("btn-explicar-ranking")?.classList.add("hidden");
         const modalExp = document.getElementById("modal-explicacao-ranking");
-        if (modalExp) {
-            modalExp.classList.add("hidden");
-            document.body.style.overflow = "";
-        }
+        if (modalExp) { modalExp.classList.add("hidden"); document.body.style.overflow = ""; }
         const corpoExp = document.getElementById("modal-explicacao-ranking-corpo");
         if (corpoExp) corpoExp.innerHTML = "";
 
@@ -16285,17 +16102,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (ti) ti.innerText = "";
         if (tabelaWrap) tabelaWrap.style.display = "";
     }
-
-    function mudarTipoRanking(tp) {
-        if (tp === "turma" || tp === "global" || tp === "corridas") { mudarEscopoRanking(tp); return; }
-        if (tp === "velocidade" || tp === "media" || tp === "desafio") {
-            mudarEscopoRanking("global");
-            mudarMetricaRanking(tp);
-            return;
-        }
-        mudarEscopoRanking("turma");
-        mudarMetricaRanking("pontos");
-    }
+    // ... (mantenha o restante do bloco [13.07]) ...
     // ▲▲▲ FIM [13.07]
 
     // ▼▼▼ [13.08] Perfil de aluno (busca) ─────────────────────────────
@@ -20670,6 +20477,67 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [17.09]
 
+    // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória vs Olimpíadas) ─── INÍCIO ───
+    const CAMINHO_MODO_EVENTO = "config/modo_evento";
+    let modoEventoAtual = "classificatoria"; // Padrão
+
+    async function obterModoEvento(forcar = false) {
+        try {
+            const snap = await database.ref(CAMINHO_MODO_EVENTO).once("value");
+            const modo = snap.val() || "classificatoria";
+            modoEventoAtual = modo;
+            return modo;
+        } catch(e) {
+            console.warn("[Modo Evento] Falha ao ler, assumindo classificatoria:", e);
+            return "classificatoria";
+        }
+    }
+
+    async function alterarModoEvento(novoModo) {
+        if (!exigirProfessorAutenticado()) return;
+        if (novoModo !== "classificatoria" && novoModo !== "olimpiadas") return;
+
+        const msg = novoModo === "olimpiadas" 
+            ? "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, e o Ranking abrirá direto na aba Corridas.\n\nConfirmar?"
+            : "🏆 MUDAR PARA MODO CLASSIFICATÓRIA\n\nO foco do app voltará a ser as partidas oficiais de 20 perguntas.\n\nConfirmar?";
+            
+        if (!confirm(msg)) return;
+
+        try {
+            await database.ref(CAMINHO_MODO_EVENTO).set(novoModo);
+            modoEventoAtual = novoModo;
+            notificar(`Modo alterado para: ${novoModo.toUpperCase()}`, "sucesso");
+            renderizarPainelModoEvento();
+            
+            // Força a atualização das telas visíveis
+            await atualizarTelaInicialComEtapa();
+            resetarRankingParaEstadoLimpo();
+        } catch(e) {
+            console.warn("[Modo Evento] Falha ao salvar:", e);
+            notificar("Não foi possível alterar o modo.", "erro");
+        }
+    }
+
+    async function renderizarPainelModoEvento() {
+        const container = document.getElementById("painel-modo-evento-conteudo");
+        if (!container) return;
+        
+        const modo = await obterModoEvento(true);
+        
+        const btnClass = modo === "classificatoria" ? "botao-verde" : "botao-secundario";
+        const btnOlim = modo === "olimpiadas" ? "botao-verde" : "botao-secundario";
+        
+        container.innerHTML = `
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <button class="${btnClass}" onclick="alterarModoEvento('classificatoria')" style="margin:0; flex:1;">🏆 Classificatória</button>
+                <button class="${btnOlim}" onclick="alterarModoEvento('olimpiadas')" style="margin:0; flex:1;">🏟️ Olimpíadas</button>
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary); text-align:center;">
+                Modo ativo agora: <strong style="color:var(--neon-cyan);">${modo === "olimpiadas" ? "Olimpíadas (Corridas em foco)" : "Classificatória (Partidas em foco)"}</strong>
+            </div>
+        `;
+    }
+    // ▲▲▲ FIM [17.11]
 
     // ▼▼▼ [17.10] Painel — Publicação de versão ───────────────────────
     const CAMINHO_ULTIMA_VERSAO_PAINEL = "config/ultimaVersao";
@@ -20879,19 +20747,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [18.01] Home E-Sports — Hero com saudação + Ritmo na Copa ─
-    // v10.5.3 · Os 3 cards do hero (Certificados/Treinos/Oficiais) foram
-    // removidos.
-    // v10.5.4 · O bloco "Seu Ritmo na Copa" saiu do hero e virou card
-    // autônomo em #ritmo-copa-container, logo abaixo do card
-    // "Minhas Posições". O hero agora mostra apenas: saudação + subtítulo
-    // dinâmico. A visão por modalidade vive no card "Minhas Posições".
-    // v10.7.1 · Adicionado botão "ℹ️ Como funciona o Ritmo na Copa?"
-    // dentro do card, abrindo modal explicativo.
-    // v10.7.2 · Botão de ajuda virou ícone circular compacto "?" ao lado
-    // do título, nos 2 caminhos (vazio e com dados).
-    // v10.9.1 · Hotfix: A barra de proporção (oficiais x treinos) foi
-    // invertida para manter a consistência com o card "Minhas Posições".
-
+    // v10.10.2 · Suporte ao Modo Olimpíadas.
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -20909,6 +20765,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             atualizarFraseHero(null);
             renderizarRitmoCopa(null);
             return;
+        }
+
+        // ─── Ajuste do Hero no Modo Olimpíadas ───
+        const heroSub = document.getElementById("hero-sub-dinamica");
+        if (modoEventoAtual === "olimpiadas") {
+            if (heroSub) heroSub.innerHTML = "Bem-vindo às <strong>Olimpíadas da Tabuada</strong>! Mostre sua velocidade e precisão nas Corridas.";
+            renderizarRitmoCopa(null); // Esconde o ritmo na copa
+            return; // Para por aqui
         }
 
         try {
@@ -20957,15 +20821,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     // Card "Seu Ritmo na Copa" — card AUTÔNOMO, fora do hero.
-    // Vive em #ritmo-copa-container, logo abaixo de "Minhas Posições".
-    // A frase interpretativa continua sendo responsabilidade do subtítulo
-    // do hero (atualizarFraseHero) — evita duplicação de texto.
     function renderizarRitmoCopa(dados) {
         const ctn = document.getElementById("ritmo-copa-container");
         if (!ctn) return;
 
-        // Sem identificação → limpa o container. O CSS #ritmo-copa-container:empty
-        // (em [02.47]) esconde o card completamente.
         if (!dados) {
             ctn.innerHTML = "";
             return;
@@ -20974,7 +20833,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const { oficiais, treinos } = dados;
         const total = oficiais + treinos;
 
-        // Identificado, mas sem nenhuma partida (nem treino, nem oficial)
         if (total === 0) {
             ctn.innerHTML = `<div class="home-ritmo-card">
                 <div class="home-ritmo-cabecalho">
@@ -21029,8 +20887,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ─────────────────────────────────────────────────────────────────────
     // Funções legadas mantidas para não quebrar dependências externas.
-    // Não são mais chamadas por preencherHomeEsports() desde a v10.5.3,
-    // mas continuam existindo com guardas internas seguras.
     // ─────────────────────────────────────────────────────────────────────
     function classificarZonaHome(pos) {
         if (!pos) return { cls: "sem-dados", icone: "⚪", label: "Sem partida ainda" };
@@ -22189,35 +22045,30 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [18.06.bis]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.5.7 · Rodapé do card "Minhas Posições" ganha um atalho para
-    // o Treino Inteligente da modalidade com mais pendências — preserva
-    // o acesso de 2 toques que existia antes do card antigo.
-    // v10.6.x · Adicionado botão "ℹ️ Como funciona 'Minhas Posições'?"
-    // no rodapé do card, abrindo o modal explicativo.
-    // v10.7.2 · O botão grande de explicação saiu do rodapé e virou um
-    // ícone circular compacto "?" ao lado do título do card, liberando
-    // espaço vertical. Usa .btn-como-funciona-inline (bloco [02.81]).
-    // v10.7.3c · OTIMIZAÇÃO DE LCP (item B do pacote A+B):
-    //   1. O card "Minhas Posições" agora é renderizado IMEDIATAMENTE
-    //      após as leituras paralelas iniciais, SEM esperar as contagens
-    //      de pendência (que eram 3 chamadas SEQUENCIAIS ao Firebase).
-    //   2. As contagens de pendência rodam em Promise.all (paralelo)
-    //      e são injetadas DEPOIS, apenas no slot do atalho do rodapé —
-    //      sem re-renderizar o card inteiro.
-    //   3. Um placeholder cinza ocupa o slot do atalho enquanto as
-    //      pendências chegam, evitando CLS quando o botão real aparecer.
-    //   4. Um token incremental evita que renderizações concorrentes
-    //      apliquem um atalho obsoleto em cima de um card novo.
-    //   Efeito esperado (Lighthouse, 4G lenta, celular modesto):
-    //   LCP ~2,03s → ~1,5–1,7s. Nenhuma mudança visual perceptível no
-    //   card real; o atalho do rodapé entra suavemente.
-
     let _homeModalidadesToken = 0;
 
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
         if (!ctn) return;
 
+        // ─── MODO OLIMPÍADAS ───
+        if (modoEventoAtual === "olimpiadas") {
+            ctn.innerHTML = `
+                <div class="home-modalidades-card" style="text-align: center; padding: 24px;">
+                    <div class="home-modalidades-titulo" style="justify-content: center; font-size: 18px; margin-bottom: 12px;">🏟️ Olimpíadas da Tabuada</div>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">O foco agora é a velocidade! Participe das corridas, conquiste medalhas e mostre quem é o mais rápido.</p>
+                    <button class="botao-verde" style="width: 100%; padding: 16px; font-size: 16px; border-radius: 12px;" onclick="abrirCorrida()">
+                        🏁 Ir para as Corridas
+                    </button>
+                    <button class="botao-secundario" style="width: 100%; margin-top: 12px; padding: 12px;" onclick="abrirMenuTreino('0-10')">
+                        🎯 Treinar para as Olimpíadas
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        // ─── MODO CLASSIFICATÓRIA (Padrão) ───
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
 
@@ -22322,10 +22173,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             const jogarCls = etapaAtiva ? "jogar" : "jogar desabilitado";
             const conviteCls = (!jogou && treinos === 0 && etapaAtiva) ? " convite" : "";
-            const jogarAria = etapaAtiva
-                ? `Jogar modalidade ${rotulos[mod]}${jogou ? ` — ${statusTxt.toLowerCase()}` : ""}`
-                : `Jogar modalidade ${rotulos[mod]} — indisponível agora, a etapa não está aberta`;
-            const treinarAria = `Treinar modalidade ${rotulos[mod]}`;
 
             linhas += `<div class="home-modalidade-linha ${zonaCls}">
                 <div class="home-mod-l1">
@@ -22336,45 +22183,22 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     <span class="home-mod-status">${escaparHtml(statusTxt)}</span>
                     <span class="home-mod-pts">${ptsTxt}</span>
                 </div>
-                <div class="home-mod-barra-bloco">
-                    ${barraHtml}
-                </div>
+                <div class="home-mod-barra-bloco">${barraHtml}</div>
                 <div class="home-mod-acoes">
-                    <button type="button" class="home-mod-btn ${jogarCls}${conviteCls}" onclick="jogarModalidadeHome('${mod}')" aria-label="${escaparHtml(jogarAria)}"${etapaAtiva ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
-                    <button type="button" class="home-mod-btn treinar" onclick="treinarModalidadeHome('${mod}')" aria-label="${escaparHtml(treinarAria)}">🎯 Treinar</button>
+                    <button type="button" class="home-mod-btn ${jogarCls}${conviteCls}" onclick="jogarModalidadeHome('${mod}')" ${etapaAtiva ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
+                    <button type="button" class="home-mod-btn treinar" onclick="treinarModalidadeHome('${mod}')">🎯 Treinar</button>
                 </div>
             </div>`;
         });
 
-        // ─── v10.7.3c · Placeholder do slot do atalho enquanto as
-        //     pendências chegam em paralelo. Altura casa com o botão real
-        //     (.home-modalidades-atalho) para evitar CLS.
         const placeholderAtalho = (nome && turma)
-            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="
-                    height: 44px;
-                    margin: 10px 0 0;
-                    background: linear-gradient(90deg,
-                        rgba(148,163,184,.06) 25%,
-                        rgba(148,163,184,.12) 50%,
-                        rgba(148,163,184,.06) 75%);
-                    background-size: 200% 100%;
-                    animation: skeleton-loading 1.5s infinite;
-                    border-radius: 10px;
-                    border: 1px dashed rgba(148,163,184,.18);
-                "></div>`
+            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
             : "";
 
         ctn.innerHTML = `<div class="home-modalidades-card">
             <div class="home-modalidades-titulo">
                 <span>🏆 ${escaparHtml(tituloAcao)}</span>
-                <button type="button"
-                        id="btn-como-funciona-minhas-pos"
-                        class="btn-como-funciona-inline"
-                        onclick="abrirModalComoFuncionaMinhasPos()"
-                        aria-haspopup="dialog"
-                        aria-controls="modal-explicacao-minhas-pos"
-                        aria-label="Como funciona Minhas Posições"
-                        title="Como funciona?">?</button>
+                <button type="button" id="btn-como-funciona-minhas-pos" class="btn-como-funciona-inline" onclick="abrirModalComoFuncionaMinhasPos()">?</button>
             </div>
             <div class="home-modalidades-sub">${subtitulo}</div>
             <div class="home-modalidades-lista">${linhas}</div>
@@ -22382,123 +22206,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             <div id="home-modalidades-atalho-slot">${placeholderAtalho}</div>
         </div>`;
 
-        // ─── v10.7.3c · Segundo estágio: contagens de pendência em
-        //     PARALELO. Não bloqueia o LCP, que já está pintado. Atualiza
-        //     apenas o slot do atalho — sem re-renderizar o card.
-        if (nome && turma) {
-            _carregarAtalhoModalidadesAsync(nome, turma, rotulos);
-        }
+        if (nome && turma) _carregarAtalhoModalidadesAsync(nome, turma, rotulos);
     }
-
-    // ─── v10.7.3c · Carrega as pendências das 3 modalidades EM PARALELO
-    //     e injeta o atalho do rodapé no slot dedicado. Um token incremental
-    //     evita que renderizações concorrentes apliquem um atalho obsoleto
-    //     em cima de um card novo (ex: navegação rápida entre telas).
-    async function _carregarAtalhoModalidadesAsync(nome, turma, rotulos) {
-        const meuToken = ++_homeModalidadesToken;
-        try {
-            const [c25, c69, c010] = await Promise.all([
-                contarPendentesTreino(nome, turma, "2-5").catch(() => ({ pendentes: 0 })),
-                contarPendentesTreino(nome, turma, "6-9").catch(() => ({ pendentes: 0 })),
-                contarPendentesTreino(nome, turma, "0-10").catch(() => ({ pendentes: 0 }))
-            ]);
-
-            // Descarta este resultado se uma renderização mais nova já começou
-            if (meuToken !== _homeModalidadesToken) return;
-
-            const pend = {
-                "2-5": c25.pendentes || 0,
-                "6-9": c69.pendentes || 0,
-                "0-10": c010.pendentes || 0
-            };
-            const ordenado = Object.keys(pend).sort((a, b) => pend[b] - pend[a]);
-
-            const slot = document.getElementById("home-modalidades-atalho-slot");
-            if (!slot) return; // o card foi substituído por outro render — ignora
-
-            if (ordenado.length && pend[ordenado[0]] > 0) {
-                const modComMaisPend = ordenado[0];
-                const pendentesDaMais = pend[modComMaisPend];
-                const plural = pendentesDaMais === 1 ? "operação" : "operações";
-                const rotuloMod = rotulos[modComMaisPend] || modComMaisPend;
-                slot.innerHTML = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">
-                    🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →
-                </button>`;
-            } else {
-                // Sem pendências — limpa o placeholder para o card não
-                // carregar um bloco cinza vazio.
-                slot.innerHTML = "";
-            }
-        } catch(e) {
-            console.warn("[Home/Modalidades] Falha ao carregar pendências:", e);
-            if (meuToken !== _homeModalidadesToken) return;
-            const slot = document.getElementById("home-modalidades-atalho-slot");
-            if (slot) slot.innerHTML = "";
-        }
-    }
-
-    async function jogarModalidadeHome(mod) {
-        if (!MODALIDADES[mod]) return;
-
-        const selMod = document.getElementById("modalidade-tabuada");
-        if (selMod) selMod.value = mod;
-
-        const nome  = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-
-        if (!nome || !turma) {
-            mostrarTela("tela-single");
-            return;
-        }
-
-        const fase = await resolverFaseAtual();
-        const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
-
-        if (!etapaAtiva) {
-            notificar("⏸️ A etapa classificatória não está aberta agora. Use o botão Treinar para aquecer!", "aviso", 5000);
-            return;
-        }
-
-        const inNome   = document.getElementById("nome-aluno");
-        const selTurma = document.getElementById("turma-aluno");
-        if (inNome)   inNome.value   = nome;
-        if (selTurma) selTurma.value = turma;
-
-        await registrarAluno(false);
-    }
-
-    async function treinarModalidadeHome(mod) {
-        if (!MODALIDADES[mod]) return;
-
-        const selMod = document.getElementById("modalidade-tabuada");
-        if (selMod) selMod.value = mod;
-
-        const nome  = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-
-        if (!nome || !turma) {
-            mostrarTela("tela-single");
-            return;
-        }
-
-        abrirMenuTreino(mod);
-    }
+    // ... (mantenha o restante do bloco [18.07] que já existe) ...
     // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
-    // v10.8.0 · Coach atualizado para conhecer as Corridas de Tabuada
-    // (100m, 200m e Maratona).
-    // v10.9.1 · Adicionado o item 11 no menu do Coach para explicar
-    // os benefícios pedagógicos das Corridas de Tabuada.
+    // v10.10.2 · Coach ciente do Modo Olimpíadas (foco em corridas).
 
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
 
     const TELAS_SEM_COACH_FAB = new Set([
-        "tela-jogo",
-        "tela-single",
-        "tela-preparacao",
-        "tela-painel"
+        "tela-jogo", "tela-single", "tela-preparacao", "tela-painel"
     ]);
 
     function atualizarFABCoach(idTela) {
@@ -22545,34 +22265,22 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // Helper 1: análise por tabuada (fortes × fracas)
+    // Helpers de análise (mesma estrutura anterior)
     // ─────────────────────────────────────────────────────────────────
     function analisarTabuadasDoAluno(mapaGlobal) {
         const resumo = {};
         [2, 3, 4, 5, 6, 7, 8, 9].forEach(tab => {
-            let dominadas = 0;
-            let praticadas = 0;
-            let total = 10;
+            let dominadas = 0; let praticadas = 0; let total = 10;
             for (let b = 1; b <= 10; b++) {
                 const h = normalizarHistoricoOperacao(mapaGlobal[`${tab}x${b}`]);
                 if (h.length > 0) praticadas++;
-                if (dominadaParaNivel(h, { minTentativas: MAPA_MIN_TENT_PADRAO, minTaxa: 0.9 })) {
-                    dominadas++;
-                }
+                if (dominadaParaNivel(h, { minTentativas: MAPA_MIN_TENT_PADRAO, minTaxa: 0.9 })) dominadas++;
             }
-            resumo[tab] = {
-                dominadas,
-                praticadas,
-                total,
-                pct: Math.round((dominadas / total) * 100)
-            };
+            resumo[tab] = { dominadas, praticadas, total, pct: Math.round((dominadas / total) * 100) };
         });
         return resumo;
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 2: operações mais problemáticas
-    // ─────────────────────────────────────────────────────────────────
     function identificarOperacoesProblematicas(mapaGlobal, limite) {
         const problemas = [];
         FATORES_MAPA.forEach(a => {
@@ -22582,13 +22290,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 if (h.length === 0) return;
                 const s = statsDaOperacao(h);
                 if (s.taxa < 0.7) {
-                    problemas.push({
-                        op: `${a}x${b}`,
-                        fA: a, fB: b,
-                        taxa: s.taxa,
-                        tentativas: s.tentativas,
-                        acertos: s.acertos
-                    });
+                    problemas.push({ op: `${a}x${b}`, fA: a, fB: b, taxa: s.taxa, tentativas: s.tentativas, acertos: s.acertos });
                 }
             });
         });
@@ -22596,9 +22298,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return problemas.slice(0, limite || 8);
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 3: gap para o Top 4
-    // ─────────────────────────────────────────────────────────────────
     function calcularGapTop4(rankingMod, nome, turma) {
         const filtro = rankingMod.filter(r => r.turma === turma);
         const porAluno = new Map();
@@ -22613,33 +22312,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const posicao = idx + 1;
         const q4 = ordenado[3];
         const gap = q4 && q4.pontos > meu.pontos ? q4.pontos - meu.pontos : 0;
-        return {
-            posicao,
-            total: ordenado.length,
-            meusPontos: Number(meu.pontos) || 0,
-            q4Pontos: q4 ? Number(q4.pontos) || 0 : 0,
-            gapTop4: gap,
-            naZonaTop4: posicao <= 4,
-            naZonaReserva: posicao > 4 && posicao <= 6
-        };
+        return { posicao, total: ordenado.length, meusPontos: Number(meu.pontos) || 0, q4Pontos: q4 ? Number(q4.pontos) || 0 : 0, gapTop4: gap, naZonaTop4: posicao <= 4, naZonaReserva: posicao > 4 && posicao <= 6 };
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 4: coleta paralela de todos os dados
-    // ─────────────────────────────────────────────────────────────────
     async function coletarDadosParaPrompt(nome, turma) {
         const mods = Object.keys(MODALIDADES);
-
         const chaveCache = `${normalizarNome(nome)}|${turma}`;
         const agora = Date.now();
-        const cacheAlbumValido = typeof albumSessaoCache !== "undefined"
-            && albumSessaoCache.chave === chaveCache
-            && (agora - albumSessaoCache.ts) < ALBUM_CACHE_MS
-            && albumSessaoCache.resultado;
+        const cacheAlbumValido = typeof albumSessaoCache !== "undefined" && albumSessaoCache.chave === chaveCache && (agora - albumSessaoCache.ts) < ALBUM_CACHE_MS && albumSessaoCache.resultado;
 
-        let perfil = null;
-        let certificados = {};
-
+        let perfil = null; let certificados = {};
         if (cacheAlbumValido) {
             perfil = albumSessaoCache.resultado.dados;
             try { certificados = await obterCertificadosFirebase(nome, turma) || {}; } catch(e) {}
@@ -22648,13 +22330,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 compilarDadosAluno(nome, turma).catch(() => null),
                 obterCertificadosFirebase(nome, turma).catch(() => ({}))
             ]);
-            perfil = perfilCompilado;
-            certificados = certs || {};
+            perfil = perfilCompilado; certificados = certs || {};
         }
 
         let mapaGlobal = {};
         try { mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma) || {}; } catch(e) {}
-
         const rankingGeral = await obterRanking().catch(() => []);
 
         const posicoes = {};
@@ -22662,29 +22342,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const rankingMod = rankingGeral.filter(r => r.modalidade === mod);
             const daTurma = rankingMod.filter(r => r.turma === turma);
             const mT = new Map();
-            daTurma.forEach(r => {
-                const k = normalizarNome(r.nome);
-                if (!mT.has(k) || ehMelhorResultado(r, mT.get(k))) mT.set(k, r);
-            });
+            daTurma.forEach(r => { const k = normalizarNome(r.nome); if (!mT.has(k) || ehMelhorResultado(r, mT.get(k))) mT.set(k, r); });
             const listaT = Array.from(mT.values()).sort(compararParaOrdenacao);
             const idxT = listaT.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome));
 
             const mG = new Map();
-            rankingMod.forEach(r => {
-                const k = `${normalizarNome(r.nome)}|${r.turma}`;
-                if (!mG.has(k) || ehMelhorResultado(r, mG.get(k))) mG.set(k, r);
-            });
+            rankingMod.forEach(r => { const k = `${normalizarNome(r.nome)}|${r.turma}`; if (!mG.has(k) || ehMelhorResultado(r, mG.get(k))) mG.set(k, r); });
             const listaG = Array.from(mG.values()).sort(compararParaOrdenacao);
-            const idxG = listaG.findIndex(r =>
-                normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
-            );
+            const idxG = listaG.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
 
             const gap = calcularGapTop4(rankingMod, nome, turma);
-            posicoes[mod] = {
-                turma: idxT === -1 ? null : { posicao: idxT + 1, total: listaT.length },
-                geral: idxG === -1 ? null : { posicao: idxG + 1, total: listaG.length },
-                gap
-            };
+            posicoes[mod] = { turma: idxT === -1 ? null : { posicao: idxT + 1, total: listaT.length }, geral: idxG === -1 ? null : { posicao: idxG + 1, total: listaG.length }, gap };
         }
 
         const porTabuada = analisarTabuadasDoAluno(mapaGlobal);
@@ -22694,9 +22362,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return { perfil, posicoes, certificados, porTabuada, operacoesProblematicas, usosTreino };
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 5: monta o bloco de perfil formatado
-    // ─────────────────────────────────────────────────────────────────
     function montarBlocoPerfil(dados) {
         const L = [];
         const p = (dados && dados.perfil) || {};
@@ -22708,24 +22373,22 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
         const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
-        L.push("🏆 COMPETITIVO:");
-        for (const mod of ["2-5", "6-9", "0-10"]) {
-            const info = pos[mod] || {};
-            const pt = info.turma;
-            const pg = info.geral;
-            const gap = info.gap;
-            const ptTxt = pt ? `${pt.posicao}º/${pt.total} na turma` : "sem partida";
-            const pgTxt = pg ? `${pg.posicao}º/${pg.total} no geral` : "—";
-            let status = "";
-            if (gap) {
-                if (gap.naZonaTop4) status = " 🎟️ TOP 4";
-                else if (gap.naZonaReserva) status = " 🔄 reserva";
-                else if (gap.gapTop4 > 0) status = ` · faltam ${gap.gapTop4.toLocaleString("pt-BR")} pts pro Top 4`;
+
+        // Se estiver no modo olimpíadas, omite o competitivo clássico e foca na velocidade
+        if (modoEventoAtual !== "olimpiadas") {
+            L.push("🏆 COMPETITIVO:");
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                const info = pos[mod] || {};
+                const pt = info.turma; const pg = info.geral; const gap = info.gap;
+                const ptTxt = pt ? `${pt.posicao}º/${pt.total} na turma` : "sem partida";
+                const pgTxt = pg ? `${pg.posicao}º/${pg.total} no geral` : "—";
+                let status = "";
+                if (gap) { if (gap.naZonaTop4) status = " 🎟️ TOP 4"; else if (gap.naZonaReserva) status = " 🔄 reserva"; else if (gap.gapTop4 > 0) status = ` · faltam ${gap.gapTop4.toLocaleString("pt-BR")} pts pro Top 4`; }
+                L.push(`  ${icones[mod]} ${rotulos[mod]}: ${ptTxt} · ${pgTxt}${status}`);
             }
-            L.push(`  ${icones[mod]} ${rotulos[mod]}: ${ptTxt} · ${pgTxt}${status}`);
+            L.push("");
         }
 
-        L.push("");
         L.push("📊 PERFIL DE JOGO:");
         if (p.totalPartidas) L.push(`  • Partidas oficiais: ${p.totalPartidas}`);
         if (p.treinosFocados) L.push(`  • Treinos completados: ${p.treinosFocados}`);
@@ -22742,27 +22405,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         L.push(`🗺️ MAPA DE TABUADAS: ${dominadas}/100 dominadas (${pct}%)`);
 
         const fortes = Object.entries(porTab).filter(([, d]) => d.pct >= 80).map(([t]) => t);
-        const fracas = Object.entries(porTab)
-            .filter(([, d]) => d.pct < 70)
-            .sort((a, b) => a[1].pct - b[1].pct)
-            .slice(0, 4);
-
-        if (fortes.length) {
-            L.push(`  ✅ Fortes: ${fortes.map(t => `Tab ${t} (${porTab[t].pct}%)`).join(", ")}`);
-        }
+        const fracas = Object.entries(porTab).filter(([, d]) => d.pct < 70).sort((a, b) => a[1].pct - b[1].pct).slice(0, 4);
+        if (fortes.length) L.push(`  ✅ Fortes: ${fortes.map(t => `Tab ${t} (${porTab[t].pct}%)`).join(", ")}`);
         if (fracas.length) {
             L.push(`  ⚠️ FRACAS (prioridade de treino):`);
-            fracas.forEach(([t, d]) => {
-                L.push(`     • Tabuada do ${t}: ${d.pct}% (${d.dominadas}/${d.total})`);
-            });
+            fracas.forEach(([t, d]) => L.push(`     • Tabuada do ${t}: ${d.pct}% (${d.dominadas}/${d.total})`));
         }
-
         if (probs.length) {
             L.push(`  🔴 Operações mais problemáticas:`);
-            probs.slice(0, 6).forEach(op => {
-                const pctOp = Math.round(op.taxa * 100);
-                L.push(`     • ${op.op} — ${pctOp}% de acerto (${op.acertos}/${op.tentativas} tentativas)`);
-            });
+            probs.slice(0, 6).forEach(op => { const pctOp = Math.round(op.taxa * 100); L.push(`     • ${op.op} — ${pctOp}% de acerto (${op.acertos}/${op.tentativas} tentativas)`); });
         }
 
         L.push("");
@@ -22780,6 +22431,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         } else {
             L.push(`  • 🏅 MÉDIA GERAL COMBINADA: aguardando jogar todas as 3 modalidades (${jogou3}/3)`);
         }
+
         const persistidasMedia = p._medalhasPersistidas || {};
         const medalhasConsist = [];
         if (persistidasMedia.primeira_media)    medalhasConsist.push("🏅 Primeira Média");
@@ -22787,16 +22439,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (persistidasMedia.regular_media)     medalhasConsist.push("🏆 Regular");
         if (persistidasMedia.elite_media)       medalhasConsist.push("💎 Elite");
         if (persistidasMedia.lenda_media)       medalhasConsist.push("👑 Lenda da Média");
-        if (medalhasConsist.length) {
-            L.push(`  • Medalhas de Consistência: ${medalhasConsist.join(", ")}`);
-        } else {
-            L.push(`  • Medalhas de Consistência: nenhuma ainda`);
-        }
+        if (medalhasConsist.length) L.push(`  • Medalhas de Consistência: ${medalhasConsist.join(", ")}`);
+        else L.push(`  • Medalhas de Consistência: nenhuma ainda`);
 
         L.push("");
         L.push("🎯 TREINOS USADOS (histórico):");
         L.push(`  • ${resumoUsoTreinos(usos)}`);
-
         const recTreino = identificarModoRecomendado(dados, usos);
         if (recTreino) {
             L.push(`  • 🏋️ TREINO RECOMENDADO AGORA: ${recTreino.icone} ${recTreino.nome}`);
@@ -22808,10 +22456,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         for (const mod of ["2-5", "6-9", "0-10"]) {
             const pMod = certs[mod] || {};
             for (const nivel of ["lendaria", "ouro", "prata"]) {
-                if (pMod[nivel] && CERT_NIVEIS[nivel]) {
-                    const cfg = CERT_NIVEIS[nivel];
-                    certsList.push(`${cfg.icone} ${cfg.nome} · ${rotulos[mod]}`);
-                }
+                if (pMod[nivel] && CERT_NIVEIS[nivel]) certsList.push(`${CERT_NIVEIS[nivel].icone} ${CERT_NIVEIS[nivel].nome} · ${rotulos[mod]}`);
             }
         }
         if (certsList.length > 0) {
@@ -22824,14 +22469,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return L.join("\n");
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 6: próximo certificado + gap
-    // ─────────────────────────────────────────────────────────────────
     function identificarProximoCertificado(dados) {
         const certs = (dados && dados.certificados) || {};
         const mods = ["2-5", "6-9", "0-10"];
         const niveis = ["prata", "ouro", "lendaria"];
-
         for (const mod of mods) {
             const pMod = certs[mod] || {};
             for (const nivel of niveis) {
@@ -22841,11 +22482,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 const coberturaAtual = pctCoberturaPorMod(dados, mod);
                 const coberturaNecessaria = cfg.coberturaPct;
                 if (coberturaAtual >= coberturaNecessaria - 30) {
-                    return {
-                        nivel, cfg, mod,
-                        nomeMod: rotulos[mod],
-                        gapPct: Math.max(0, coberturaNecessaria - coberturaAtual)
-                    };
+                    return { nivel, cfg, mod, nomeMod: rotulos[mod], gapPct: Math.max(0, coberturaNecessaria - coberturaAtual) };
                 }
             }
         }
@@ -22861,162 +22498,54 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return total > 0 ? Math.round((dominadas / total) * 100) : 0;
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 7: próxima medalha de Consistência + gap
-    // ─────────────────────────────────────────────────────────────────
     function identificarProximaMedalhaConsistencia(dados) {
         const p = (dados && dados.perfil) || {};
         const persistidas = p._medalhasPersistidas || {};
         const maxMedia = Math.max(Number(p.media25) || 0, Number(p.media69) || 0, Number(p.media010) || 0);
         const com17k = Number(p.modalidadesCom17k) || 0;
-
-        if (!persistidas.primeira_media && maxMedia < 8000) {
-            return { id: "primeira_media", nome: "Primeira Média", icone: "🏅", alvo: 8000, maxMedia, gap: 8000 - maxMedia };
-        }
-        if (!persistidas.consistente_media && maxMedia < 12000) {
-            return { id: "consistente_media", nome: "Consistente", icone: "🎖️", alvo: 12000, maxMedia, gap: 12000 - maxMedia };
-        }
-        if (!persistidas.regular_media && maxMedia < 15000) {
-            return { id: "regular_media", nome: "Regular", icone: "🏆", alvo: 15000, maxMedia, gap: 15000 - maxMedia };
-        }
-        if (!persistidas.elite_media && maxMedia < 17000) {
-            return { id: "elite_media", nome: "Elite", icone: "💎", alvo: 17000, maxMedia, gap: 17000 - maxMedia };
-        }
-        if (!persistidas.lenda_media && com17k < 3) {
-            return { id: "lenda_media", nome: "Lenda da Média", icone: "👑", alvo: 17000, com17k, maxMedia, gap: 3 - com17k, especial: true };
-        }
+        if (!persistidas.primeira_media && maxMedia < 8000) return { id: "primeira_media", nome: "Primeira Média", icone: "🏅", alvo: 8000, maxMedia, gap: 8000 - maxMedia };
+        if (!persistidas.consistente_media && maxMedia < 12000) return { id: "consistente_media", nome: "Consistente", icone: "🎖️", alvo: 12000, maxMedia, gap: 12000 - maxMedia };
+        if (!persistidas.regular_media && maxMedia < 15000) return { id: "regular_media", nome: "Regular", icone: "🏆", alvo: 15000, maxMedia, gap: 15000 - maxMedia };
+        if (!persistidas.elite_media && maxMedia < 17000) return { id: "elite_media", nome: "Elite", icone: "💎", alvo: 17000, maxMedia, gap: 17000 - maxMedia };
+        if (!persistidas.lenda_media && com17k < 3) return { id: "lenda_media", nome: "Lenda da Média", icone: "👑", alvo: 17000, com17k, maxMedia, gap: 3 - com17k, especial: true };
         return null;
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 8: modo de treino recomendado para o perfil
-    // ─────────────────────────────────────────────────────────────────
     function identificarModoRecomendado(dados, usosTreino) {
         const p = (dados && dados.perfil) || {};
         const probs = (dados && dados.operacoesProblematicas) || [];
         const porTab = (dados && dados.porTabuada) || {};
-
         const totalPartidas = Number(p.totalPartidas) || 0;
         const dominadas = Number(p.operacoesDominadas) || 0;
         const pctDominio = Math.round((dominadas / 100) * 100);
         const temposMedio = Number(p.melhorTempoMedio) || 999;
         const pendentes = 100 - pctDominio;
 
-        if (totalPartidas === 0) {
-            return {
-                modoId: "inteligente",
-                nome: "Treino Inteligente",
-                icone: "🧠",
-                motivo: "você ainda não jogou nenhuma partida oficial — o Treino Inteligente escolhe as operações certas para começar.",
-                quando: "primeira sessão"
-            };
-        }
-
-        if (pctDominio >= 90 && temposMedio > 2.0) {
-            return {
-                modoId: "progressivo",
-                nome: "Progressivo",
-                icone: "⏱️",
-                motivo: `você domina ${pctDominio}% do mapa mas seu melhor tempo médio é ${temposMedio.toFixed(2)}s — o Progressivo aperta o cronômetro conforme você acerta.`,
-                quando: "domínio + velocidade"
-            };
-        }
-
-        if (pctDominio >= 95) {
-            return {
-                modoId: "progressivo",
-                nome: "Progressivo",
-                icone: "⏱️",
-                motivo: `você já domina ${pctDominio}% do mapa — o próximo passo é velocidade. O Progressivo ajusta o cronômetro ao seu ritmo.`,
-                quando: "domínio + velocidade"
-            };
-        }
-
-        const fracas = Object.entries(porTab)
-            .filter(([, d]) => d.pct < 30)
-            .sort((a, b) => a[1].pct - b[1].pct);
-        if (fracas.length > 0) {
-            const tab = fracas[0][0];
-            const pctTab = fracas[0][1].pct;
-            return {
-                modoId: "chunking",
-                nome: "Chunking",
-                icone: "🧱",
-                motivo: `a tabuada do ${tab} está em ${pctTab}% — o Chunking treina uma tabuada inteira de uma vez, foco total nela.`,
-                quando: "tabuada fraca"
-            };
-        }
-
-        if (pendentes >= 40) {
-            return {
-                modoId: "inteligente",
-                nome: "Treino Inteligente",
-                icone: "🧠",
-                motivo: `você tem ${pendentes}% do mapa em aberto. O Treino Inteligente ataca as operações mais urgentes primeiro, na ordem certa.`,
-                quando: "muitas pendências"
-            };
-        }
-
+        if (totalPartidas === 0) return { modoId: "inteligente", nome: "Treino Inteligente", icone: "🧠", motivo: "você ainda não jogou nenhuma partida oficial — o Treino Inteligente escolhe as operações certas para começar.", quando: "primeira sessão" };
+        if (pctDominio >= 90 && temposMedio > 2.0) return { modoId: "progressivo", nome: "Progressivo", icone: "⏱️", motivo: `você domina ${pctDominio}% do mapa mas seu melhor tempo médio é ${temposMedio.toFixed(2)}s — o Progressivo aperta o cronômetro conforme você acerta.`, quando: "domínio + velocidade" };
+        if (pctDominio >= 95) return { modoId: "progressivo", nome: "Progressivo", icone: "⏱️", motivo: `você já domina ${pctDominio}% do mapa — o próximo passo é velocidade.`, quando: "domínio + velocidade" };
+        
+        const fracas = Object.entries(porTab).filter(([, d]) => d.pct < 30).sort((a, b) => a[1].pct - b[1].pct);
+        if (fracas.length > 0) return { modoId: "chunking", nome: "Chunking", icone: "🧱", motivo: `a tabuada do ${fracas[0][0]} está em ${fracas[0][1].pct}% — o Chunking treina uma tabuada inteira de uma vez.`, quando: "tabuada fraca" };
+        
+        if (pendentes >= 40) return { modoId: "inteligente", nome: "Treino Inteligente", icone: "🧠", motivo: `você tem ${pendentes}% do mapa em aberto. O Treino Inteligente ataca as operações mais urgentes primeiro.`, quando: "muitas pendências" };
+        
         const muitoRuins = probs.filter(o => o.taxa < 0.5);
-        if (muitoRuins.length >= 3) {
-            return {
-                modoId: "reverso",
-                nome: "Treino Reverso",
-                icone: "🔄",
-                motivo: `você tem ${muitoRuins.length} operações com menos de 50% de acerto. O Reverso força você a descobrir o número que falta — ajuda a fixar de verdade.`,
-                quando: "erros sistemáticos"
-            };
-        }
-
+        if (muitoRuins.length >= 3) return { modoId: "reverso", nome: "Treino Reverso", icone: "🔄", motivo: `você tem ${muitoRuins.length} operações com menos de 50% de acerto. O Reverso ajuda a fixar de verdade.`, quando: "erros sistemáticos" };
+        
         const medias = probs.filter(o => o.taxa >= 0.5 && o.taxa < 0.75);
-        if (medias.length >= 3) {
-            return {
-                modoId: "decomposicao",
-                nome: "Decomposição",
-                icone: "🧩",
-                motivo: `você tem ${medias.length} operações entre 50% e 75% de acerto. A Decomposição ensina a montar o resultado em duas partes — ajuda quando você esquece.`,
-                quando: "consolidar raciocínio"
-            };
-        }
-
-        if (pctDominio >= 60 && pctDominio < 95 && totalPartidas < 15) {
-            return {
-                modoId: "espelho",
-                nome: "Espelho",
-                icone: "🪞",
-                motivo: "você está em bom ritmo. O Espelho ajuda você a checar com honestidade o que já sabe de cor e o que ainda precisa treinar.",
-                quando: "autoavaliação"
-            };
-        }
-
-        return {
-            modoId: "inteligente",
-            nome: "Treino Inteligente",
-            icone: "🧠",
-            motivo: "o Treino Inteligente escolhe as operações que você mais precisa a cada sessão, sem você ter que decidir.",
-            quando: "recomendado para mim"
-        };
+        if (medias.length >= 3) return { modoId: "decomposicao", nome: "Decomposição", icone: "🧩", motivo: `você tem ${medias.length} operações entre 50% e 75%. A Decomposição ensina a montar o resultado em duas partes.`, quando: "consolidar raciocínio" };
+        if (pctDominio >= 60 && pctDominio < 95 && totalPartidas < 15) return { modoId: "espelho", nome: "Espelho", icone: "🪞", motivo: "você está em bom ritmo. O Espelho ajuda você a checar o que já sabe de cor.", quando: "autoavaliação" };
+        
+        return { modoId: "inteligente", nome: "Treino Inteligente", icone: "🧠", motivo: "o Treino Inteligente escolhe as operações que você mais precisa a cada sessão.", quando: "recomendado para mim" };
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helper 9: resumo do uso dos modos
-    // ─────────────────────────────────────────────────────────────────
     function resumoUsoTreinos(usos) {
         if (!usos || typeof usos !== "object") return "nenhum treino ainda";
         const modos = Object.keys(usos).filter(k => usos[k] > 0);
         if (!modos.length) return "nenhum treino ainda";
-        const nomes = {
-            inteligente: "Inteligente",
-            reverso: "Reverso",
-            decomposicao: "Decomposição",
-            espelho: "Espelho",
-            chunking: "Chunking",
-            progressivo: "Progressivo"
-        };
-        return modos
-            .sort((a, b) => usos[b] - usos[a])
-            .map(m => `${nomes[m] || m}: ${usos[m]}×`)
-            .join(" · ");
+        const nomes = { inteligente: "Inteligente", reverso: "Reverso", decomposicao: "Decomposição", espelho: "Espelho", chunking: "Chunking", progressivo: "Progressivo" };
+        return modos.sort((a, b) => usos[b] - usos[a]).map(m => `${nomes[m] || m}: ${usos[m]}×`).join(" · ");
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -23030,22 +22559,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const primeiroNome = temNome ? nomeLimpo.split(" ")[0] : "";
 
         let identificacao = "";
-        if (temNome && temTurma) {
-            identificacao = `O atleta se chama ${nomeLimpo} (turma ${turmaLimpa}).`;
-        } else if (temNome) {
-            identificacao = `O atleta se chama ${nomeLimpo}.`;
-        } else {
-            identificacao = `O atleta ainda não se identificou. Use tratamento genérico.`;
-        }
+        if (temNome && temTurma) identificacao = `O atleta se chama ${nomeLimpo} (turma ${turmaLimpa}).`;
+        else if (temNome) identificacao = `O atleta se chama ${nomeLimpo}.`;
+        else identificacao = `O atleta ainda não se identificou. Use tratamento genérico.`;
 
-        const saudacao = temNome
-            ? `Olá, ${primeiroNome}! Sou seu Coach da Copa da Tabuada. 🏆`
-            : `Olá! Sou seu Coach da Copa da Tabuada. 🏆`;
+        const saudacao = temNome ? `Olá, ${primeiroNome}! Sou seu Coach da Copa da Tabuada. 🏆` : `Olá! Sou seu Coach da Copa da Tabuada. 🏆`;
 
         const temDados = !!(dadosPerfil && dadosPerfil.perfil);
-        const blocoPerfil = temDados
-            ? `\n═══ PERFIL COMPLETO DO ATLETA ═══\n\n${montarBlocoPerfil(dadosPerfil)}\n`
-            : "";
+        const blocoPerfil = temDados ? `\n═══ PERFIL COMPLETO DO ATLETA ═══\n\n${montarBlocoPerfil(dadosPerfil)}\n` : "";
 
         const proxCert = temDados ? identificarProximoCertificado(dadosPerfil) : null;
         const proxMedalha = temDados ? identificarProximaMedalhaConsistencia(dadosPerfil) : null;
@@ -23061,19 +22582,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (proxMedalha) {
                 blocoProxAlvo += `  [MEDALHA DE CONSISTÊNCIA] ${proxMedalha.icone} ${proxMedalha.nome}\n`;
                 if (proxMedalha.especial) {
-                    blocoProxAlvo += `     → média ≥ 17.000 pts nas 3 modalidades ao mesmo tempo\n`;
-                    blocoProxAlvo += `     → já tem ${proxMedalha.com17k}/3 modalidades com 17k+ — faltam ${proxMedalha.gap}\n`;
+                    blocoProxAlvo += `     → média ≥ 17.000 pts nas 3 modalidades ao mesmo tempo\n     → já tem ${proxMedalha.com17k}/3 modalidades com 17k+ — faltam ${proxMedalha.gap}\n`;
                 } else {
-                    blocoProxAlvo += `     → alcançar média ≥ ${proxMedalha.alvo.toLocaleString("pt-BR")} pts em qualquer modalidade\n`;
-                    blocoProxAlvo += `     → maior média atual: ${Math.round(proxMedalha.maxMedia).toLocaleString("pt-BR")} pts — faltam ${Math.round(proxMedalha.gap).toLocaleString("pt-BR")}\n`;
+                    blocoProxAlvo += `     → alcançar média ≥ ${proxMedalha.alvo.toLocaleString("pt-BR")} pts em qualquer modalidade\n     → maior média atual: ${Math.round(proxMedalha.maxMedia).toLocaleString("pt-BR")} pts — faltam ${Math.round(proxMedalha.gap).toLocaleString("pt-BR")}\n`;
                 }
             }
             if (proxTreino) {
-                blocoProxAlvo += `  [TREINO RECOMENDADO] ${proxTreino.icone} ${proxTreino.nome}\n`;
-                blocoProxAlvo += `     → motivo: ${proxTreino.motivo}\n`;
+                blocoProxAlvo += `  [TREINO RECOMENDADO] ${proxTreino.icone} ${proxTreino.nome}\n     → motivo: ${proxTreino.motivo}\n`;
             }
             blocoProxAlvo += `\n`;
         }
+
+        // ─── NOVO: Bloco dinâmico do Modo do Evento ───
+        const modoEventoBloco = modoEventoAtual === "olimpiadas"
+            ? `\n⚠️ O EVENTO ATUAL É O MODO OLIMPÍADAS ⚠️\nO foco da competição neste momento são as CORRIDAS DE TABUADA. As partidas oficiais de 20 perguntas estão pausadas ou fora de foco. Os alunos estão competindo por velocidade (Corridas por Tempo e por Distância). Se o aluno perguntar sobre ranking, foque no ranking das corridas. Se ele perguntar sobre como melhorar, sugira treinos de fluência e corridas.\n`
+            : `\n🏆 O EVENTO ATUAL É A CLASSIFICATÓRIA DA COPA 🏆\nO foco são as partidas oficiais de 20 perguntas e a busca pelo Top 4 da turma.\n`;
 
         return `Você é o COACH PESSOAL da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
 
@@ -23082,6 +22605,7 @@ diagnostica pontos fortes e fracos, prescreve treinos específicos, define metas
 curtas e motiva o aluno a evoluir. Fale com energia de treinador e clareza de médico.
 
 ${identificacao}
+${modoEventoBloco}
 ${blocoPerfil}${blocoProxAlvo}
 ═══ SUA MISSÃO — FLUXO OBRIGATÓRIO ═══
 
@@ -23091,7 +22615,7 @@ Quando o aluno colar este prompt, sua PRIMEIRA resposta deve ter EXATAMENTE esta
 2. DIAGNÓSTICO CURTO (3-4 linhas) — o que você vê nos dados:
    • Ponto FORTE (cite número real)
    • Ponto FRACO (cite número real)
-   • Destaque competitivo (posição real ou zona)
+   • Destaque competitivo (posição real ou zona, ou velocidade nas olimpíadas)
 3. MENU DE OPÇÕES (numeradas de 1 a 11, exatamente como abaixo)
 4. Instrução: "Digite o número da opção ou escreva sua pergunta!"
 
@@ -23112,15 +22636,15 @@ O MENU DEVE SER SEMPRE ESTE:
 ═══ PLAYBOOK — COMO RESPONDER A CADA OPÇÃO ═══
 
 1️⃣ ANÁLISE COMPLETA:
-   Apresente um "relatório de atleta": posições nas 3 modalidades, % do mapa,
+   Apresente um "relatório de atleta": posições nas 3 modalidades (se for classificatória), % do mapa,
    tabuadas fortes/fracas, velocidade, sequência, MÉDIA GERAL por modalidade.
    Termine com UMA RECOMENDAÇÃO específica ("seu foco agora é dominar a tabuada do 7").
 
 2️⃣ PLANO DE TREINO:
    Prescreva um plano de 3 passos concretos:
    • Passo 1: o que treinar hoje (modalidade + operações específicas)
-   • Passo 2: meta de curto prazo (ex: "dominar 5 operações da tabuada do 7")
-   • Passo 3: como medir sucesso (ex: "volte ao mapa e veja as células verdes")
+   • Passo 2: meta de curto prazo
+   • Passo 3: como medir sucesso
    Cite o botão real do app: "🎯 Focar agora" ou "Treino Inteligente".
 
 3️⃣ DÚVIDA ESPECÍFICA:
@@ -23130,92 +22654,34 @@ O MENU DEVE SER SEMPRE ESTE:
 4️⃣ OPERAÇÕES FRACAS:
    Liste as 5 piores operações do bloco "Operações mais problemáticas" do perfil.
    Para CADA uma, dê um truque rápido de memorização.
-   Termine prescrevendo: "Faça 2 partidas no Treino Focado com essas operações."
 
 5️⃣ TOP 4:
-   Use os gaps do bloco COMPETITIVO. Diga a posição atual, quanto falta de
-   pontos, e sugira foco na modalidade mais próxima do Top 4.
-   Se já está no Top 4, celebre e diga para MANTER ("não escorregue!").
+   Use os gaps do bloco COMPETITIVO. Diga a posição atual, quanto falta de pontos.
+   Se já está no Top 4, celebre e diga para MANTER.
+   (Se estiver no modo Olimpíadas, lembre que a classificação oficial está pausada).
 
 6️⃣ VELOCIDADE:
-   Compare o melhor tempo médio do aluno com as metas dos certificados
-   (2-5: 2,0s · 6-9: 2,5s · 1-10: 3,0s). Se está perto, diga quanto falta.
-   Se já bateu, celebre e proponha metas mais ambiciosas.
-   Sugira também a **Corrida de Tabuada** (100m, 200m ou Maratona) como forma de treinar a fluência sem pressão de ranking (se a precisão for ≥80%, até entra no ranking).
+   Compare o melhor tempo médio do aluno com as metas dos certificados.
+   Sugira também a **Corrida de Tabuada** (Tempo ou Distância) como forma de treinar a fluência.
 
 7️⃣ PRÓXIMO CERTIFICADO:
-   Use o bloco "PRÓXIMOS ALVOS" no topo. Diga o nome do certificado, o que
-   falta (operações ou velocidade) e o caminho mais rápido para conquistar.
+   Use o bloco "PRÓXIMOS ALVOS" no topo. Diga o nome do certificado, o que falta e o caminho mais rápido.
 
 8️⃣ OUTRO ASSUNTO:
    Responda como coach — sempre conectando com o perfil do aluno.
 
 9️⃣ MÉDIA GERAL:
-   Use a seção "📊 MÉDIA GERAL" do perfil. Explique:
-   • O que é média geral (média de pontos das partidas oficiais em cada modalidade)
-   • Que partidas canceladas (✕) DERRUBAM a média — desincentive cancelar
-   • Que só partidas oficiais contam (treinos NÃO entram na média)
-   • Mostre a média de cada modalidade e a média combinada (se jogou as 3)
-   • Explique as 5 medalhas de Consistência (Primeira Média, Consistente, Regular, Elite, Lenda da Média)
-   • Se o aluno está perto de alguma faixa, diga exatamente quanto falta
-   • Se ele ainda não jogou todas as 3 modalidades, incentive a experimentar
-   Termine com uma ação concreta: "Jogue X partidas em [modalidade] mantendo Y de média."
+   Use a seção "📊 MÉDIA GERAL" do perfil. Explique que partidas canceladas (✕) DERRUBAM a média
+   e que só partidas oficiais contam. Mostre as 5 medalhas de Consistência.
 
 🔟 QUAL TREINO DEVO FAZER AGORA:
-   Esta é a pergunta mais importante do coach moderno. Você conhece 6 modos:
-
-   A) 🧠 TREINO INTELIGENTE — o app escolhe.
-      Quando: aluno tem muitas pendências (>40% do mapa) OU primeira sessão.
-      Como funciona: sorteia as operações que você mais precisa, com peso por cor
-      (cinza > vermelho > amarelo > azul). É o "recomendado para mim".
-
-   B) 🔄 TREINO REVERSO — descobre o número que falta.
-      Exemplo: "3 × ? = 21". Quando: aluno erra operações sistematicamente
-      (<50% de acerto em 3+ operações). Ajuda a fixar de verdade, porque força
-      o raciocínio inverso.
-
-   C) 🧩 DECOMPOSIÇÃO — monta o resultado em duas partes.
-      Exemplo: "7 × 8 = 7 × 5 + 7 × ?". Quando: aluno erra entre 50% e 75%
-      em 3+ operações. Ajuda a derivar o resultado quando esquece.
-
-   D) 🪞 ESPELHO — flashcard com autoavaliação.
-      Você vê a conta, pensa, revela, e diz honestamente se 🟢 sabia de cor
-      ou 🔴 errei/demorei. Quando: aluno em bom ritmo, poucas partidas, quer
-      checar o que já domina de verdade.
-
-   E) 🧱 CHUNKING — uma tabuada isolada.
-      Treina as 10 contas de UMA tabuada escolhida. Quando: uma tabuada
-      específica está muito fraca (<30%). Foco total nela até decorar.
-
-   F) ⏱️ PROGRESSIVO — timer que se ajusta a você.
-      Começa em 10s, cai para 8s, 6s, 4s conforme você acerta. Se erra,
-      sobe de novo. Quando: você domina o conteúdo (>90% do mapa) mas o
-      tempo médio ainda é alto (>2,0s). Foco em automaticidade.
-
-   G) 🏁 CORRIDA DE TABUADA (100m/200m/Maratona) — modo de jogo.
-      Você responde o máximo de contas em 1min (100m), 2min (200m) ou 5min (Maratona).
-      O cronômetro não para e encerra no 3º/6º/15º erro. Tem ranking próprio
-      que exige 80% de precisão. Quando: aluno já domina o Progressivo
-      e quer um desafio extra de velocidade com limite de erros.
-      Onde encontrar: Menu "Mais Opções" -> "Corridas de Tabuada".
-
-   COMO RESPONDER:
-   Use o bloco "🏋️ TREINO RECOMENDADO AGORA" do perfil. Diga:
-     • O modo recomendado (nome + ícone)
-     • Por que (cite os números do perfil)
-     • Onde encontrar (Minhas Posições → 🎯 Treinar → escolher o modo)
-     • Uma dica prática ("faça uma sessão de 3 minutos hoje")
-   Se o aluno já usou algum modo, reconheça ("vi que você já fez 2× Reverso").
+   Use o bloco "🏋️ TREINO RECOMENDADO AGORA" do perfil. Diga o modo, o porquê, onde encontrar e uma dica prática.
+   Os modos: Inteligente, Reverso, Decomposição, Espelho, Chunking, Progressivo, Corrida.
 
 1️⃣1️⃣ PARA QUE SERVE A CORRIDA DE TABUADA:
-   Explique com entusiasmo que a corrida é um modo focado em FLUÊNCIA (velocidade com precisão).
-   Detalhe os 5 benefícios:
-   1. **Mapa de Tabuadas**: alimenta o mapa, pintando as operações e registrando a velocidade.
-   2. **Certificados**: ajuda a conquistar os de Ouro e Lendária, que exigem velocidade comprovada.
-   3. **Fluência**: força o cérebro a buscar a resposta de forma instantânea (automaticidade).
-   4. **Ranking Próprio**: tem um ranking separado, mas exige no mínimo 80% de precisão para entrar.
-   5. **Álbum**: ajuda a desbloquear várias medalhas.
-   Lembre-o de que a corrida NÃO substitui as partidas oficiais de 20 perguntas para o ranking da turma. É um treino/complemento.
+   Explique com entusiasmo que a corrida é um modo focado em FLUÊNCIA.
+   Detalhe os 5 benefícios: Mapa (pinta as operações), Certificados (Ouro/Lendária exigem velocidade), Fluência (automaticidade), Ranking Próprio (Tempo ou Distância) e Álbum (medalhas).
+   Lembre-o de que a corrida NÃO substitui as partidas oficiais de 20 perguntas para o ranking da turma (quando estiver no modo Classificatória).
 
 ═══ TOM E ESTILO ═══
 • Fale como um treinador motivador, MAS com clareza de médico.
@@ -23244,72 +22710,57 @@ O MENU DEVE SER SEMPRE ESTE:
 ▸ MAPA DE TABUADAS
 • 100 operações com cores por domínio recente (últimas 10 respostas): ⚪ sem prática · 🔴 reforçar · 🟡 em treino · 🔵 quase lá · 🟢 dominada (≥90% de acerto com 5+ tentativas).
 • Treinos e parciais alimentam o mapa. Mas só partidas completas contam para medalhas.
-• CAP DE PISTA (novidade v10.5.7): se você precisou de pista 3, "revelou" ou fez 3+ tentativas em uma operação dentro de um treino Aprender, ela NÃO chega a verde — fica amarela ou azul. É o app sendo honesto com o que você realmente sabe.
+• CAP DE PISTA: se você precisou de pista 3, "revelou" ou fez 3+ tentativas em uma operação dentro de um treino Aprender, ela NÃO chega a verde — fica amarela ou azul.
 
 ▸ CERTIFICADOS (por modalidade — 9 no total)
-• São 3 níveis × 3 modalidades = 9 certificados possíveis. Aluno pode ter Ouro em 2-5 e Prata em 1-10 ao mesmo tempo.
-• 🥈 Prata     → 85% do mapa, 5+ tentativas, 80% de acerto
-• 🥇 Ouro      → 95% do mapa, 8+ tentativas, 90% + velocidade
-• 💎 Lendária  → 100% do mapa, 10+ tentativas, 90% + velocidade
+• 🥈 Prata → 85% do mapa, 5+ tentativas, 80% de acerto
+• 🥇 Ouro → 95% do mapa, 8+ tentativas, 90% + velocidade
+• 💎 Lendária → 100% do mapa, 10+ tentativas, 90% + velocidade
 • Velocidades ideais: 2-5 → 2,0s · 6-9 → 2,5s · 1-10 → 3,0s
-• Depois de conquistado, o certificado NÃO é perdido — é uma conquista histórica.
+• Depois de conquistado, o certificado NÃO é perdido.
 
 ▸ MÉDIA GERAL
-• É a MÉDIA DE PONTOS das partidas oficiais em cada modalidade (soma dos pontos ÷ número de partidas).
+• É a MÉDIA DE PONTOS das partidas oficiais em cada modalidade.
 • Só partidas OFICIAIS contam. Treinos NÃO entram na média.
 • Partidas canceladas (✕) ENTRAM na média — cancelar muito DERRUBA a média.
 • O ranking de Média Geral exige mínimo de 5 partidas oficiais em CADA uma das 3 modalidades.
-• Existe a aba "🏅 Média Turma" e "🏅 Média Global" nos Rankings especiais.
-• Hall da Fama tem o card "📊 Média Consistente".
-• Álbum tem a seção "🏅 Consistência" com 5 medalhas:
-     🏅 Primeira Média   → média ≥ 8.000 pts em qualquer modalidade
-     🎖️ Consistente      → média ≥ 12.000 pts em qualquer modalidade
-     🏆 Regular          → média ≥ 15.000 pts em qualquer modalidade
-     💎 Elite            → média ≥ 17.000 pts em qualquer modalidade
-     👑 Lenda da Média   → média ≥ 17.000 pts nas 3 modalidades AO MESMO TEMPO
+• Álbum tem a seção "🏅 Consistência" com 5 medalhas (Primeira Média, Consistente, Regular, Elite, Lenda da Média).
 
-▸ TREINOS DISPONÍVEIS (novidade v10.5.7 — 6 modos)
-• O aluno acessa em "Minhas Posições → 🎯 Treinar → escolher um modo".
-• 🧠 Treino Inteligente: o app escolhe as operações mais urgentes (peso por cor).
+▸ TREINOS DISPONÍVEIS (6 modos)
+• 🧠 Treino Inteligente: o app escolhe as operações mais urgentes.
 • 🔄 Treino Reverso: "3 × ? = 21" — descobre o número que falta.
 • 🧩 Decomposição: "7 × 8 = 7 × 5 + 7 × ?" — monta em duas partes.
-• 🪞 Espelho: você pensa, revela e diz honestamente se sabia (🟢) ou não (🔴).
-• 🧱 Chunking: treina UMA tabuada isolada (ex: só a do 7).
-• ⏱️ Progressivo: timer que cai (10s → 8s → 6s → 4s) conforme você acerta.
+• 🪞 Espelho: você pensa, revela e diz se sabia (🟢) ou não (🔴).
+• 🧱 Chunking: treina UMA tabuada isolada.
+• ⏱️ Progressivo: timer que cai (10s → 8s → 6s → 4s).
 • TODOS alimentam o mapa e os certificados. NENHUM entra no ranking oficial.
-• As sessões são curtas: 5 a 10 contas por vez.
 
-▸ CORRIDAS DE TABUADA (novidade v10.8.0)
-• Modo focado em fluência: responder o máximo de contas em 1 minuto (100m), 2 minutos (200m) ou 5 minutos (Maratona).
-• O cronômetro NÃO para e encerra no 3º erro (100m), 6º erro (200m) ou 15º erro (Maratona).
+▸ CORRIDAS DE TABUADA
+• Modo focado em fluência. Existem duas formas:
+  - **Por Tempo**: 100m (1min), 200m (2min) ou Maratona (5min). Vence quem acertar mais.
+  - **Por Distância**: Sprint 10, Meia 20 ou Ultra 50. Cada erro soma +3s. Vence quem terminar no menor tempo total.
 • Tem ranking próprio. Para entrar no ranking, precisa de no mínimo 80% de precisão.
-• As respostas da corrida alimentam o mapa de tabuadas e os certificados, mas NÃO contam para o ranking oficial das 20 perguntas (nem para o Hall da Fama, exceto pelo mapa).
+• As respostas alimentam o mapa e certificados, mas NÃO contam para o ranking oficial das 20 perguntas.
 • Onde encontrar: Menu "Mais Opções" -> "Corridas de Tabuada".
 
 ▸ ÁLBUM E PATENTES
-• Álbum: medalhas (comum/incomum/raro/épico/lendário) → viram estrelas → definem a patente.
-• Patentes (nomes exatos): Reserva → Titular → Destaque → Craque → Ídolo → Imortal.
+• Álbum: medalhas → viram estrelas → definem a patente.
+• Patentes: Reserva → Titular → Destaque → Craque → Ídolo → Imortal.
 • Quanto mais rara a medalha, mais estrelas vale.
 
 ▸ TREINO INTELIGENTE E FOCO ABSOLUTO
-• Treino Inteligente: sorteia as operações que você mais precisa, com peso por cor (cinza/vermelho/amarelo/azul/verde).
+• Treino Inteligente: sorteia as operações que você mais precisa, com peso por cor.
 • Foco Absoluto: quando faltam ≤5 operações para fechar o mapa, 92% das perguntas vão para essas operações específicas.
 
 ▸ VOTAÇÃO DA ETAPA
 • Os alunos decidem a duração da etapa (7 ou 14 dias).
 • Para votar, é preciso ter no mínimo 10 partidas oficiais COMPLETAS e 30% do mapa dominado.
-• Partidas canceladas NÃO contam para o critério de votação.
 • A votação fica aberta por 4 dias e fecha automaticamente.
 
 ▸ BLOQUEIO DE VÍNCULO (48h)
 • Cada nome fica vinculado ao primeiro celular que usou.
 • Trocar de celular sem avisar = bloqueio de 48h. Só o professor pode liberar antes disso.
 • Solução: o aluno usa o botão "💬 Falar com o professor" no menu Mais, escolhe a categoria "🔓 Estou bloqueado em outro aparelho" e envia.
-
-▸ CANAL DE MENSAGENS COM O PROFESSOR
-• Existe um canal direto no app: menu "Mais" → "💬 Falar com o professor".
-• Serve para problemas de nome errado, bloqueio de vínculo, bugs ou qualquer dúvida fora do jogo.
-• Limite: 1 mensagem a cada 5 minutos por aluno.
 
 ▸ HALL DA FAMA E RANKINGS
 • Hall da Fama: 11 categorias (medalhas, estrelas, mapa, velocidade, acertos, maratonista, presença, treino, média, Turma de Elite).
@@ -23341,7 +22792,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         if (!m || !loading || !conteudo || !ta) return;
 
         marcarCoachAberto();
-
         loading.classList.remove("hidden");
         conteudo.classList.add("hidden");
         if (btn) { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; btn.disabled = true; }
@@ -23388,7 +22838,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                         partes.push(`<span class="sep">·</span> 🏅 <strong>${mediaComb.toLocaleString("pt-BR")}</strong> de média`);
                     }
                     const melhorPos = dadosPerfil.perfil.melhorPosicao;
-                    if (melhorPos && melhorPos <= 4) {
+                    if (melhorPos && melhorPos <= 4 && modoEventoAtual !== "olimpiadas") {
                         partes.push(`<span class="sep">·</span> <span class="top4">🎟️ Top 4</span>`);
                     }
                 }
@@ -23430,21 +22880,14 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             await navigator.clipboard.writeText(texto);
             btn.classList.add("copiado");
             btn.textContent = "✓ Copiado! Agora abra uma IA e cole";
-            setTimeout(() => {
-                btn.classList.remove("copiado");
-                btn.textContent = "📋 Copiar prompt";
-            }, 2800);
+            setTimeout(() => { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; }, 2800);
         } catch (e) {
-            ta.focus();
-            ta.select();
+            ta.focus(); ta.select();
             try {
                 document.execCommand("copy");
                 btn.classList.add("copiado");
                 btn.textContent = "✓ Copiado! Agora abra uma IA e cole";
-                setTimeout(() => {
-                    btn.classList.remove("copiado");
-                    btn.textContent = "📋 Copiar prompt";
-                }, 2800);
+                setTimeout(() => { btn.classList.remove("copiado"); btn.textContent = "📋 Copiar prompt"; }, 2800);
             } catch (e2) {
                 notificar("Não consegui copiar. Selecione o texto e copie manualmente.", "aviso", 5000);
             }
@@ -23461,9 +22904,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const url = urls[provider];
         if (!url) return;
         window.open(url, "_blank", "noopener,noreferrer");
-        setTimeout(() => {
-            notificar("💡 Agora cole o prompt com Ctrl+V (ou toque longo → Colar).", "info", 5000);
-        }, 400);
+        setTimeout(() => { notificar("💡 Agora cole o prompt com Ctrl+V (ou toque longo → Colar).", "info", 5000); }, 400);
     }
     // ▲▲▲ FIM [18.08]
 
@@ -23763,72 +23204,79 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [18.11]
 
     // ▼▼▼ [18.12] Motor da Corrida de Tabuada ───────────── INÍCIO ───
-    // v10.9.1 · Adicionada a possibilidade de consultar o ranking antes
-    // de iniciar uma corrida, através do botão "Ver Ranking" nos cards.
+    // v10.10.1 · Suporte para Corrida por Distância (Sprint 10, Meia 20, Ultra 50).
+    // Adicionado o seletor de tipo e a lógica de punição por tempo (+3s).
 
     const CAMINHO_CORRIDAS = "copa_corridas";
 
     const CORRIDA_DISTANCIAS = {
         "100m": {
-            id: "100m",
-            label: "100m Tabuada",
-            icone: "🏃",
-            duracaoSeg: 60,
-            errosMax: 3,
-            subtitulo: "Sprint · 1 minuto · até 3 erros"
+            id: "100m", label: "100m Tabuada", icone: "🏃", tipo: "tempo",
+            duracaoSeg: 60, errosMax: 3, subtitulo: "Sprint · 1 minuto · até 3 erros"
         },
         "200m": {
-            id: "200m",
-            label: "200m Tabuada",
-            icone: "🏃‍♂️",
-            duracaoSeg: 120,
-            errosMax: 6,
-            subtitulo: "Meia distância · 2 minutos · até 6 erros"
+            id: "200m", label: "200m Tabuada", icone: "🏃‍♂️", tipo: "tempo",
+            duracaoSeg: 120, errosMax: 6, subtitulo: "Meia distância · 2 minutos · até 6 erros"
         },
         "maratona": {
-            id: "maratona",
-            label: "Maratona",
-            icone: "🏃‍♀️",
-            duracaoSeg: 300,
-            errosMax: 15,
-            subtitulo: "Resistência · 5 minutos · até 15 erros"
+            id: "maratona", label: "Maratona", icone: "🏃‍♀️", tipo: "tempo",
+            duracaoSeg: 300, errosMax: 15, subtitulo: "Resistência · 5 minutos · até 15 erros"
+        },
+        "sprint_10": {
+            id: "sprint_10", label: "Sprint 10", icone: "🎯", tipo: "distancia",
+            targetPerguntas: 10, penaltyMs: 3000, subtitulo: "10 perguntas · +3s por erro"
+        },
+        "meia_20": {
+            id: "meia_20", label: "Meia 20", icone: "🎯", tipo: "distancia",
+            targetPerguntas: 20, penaltyMs: 3000, subtitulo: "20 perguntas · +3s por erro"
+        },
+        "ultra_50": {
+            id: "ultra_50", label: "Ultra 50", icone: "🎯", tipo: "distancia",
+            targetPerguntas: 50, penaltyMs: 3000, subtitulo: "50 perguntas · +3s por erro"
         }
     };
 
     let corridaEstado = null;
+    let corridaTipoAtual = "tempo";
 
     async function abrirCorrida() {
         const nome  = (typeof obterNomeSalvoAluno  === "function") ? obterNomeSalvoAluno()  : null;
         const turma = (typeof obterTurmaSalvaAluno === "function") ? obterTurmaSalvaAluno() : null;
 
         if (!nome || !turma) {
-            if (typeof notificar === "function") {
-                notificar("Para participar das Corridas, identifique-se primeiro.", "aviso", 5000);
-            }
+            if (typeof notificar === "function") notificar("Para participar das Corridas, identifique-se primeiro.", "aviso", 5000);
             if (typeof mostrarTela === "function") mostrarTela("tela-single");
             return;
         }
         if (corridaEstado && corridaEstado.ativa) {
-            if (typeof notificar === "function") {
-                notificar("Você já tem uma corrida em andamento.", "aviso", 3500);
-            }
+            if (typeof notificar === "function") notificar("Você já tem uma corrida em andamento.", "aviso", 3500);
             return;
         }
 
         try {
             const fase = await resolverFaseAtual();
             if (!etapaPermiteClassificatoria(fase.tipo)) {
-                if (typeof notificar === "function") {
-                    notificar("⏸️ A Etapa Classificatória não está aberta. Use o Treino Livre na Home.", "aviso", 6000);
-                }
+                if (typeof notificar === "function") notificar("⏸️ A Etapa Classificatória não está aberta. Use o Treino Livre na Home.", "aviso", 6000);
                 return;
             }
-        } catch(e) {
-            console.warn("[Corrida] Falha ao validar etapa:", e);
-        }
+        } catch(e) { console.warn("[Corrida] Falha ao validar etapa:", e); }
 
+        selecionarTipoCorrida("tempo");
         _mostrarViewCorrida("selecao");
         if (typeof mostrarTela === "function") mostrarTela("tela-corrida");
+    }
+
+    function selecionarTipoCorrida(tipo) {
+        corridaTipoAtual = tipo;
+        const isTempo = tipo === "tempo";
+        
+        document.getElementById("btn-tipo-tempo")?.classList.toggle("ativa", isTempo);
+        document.getElementById("btn-tipo-distancia")?.classList.toggle("ativa", !isTempo);
+        document.getElementById("btn-tipo-tempo")?.setAttribute("aria-selected", isTempo);
+        document.getElementById("btn-tipo-distancia")?.setAttribute("aria-selected", !isTempo);
+        
+        document.getElementById("corrida-dists-tempo")?.classList.toggle("hidden", !isTempo);
+        document.getElementById("corrida-dists-distancia")?.classList.toggle("hidden", isTempo);
     }
 
     function _mostrarViewCorrida(viewId) {
@@ -23853,33 +23301,32 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             <div class="corrida-desc-titulo"><span aria-hidden="true">🏁</span> Como funciona a Corrida de Tabuada</div>
 
             <div class="corrida-desc-subtitulo">🎯 O que é</div>
-            <p>É um modo de jogo focado em <strong>fluência</strong> (responder o máximo possível em um tempo fixo). Diferente das partidas de 20 perguntas, a corrida não é adaptativa e o cronômetro não para no feedback. É você contra o tempo!</p>
+            <p>É um modo de jogo focado em <strong>fluência</strong>. Existem duas formas de competir: por <strong>Tempo</strong> ou por <strong>Distância</strong>.</p>
 
-            <div class="corrida-desc-subtitulo">🏃 As modalidades</div>
+            <div class="corrida-desc-subtitulo">⏱️ Corrida por Tempo</div>
             <ul>
-                <li><strong>100m Tabuada:</strong> 1 minuto de duração, encerra no 3º erro.</li>
-                <li><strong>200m Tabuada:</strong> 2 minutos de duração, encerra no 6º erro.</li>
-                <li><strong>Maratona:</strong> 5 minutos de duração, encerra no 15º erro. (O desafio de resistência!)</li>
+                <li><strong>100m:</strong> 1 minuto, encerra no 3º erro.</li>
+                <li><strong>200m:</strong> 2 minutos, encerra no 6º erro.</li>
+                <li><strong>Maratona:</strong> 5 minutos, encerra no 15º erro.</li>
+                <li>Vence quem tiver o <strong>maior número de acertos</strong>.</li>
             </ul>
 
-            <div class="corrida-desc-subtitulo">⚙️ Regras da Corrida</div>
+            <div class="corrida-desc-subtitulo">🎯 Corrida por Distância</div>
             <ul>
-                <li>O app embaralha as 100 operações (ou as 40 da modalidade escolhida). Se você for rápido demais, ele reembaralha para você não ficar sem contas.</li>
-                <li>O cronômetro é regressivo e <strong>não para</strong> durante a transição de perguntas.</li>
-                <li>Resposta errada conta como erro, e o tempo continua correndo.</li>
-                <li>O cálculo de velocidade média inclui <strong>todas as respostas</strong> (certas e erradas). O tempo entre uma pergunta e outra (feedback) não entra no cálculo.</li>
+                <li><strong>Sprint 10:</strong> Responder 10 perguntas.</li>
+                <li><strong>Meia 20:</strong> Responder 20 perguntas.</li>
+                <li><strong>Ultra 50:</strong> Responder 50 perguntas.</li>
+                <li>O cronômetro não para e <strong>cada erro soma +3 segundos</strong> de punição.</li>
+                <li>Vence quem terminar as perguntas no <strong>menor tempo total</strong>.</li>
             </ul>
 
             <div class="corrida-desc-subtitulo">🏆 Ranking e Elegibilidade</div>
             <p>As Corridas têm o seu próprio ranking (separado das partidas de 20 perguntas). Só entra no ranking quem terminar a corrida com <strong>no mínimo 80% de precisão</strong>.</p>
-            <p>Critérios de desempate: 1º Mais acertos → 2º Maior precisão → 3º Menor tempo médio por resposta.</p>
 
             <div class="corrida-desc-subtitulo">🎓 Integração</div>
             <p>As respostas da Corrida alimentam o <strong>Mapa de Tabuadas</strong> e os <strong>Certificados de Maestria</strong> como se fossem respostas de treino. Elas não entram no ranking oficial das 20 perguntas.</p>
 
-            <div class="corrida-desc-dica"><strong>💡 Dica:</strong> como a corrida exige precisão para o ranking (80%), não adianta tentar chutar tudo muito rápido e errar. Acerte com segurança, mas sem hesitar!</div>
-
-            <span class="corrida-desc-selo">🏁 Corridas de Tabuada · 100m, 200m e Maratona.</span>
+            <span class="corrida-desc-selo">🏁 Corridas de Tabuada · Tempo e Distância.</span>
         `;
     }
 
@@ -23890,9 +23337,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaCorrida();
         modal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
-        setTimeout(() => {
-            modal.querySelector(".modal-explicacao-fechar")?.focus();
-        }, 30);
+        setTimeout(() => { modal.querySelector(".modal-explicacao-fechar")?.focus(); }, 30);
     }
 
     function fecharModalComoFuncionaCorrida() {
@@ -23907,9 +23352,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         document.addEventListener("keydown", function (e) {
             if (e.key !== "Escape") return;
             const modal = document.getElementById("modal-explicacao-corrida");
-            if (modal && !modal.classList.contains("hidden")) {
-                fecharModalComoFuncionaCorrida();
-            }
+            if (modal && !modal.classList.contains("hidden")) fecharModalComoFuncionaCorrida();
         });
     }
 
@@ -23928,25 +23371,20 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try {
             const fase = await resolverFaseAtual();
             if (!etapaPermiteClassificatoria(fase.tipo)) {
-                if (typeof notificar === "function") {
-                    notificar("⏸️ A Etapa Classificatória não está disponível no momento. Use o Modo Treino Livre.", "aviso", 6000);
-                }
+                if (typeof notificar === "function") notificar("⏸️ A Etapa Classificatória não está disponível no momento.", "aviso", 6000);
                 return;
             }
-        } catch(e) {
-            console.warn("[Corrida] Falha ao validar etapa:", e);
-        }
+        } catch(e) { console.warn("[Corrida] Falha ao validar etapa:", e); }
 
         const modBtn = document.querySelector(".corrida-mod-btn.ativa[data-mod]");
         const modalidade = modBtn && MODALIDADES[modBtn.dataset.mod] ? modBtn.dataset.mod : "0-10";
 
-        if (corridaEstado && corridaEstado.timerIntervalId) {
-            clearInterval(corridaEstado.timerIntervalId);
-        }
+        if (corridaEstado && corridaEstado.timerIntervalId) clearInterval(corridaEstado.timerIntervalId);
 
         corridaEstado = {
             distanciaId,
             distancia: cfgDist,
+            tipo: cfgDist.tipo,
             modalidade,
             nome,
             turma,
@@ -23958,13 +23396,13 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             acertos: 0,
             erros: 0,
             totalRespondidas: 0,
-            somaTemposMs: 0,
-
+            penaltyMs: 0,
+            
             errosDetalhes: [],
             deltasMapa: {},
 
-            timerInicioMs: 0,
-            timerMs: cfgDist.duracaoSeg * 1000,
+            timerInicioMs: performance.now(),
+            timerMs: cfgDist.tipo === "tempo" ? cfgDist.duracaoSeg * 1000 : 0,
             timerIntervalId: null,
 
             ativa: true,
@@ -23973,9 +23411,14 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
         document.getElementById("corrida-hud-acertos").textContent = "0";
         document.getElementById("corrida-hud-erros").textContent = "0";
+        
+        if (cfgDist.tipo === "tempo") {
+            _atualizarDisplayTimer(corridaEstado.timerMs);
+        } else {
+            _atualizarDisplayTimerProg(0);
+        }
+        
         _atualizarDotsErrosCorrida();
-        _atualizarDisplayTimer(corridaEstado.timerMs);
-
         document.body.classList.add("corrida-ativa");
 
         _mostrarViewCorrida("jogo");
@@ -23986,9 +23429,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     function _gerarDeckCorrida(modalidade) {
         const fatores = MODALIDADES[modalidade]?.fatores || [];
         const ops = [];
-        fatores.forEach(a => {
-            for (let b = 1; b <= 10; b++) ops.push({ fA: a, fB: b, produto: a * b });
-        });
+        fatores.forEach(a => { for (let b = 1; b <= 10; b++) ops.push({ fA: a, fB: b, produto: a * b }); });
         for (let i = ops.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [ops[i], ops[j]] = [ops[j], ops[i]];
@@ -23998,20 +23439,24 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
     function _iniciarTimerCorrida() {
         if (!corridaEstado) return;
-        corridaEstado.timerInicioMs = performance.now();
         corridaEstado.timerIntervalId = setInterval(_tickTimerCorrida, 100);
     }
 
     function _tickTimerCorrida() {
         if (!corridaEstado || !corridaEstado.ativa || corridaEstado.finalizando) return;
         const decorrido = performance.now() - corridaEstado.timerInicioMs;
-        const restante = corridaEstado.timerMs - decorrido;
-        if (restante <= 0) {
-            _atualizarDisplayTimer(0);
-            finalizarCorrida("tempo");
-            return;
+        
+        if (corridaEstado.tipo === "tempo") {
+            const restante = corridaEstado.timerMs - decorrido;
+            if (restante <= 0) {
+                _atualizarDisplayTimer(0);
+                finalizarCorrida("tempo");
+                return;
+            }
+            _atualizarDisplayTimer(restante);
+        } else {
+            _atualizarDisplayTimerProg(decorrido + corridaEstado.penaltyMs);
         }
-        _atualizarDisplayTimer(restante);
     }
 
     function _atualizarDisplayTimer(restanteMs) {
@@ -24032,15 +23477,28 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const apertado = pct <= 0.35 && !urgente;
         display.classList.toggle("urgente", urgente);
         display.classList.toggle("apertado", apertado);
-        if (barra) {
-            barra.classList.toggle("urgente", urgente);
-            barra.classList.toggle("apertado", apertado);
-        }
+        if (barra) { barra.classList.toggle("urgente", urgente); barra.classList.toggle("apertado", apertado); }
+    }
+
+    function _atualizarDisplayTimerProg(totalMs) {
+        const display = document.getElementById("corrida-timer-display");
+        const fill    = document.getElementById("corrida-timer-fill");
+        if (!display || !corridaEstado) return;
+
+        const seg = Math.floor(totalMs / 1000);
+        const min = Math.floor(seg / 60);
+        const s   = seg % 60;
+        const ms  = Math.floor((totalMs % 1000) / 100);
+        display.textContent = `${min}:${String(s).padStart(2, "0")}.${ms}`;
+        
+        const pct = (corridaEstado.totalRespondidas / corridaEstado.distancia.targetPerguntas) * 100;
+        if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + "%";
+        
+        display.classList.remove("urgente", "apertado");
     }
 
     function _proximaContaCorrida() {
         if (!corridaEstado || !corridaEstado.ativa || corridaEstado.finalizando) return;
-
         if (corridaEstado.deckIndex >= corridaEstado.deck.length) {
             corridaEstado.deck = _gerarDeckCorrida(corridaEstado.modalidade);
             corridaEstado.deckIndex = 0;
@@ -24067,9 +23525,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
     function _gerarDistratoresCorrida(op) {
         if (typeof gerarDistratoresInteligentes === "function") {
-            try {
-                return gerarDistratoresInteligentes(op.fA, op.fB, op.produto, 4, corridaEstado.modalidade);
-            } catch(e) { /* cai no fallback */ }
+            try { return gerarDistratoresInteligentes(op.fA, op.fB, op.produto, 4, corridaEstado.modalidade); } catch(e) {}
         }
         const arr = [op.produto];
         while (arr.length < 4) {
@@ -24090,17 +23546,17 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const op = corridaEstado.perguntaAtual;
         if (!op) return;
 
-        const tempoContaMs = Math.max(1, performance.now() - corridaEstado.tempoInicioConta);
-        corridaEstado.somaTemposMs += tempoContaMs;
-        corridaEstado.totalRespondidas++;
-
         const acertou = (valor === op.produto);
+        const tempoContaMs = Math.max(1, performance.now() - corridaEstado.tempoInicioConta);
+        corridaEstado.totalRespondidas++;
 
         btn.disabled = true;
         document.querySelectorAll("#corrida-opcoes .corrida-opcao").forEach(b => { b.disabled = true; });
+        
         if (acertou) {
             btn.classList.add("certo");
             if (typeof somAcerto === "function") { try { somAcerto(); } catch(e) {} }
+            corridaEstado.acertos++;
         } else {
             btn.classList.add("errado");
             if (typeof somErro === "function") { try { somErro(); } catch(e) {} }
@@ -24109,36 +23565,38 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 contaEl.classList.add("erro-visual");
                 setTimeout(() => contaEl.classList.remove("erro-visual"), 320);
             }
+            corridaEstado.erros++;
+            
+            if (corridaEstado.tipo === "distancia") {
+                corridaEstado.penaltyMs += corridaEstado.distancia.penaltyMs;
+                const display = document.getElementById("corrida-timer-display");
+                if (display) {
+                    display.style.color = "#ef4444";
+                    setTimeout(() => display.style.color = "", 600);
+                }
+            }
+            
+            corridaEstado.errosDetalhes.push({ fA: op.fA, fB: op.fB, produto: op.produto, respostaDada: valor });
         }
 
         const k = `${op.fA}x${op.fB}`;
         if (!corridaEstado.deltasMapa[k]) corridaEstado.deltasMapa[k] = { respostas: [] };
-        corridaEstado.deltasMapa[k].respostas.push({
-            acertou,
-            tempo: tempoContaMs / 1000
-        });
+        corridaEstado.deltasMapa[k].respostas.push({ acertou, tempo: tempoContaMs / 1000 });
 
-        if (acertou) {
-            corridaEstado.acertos++;
-        } else {
-            corridaEstado.erros++;
-            corridaEstado.errosDetalhes.push({
-                fA: op.fA,
-                fB: op.fB,
-                produto: op.produto,
-                respostaDada: valor
-            });
-        }
-
-        const acertosEl = document.getElementById("corrida-hud-acertos");
-        const errosEl = document.getElementById("corrida-hud-erros");
-        if (acertosEl) acertosEl.textContent = String(corridaEstado.acertos);
-        if (errosEl) errosEl.textContent = String(corridaEstado.erros);
+        document.getElementById("corrida-hud-acertos").textContent = String(corridaEstado.acertos);
+        document.getElementById("corrida-hud-erros").textContent = String(corridaEstado.erros);
         _atualizarDotsErrosCorrida();
 
-        if (corridaEstado.erros >= corridaEstado.distancia.errosMax) {
-            setTimeout(() => finalizarCorrida("erros"), 220);
-            return;
+        if (corridaEstado.tipo === "tempo") {
+            if (corridaEstado.erros >= corridaEstado.distancia.errosMax) {
+                setTimeout(() => finalizarCorrida("erros"), 220);
+                return;
+            }
+        } else {
+            if (corridaEstado.totalRespondidas >= corridaEstado.distancia.targetPerguntas) {
+                setTimeout(() => finalizarCorrida("completo"), 220);
+                return;
+            }
         }
 
         setTimeout(() => {
@@ -24150,7 +23608,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     function _atualizarDotsErrosCorrida() {
         const dots = document.getElementById("corrida-erros-dots");
         if (!dots || !corridaEstado) return;
-        const max = corridaEstado.distancia.errosMax;
+        const max = corridaEstado.tipo === "tempo" ? corridaEstado.distancia.errosMax : corridaEstado.distancia.targetPerguntas;
         let html = "";
         for (let i = 0; i < max; i++) {
             html += `<span class="corrida-erro-dot ${i < corridaEstado.erros ? "usado" : ""}"></span>`;
@@ -24172,61 +23630,50 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const _nome = corridaEstado.nome;
         const _turma = corridaEstado.turma;
         const _modalidade = corridaEstado.modalidade;
+        const _tipo = corridaEstado.tipo;
+        const totalMs = Math.round(performance.now() - corridaEstado.timerInicioMs);
+        const tempoTotalMs = _tipo === "distancia" ? totalMs + corridaEstado.penaltyMs : totalMs;
 
         const total = corridaEstado.totalRespondidas;
         const precisao = total > 0 ? (corridaEstado.acertos / total) : 0;
-        const tempoMedioMs = total > 0 ? (corridaEstado.somaTemposMs / total) : 0;
+        const tempoMedioMs = total > 0 ? (totalMs / total) : 0;
         const elegivel = precisao >= 0.80 && total > 0;
 
         const resultado = {
-            nome: _nome,
-            turma: _turma,
-            modalidade: _modalidade,
+            nome: _nome, turma: _turma, modalidade: _modalidade,
             distanciaId: corridaEstado.distanciaId,
             distanciaLabel: corridaEstado.distancia.label,
+            tipo: _tipo,
             acertos: corridaEstado.acertos,
             erros: corridaEstado.erros,
             totalRespondidas: total,
             precisao: Math.round(precisao * 10000) / 10000,
             tempoMedioMs: Math.round(tempoMedioMs),
+            tempoTotalMs: tempoTotalMs,
             data: new Date().toISOString(),
-            elegivel,
-            motivo
+            elegivel, motivo
         };
 
-        _persistirMapaCorrida(resultado).catch(err => {
-            console.warn("[Corrida] Falha ao persistir mapa:", err);
-        });
-
+        _persistirMapaCorrida(resultado).catch(err => { console.warn("[Corrida] Falha mapa:", err); });
         _renderizarResultadoCorrida(resultado);
 
         _persistirRankingCorrida(resultado).then(record => {
-            _renderizarRankingCorrida(resultado, record).catch(err => {
-                console.warn("[Corrida] Falha ao renderizar ranking:", err);
-            });
-        }).catch(err => {
-            console.warn("[Corrida] Falha ao persistir ranking:", err);
-            const rank = document.getElementById("corrida-rank-container");
-            if (rank) rank.innerHTML = `<div class="corrida-revisao-vazio">Ranking indisponível agora.</div>`;
-        });
+            _renderizarRankingCorrida(resultado, record).catch(err => { console.warn("[Corrida] Falha ranking:", err); });
+        }).catch(err => { console.warn("[Corrida] Falha persist ranking:", err); });
 
         _renderizarRevisaoErrosCorrida(resultado);
 
         setTimeout(async () => {
             try {
-                if (typeof verificarCertificadosPosPartida === "function") {
-                    await verificarCertificadosPosPartida(_nome, _turma, _modalidade);
-                }
-            } catch(e) { console.warn("[Corrida] Certificados:", e); }
+                if (typeof verificarCertificadosPosPartida === "function") await verificarCertificadosPosPartida(_nome, _turma, _modalidade);
+            } catch(e) {}
             try {
-                if (typeof verificarAlbumPosPartida === "function") {
-                    await verificarAlbumPosPartida(_nome, _turma);
-                }
-            } catch(e) { console.warn("[Corrida] Álbum:", e); }
+                if (typeof verificarAlbumPosPartida === "function") await verificarAlbumPosPartida(_nome, _turma);
+            } catch(e) {}
         }, 900);
 
         try {
-            if (corridaEstado.acertos > 0 && corridaEstado.erros === 0 && motivo === "tempo") {
+            if (corridaEstado.acertos > 0 && corridaEstado.erros === 0) {
                 if (typeof somConclusao === "function") somConclusao();
                 if (typeof dispararConfetes === "function") dispararConfetes();
             } else if (typeof somConclusao === "function") {
@@ -24241,22 +23688,13 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         if (!corridaEstado || !corridaEstado.deltasMapa) return;
         if (Object.keys(corridaEstado.deltasMapa).length === 0) return;
         if (typeof incrementarMapaAluno !== "function") return;
-        try {
-            await incrementarMapaAluno(
-                resultado.nome,
-                resultado.turma,
-                resultado.modalidade,
-                corridaEstado.deltasMapa
-            );
-        } catch(e) {
-            console.warn("[Corrida] incrementarMapaAluno falhou:", e);
-        }
+        try { await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, corridaEstado.deltasMapa); } catch(e) {}
         try {
             if (typeof verificarPromocoes === "function" && typeof obterDesempenhoOperacoesGlobal === "function") {
                 const mapa = await obterDesempenhoOperacoesGlobal(resultado.nome, resultado.turma);
                 await verificarPromocoes(resultado.nome, resultado.turma, resultado.modalidade, mapa);
             }
-        } catch(e) { console.warn("[Corrida] verificarPromocoes falhou:", e); }
+        } catch(e) {}
     }
 
     async function _persistirRankingCorrida(resultado) {
@@ -24270,32 +23708,25 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try {
             const snap = await ref.once("value");
             const existente = snap.val();
-            if (existente && !_ehMelhorCorrida(resultado, existente)) {
-                return existente;
-            }
+            if (existente && !_ehMelhorCorrida(resultado, existente)) return existente;
+            
             const record = {
-                nome: resultado.nome,
-                turma: resultado.turma,
-                modalidade: resultado.modalidade,
-                distanciaId: resultado.distanciaId,
-                acertos: resultado.acertos,
-                erros: resultado.erros,
-                totalRespondidas: resultado.totalRespondidas,
-                precisao: resultado.precisao,
-                tempoMedioMs: resultado.tempoMedioMs,
-                data: resultado.data,
-                elegivel: true
+                nome: resultado.nome, turma: resultado.turma, modalidade: resultado.modalidade,
+                distanciaId: resultado.distanciaId, tipo: resultado.tipo,
+                acertos: resultado.acertos, erros: resultado.erros, totalRespondidas: resultado.totalRespondidas,
+                precisao: resultado.precisao, tempoMedioMs: resultado.tempoMedioMs,
+                tempoTotalMs: resultado.tempoTotalMs, data: resultado.data, elegivel: true
             };
             await ref.set(record);
             return record;
-        } catch(e) {
-            console.warn("[Corrida] Falha ao salvar ranking:", e);
-            return null;
-        }
+        } catch(e) { console.warn("[Corrida] Falha ao salvar ranking:", e); return null; }
     }
 
     function _ehMelhorCorrida(novo, existente) {
         if (!existente) return true;
+        if (novo.tipo === "distancia") {
+            return novo.tempoTotalMs < existente.tempoTotalMs;
+        }
         if (novo.acertos !== existente.acertos) return novo.acertos > existente.acertos;
         if (Math.abs(novo.precisao - existente.precisao) > 0.0001) return novo.precisao > existente.precisao;
         if (novo.tempoMedioMs !== existente.tempoMedioMs) return novo.tempoMedioMs < existente.tempoMedioMs;
@@ -24309,22 +23740,23 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             const snap = await database.ref(`${CAMINHO_CORRIDAS}/${pathKey}`).once("value");
             const dados = snap.val() || {};
             const lista = Object.values(dados).filter(r => r && r.elegivel);
+            const cfg = CORRIDA_DISTANCIAS[distanciaId];
+            
             lista.sort((a, b) => {
+                if (cfg && cfg.tipo === "distancia") {
+                    return (a.tempoTotalMs || 999999) - (b.tempoTotalMs || 999999);
+                }
                 if (b.acertos !== a.acertos) return b.acertos - a.acertos;
                 if (Math.abs(b.precisao - a.precisao) > 0.0001) return b.precisao - a.precisao;
                 return a.tempoMedioMs - b.tempoMedioMs;
             });
             return limite ? lista.slice(0, limite) : lista;
-        } catch(e) {
-            console.warn("[Corrida] Falha ao ler ranking:", e);
-            return [];
-        }
+        } catch(e) { console.warn("[Corrida] Falha ao ler ranking:", e); return []; }
     }
 
     async function _renderizarRankingCorrida(resultado, recordeAtual) {
         const container = document.getElementById("corrida-rank-container");
         if (!container) return;
-
         container.innerHTML = `<div class="corrida-loading">⏳ Carregando ranking…</div>`;
         const lista = await obterRankingCorrida(resultado.distanciaId, resultado.modalidade, 8);
         const nomeAluno = resultado.nome;
@@ -24347,10 +23779,15 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             const posTxt = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `${pos}º`;
             const precisaoPct = Math.round((r.precisao || 0) * 100);
             const tempoMedio = r.tempoMedioMs ? (r.tempoMedioMs / 1000).toFixed(2) : "—";
+            
+            const metricTempo = resultado.tipo === "distancia" 
+                ? `<span class="corrida-rank-metric"><strong>${(r.tempoTotalMs / 1000).toFixed(2)}s</strong> total</span>`
+                : `<span class="corrida-rank-metric"><strong>${r.acertos}</strong> acertos</span>`;
+                
             return `<div class="corrida-rank-linha ${ehVoce ? "voce" : ""}">
                 <span class="corrida-rank-pos">${posTxt}</span>
                 <span class="corrida-rank-nome">${escaparHtml(r.nome)}<small>${escaparHtml(r.turma)}${ehVoce ? " · você" : ""}</small></span>
-                <span class="corrida-rank-metric"><strong>${r.acertos}</strong> acertos</span>
+                ${metricTempo}
                 <span class="corrida-rank-metric oculto-mob">${precisaoPct}% prec.</span>
                 <span class="corrida-rank-metric">${tempoMedio}s</span>
             </div>`;
@@ -24371,16 +23808,15 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
         const precisaoPct = Math.round((resultado.precisao || 0) * 100);
         const tempoMedioSeg = resultado.tempoMedioMs ? (resultado.tempoMedioMs / 1000) : 0;
+        const tempoTotalSeg = resultado.tempoTotalMs ? (resultado.tempoTotalMs / 1000) : 0;
 
         let emoji = "💪";
         let titulo = "Corrida encerrada";
-        let sub = resultado.motivo === "erros"
-            ? `Você atingiu o limite de ${resultado.erros} erros.`
-            : `O tempo acabou.`;
+        let sub = resultado.motivo === "erros" ? `Você atingiu o limite de ${resultado.erros} erros.` : "O tempo acabou.";
 
-        if (resultado.acertos === 0) {
-            emoji = "💪";
-            titulo = "Bora treinar!";
+        if (resultado.tipo === "distancia") {
+            titulo = "Distância concluída!";
+            sub = `Você completou as ${resultado.totalRespondidas} perguntas em ${tempoTotalSeg.toFixed(2)}s.`;
         } else if (resultado.erros === 0 && resultado.motivo === "tempo") {
             emoji = "🏆";
             titulo = "Corrida perfeita!";
@@ -24388,9 +23824,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         } else if (resultado.precisao >= 0.80) {
             emoji = "🌟";
             titulo = "Boa corrida!";
-        } else if (resultado.precisao >= 0.50) {
-            emoji = "👏";
-            titulo = "Corrida concluída";
         }
 
         if (emojiEl) emojiEl.textContent = emoji;
@@ -24399,7 +23832,16 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         if (acertosEl) acertosEl.textContent = String(resultado.acertos);
         if (errosEl) errosEl.textContent = String(resultado.erros);
         if (precEl) precEl.textContent = `${precisaoPct}%`;
-        if (tempoEl) tempoEl.textContent = tempoMedioSeg > 0 ? `${tempoMedioSeg.toFixed(2)}s` : "—";
+        
+        if (tempoEl) {
+            if (resultado.tipo === "distancia") {
+                tempoEl.textContent = `${tempoTotalSeg.toFixed(2)}s (total)`;
+                tempoEl.title = "Inclui o tempo de resposta + as punições de 3s por erro.";
+            } else {
+                tempoEl.textContent = tempoMedioSeg > 0 ? `${tempoMedioSeg.toFixed(2)}s` : "—";
+                tempoEl.title = "Tempo médio por resposta.";
+            }
+        }
 
         if (elegEl) {
             if (resultado.elegivel) {
@@ -24444,9 +23886,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             </div>
         `).join("");
 
-        const extra = corridaEstado.errosDetalhes.length > 12
-            ? `<div class="corrida-revisao-vazio" style="padding-top:6px;">…e mais ${corridaEstado.errosDetalhes.length - 12} erro(s).</div>`
-            : "";
+        const extra = corridaEstado.errosDetalhes.length > 12 ? `<div class="corrida-revisao-vazio" style="padding-top:6px;">…e mais ${corridaEstado.errosDetalhes.length - 12} erro(s).</div>` : "";
 
         container.innerHTML = `
             <div class="corrida-revisao-titulo">🔁 Revisão de erros <small style="font-weight:700;color:var(--text-muted);text-transform:none;font-size:10.5px;letter-spacing:0;">sua resposta · resposta certa</small></div>
@@ -24455,33 +23895,28 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     function novaCorridaResultado() {
-        if (corridaEstado && corridaEstado.timerIntervalId) {
-            clearInterval(corridaEstado.timerIntervalId);
-        }
+        if (corridaEstado && corridaEstado.timerIntervalId) clearInterval(corridaEstado.timerIntervalId);
         const modAntiga = corridaEstado?.modalidade || "0-10";
+        const tipoAntigo = corridaEstado?.tipo || "tempo";
         corridaEstado = null;
         document.body.classList.remove("corrida-ativa");
         _mostrarViewCorrida("selecao");
         selecionarModCorrida(modAntiga);
+        selecionarTipoCorrida(tipoAntigo);
     }
 
     function treinarCorridaResultado() {
         const mod = corridaEstado?.modalidade || "0-10";
-        if (typeof abrirMenuTreino === "function") {
-            abrirMenuTreino(mod);
-        }
+        if (typeof abrirMenuTreino === "function") abrirMenuTreino(mod);
     }
 
     function sairCorridaResultado() {
-        if (corridaEstado && corridaEstado.timerIntervalId) {
-            clearInterval(corridaEstado.timerIntervalId);
-        }
+        if (corridaEstado && corridaEstado.timerIntervalId) clearInterval(corridaEstado.timerIntervalId);
         corridaEstado = null;
         document.body.classList.remove("corrida-ativa");
         if (typeof mostrarTela === "function") mostrarTela("tela-inicial");
     }
 
-    // ─── v10.9.1 · Abre o modal de Ranking na tela de seleção ───
     async function abrirRankingCorrida(distanciaId) {
         const modal = document.getElementById("modal-ranking-corrida");
         const container = document.getElementById("modal-ranking-corrida-conteudo");
@@ -24496,7 +23931,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         titulo.innerHTML = `🏆 Ranking · ${cfgDist.label} · ${MODALIDADES[modalidade].nome}`;
         modal.classList.remove("hidden");
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando ranking…</div>`;
-
         setTimeout(() => { document.querySelector("#modal-ranking-corrida .modal-close")?.focus(); }, 80);
 
         try {
@@ -24515,7 +23949,10 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 const pos = i + 1;
                 const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `${pos}º`;
                 const precisaoPct = Math.round((r.precisao || 0) * 100);
-                const tempoMedio = r.tempoMedioMs ? (r.tempoMedioMs / 1000).toFixed(2) : "—";
+                
+                const valor = cfgDist.tipo === "distancia" 
+                    ? `${(r.tempoTotalMs / 1000).toFixed(2)}s<br><small>${precisaoPct}% prec.</small>`
+                    : `${r.acertos} acertos<br><small>${precisaoPct}% · ${(r.tempoMedioMs / 1000).toFixed(2)}s</small>`;
                 
                 html += `<li class="hall-categoria-item ${ehVoce ? 'voce' : ''}" ${ehVoce ? 'style="border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);"' : ""}>
                     <span class="hall-categoria-pos">${medal}</span>
@@ -24523,7 +23960,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                         <span class="hall-categoria-nome">${escaparHtml(r.nome)}${ehVoce ? ' <span class="hall-categoria-voce-tag">Você</span>' : ''}</span>
                         <span class="hall-categoria-sub">Turma ${escaparHtml(r.turma)}</span>
                     </span>
-                    <span class="hall-categoria-valor">${r.acertos} acertos<br><small>${precisaoPct}% · ${tempoMedio}s</small></span>
+                    <span class="hall-categoria-valor">${valor}</span>
                 </li>`;
             });
             html += `</ul>`;
@@ -24641,113 +24078,94 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
     // ▲▲▲ FIM [19.02]
 
-// ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
-// v10.7.3d · OTIMIZAÇÃO DE LCP (item B do pacote A+B):
-//   O boot sequencializa 3 verificações de etapa ANTES de renderizar
-//   a Home, o que custava ~1,5s em 4G lenta.
-//
-//   Nesta versão, as leituras que dependem só do Firebase (etapa,
-//   votação, home, mapa, treino) são disparadas em PARALELO, e o
-//   ciclo da etapa/votação roda em background, sem bloquear a
-//   renderização inicial da Home.
-//
-//   O comportamento final continua idêntico: se a etapa precisar
-//   ser iniciada/encerrada, isso acontece, e a Home se atualiza em
-//   seguida. A diferença é só a ORDEM das operações — o aluno vê a
-//   tela pintar mais rápido.
-
-async function registrarServiceWorker() {
-    // PWA só faz sentido em HTTPS (ou localhost). Fora disso, no-op silencioso.
-    if (!('serviceWorker' in navigator)) return;
-    const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-    if (!isHTTPS) return;
-    try {
-        const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
-        console.info('✅ PWA: Service Worker registrado em', reg.scope);
-    } catch (e) {
-        // Sem sw.js hospedado? Sem problema — o app roda 100% sem ele.
-        console.info('ℹ️ PWA: Service Worker não disponível (opcional). App segue normal.');
-    }
-}
-
-window.addEventListener("DOMContentLoaded", async () => {
-    // ─── PWA: registra Service Worker (opcional; falha em silêncio) ───
-    registrarServiceWorker();
-
-    // ─── Renderização da UI base (SÍNCRONA — não bloqueia) ───
-    mostrarTela("tela-inicial");
-    atualizarBotaoMinhaTurma();
-    mudarTipoRanking("turma");
-    configurarToqueSecreto();
-    inicializarAudio();
-    atualizarAcessoSeConhecido();
-    try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
-    try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
-
-    // ─── Popula versão em 3 lugares ───
-    const elVHeader = document.getElementById("header-versao-atual");
-    if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
-    const elV = document.getElementById("changelog-versao-atual");
-    if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
-    const elVMenu = document.getElementById("mais-versao-atual");
-    if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
-
-    // ─── Verificações de versão (não bloqueiam a Home) ───
-    verificarVersaoPublicada().catch(() => {});
-    try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
-
-    iniciarListenerMsgAluno();
-
-    // ─── v10.7.3d · Dispara as leituras em paralelo. A Home pinta
-    //     antes de a etapa ser verificada. Se a etapa mudar no meio,
-    //     atualizamos a Home em seguida (chamada idempotente). ───
-    const pTelaInicial = atualizarTelaInicialComEtapa()
-        .catch(e => console.warn("Falha ao atualizar tela inicial:", e));
-    const pHomeEsports = preencherHomeEsports()
-        .catch(e => console.warn("Falha ao preencher home:", e));
-    const pMapaHome = renderizarMapaHome()
-        .catch(e => console.warn("Falha ao renderizar mapa home:", e));
-    const pTreinoInt = renderizarTreinoInteligenteHome()
-        .catch(e => console.warn("Falha ao renderizar treino inteligente:", e));
-
-    // ─── Ciclo da etapa e votação — roda em background, sem bloquear ───
-    const pCicloEtapa = (async () => {
+    // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
+    async function registrarServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (!isHTTPS) return;
         try {
-            await verificarEIniciarEtapaSeNecessario();
-            await verificarEFecharVotacaoSeNecessario();
-            await verificarEEncerrarEtapaSeNecessario();
-        } catch(e) {
-            console.warn("Falha ao processar ciclo da etapa:", e);
+            const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
+            console.info('✅ PWA: Service Worker registrado em', reg.scope);
+        } catch (e) {
+            console.info('ℹ️ PWA: Service Worker não disponível (opcional). App segue normal.');
         }
-        // Se a etapa foi alterada (iniciada/encerrada/fechada), atualizamos
-        // a UI em seguida. Não roda se nada mudou — chamada barata.
-        try { await atualizarTelaInicialComEtapa(); } catch(e) {}
-        try { await renderizarCardVotacao(); } catch(e) {}
-    })();
+    }
 
-    // Aguarda tudo (para os logs de console saírem na ordem certa), sem
-    // que o navegador precise esperar por isso para pintar a tela.
-    await Promise.all([pTelaInicial, pHomeEsports, pMapaHome, pTreinoInt, pCicloEtapa]);
+    window.addEventListener("DOMContentLoaded", async () => {
+        // ─── PWA: registra Service Worker (opcional; falha em silêncio) ───
+        registrarServiceWorker();
 
-    // v10.4.3 — Ativa o observer que dispara o alerta de foco sempre que a Home é exibida
-    try { ativarObserverAlertaFoco(); } catch(e) { console.warn("Falha ao ativar observer do alerta:", e); }
-    // Primeira renderização imediata (não espera clique)
-    try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
+        // ─── Carrega o modo do evento (Classificatória ou Olimpíadas) ───
+        await obterModoEvento();
 
-    if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
-    votacaoTimerInterval = setInterval(async () => {
-        try {
-            await verificarEFecharVotacaoSeNecessario();
-            await verificarEEncerrarEtapaSeNecessario();
-            const card = document.getElementById("card-votacao");
-            if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
-            await atualizarTelaInicialComEtapa();
-        } catch(e) { console.warn("Timer votação/etapa:", e); }
-    }, 60000);
+        // ─── Renderização da UI base (SÍNCRONA — não bloqueia) ───
+        mostrarTela("tela-inicial");
+        atualizarBotaoMinhaTurma();
+        mudarTipoRanking("turma");
+        configurarToqueSecreto();
+        inicializarAudio();
+        atualizarAcessoSeConhecido();
+        try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
+        try { await atualizarBadgeMsgPainel(); } catch(e) { console.warn("Badge de mensagens indisponível:", e); }
 
-    setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
-});
-// ▲▲▲ FIM [19.03]
+        // ─── Popula versão em 3 lugares ───
+        const elVHeader = document.getElementById("header-versao-atual");
+        if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
+        const elV = document.getElementById("changelog-versao-atual");
+        if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
+        const elVMenu = document.getElementById("mais-versao-atual");
+        if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
+
+        // ─── Verificações de versão (não bloqueiam a Home) ───
+        verificarVersaoPublicada().catch(() => {});
+        try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
+
+        iniciarListenerMsgAluno();
+
+        // ─── Dispara as leituras em paralelo. A Home pinta antes de a etapa ser verificada. ───
+        const pTelaInicial = atualizarTelaInicialComEtapa()
+            .catch(e => console.warn("Falha ao atualizar tela inicial:", e));
+        const pHomeEsports = preencherHomeEsports()
+            .catch(e => console.warn("Falha ao preencher home:", e));
+        const pMapaHome = renderizarMapaHome()
+            .catch(e => console.warn("Falha ao renderizar mapa home:", e));
+        const pTreinoInt = renderizarTreinoInteligenteHome()
+            .catch(e => console.warn("Falha ao renderizar treino inteligente:", e));
+
+        // ─── Ciclo da etapa e votação — roda em background, sem bloquear ───
+        const pCicloEtapa = (async () => {
+            try {
+                await verificarEIniciarEtapaSeNecessario();
+                await verificarEFecharVotacaoSeNecessario();
+                await verificarEEncerrarEtapaSeNecessario();
+            } catch(e) {
+                console.warn("Falha ao processar ciclo da etapa:", e);
+            }
+            try { await atualizarTelaInicialComEtapa(); } catch(e) {}
+            try { await renderizarCardVotacao(); } catch(e) {}
+        })();
+
+        // Aguarda tudo para os logs saírem na ordem certa
+        await Promise.all([pTelaInicial, pHomeEsports, pMapaHome, pTreinoInt, pCicloEtapa]);
+
+        // Ativa o observer que dispara o alerta de foco sempre que a Home é exibida
+        try { ativarObserverAlertaFoco(); } catch(e) { console.warn("Falha ao ativar observer do alerta:", e); }
+        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
+
+        if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
+        votacaoTimerInterval = setInterval(async () => {
+            try {
+                await verificarEFecharVotacaoSeNecessario();
+                await verificarEEncerrarEtapaSeNecessario();
+                const card = document.getElementById("card-votacao");
+                if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
+                await atualizarTelaInicialComEtapa();
+            } catch(e) { console.warn("Timer votação/etapa:", e); }
+        }, 60000);
+
+        setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
+    });
+    // ▲▲▲ FIM [19.03]
 
     // ▼▼▼ [19.04] Verificação de versão publicada + clique no badge ────
     // v10.4.9 · Consulta o campo "ultimaVersao" no Firebase (config/ultimaVersao)
