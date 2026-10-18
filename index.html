@@ -24905,6 +24905,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     //   Item 2 — Sorteio ponderado SEM REPETIÇÃO.
     //   Item 4 — Feedback visual imediato antes das leituras de rede.
     //   Item 5 — Validação estrita do campo de resposta (só dígitos).
+    //
+    // v10.9.1 · Hotfix: O modo "Treino Inteligente" da lista agora 
+    // aponta para a função correta (iniciarTreinoInteligenteDoMenu).
 
     const STORAGE_MENU_TREINO_USOS = "copa_menu_treino_usos";
 
@@ -25093,6 +25096,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     function iniciarModoDeTreino(modoId) {
         const mod = menuTreinoModAtual;
         if (!mod) { fecharMenuTreino(); return; }
+
+        // ▼ v10.9.1 · Correção do modo Inteligente na lista
+        if (modoId === "inteligente") {
+            iniciarTreinoInteligenteDoMenu();
+            return;
+        }
+        // ▲
+
         registrarUsoMenuTreino(modoId);
 
         if (modoId === "chunking") {
