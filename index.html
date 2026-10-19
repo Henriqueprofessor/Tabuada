@@ -16936,10 +16936,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [14.03]
 
     // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
-    // v10.7.2 · Tela de loading no Treino Inteligente (substitui o
-    // toast "Preparando seu treino…"). Usa a mesma tela do Aprender e
-    // do Progressivo (tela-aprender com "⏳ A preparar o treino…"),
-    // garantindo consistência visual.
+    // v10.10.2 · Inclui a chamada do renderizarPainelModoEvento().
 
     const TELAS_COM_NAV_GLOBAL = new Set([
         "tela-inicial", "tela-mais", "tela-ranking",
@@ -16954,6 +16951,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         "tela-mais":         "mais",
         "tela-meu-progresso":"desempenho"
     };
+
     function atualizarNavGlobal(idTela) {
         const nav = document.getElementById("bottom-nav-global");
         if (!nav) return;
@@ -16967,7 +16965,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     function mostrarTela(id) {
-        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso","tela-aprender"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
+        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso","tela-aprender","tela-corrida"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
 
         if (id === "tela-single") {
@@ -16999,6 +16997,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (id === "tela-painel") {
             renderizarPainelEtapa();
             renderizarPainelVersao();
+            renderizarPainelModoEvento(); // <--- CHAMADA ADICIONADA AQUI
             renderizarPainelVotacao();
             renderizarPainelConfig();
             renderizarDestaquesPainel();
@@ -17071,10 +17070,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // v10.7.2 · Helper reutilizável: mostra a tela de loading do treino
-    // inteligente. Usa o mesmo container do Aprender/Progressivo
-    // (#tela-aprender + #aprender-conteudo), garantindo consistência
-    // visual e reaproveitando o CSS já existente.
     function _mostrarLoadingTreinoInteligente() {
         mostrarTela("tela-aprender");
         const ctn = document.getElementById("aprender-conteudo");
@@ -17089,8 +17084,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function iniciarTreinoInteligente() {
-        // v10.7.2 · Tela de loading imediata (mesma usada pelo Aprender
-        // e pelo Progressivo). Substitui o toast que existia antes.
         _mostrarLoadingTreinoInteligente();
 
         let lista = [];
@@ -19191,6 +19184,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [17.01] Autenticação ────────────────────────────────────────
+    // v10.10.2 · Inclui a chamada do renderizarPainelModoEvento().
+    
     async function autenticarProfessor() {
         const i = document.getElementById("senha-professor");
         const s = i.value;
@@ -19201,15 +19196,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             i.value = "";
             document.getElementById("painel-conteudo").classList.remove("hidden");
             notificar("Acesso concedido!", "sucesso");
+            
             await renderizarPainelEtapa();
             await renderizarPainelVersao();
+            await renderizarPainelModoEvento(); // <--- CHAMADA ADICIONADA AQUI
             await renderizarPainelVotacao();
             await renderizarPainelConfig();
             await renderizarDestaquesPainel();
             await carregarMensagensPainel();
             await renderizarPainelEvento();
             await renderizarPainelOtimizacao();
-        } catch(e) { notificar("Não foi possível validar a senha.", "erro", 5000); }
+        } catch(e) { 
+            console.warn("[Painel] Falha ao autenticar:", e);
+            notificar("Não foi possível validar a senha.", "erro", 5000); 
+        }
     }
     // ▲▲▲ FIM [17.01]
 
