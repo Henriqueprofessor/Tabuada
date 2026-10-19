@@ -10657,7 +10657,17 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 <div id="modal-ranking-corrida" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-ranking-corrida-titulo" onclick="fecharModalRankingCorrida(event)">
     <div class="modal-card hall-categoria-modal-card" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h3 id="modal-ranking-corrida-titulo">🏆 Ranking da Corrida</h3>
+            <div class="modal-titulo-com-ajuda">
+                <h3 id="modal-ranking-corrida-titulo">🏆 Ranking da Corrida</h3>
+                <button type="button"
+                        id="btn-como-funciona-ranking-corrida"
+                        class="btn-como-funciona-inline"
+                        onclick="abrirModalComoFuncionaRankingCorrida()"
+                        aria-haspopup="dialog"
+                        aria-controls="modal-explicacao-ranking-corrida"
+                        aria-label="Como funciona o Ranking da Corrida"
+                        title="Como funciona?">?</button>
+            </div>
             <button class="modal-close" onclick="fecharModalRankingCorrida()" aria-label="Fechar">✕</button>
         </div>
         <div id="modal-ranking-corrida-conteudo">
@@ -10666,6 +10676,23 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
 </div>
 <!-- ▲▲▲ FIM [04.29] -->
+
+<!-- ▼▼▼ [04.30] MODAL — Explicação do Ranking das Corridas ─── INÍCIO ─── -->
+<div id="modal-explicacao-ranking-corrida"
+     class="modal-explicacao-overlay hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-explicacao-ranking-corrida-corpo"
+     onclick="if (event.target === this) fecharModalComoFuncionaRankingCorrida();">
+    <div class="modal-explicacao-caixa">
+        <button type="button"
+                class="modal-explicacao-fechar"
+                onclick="fecharModalComoFuncionaRankingCorrida()"
+                aria-label="Fechar explicação">✕</button>
+        <div id="modal-explicacao-ranking-corrida-corpo" class="ranking-descricao"></div>
+    </div>
+</div>
+<!-- ▲▲▲ FIM [04.30] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -15836,12 +15863,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const modal = document.getElementById("modal-explicacao-ranking");
         const corpo = document.getElementById("modal-explicacao-ranking-corpo");
         if (!modal || !corpo) return;
+        
+        // Garante que o conteúdo está atualizado com o estado atual
+        // (evita que o aluno clique antes do renderizador terminar)
+        if (!corpo.innerHTML.trim()) {
+            renderizarDescricaoRanking(tipoRankingAtual, metricaRankingAtual);
+        }
+        
         if (!corpo.innerHTML.trim()) return;
+        
         modal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
         setTimeout(() => { modal.querySelector(".modal-explicacao-fechar")?.focus(); }, 30);
     }
-
     function fecharModalExplicacaoRanking() {
         const modal = document.getElementById("modal-explicacao-ranking");
         if (!modal) return;
@@ -24240,6 +24274,67 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         window.mostrarTela._corridaPatch = true;
     })();
     // ▲▲▲ FIM [18.12]
+
+    // ▼▼▼ [18.13] Modal "Como funciona · Ranking das Corridas" ─── INÍCIO ───
+    function construirConteudoComoFuncionaRankingCorrida() {
+        return `
+            <div class="ranking-desc-titulo"><span aria-hidden="true">🏁</span> Como funciona o Ranking das Corridas</div>
+            
+            <div class="ranking-desc-subtitulo">📊 O que é</div>
+            <p>O Ranking das Corridas é a classificação de <strong>fluência</strong> nas modalidades de corrida. Aqui, velocidade e precisão são testadas ao mesmo tempo.</p>
+            
+            <div class="ranking-desc-subtitulo">🏃 As modalidades</div>
+            <ul>
+                <li><strong>Por Tempo:</strong> 100m (1 minuto), 200m (2 minutos) e Maratona (5 minutos). Vence quem acertar mais antes do tempo acabar.</li>
+                <li><strong>Por Distância:</strong> Sprint 10 (10 perguntas), Meia 20 (20 perguntas) e Ultra 50 (50 perguntas). Vence quem terminar no menor tempo total.</li>
+            </ul>
+
+            <div class="ranking-desc-subtitulo">🧮 Critérios de desempate</div>
+            <ul>
+                <li><strong>Por Distância:</strong> Menor tempo total (já com as punições de +3s por erro).</li>
+                <li><strong>Por Tempo:</strong> Maior número de acertos → Maior precisão → Menor tempo médio.</li>
+            </ul>
+
+            <div class="ranking-desc-subtitulo">🚧 Filtro obrigatório (80%)</div>
+            <p>Para entrar neste ranking, você precisa terminar a corrida com <strong>no mínimo 80% de precisão</strong>. Corridas com precisão abaixo disso contam para o mapa e certificados, mas não entram aqui.</p>
+
+            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> use as Corridas para treinar a fluência que os certificados de Ouro e Lendária exigem. Mas lembre-se: as Corridas não substituem as partidas oficiais de 20 perguntas no ranking da turma.</div>
+        `;
+    }
+
+    function abrirModalComoFuncionaRankingCorrida() {
+        const modal = document.getElementById("modal-explicacao-ranking-corrida");
+        const corpo = document.getElementById("modal-explicacao-ranking-corrida-corpo");
+        if (!modal || !corpo) return;
+        if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaRankingCorrida();
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => {
+            modal.querySelector(".modal-explicacao-fechar")?.focus();
+        }, 30);
+    }
+
+    function fecharModalComoFuncionaRankingCorrida() {
+        const modal = document.getElementById("modal-explicacao-ranking-corrida");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        // Só libera o scroll se NÃO houver outro modal (o do Ranking) aberto por baixo
+        const rankingModal = document.getElementById("modal-ranking-corrida");
+        const rankingAberto = rankingModal && !rankingModal.classList.contains("hidden");
+        document.body.style.overflow = rankingAberto ? "hidden" : "";
+    }
+
+    if (!window._modalExplicacaoRankingCorridaEscInstalado) {
+        window._modalExplicacaoRankingCorridaEscInstalado = true;
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            const modal = document.getElementById("modal-explicacao-ranking-corrida");
+            if (modal && !modal.classList.contains("hidden")) {
+                fecharModalComoFuncionaRankingCorrida();
+            }
+        });
+    }
+    // ▲▲▲ FIM [18.13]
 
     // ═══════════════════════════════════════════════════════════════════════
     // [19] JS-BOOT · Inicialização e listeners globais
