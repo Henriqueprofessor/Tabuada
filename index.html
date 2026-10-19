@@ -8983,6 +8983,11 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             color: #fff;
             box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
         }
+        
+        /* FIX: Garante que a regra global .hidden sobreponha o display:grid */
+        .corrida-selecao-dists.hidden {
+            display: none !important;
+        }
         /* ▲▲▲ FIM [02.85] */
 
     </style>
@@ -9376,13 +9381,20 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
 
         <!-- Sub-abas do escopo "Corridas" -->
-        <div class="rankings-especiais hidden" id="sub-abas-corrida">
-            <button type="button" class="aba ativa" id="sub-corrida-100m"     onclick="mudarMetricaRanking('100m')">🏃 100m</button>
-            <button type="button" class="aba"       id="sub-corrida-200m"     onclick="mudarMetricaRanking('200m')">🏃‍♂️ 200m</button>
-            <button type="button" class="aba"       id="sub-corrida-maratona" onclick="mudarMetricaRanking('maratona')">🏃‍♀️ Maratona</button>
-            <button type="button" class="aba"       id="sub-corrida-sprint_10" onclick="mudarMetricaRanking('sprint_10')">🎯 Sprint 10</button>
-            <button type="button" class="aba"       id="sub-corrida-meia_20"   onclick="mudarMetricaRanking('meia_20')">🎯 Meia 20</button>
-            <button type="button" class="aba"       id="sub-corrida-ultra_50"  onclick="mudarMetricaRanking('ultra_50')">🎯 Ultra 50</button>
+        <div class="rankings-especiais hidden" id="sub-abas-corrida" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+            <button type="button" class="aba ativa" id="sub-corrida-tipo-tempo" onclick="mudarTipoCorridaRanking('tempo')" style="flex: 1; min-width: 140px;">⏱️ Corrida por Tempo</button>
+            <button type="button" class="aba" id="sub-corrida-tipo-distancia" onclick="mudarTipoCorridaRanking('distancia')" style="flex: 1; min-width: 140px;">🎯 Corrida por Distância</button>
+            
+            <div style="display: flex; width: 100%; gap: 8px; margin-top: 8px;" id="sub-abas-corrida-tempo">
+                <button type="button" class="aba ativa" id="sub-corrida-100m"     onclick="mudarMetricaRanking('100m')" style="flex: 1;">🏃 100m</button>
+                <button type="button" class="aba"       id="sub-corrida-200m"     onclick="mudarMetricaRanking('200m')" style="flex: 1;">🏃‍♂️ 200m</button>
+                <button type="button" class="aba"       id="sub-corrida-maratona" onclick="mudarMetricaRanking('maratona')" style="flex: 1;">🏃‍♀️ Maratona</button>
+            </div>
+            <div style="display: none; width: 100%; gap: 8px; margin-top: 8px;" id="sub-abas-corrida-distancia">
+                <button type="button" class="aba" id="sub-corrida-sprint_10" onclick="mudarMetricaRanking('sprint_10')" style="flex: 1;">🎯 Sprint 10</button>
+                <button type="button" class="aba" id="sub-corrida-meia_20" onclick="mudarMetricaRanking('meia_20')" style="flex: 1;">🎯 Meia 20</button>
+                <button type="button" class="aba" id="sub-corrida-ultra_50" onclick="mudarMetricaRanking('ultra_50')" style="flex: 1;">🎯 Ultra 50</button>
+            </div>
         </div>
 
         <button onclick="forcarSincronizacao()" class="botao-secundario" style="margin-top: 8px;">🔄 Sincronizar agora</button>
@@ -16031,9 +16043,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.06.bis]
 
 // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
-    // v10.10.2 · Suporte ao Modo Olimpíadas.
-    
     let metricaRankingAtual = "pontos";
+    let corridaTipoRankingAtual = "tempo";
 
     function mudarEscopoRanking(escopo) {
         if (escopo !== "turma" && escopo !== "global" && escopo !== "corridas") return;
@@ -16056,17 +16067,37 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (selTurma) selTurma.classList.toggle("hidden", escopo !== "turma");
         if (escopo === "turma") aplicarTurmaSalvaNoFiltro();
 
+        if (escopo === "corridas") {
+            mudarTipoCorridaRanking(corridaTipoRankingAtual);
+            return;
+        }
+
         const metricasValidas = escopo === "turma"
             ? ["pontos", "velocidade", "media"]
-            : escopo === "global"
-            ? ["velocidade", "media", "desafio"]
-            : ["100m", "200m", "maratona", "sprint_10", "meia_20", "ultra_50"];
+            : ["velocidade", "media", "desafio"];
             
         if (!metricasValidas.includes(metricaRankingAtual)) {
-            metricaRankingAtual = escopo === "turma" ? "pontos" : (escopo === "global" ? "desafio" : "100m");
+            metricaRankingAtual = escopo === "turma" ? "pontos" : "desafio";
         }
         _atualizarSubAbaAtiva();
         atualizarHintTurmaAluno();
+        renderizarRanking();
+    }
+
+    function mudarTipoCorridaRanking(tipo) {
+        corridaTipoRankingAtual = tipo;
+        const isTempo = tipo === "tempo";
+        
+        document.getElementById("sub-corrida-tipo-tempo")?.classList.toggle("ativa", isTempo);
+        document.getElementById("sub-corrida-tipo-distancia")?.classList.toggle("ativa", !isTempo);
+        
+        const divTempo = document.getElementById("sub-abas-corrida-tempo");
+        if (divTempo) divTempo.style.display = isTempo ? "flex" : "none";
+        const divDist = document.getElementById("sub-abas-corrida-distancia");
+        if (divDist) divDist.style.display = !isTempo ? "flex" : "none";
+
+        metricaRankingAtual = isTempo ? "100m" : "sprint_10";
+        _atualizarSubAbaAtiva();
         renderizarRanking();
     }
 
@@ -16100,7 +16131,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     function onMudancaTurmaFiltro() { renderizarRanking(); }
     
-    // ESSA ERA A FUNÇÃO QUE ESTAVA FALTANDO E QUEBRAVA O BOOT:
     function atualizarBotaoMinhaTurma() { 
         document.getElementById("aba-minha-turma")?.setAttribute("aria-label", "Ver ranking da minha turma"); 
     }
@@ -16110,7 +16140,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     function resetarRankingParaEstadoLimpo() {
-        // Se estiver no modo Olimpíadas, pula a tela limpa e já abre no ranking de corridas
+        // Modo Olimpíadas
         if (modoEventoAtual === "olimpiadas") {
             document.getElementById("aba-minha-turma")?.classList.add("hidden");
             document.getElementById("aba-global")?.classList.add("hidden");
@@ -16123,6 +16153,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         tipoRankingAtual = null;
         metricaRankingAtual = "pontos";
+        corridaTipoRankingAtual = "tempo";
 
         ["aba-minha-turma", "aba-global", "aba-corridas"].forEach(id => {
             const el = document.getElementById(id);
