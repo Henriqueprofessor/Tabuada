@@ -9063,6 +9063,48 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.86] */
 
+        /* ▼▼▼ [02.87] Countdown Final (Últimas 24h) ─── INÍCIO ─── */
+        .countdown-final-alerta {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.25) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.6);
+            border-left: 4px solid #ef4444;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            animation: pulseAlertaVermelho 2s infinite;
+        }
+        .countdown-final-texto {
+            font-size: 13px;
+            font-weight: 800;
+            color: #fca5a5;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .countdown-final-timer {
+            font-size: 18px;
+            font-weight: 900;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+        }
+        @keyframes pulseAlertaVermelho {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .countdown-final-alerta { animation: none; }
+        }
+        /* ▲▲▲ FIM [02.87] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -9108,6 +9150,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div id="modo-teste-banner-container"></div>
         <div id="alerta-foco-absoluto-container"></div>
+        
+        <!-- NOVO: Container do Countdown Final -->
+        <div id="countdown-final-container" class="hidden"></div>
 
         <section id="hero-pre-evento" class="hero-pre-evento hidden" aria-labelledby="titulo-pre-evento">
             <div class="hero-pre-evento-kicker">🚀 A COPA VAI COMEÇAR</div>
@@ -11422,6 +11467,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.06]
 
     // ▼▼▼ [07.07] Countdown ────────────────────────────────────── INÍCIO ───
+    let countdownFinalInterval = null;
+
     function formatarContagemDeTempo(ms) {
         if (ms <= 0) return { dias: "00", horas: "00", min: "00", seg: "00" };
         const s = Math.floor(ms / 1000);
@@ -11432,6 +11479,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const pad = (n) => String(n).padStart(2, "0");
         return { dias: pad(dias), horas: pad(horas), min: pad(min), seg: pad(seg) };
     }
+
     function atualizarCountdownVisual(inicioEm) {
         const elD = document.getElementById("cd-dias");
         const elH = document.getElementById("cd-horas");
@@ -11445,9 +11493,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         elM.textContent = t.min;
         elS.textContent = t.seg;
     }
+
     function pararCountdown() {
         if (countdownTimerInterval) { clearInterval(countdownTimerInterval); countdownTimerInterval = null; }
+        if (countdownFinalInterval) { clearInterval(countdownFinalInterval); countdownFinalInterval = null; }
     }
+
     function iniciarCountdown(inicioEm) {
         pararCountdown();
         atualizarCountdownVisual(inicioEm);
@@ -11462,6 +11513,47 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             }
         }, 1000);
     }
+
+    // ─── NOVO: Countdown de Encerramento (Últimas 24h) ───
+    function iniciarCountdownFinal(fimEm) {
+        const container = document.getElementById("countdown-final-container");
+        if (!container) return;
+
+        if (countdownFinalInterval) clearInterval(countdownFinalInterval);
+
+        const atualizarTimer = () => {
+            const agora = Date.now();
+            const restante = fimEm - agora;
+
+            // Se já passou, ou se falta mais de 24h, esconde.
+            if (restante <= 0 || restante > 24 * 60 * 60 * 1000) {
+                container.classList.add("hidden");
+                container.innerHTML = "";
+                if (restante <= 0) {
+                    clearInterval(countdownFinalInterval);
+                    countdownFinalInterval = null;
+                }
+                return;
+            }
+
+            // Se falta menos de 24h, mostra o timer
+            const t = formatarContagemDeTempo(restante);
+            container.classList.remove("hidden");
+            container.innerHTML = `
+                <div class="countdown-final-alerta">
+                    <div class="countdown-final-texto">
+                        <span style="font-size:16px;">⏳</span> ÚLTIMAS HORAS! O evento encerra em:
+                    </div>
+                    <div class="countdown-final-timer">
+                        ${t.horas}:${t.min}:${t.seg}
+                    </div>
+                </div>
+            `;
+        };
+
+        atualizarTimer(); // Roda uma vez imediatamente
+        countdownFinalInterval = setInterval(atualizarTimer, 1000); // Atualiza a cada segundo
+    }
     // ▲▲▲ FIM [07.07]
 
     // ▼▼▼ [07.08] Tela inicial dinâmica ────────────────────────── INÍCIO ───
@@ -11472,11 +11564,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const heroNorm = document.getElementById("hero-classificatoria-normal");
         const statusCtn = document.getElementById("home-status-etapa");
         const bannerCtn = document.getElementById("modo-teste-banner-container");
+        const countdownCtn = document.getElementById("countdown-final-container");
+        
         if (!heroPre || !heroNorm) return;
 
         pararCountdown();
         if (statusCtn) statusCtn.innerHTML = "";
         if (bannerCtn) bannerCtn.innerHTML = "";
+        if (countdownCtn) countdownCtn.classList.add("hidden");
 
         // ⚙️ L1 — Modo teste: faixa âmbar discreta no topo
         if (fase.dados.modoTeste && fase.tipo !== ETAPA_FASES.encerrada) {
@@ -11505,7 +11600,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             heroNorm.classList.remove("hidden");
             const dur = fase.dados.duracaoEscolhida === 14 ? "14 dias" : "7 dias";
             const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
-            if (statusCtn) statusCtn.innerHTML = `<span class="badge-status andamento">Em andamento</span><div>Encerra em <strong>${fim}</strong> às 23h59</div><div>Duração oficial: <strong>${dur}</strong></div>`;
+            if (statusCtn) statusCtn.innerHTML = `<span class="badge-status andamento">Em andamento</span><div>Encerra em <strong>${fim}</strong></div><div>Duração oficial: <strong>${dur}</strong></div>`;
+            
+            // ▼▼▼ CHAMADA DO CONTADOR REGRESSIVO (ÚLTIMAS 24H) ▼▼▼
+            if (fase.dados.fimPrevistoEm) {
+                iniciarCountdownFinal(fase.dados.fimPrevistoEm);
+            }
+            // ▲▲▲
+            
         } else if (fase.tipo === ETAPA_FASES.congelada) {
             heroPre.classList.add("hidden");
             heroNorm.classList.remove("hidden");
@@ -11526,6 +11628,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         if (iniciarCd && inicioEmCd) iniciarCountdown(inicioEmCd);
     }
+
     async function resolverFaseAtual() {
         const dados = await obterDadosEtapa();
         return { tipo: calcularFaseEtapa(dados), dados };
@@ -21955,7 +22058,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         let html = "";
         html += `<div class="info-secao"><span class="info-icone">📍</span><div class="info-conteudo"><h4 class="info-titulo">Status Atual</h4><p class="info-texto"><strong>${faseLabel}</strong></p></div></div>`;
         if (etapa.inicioEm) html += `<div class="info-secao"><span class="info-icone">📅</span><div class="info-conteudo"><h4 class="info-titulo">Data de Início</h4><p class="info-texto">${formatarDataHoraCurta(etapa.inicioEm)}</p></div></div>`;
-        if (etapa.fimPrevistoEm) html += `<div class="info-secao"><span class="info-icone">🏁</span><div class="info-conteudo"><h4 class="info-titulo">Encerramento Previsto</h4><p class="info-texto">${formatarDataHoraCurta(etapa.fimPrevistoEm)} às 23h59</p></div></div>`;
+        
+        // Correção: Removido o "às 23h59" fixo. Agora mostra a hora exata que foi salva no painel.
+        if (etapa.fimPrevistoEm) html += `<div class="info-secao"><span class="info-icone">🏁</span><div class="info-conteudo"><h4 class="info-titulo">Encerramento Previsto</h4><p class="info-texto">${formatarDataHoraCurta(etapa.fimPrevistoEm)}</p></div></div>`;
+        
         html += `<div class="info-secao"><span class="info-icone">📋</span><div class="info-conteudo"><h4 class="info-titulo">Regras da Etapa</h4><ul class="info-lista"><li><strong>20 questões</strong> de multiplicação</li><li>Até <strong>10 segundos</strong> por questão</li><li><strong>Calculadora permitida</strong> para conferência</li><li>Os <strong>4 melhores</strong> de cada turma/modalidade avançam para a Final</li></ul></div></div>`;
         html += `<div class="info-secao"><span class="info-icone">🎓</span><div class="info-conteudo"><h4 class="info-titulo">Certificados de Maestria</h4><p class="info-texto">Você pode conquistar <strong>3 certificados</strong> por modalidade conforme domina as operações:</p><ul class="info-lista"><li>🥈 <strong>Mestre da Tabuada (Prata)</strong> — 85% do mapa com 5+ tentativas por operação e 80% de acerto recente</li><li>🥇 <strong>Lenda da Tabuada (Ouro)</strong> — 95% do mapa, 8+ tentativas, 90% de acerto e velocidade</li><li>💎 <strong>Maestria Total (Lendária)</strong> — 100% do mapa, 10+ tentativas, 90% + velocidade comprovada</li></ul><div class="info-destaque verde">🏆 O certificado fica salvo para sempre no seu Álbum. Se você cair de rendimento depois, ele <strong>não é perdido</strong> — é uma conquista histórica!</div></div></div>`;
         if (fase === ETAPA_FASES.etapa_votacao) {
@@ -21978,6 +22084,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.getElementById("modal-detalhes-etapa")?.classList.add("hidden");
     }
     // ▲▲▲ FIM [18.03]
+
     // ▼▼▼ [18.04] Alerta proativo: falta pouco pro 100% ───────────
     // Mostra um banner dourado no topo da Home quando o aluno tem ≤5 operações
     // pendentes em qualquer modalidade, com botão direto para o Foco Absoluto.
