@@ -16031,6 +16031,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.06.bis]
 
 // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
+    // v10.10.2 · Suporte ao Modo Olimpíadas.
+    
     let metricaRankingAtual = "pontos";
 
     function mudarEscopoRanking(escopo) {
@@ -16066,6 +16068,45 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         _atualizarSubAbaAtiva();
         atualizarHintTurmaAluno();
         renderizarRanking();
+    }
+
+    function mudarMetricaRanking(metrica) {
+        if (!metrica) return;
+        metricaRankingAtual = metrica;
+        _atualizarSubAbaAtiva();
+        renderizarRanking();
+    }
+
+    function _atualizarSubAbaAtiva() {
+        ["pontos", "velocidade", "media"].forEach(m => {
+            document.getElementById(`sub-turma-${m}`)?.classList.toggle("ativa", tipoRankingAtual === "turma" && metricaRankingAtual === m);
+        });
+        ["velocidade", "media", "desafio"].forEach(m => {
+            document.getElementById(`sub-global-${m}`)?.classList.toggle("ativa", tipoRankingAtual === "global" && metricaRankingAtual === m);
+        });
+        ["100m", "200m", "maratona", "sprint_10", "meia_20", "ultra_50"].forEach(m => {
+            document.getElementById(`sub-corrida-${m}`)?.classList.toggle("ativa", tipoRankingAtual === "corridas" && metricaRankingAtual === m);
+        });
+    }
+
+    function aplicarTurmaSalvaNoFiltro() {
+        const sel = document.getElementById("filtro-turma");
+        if (!sel) return;
+        const t = obterTurmaSalvaAluno();
+        const opts = Array.from(sel.options).map(o => o.value);
+        if (t && opts.includes(t)) sel.value = t;
+        else if (!sel.value) sel.value = "901";
+    }
+
+    function onMudancaTurmaFiltro() { renderizarRanking(); }
+    
+    // ESSA ERA A FUNÇÃO QUE ESTAVA FALTANDO E QUEBRAVA O BOOT:
+    function atualizarBotaoMinhaTurma() { 
+        document.getElementById("aba-minha-turma")?.setAttribute("aria-label", "Ver ranking da minha turma"); 
+    }
+    
+    function atualizarHintTurmaAluno() {
+        document.getElementById("hint-turma-aluno")?.classList.toggle("hidden", tipoRankingAtual !== "turma" || !!obterTurmaSalvaAluno());
     }
 
     function resetarRankingParaEstadoLimpo() {
@@ -16112,7 +16153,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (ti) ti.innerText = "";
         if (tabelaWrap) tabelaWrap.style.display = "";
     }
-    // ... (mantenha o restante do bloco [13.07]) ...
+
+    function mudarTipoRanking(tp) {
+        if (tp === "turma" || tp === "global" || tp === "corridas") { mudarEscopoRanking(tp); return; }
+        if (tp === "velocidade" || tp === "media" || tp === "desafio") { mudarEscopoRanking("global"); mudarMetricaRanking(tp); return; }
+        mudarEscopoRanking("turma"); mudarMetricaRanking("pontos");
+    }
     // ▲▲▲ FIM [13.07]
 
     // ▼▼▼ [13.08] Perfil de aluno (busca) ─────────────────────────────
@@ -22218,7 +22264,72 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         if (nome && turma) _carregarAtalhoModalidadesAsync(nome, turma, rotulos);
     }
-    // ... (mantenha o restante do bloco [18.07] que já existe) ...
+
+    async function _carregarAtalhoModalidadesAsync(nome, turma, rotulos) {
+        const meuToken = ++_homeModalidadesToken;
+        try {
+            const [c25, c69, c010] = await Promise.all([
+                contarPendentesTreino(nome, turma, "2-5").catch(() => ({ pendentes: 0 })),
+                contarPendentesTreino(nome, turma, "6-9").catch(() => ({ pendentes: 0 })),
+                contarPendentesTreino(nome, turma, "0-10").catch(() => ({ pendentes: 0 }))
+            ]);
+
+            if (meuToken !== _homeModalidadesToken) return;
+
+            const pend = { "2-5": c25.pendentes || 0, "6-9": c69.pendentes || 0, "0-10": c010.pendentes || 0 };
+            const ordenado = Object.keys(pend).sort((a, b) => pend[b] - pend[a]);
+
+            const slot = document.getElementById("home-modalidades-atalho-slot");
+            if (!slot) return;
+
+            if (ordenado.length && pend[ordenado[0]] > 0) {
+                const modComMaisPend = ordenado[0];
+                const pendentesDaMais = pend[modComMaisPend];
+                const plural = pendentesDaMais === 1 ? "operação" : "operações";
+                const rotuloMod = rotulos[modComMaisPend] || modComMaisPend;
+                slot.innerHTML = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">
+                    🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →
+                </button>`;
+            } else {
+                slot.innerHTML = "";
+            }
+        } catch(e) {
+            console.warn("[Home/Modalidades] Falha ao carregar pendências:", e);
+            if (meuToken !== _homeModalidadesToken) return;
+            const slot = document.getElementById("home-modalidades-atalho-slot");
+            if (slot) slot.innerHTML = "";
+        }
+    }
+
+    async function jogarModalidadeHome(mod) {
+        if (!MODALIDADES[mod]) return;
+        const selMod = document.getElementById("modalidade-tabuada");
+        if (selMod) selMod.value = mod;
+        const nome  = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { mostrarTela("tela-single"); return; }
+        const fase = await resolverFaseAtual();
+        const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
+        if (!etapaAtiva) {
+            notificar("⏸️ A etapa classificatória não está aberta agora. Use o botão Treinar para aquecer!", "aviso", 5000);
+            return;
+        }
+        const inNome = document.getElementById("nome-aluno");
+        const selTurma = document.getElementById("turma-aluno");
+        if (inNome)   inNome.value   = nome;
+        if (selTurma) selTurma.value = turma;
+        await registrarAluno(false);
+    }
+
+    async function treinarModalidadeHome(mod) {
+        if (!MODALIDADES[mod]) return;
+        const selMod = document.getElementById("modalidade-tabuada");
+        if (selMod) selMod.value = mod;
+        const nome  = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { mostrarTela("tela-single"); return; }
+        abrirMenuTreino(mod);
+    }
     // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
