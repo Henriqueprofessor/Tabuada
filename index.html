@@ -12179,6 +12179,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             } catch(e) { console.warn("Falha ao iniciar etapa automaticamente:", e); }
         }
     }
+
     async function abrirVotacaoAutomatica(inicioEm) {
         try {
             const snap = await database.ref(CAMINHO_VOTACAO).once("value");
@@ -12186,6 +12187,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await database.ref(CAMINHO_VOTACAO).set({ inicio: inicioEm || Date.now() });
         } catch(e) { console.warn("Falha ao abrir votação automática:", e); }
     }
+
     async function verificarEFecharVotacaoSeNecessario() {
         let etapaAtual;
         try {
@@ -12198,7 +12200,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const vot = await obterDadosVotacao();
         if (!vot.inicio) return;
 
-        const fechamento = calcularFechamentoVotacao(vot.inicio);
+        // NOVO: calcula o fechamento considerando o limite do fim do evento
+        const fechamento = calcularFechamentoVotacao(vot.inicio, etapaAtual.fimPrevistoEm);
+        
         if (Date.now() < fechamento) return;
 
         const votos = vot.votos ? Object.values(vot.votos) : [];
@@ -12215,6 +12219,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             });
         } catch(e) { console.warn("Falha ao fechar votação:", e); }
     }
+
     async function verificarEEncerrarEtapaSeNecessario() {
         let d;
         try { d = await obterDadosEtapa(true); } catch(e) { return; }
@@ -20004,12 +20009,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [17.03]
 
     // ▼▼▼ [17.04] Votação (aluno + painel) ────────────────────────────
-    function calcularFechamentoVotacao(inicioTs) {
+    function calcularFechamentoVotacao(inicioTs, fimEtapaTs = null) {
         const d = new Date(inicioTs);
         d.setHours(23, 59, 59, 999);
         d.setDate(d.getDate() + 3);
-        return d.getTime();
+        const fechamentoVotacao = d.getTime();
+        
+        // Se o evento tiver um fim previsto menor que a votação padrão, a votação obedece o evento.
+        if (fimEtapaTs && fimEtapaTs < fechamentoVotacao) {
+            return fimEtapaTs;
+        }
+        return fechamentoVotacao;
     }
+
     async function obterDadosVotacao() {
         try { const snap = await database.ref(CAMINHO_VOTACAO).once("value"); return snap.val() || {}; }
         catch(e) { console.warn("Falha ao ler votação:", e); return {}; }
@@ -20019,7 +20031,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const cfg = await obterConfiguracao();
         const minVerdes = calcularMinVerdes(cfg.percentualMapa);
         
-        // v10.9.0-fix: Bloqueia se o aluno não está identificado (evita baixar banco inteiro no modo anônimo)
         if (!nome || !turma) {
             return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
         }
@@ -20050,8 +20061,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (!eleg.elegivel) { notificar("Você ainda não atingiu o critério de participação.", "aviso"); return; }
         const dados = await obterDadosVotacao();
         if (!dados.inicio) { notificar("A votação ainda não foi aberta.", "aviso"); return; }
-        const fechamento = calcularFechamentoVotacao(dados.inicio);
+        
+        const etapa = await obterDadosEtapa();
+        const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
         if (Date.now() > fechamento) { notificar("A votação já foi encerrada.", "aviso"); return; }
+        
         const chave = chaveVinculo(nome, turma);
         try {
             await database.ref(`${CAMINHO_VOTACAO}/votos/${chave}`).set({ nome, turma, opcao: String(opcao), data: Date.now() });
@@ -20092,10 +20106,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (badgeMenu) badgeMenu.classList.add("hidden");
             return;
         }
-        const fechamento = calcularFechamentoVotacao(dados.inicio);
+        
+        // Calcula o fechamento respeitando o fim do evento
+        const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
         const agora = Date.now();
         const encerrada = agora > fechamento || !!etapa.votacaoFechadaEm;
         const restanteMs = fechamento - agora;
+        
         const votos = dados.votos ? Object.values(dados.votos) : [];
         const totalVotos = votos.length;
         const votos7 = votos.filter(v => String(v.opcao) === "7").length;
@@ -20117,12 +20134,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             let motivo, veredito;
             if (ganhador === 14) { motivo = "A maioria votou por <strong>estender</strong> a etapa por mais uma semana."; veredito = "A etapa classificatória durará <strong>14 dias</strong>."; }
             else { motivo = "A maioria votou por <strong>encerrar em 7 dias</strong>."; veredito = "A etapa classificatória durará <strong>7 dias</strong>."; }
-            const fimLinha = fim ? `<div style="font-size:13px;color:#fde68a;text-align:center;margin-top:8px;font-weight:800;">🗓️ Prazo de calendário — encerra em ${fim} às 23h59</div>` : "";
+            const fimLinha = fim ? `<div style="font-size:13px;color:#fde68a;text-align:center;margin-top:8px;font-weight:800;">🗓️ Prazo de calendário — encerra em ${fim}</div>` : "";
             timerContainer.innerHTML = `<span class="votacao-status-timer">🔒 Votação encerrada</span>`;
             corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador"><strong>Duração oficial: ${ganhador} dias</strong>${veredito}</div>${fimLinha}<div class="detalhe-final">${motivo} · ${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos)}`;
             return;
         }
-        timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)} · ${formatarDataCurta(fechamento)} às 23:59</span>`;
+        timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)} · ${formatarDataCurta(fechamento)}</span>`;
         if (!eleg.elegivel) {
             const faltaPartidas = Math.max(0, eleg.minPartidas - eleg.totalPartidas);
             const faltaVerdes = Math.max(0, eleg.minVerdes - eleg.verdes);
@@ -20143,8 +20160,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (dados.inicio) { notificar("A votação já foi aberta.", "aviso"); return; }
         const etapa = await obterDadosEtapa(true);
         if (!etapa.inicioEm) { notificar("Agende o início da etapa antes de abrir a votação.", "aviso", 5000); return; }
-        const fechamento = calcularFechamentoVotacao(etapa.inicioEm);
-        if (!confirm(`Abrir votação agora?\n\nEla será encerrada automaticamente em ${formatarDataCurta(fechamento)} às 23:59 (4º dia).`)) return;
+        
+        const fechamento = calcularFechamentoVotacao(etapa.inicioEm, etapa.fimPrevistoEm);
+        if (!confirm(`Abrir votação agora?\n\nEla será encerrada automaticamente em ${formatarDataCurta(fechamento)}.`)) return;
         try {
             await database.ref(CAMINHO_VOTACAO).set({ inicio: etapa.inicioEm });
             notificar("Votação aberta!", "sucesso");
@@ -20189,11 +20207,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return;
         }
         if (!dados.inicio) {
-            const fech = calcularFechamentoVotacao(etapa.inicioEm);
-            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (até 23:59 do 4º dia).</p><button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação agora</button>`;
+            const fech = calcularFechamentoVotacao(etapa.inicioEm, etapa.fimPrevistoEm);
+            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (ou até o fim do evento, o que for menor).</p><button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação agora</button>`;
             return;
         }
-        const fechamento = calcularFechamentoVotacao(dados.inicio);
+        const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
         const encerrada = Date.now() > fechamento || !!etapa.votacaoFechadaEm;
         const votos = dados.votos ? Object.values(dados.votos) : [];
         const totalVotos = votos.length;
@@ -20201,8 +20219,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const votos14 = votos.filter(v => String(v.opcao) === "14").length;
         const estado = encerrada ? "🔒 Encerrada" : "🟢 Em andamento";
         const ganhador = etapa.duracaoEscolhida ? `${etapa.duracaoEscolhida} dias` : (votos14 > votos7 ? "14 dias" : "7 dias");
-        let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;"><div><strong>Estado:</strong><br>${estado}</div><div><strong>Fecha em:</strong><br>${formatarDataCurta(fechamento)} às 23:59</div><div><strong>Votos "7 dias":</strong><br>${votos7}</div><div><strong>Votos "14 dias":</strong><br>${votos14}</div><div><strong>Total:</strong><br>${totalVotos}</div><div><strong>Resultado:</strong><br>${totalVotos ? ganhador : "—"}</div></div>`;
-        if (etapa.fimPrevistoEm) html += `<div style="background:#dcfce7;border-left:4px solid #22c55e;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#14532d;">✅ Prazo oficial definido. Encerramento previsto: <strong>${formatarDataHoraCurta(etapa.fimPrevistoEm)}</strong> às 23h59.</div>`;
+        
+        let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;"><div><strong>Estado:</strong><br>${estado}</div><div><strong>Fecha em:</strong><br>${formatarDataCurta(fechamento)}</div><div><strong>Votos "7 dias":</strong><br>${votos7}</div><div><strong>Votos "14 dias":</strong><br>${votos14}</div><div><strong>Total:</strong><br>${totalVotos}</div><div><strong>Resultado:</strong><br>${totalVotos ? ganhador : "—"}</div></div>`;
+        if (etapa.fimPrevistoEm) html += `<div style="background:#dcfce7;border-left:4px solid #22c55e;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#14532d;">✅ Prazo oficial definido. Encerramento previsto: <strong>${formatarDataHoraCurta(etapa.fimPrevistoEm)}</strong></div>`;
         html += `<button onclick="resetarVotacao()" class="botao-forcar" style="margin:0;">🗑️ Resetar votação</button>`;
         container.innerHTML = html;
     }
@@ -22066,11 +22085,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         html += `<div class="info-secao"><span class="info-icone">🎓</span><div class="info-conteudo"><h4 class="info-titulo">Certificados de Maestria</h4><p class="info-texto">Você pode conquistar <strong>3 certificados</strong> por modalidade conforme domina as operações:</p><ul class="info-lista"><li>🥈 <strong>Mestre da Tabuada (Prata)</strong> — 85% do mapa com 5+ tentativas por operação e 80% de acerto recente</li><li>🥇 <strong>Lenda da Tabuada (Ouro)</strong> — 95% do mapa, 8+ tentativas, 90% de acerto e velocidade</li><li>💎 <strong>Maestria Total (Lendária)</strong> — 100% do mapa, 10+ tentativas, 90% + velocidade comprovada</li></ul><div class="info-destaque verde">🏆 O certificado fica salvo para sempre no seu Álbum. Se você cair de rendimento depois, ele <strong>não é perdido</strong> — é uma conquista histórica!</div></div></div>`;
         if (fase === ETAPA_FASES.etapa_votacao) {
             const dadosVot = await obterDadosVotacao();
-            const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio) : null;
+            // Correção: passar o fimPrevistoEm para o cálculo
+            const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio, etapa.fimPrevistoEm) : null;
             const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
             const v7 = votos.filter(v => String(v.opcao) === "7").length;
             const v14 = votos.filter(v => String(v.opcao) === "14").length;
-            html += `<div class="info-secao"><span class="info-icone">🗳️</span><div class="info-conteudo"><h4 class="info-titulo">Votação em Andamento</h4><p class="info-texto">Placar parcial: <strong>7 dias</strong> (${v7} votos) vs <strong>14 dias</strong> (${v14} votos).</p>${fechamento ? `<p class="info-texto" style="font-size:12px;color:#6c757d;">A votação fecha em ${formatarDataCurta(fechamento)} às 23:59.</p>` : ""}</div></div>`;
+            html += `<div class="info-secao"><span class="info-icone">🗳️</span><div class="info-conteudo"><h4 class="info-titulo">Votação em Andamento</h4><p class="info-texto">Placar parcial: <strong>7 dias</strong> (${v7} votos) vs <strong>14 dias</strong> (${v14} votos).</p>${fechamento ? `<p class="info-texto" style="font-size:12px;color:#6c757d;">A votação fecha em ${formatarDataCurta(fechamento)}.</p>` : ""}</div></div>`;
         } else if (fase === ETAPA_FASES.etapa_definida && etapa.duracaoEscolhida) {
             html += `<div class="info-secao"><span class="info-icone">✅</span><div class="info-conteudo"><h4 class="info-titulo">Votação Encerrada</h4><p class="info-texto">A duração oficial da etapa foi definida em <strong>${etapa.duracaoEscolhida} dias</strong>.</p></div></div>`;
         }
