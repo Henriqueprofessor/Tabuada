@@ -8990,6 +8990,79 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.85] */
 
+        /* ▼▼▼ [02.86] Painel do Professor — Abas e Zona de Perigo ─── INÍCIO ─── */
+        .painel-abas-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-neon);
+        }
+        .painel-aba-btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 16px;
+            background: rgba(10, 22, 40, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-weight: 800;
+            font-size: 13.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .painel-aba-btn:hover {
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--text-primary);
+        }
+        .painel-aba-btn.ativa {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #fff;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+        }
+        .painel-aba-conteudo {
+            display: none;
+            animation: fadeInPainel 0.3s ease;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .painel-aba-conteudo.ativa {
+            display: flex;
+        }
+        @keyframes fadeInPainel {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .painel-zona-perigo {
+            border: 2px dashed rgba(239, 68, 68, 0.6);
+            border-radius: 12px;
+            padding: 18px;
+            background: rgba(239, 68, 68, 0.05);
+            margin-top: 10px;
+        }
+        .painel-zona-perigo h4 {
+            color: #fca5a5;
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .painel-zona-perigo p {
+            font-size: 12px;
+            color: #fca5a5;
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+        }
+        /* ▲▲▲ FIM [02.86] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -9612,141 +9685,184 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <!-- ▼▼▼ [03.12] PAINEL PROFESSOR ─────────────────────────── -->
     <div id="tela-painel" class="card hidden">
         <h2>🔧 Painel do Professor</h2>
-        <div class="senha-container"><input type="password" id="senha-professor" placeholder="Senha"><button onclick="autenticarProfessor()" class="botao-verde">🔓 Acessar</button></div>
-        <div id="painel-conteudo" class="hidden">
-            <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos.</div>
-
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">📅 Ciclo da Etapa Classificatória</h4>
-                <div id="painel-etapa-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
-            </div>
-
-            <!-- ▼ v10.10.2 · Modo do Evento -->
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">🏟️ Modo do Evento</h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Define o foco do aplicativo. No modo <strong>Classificatória</strong>, o foco são as partidas oficiais de 20 perguntas. No modo <strong>Olimpíadas</strong>, o foco são as Corridas de Tabuada (o card da Home e o Ranking mudam automaticamente).</p>
-                <div id="painel-modo-evento-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
-            </div>
-            <!-- ▲ -->
-
-            <!-- ▼ v10.5.1 · Publicação de versão -->
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">📤 Publicação de versão</h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Controle qual versão do app os alunos devem usar. Quando o app deles abrir, vai comparar a versão que estão rodando com a publicada aqui. <strong>Suba sempre o HTML novo antes de publicar</strong> — senão os alunos podem recarregar para uma versão que ainda não está no ar.</p>
-                <div id="painel-versao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
-            </div>
-            <!-- ▲ -->
-
-            <!-- ▼ v10.6.0 · Evento com início e fim -->
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">📊 Evento com início e fim</h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Inicie um evento para acompanhar <strong>partidas oficiais, treinos, acessos, acertos, erros e alunos participando por dia</strong>. Os contadores começam <strong>do zero</strong> quando você clicar em "Iniciar evento". Você pode encerrar quando quiser e exportar tudo em CSV.</p>
-                <div id="painel-evento-conteudo"><div class="desempenho-loading">⏳ Carregando dados do evento…</div></div>
-            </div>
-            <!-- ▲ -->
-
-            <!-- ▼▼▼ [03.16] Otimização de leitura v10.9.0 ─── INÍCIO ─── -->
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">📦 Otimização de leitura (v10.9.0)</h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">
-                    Reduz o consumo do Firebase em até 88%. Ative APENAS após rodar "Recalcular resumos".
-                    Se algo der errado, clique em "Desativar otimização" — nada é apagado e o app volta ao formato antigo.
-                </p>
-                <div id="painel-otimizacao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
-            </div>
-            <!-- ▲▲▲ FIM [03.16] -->
-
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">⚙️ Critérios de Participação na Votação</h4>
-                <div id="painel-config-conteudo" style="font-size:13px;line-height:1.6;text-align:left;">
-                    <label for="config-percentual-mapa" style="display:block;font-weight:600;margin-bottom:4px;">Percentual do mapa de tabuada para ser elegível (%)</label>
-                    <input type="number" id="config-percentual-mapa" min="1" max="100" step="1" value="30">
-                    <label for="config-min-partidas" style="display:block;font-weight:600;margin:8px 0 4px;">Quantidade mínima de partidas</label>
-                    <input type="number" id="config-min-partidas" min="1" max="1000" step="1" value="10">
-                    <button onclick="salvarConfiguracaoPainel()" class="botao-verde" style="margin:10px 0 0;">💾 Salvar configurações</button>
-                    <p style="font-size:11px;color:#6c757d;margin:8px 0 0;line-height:1.5;">Definem quem pode votar na duração da etapa. Padrão: 30% do mapa e 10 partidas.</p>
-                </div>
-            </div>
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">💬 Mensagens dos alunos <span id="msg-painel-badge" class="hidden">0</span></h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Canal de suporte. Alunos enviam mensagens categorizadas; você responde e pode <strong>liberar acessos direto daqui</strong> quando o problema for bloqueio de aparelho.</p>
-                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #22c55e;border-radius:10px;padding:12px 14px;margin-bottom:12px;">
-                    <div style="font-size:12.5px;font-weight:800;color:#14532d;margin-bottom:6px;">🔓 Liberar acesso manualmente</div>
-                    <p style="font-size:11px;color:#166534;margin:0 0 8px;line-height:1.5;">Use quando o aluno pedir por outro canal (oral, WhatsApp, etc.) — <strong>não precisa de mensagem no app</strong>. Digite o nome exato e a turma.</p>
-                    <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;align-items:center;">
-                        <input type="text" id="liberar-nome" placeholder="Nome completo" autocomplete="off" style="margin:0;font-size:13px;padding:8px 10px;">
-                        <input type="text" id="liberar-turma" placeholder="Turma" autocomplete="off" style="margin:0;font-size:13px;padding:8px 10px;">
-                        <button onclick="liberarAcessoManual()" class="botao-verde" style="margin:0;padding:9px 14px;font-size:13px;white-space:nowrap;">🔓 Liberar</button>
-                    </div>
-                    <div id="liberar-resultado" style="font-size:11.5px;color:#166534;margin-top:8px;line-height:1.4;"></div>
-                </div>
-                <button onclick="carregarMensagensPainel()" class="botao-secundario" style="margin:0 0 4px;">🔄 Recarregar</button>
-                <div id="msg-painel-lista" class="msg-painel-lista"><div class="desempenho-loading">⏳ Carregando mensagens…</div></div>
-            </div>
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">📈 Alunos em destaque</h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Insight pedagógico — quem evoluiu mais, quem tem melhor precisão e quem mais jogou desde o início da etapa. Considera alunos com <strong>mínimo de 3 partidas</strong>.</p>
-                <label for="destaque-filtro-turma" style="display:block;font-weight:600;font-size:12.5px;margin-bottom:4px;">Turma</label>
-                <select id="destaque-filtro-turma" onchange="renderizarDestaquesPainel()">
-                    <option value="todas">🌍 Todas as turmas</option>
-                    <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
-                    <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
-                    <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
-                </select>
-                <div id="destaques-painel-conteudo" style="margin-top:12px;"><div class="desempenho-loading">⏳ Carregando destaques…</div></div>
-            </div>
-
-            <!-- ▼▼▼ [P18] Mapa da Turma — Heatmap de operações ───────────────── -->
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">🗺️ Mapa da Turma</h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Raio-X visual de quem domina o quê. Cada célula é uma operação (ex: 7×8). Clique numa célula do panorama para pular para a tabuada correspondente. Clique no nome do aluno para abrir o perfil completo dele.</p>
-
-                <label for="heatmap-filtro-turma" style="display:block;font-weight:600;font-size:12.5px;margin-bottom:4px;">Turma</label>
-                <select id="heatmap-filtro-turma" onchange="renderizarHeatmapTurma()">
-                    <option value="">Selecione uma turma</option>
-                    <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
-                    <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
-                    <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
-                </select>
-
-                <div class="heatmap-filtros-linha" style="margin-top:10px;">
-                    <label class="heatmap-filtro-label" for="heatmap-mostrar-sem-dados">
-                        <input type="checkbox" id="heatmap-mostrar-sem-dados" onchange="alternarMostrarSemDados()">
-                        Mostrar alunos sem dados
-                    </label>
-                </div>
-
-                <div id="heatmap-conteudo" style="margin-top:10px;">
-                    <div class="heatmap-vazio">🎯 Selecione uma turma acima para ver o mapa da turma.</div>
-                </div>
-            </div>
-            <!-- ▲▲▲ FIM [P18] -->
-
-            <!-- ▼▼▼ [P20] Sugestões de Intervenção ─────────────────────────── -->
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">💡 Sugestões de Intervenção</h4>
-                <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Análise automática do mapa da turma. Baseado nos dados do bloco <strong>Mapa da Turma</strong> acima — selecione uma turma lá primeiro.</p>
-                <div id="sugestoes-painel-conteudo">
-                    <div class="sugestoes-vazio">🎯 Selecione uma turma no bloco <strong>Mapa da Turma</strong> acima para ver as sugestões.</div>
-                </div>
-            </div>
-            <!-- ▲▲▲ FIM [P20] -->
-
-            <div class="senha-container" style="margin-bottom:16px;">
-                <h4 style="margin-top:0;">🗳️ Votação da Etapa</h4>
-                <div id="painel-votacao-conteudo" style="font-size:13px;line-height:1.6;text-align:left;"></div>
-            </div>
-            <div class="painel-botoes">
-                <button onclick="exportarCSV()" class="botao-secundario">📎 Exportar CSV</button>
-                <button onclick="abrirResetTurma()" class="botao-forcar">🗑️ Resetar Ranking (Turma)</button>
-                <button onclick="abrirGerenciarAlunos()" class="botao-verde">👥 Gerenciar Alunos</button>
-                <button onclick="confirmarResetDefinitivo()" class="botao-forcar" style="background:#7f1d1d; border: 1px solid #ef4444; grid-column: 1 / -1;">🚨 APAGAR TUDO (Reset Definitivo)</button>
-            </div>
-            
-            <div id="painel-reset" class="hidden" style="margin-top:20px;padding:16px;background:#fff3cd;border-radius:8px;"><h4>⚠️ Resetar Ranking</h4><select id="reset-turma"><option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select><select id="reset-modalidade"><option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 1-10</option><option value="todas">📚 TODAS</option></select><label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label><p style="font-size:11px;color:#856404;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.<br>O reset também apaga as <strong>medalhas, estrelas, seções completas e mensagens</strong> do aluno.</p><button onclick="confirmarReset()" class="botao-forcar">⚠️ CONFIRMAR RESET</button></div>
-            <div id="painel-alunos" class="hidden" style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;"><h4>👥 Gerenciar Alunos</h4><div style="display:flex;gap:10px;margin-bottom:16px;"><input type="text" id="filtro-alunos" placeholder="Filtrar por nome..." style="flex:2;" onkeyup="filtrarAlunos()"><select id="filtro-turma-alunos" style="flex:1;" onchange="filtrarAlunos()"><option value="">Todas turmas</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option><option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option><option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option></select></div><div id="lista-alunos-container" style="max-height:400px;overflow-y:auto;border:1px solid #dee2e6;border-radius:8px;"></div><div style="margin-top:16px;"><button onclick="fecharGerenciarAlunos()" class="botao-secundario">Fechar</button></div></div>
+        
+        <!-- Autenticação -->
+        <div class="senha-container" style="margin-bottom:16px;">
+            <input type="password" id="senha-professor" placeholder="Senha de Acesso">
+            <button onclick="autenticarProfessor()" class="botao-verde" style="margin-top:8px;">🔓 Acessar Painel</button>
         </div>
-        <button onclick="mostrarTela('tela-inicial')" class="botao-verde">🏠 Voltar</button>
+
+        <div id="painel-conteudo" class="hidden">
+            <!-- Navegação das Abas -->
+            <div class="painel-abas-nav">
+                <button class="painel-aba-btn ativa" onclick="mudarAbaPainel('gestao')" id="btn-aba-gestao">🎯 Gestão da Copa</button>
+                <button class="painel-aba-btn" onclick="mudarAbaPainel('analise')" id="btn-aba-analise">📊 Dados e Análise</button>
+                <button class="painel-aba-btn" onclick="mudarAbaPainel('alunos')" id="btn-aba-alunos">💬 Alunos e Suporte</button>
+                <button class="painel-aba-btn" onclick="mudarAbaPainel('sistema')" id="btn-aba-sistema">⚙️ Sistema e Segurança</button>
+            </div>
+
+            <!-- ABA 1: GESTÃO DA COPA -->
+            <div id="painel-aba-gestao" class="painel-aba-conteudo ativa">
+                <div class="observacao-ranking">Acesso administrativo protegido por sessão local de 30 minutos.</div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">📅 Ciclo da Etapa Classificatória</h4>
+                    <div id="painel-etapa-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+                </div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">🏟️ Modo do Evento</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Define o foco do aplicativo. No modo <strong>Classificatória</strong>, o foco são as partidas oficiais de 20 perguntas. No modo <strong>Olimpíadas</strong>, o foco são as Corridas de Tabuada (o card da Home e o Ranking mudam automaticamente).</p>
+                    <div id="painel-modo-evento-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+                </div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">📊 Evento com início e fim</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Inicie um evento para acompanhar <strong>partidas oficiais, treinos, acessos, acertos, erros e alunos participando por dia</strong>. Os contadores começam <strong>do zero</strong> quando você clicar em "Iniciar evento". Você pode encerrar quando quiser e exportar tudo em CSV.</p>
+                    <div id="painel-evento-conteudo"><div class="desempenho-loading">⏳ Carregando dados do evento…</div></div>
+                </div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">🗳️ Votação da Etapa</h4>
+                    <div id="painel-votacao-conteudo" style="font-size:13px;line-height:1.6;text-align:left;"></div>
+                </div>
+            </div>
+
+            <!-- ABA 2: DADOS E ANÁLISE -->
+            <div id="painel-aba-analise" class="painel-aba-conteudo">
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">📈 Alunos em destaque</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Insight pedagógico — quem evoluiu mais, quem tem melhor precisão e quem mais jogou desde o início da etapa. Considera alunos com <strong>mínimo de 3 partidas</strong>.</p>
+                    <label for="destaque-filtro-turma" style="display:block;font-weight:600;font-size:12.5px;margin-bottom:4px;">Turma</label>
+                    <select id="destaque-filtro-turma" onchange="renderizarDestaquesPainel()">
+                        <option value="todas">🌍 Todas as turmas</option>
+                        <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                        <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                        <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                    </select>
+                    <div id="destaques-painel-conteudo" style="margin-top:12px;"><div class="desempenho-loading">⏳ Carregando destaques…</div></div>
+                </div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">🗺️ Mapa da Turma</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Raio-X visual de quem domina o quê. Cada célula é uma operação (ex: 7×8). Clique numa célula do panorama para pular para a tabuada correspondente. Clique no nome do aluno para abrir o perfil completo dele.</p>
+                    <label for="heatmap-filtro-turma" style="display:block;font-weight:600;font-size:12.5px;margin-bottom:4px;">Turma</label>
+                    <select id="heatmap-filtro-turma" onchange="renderizarHeatmapTurma()">
+                        <option value="">Selecione uma turma</option>
+                        <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                        <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                        <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                    </select>
+                    <div class="heatmap-filtros-linha" style="margin-top:10px;">
+                        <label class="heatmap-filtro-label" for="heatmap-mostrar-sem-dados">
+                            <input type="checkbox" id="heatmap-mostrar-sem-dados" onchange="alternarMostrarSemDados()">
+                            Mostrar alunos sem dados
+                        </label>
+                    </div>
+                    <div id="heatmap-conteudo" style="margin-top:10px;">
+                        <div class="heatmap-vazio">🎯 Selecione uma turma acima para ver o mapa da turma.</div>
+                    </div>
+                </div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">💡 Sugestões de Intervenção</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Análise automática do mapa da turma. Baseado nos dados do bloco <strong>Mapa da Turma</strong> acima — selecione uma turma lá primeiro.</p>
+                    <div id="sugestoes-painel-conteudo">
+                        <div class="sugestoes-vazio">🎯 Selecione uma turma no bloco <strong>Mapa da Turma</strong> acima para ver as sugestões.</div>
+                    </div>
+                </div>
+
+                <div class="senha-container" style="text-align:center;">
+                    <h4 style="margin-top:0;">📎 Exportar Dados</h4>
+                    <button onclick="exportarCSV()" class="botao-secundario" style="width:100%;">📎 Exportar CSV Geral (Ranking e Partidas)</button>
+                </div>
+            </div>
+
+            <!-- ABA 3: ALUNOS E SUPORTE -->
+            <div id="painel-aba-alunos" class="painel-aba-conteudo">
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">💬 Mensagens dos alunos <span id="msg-painel-badge" class="hidden">0</span></h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Canal de suporte. Alunos enviam mensagens categorizadas; você responde e pode <strong>liberar acessos direto daqui</strong> quando o problema for bloqueio de aparelho.</p>
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #22c55e;border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+                        <div style="font-size:12.5px;font-weight:800;color:#14532d;margin-bottom:6px;">🔓 Liberar acesso manualmente</div>
+                        <p style="font-size:11px;color:#166534;margin:0 0 8px;line-height:1.5;">Use quando o aluno pedir por outro canal (oral, WhatsApp, etc.) — <strong>não precisa de mensagem no app</strong>. Digite o nome exato e a turma.</p>
+                        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;align-items:center;">
+                            <input type="text" id="liberar-nome" placeholder="Nome completo" autocomplete="off" style="margin:0;font-size:13px;padding:8px 10px;">
+                            <input type="text" id="liberar-turma" placeholder="Turma" autocomplete="off" style="margin:0;font-size:13px;padding:8px 10px;">
+                            <button onclick="liberarAcessoManual()" class="botao-verde" style="margin:0;padding:9px 14px;font-size:13px;white-space:nowrap;">🔓 Liberar</button>
+                        </div>
+                        <div id="liberar-resultado" style="font-size:11.5px;color:#166534;margin-top:8px;line-height:1.4;"></div>
+                    </div>
+                    <button onclick="carregarMensagensPainel()" class="botao-secundario" style="margin:0 0 4px;">🔄 Recarregar Mensagens</button>
+                    <div id="msg-painel-lista" class="msg-painel-lista"><div class="desempenho-loading">⏳ Carregando mensagens…</div></div>
+                </div>
+
+                <div class="senha-container" style="text-align:center;">
+                    <h4 style="margin-top:0;">👥 Gerenciamento de Alunos</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Editar nomes, apagar registros individualmente ou desvincular aparelhos.</p>
+                    <button onclick="abrirGerenciarAlunos()" class="botao-verde" style="width:100%;">👥 Abrir Gerenciador de Alunos</button>
+                </div>
+            </div>
+
+            <!-- ABA 4: SISTEMA E SEGURANÇA -->
+            <div id="painel-aba-sistema" class="painel-aba-conteudo">
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">📤 Publicação de versão</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Controle qual versão do app os alunos devem usar. Quando o app deles abrir, vai comparar a versão que estão rodando com a publicada aqui. <strong>Suba sempre o HTML novo antes de publicar</strong> — senão os alunos podem recarregar para uma versão que ainda não está no ar.</p>
+                    <div id="painel-versao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+                </div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">📦 Otimização de leitura (v10.9.0)</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">
+                        Reduz o consumo do Firebase em até 88%. Ative APENAS após rodar "Recalcular resumos".
+                        Se algo der errado, clique em "Desativar otimização" — nada é apagado e o app volta ao formato antigo.
+                    </p>
+                    <div id="painel-otimizacao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
+                </div>
+
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">⚙️ Critérios de Participação na Votação</h4>
+                    <div id="painel-config-conteudo" style="font-size:13px;line-height:1.6;text-align:left;">
+                        <label for="config-percentual-mapa" style="display:block;font-weight:600;margin-bottom:4px;">Percentual do mapa de tabuada para ser elegível (%)</label>
+                        <input type="number" id="config-percentual-mapa" min="1" max="100" step="1" value="30">
+                        <label for="config-min-partidas" style="display:block;font-weight:600;margin:8px 0 4px;">Quantidade mínima de partidas</label>
+                        <input type="number" id="config-min-partidas" min="1" max="1000" step="1" value="10">
+                        <button onclick="salvarConfiguracaoPainel()" class="botao-verde" style="margin:10px 0 0;">💾 Salvar configurações</button>
+                        <p style="font-size:11px;color:#6c757d;margin:8px 0 0;line-height:1.5;">Definem quem pode votar na duração da etapa. Padrão: 30% do mapa e 10 partidas.</p>
+                    </div>
+                </div>
+
+                <!-- ZONA DE PERIGO -->
+                <div class="painel-zona-perigo">
+                    <h4>🚨 Zona de Perigo (Ações Irreversíveis)</h4>
+                    <p>Ações que apagam dados de ranking, alunos ou do evento inteiro. Use com muita cautela.</p>
+                    
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                        <button onclick="abrirResetTurma()" class="botao-forcar" style="flex:1; margin:0;">🗑️ Resetar Ranking por Turma</button>
+                    </div>
+                    <div id="painel-reset" class="hidden" style="margin-top:16px; padding:16px; background:#2a1215; border:1px solid #7f1d1d; border-radius:8px;">
+                        <h4 style="color:#fca5a5; margin-top:0;">⚠️ Resetar Ranking</h4>
+                        <select id="reset-turma">
+                            <option value="todas">🏫 TODAS AS TURMAS</option><option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                            <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                            <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                        </select>
+                        <select id="reset-modalidade">
+                            <option value="2-5">Tabuadas 2-5</option><option value="6-9">Tabuadas 6-9</option><option value="0-10">Completa 1-10</option><option value="todas">📚 TODAS</option>
+                        </select>
+                        <label style="display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-weight:600;font-size:13px;cursor:pointer;"><input type="checkbox" id="reset-limpar-vinculos" style="width:auto;margin:0;cursor:pointer;"> 🔓 Limpar também os vínculos de dispositivo</label>
+                        <p style="font-size:11px;color:#fca5a5;margin:0 0 10px;line-height:1.4;">⚠️ Só marque ao final dos testes. Isso libera os nomes para serem usados em outros dispositivos.<br>O reset também apaga as <strong>medalhas, estrelas, seções completas e mensagens</strong> do aluno.</p>
+                        <button onclick="confirmarReset()" class="botao-forcar" style="width:100%;">⚠️ CONFIRMAR RESET</button>
+                    </div>
+
+                    <button onclick="confirmarResetDefinitivo()" class="botao-forcar" style="width:100%; background:#7f1d1d; border: 1px solid #ef4444; padding:16px; font-size:15px;">🚨 APAGAR TUDO (Reset Definitivo)</button>
+                </div>
+            </div>
+
+        </div>
+        
+        <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:20px;">🏠 Voltar ao Início</button>
     </div>
     <!-- ▲▲▲ FIM [03.12] PAINEL PROFESSOR -->
 
@@ -17145,6 +17261,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             resetarRankingParaEstadoLimpo();
         }
         if (id === "tela-painel") {
+            mudarAbaPainel('gestao');
             renderizarPainelEtapa();
             renderizarPainelVersao();
             renderizarPainelModoEvento();
@@ -17166,6 +17283,141 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
         }
     }
+
+    async function registrarAluno(treino) {
+        const nomeBruto = document.getElementById("nome-aluno").value;
+        const turma = document.getElementById("turma-aluno").value;
+        const v = validarNomeCompleto(nomeBruto);
+        if (!v.ok) { notificar(v.motivo, "aviso", 5000); document.getElementById("nome-aluno").focus(); return; }
+        const nome = v.normalizado;
+        document.getElementById("nome-aluno").value = nome;
+        if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
+
+        if (!treino) {
+            const fase = await resolverFaseAtual();
+            if (!etapaPermiteClassificatoria(fase.tipo)) {
+                notificar("A Etapa Classificatória não está disponível no momento. Use o Modo Treino Livre.", "aviso", 6000);
+                return;
+            }
+        }
+
+        alunoAtual = nome; turmaAtual = turma;
+        modalidadeAtual = document.getElementById("modalidade-tabuada").value;
+        modoTreino = treino;
+        treinoAnonimo = false;
+        salvarTurmaENomeAluno(turma, nome);
+        treinoFocoOperacoes = null;
+        treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
+        iniciarListenerMsgAluno();
+        if (!modoTreino) {
+            const r = await verificarVinculo(nome, turma);
+            if (!r.permitido) {
+                notificar(r.mensagem, "aviso", 8000);
+                const querAjuda = confirm(`${r.mensagem}\n\nQuer mandar uma mensagem para o professor agora?`);
+                if (querAjuda) { msgEstado.bloqueadoInfo = r; abrirFalarComProfessor(); }
+                return;
+            }
+            if (r.status === "novo") notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
+            else if (r.status === "revinculado") notificar(`Bem-vindo de volta! Como você ficou mais de 2 dias sem acessar o app, liberamos este aparelho automaticamente.`, "info", 8000);
+            const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
+            await carregarFocoTreino(nome, turma, modalidadeAtual);
+            melhorMediaAluno = medias.melhorMediaAluno;
+            mediaTurma = medias.mediaTurma;
+            const div = document.getElementById("preparacao-conteudo");
+            let msg = "";
+            if (melhorMediaAluno) {
+                if (mediaTurma && melhorMediaAluno < mediaTurma) msg = "🚀 Você já é mais rápido que a média da turma!";
+                else if (mediaTurma && melhorMediaAluno > mediaTurma) msg = "💪 Você está abaixo da média — com treino vai superar!";
+                else msg = "🏆 Chance de bater seu próprio recorde!";
+            } else msg = "🎯 Primeira partida! Vamos criar sua melhor média!";
+            div.innerHTML = `<div class="preparacao-grid"><div class="prep-card"><span class="prep-rotulo">👤 Aluno</span><span class="prep-valor">${escaparHtml(nome)}</span></div><div class="prep-card"><span class="prep-rotulo">🏫 Turma</span><span class="prep-valor">${turma}</span></div><div class="prep-card"><span class="prep-rotulo">📚 Modalidade</span><span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span></div><div class="prep-card"><span class="prep-rotulo">⏱️ Formato</span><span class="prep-valor">20 questões · 10s cada</span></div></div><div class="prep-bloco"><h4>📋 Como funciona?</h4><ul><li><strong>20 perguntas</strong> de multiplicação.</li><li>Até <strong>10 segundos</strong> por questão.</li><li>Respostas rápidas valem <strong>mais pontos</strong>.</li><li>Apenas o seu <strong>melhor resultado</strong> entra na classificação.</li></ul></div><div class="prep-bloco"><h4>📊 Suas referências</h4><div class="prep-referencias-linha"><div><span class="prep-rotulo">Seu melhor tempo médio dos acertos</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div><div><span class="prep-rotulo">Tempo médio dos acertos da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div></div></div>${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado</strong><br>${descreverFocoTreino()}</div>` : ""}<div class="prep-motivacao" style="margin-top:14px;">${msg}</div><div style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffc107;border-radius:10px;padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;color:#6d4c41;margin-top:14px;">⚠️ <strong>Lembrete:</strong> seu nome cadastrado é <strong>${escaparHtml(nome)}</strong>. Se você se classificar e o nome não conferir com a chamada oficial, poderá ser <strong>desclassificado</strong>. Qualquer correção, procure o professor <em>antes</em> do fim da etapa.</div>`;
+            mostrarTela("tela-preparacao");
+            window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
+        } else {
+            await carregarFocoTreino(nome, turma, modalidadeAtual);
+            await iniciarTreinoInteligente();
+        }
+    }
+
+    function _mostrarLoadingTreinoInteligente() {
+        mostrarTela("tela-aprender");
+        const ctn = document.getElementById("aprender-conteudo");
+        if (!ctn) return;
+        ctn.innerHTML = `
+            <div style="padding:60px 24px;text-align:center;color:var(--text-muted);">
+                <div style="font-size:34px;line-height:1;margin-bottom:14px;opacity:.85;" aria-hidden="true">⏳</div>
+                <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">A preparar o treino…</div>
+                <div style="font-size:13px;line-height:1.5;">Escolhendo as operações certas para você.</div>
+            </div>
+        `;
+    }
+
+    async function iniciarTreinoInteligente() {
+        _mostrarLoadingTreinoInteligente();
+
+        let lista = [];
+        try {
+            lista = await montarListaTreinoInteligente(alunoAtual, turmaAtual, modalidadeAtual);
+        } catch(e) {
+            console.warn("[Treino Inteligente] Falha ao montar lista:", e);
+            mostrarTela("tela-inicial");
+            notificar("Não foi possível preparar o treino agora. Tente novamente.", "erro", 5000);
+            return;
+        }
+
+        const pendentes = lista.filter(i => i.peso > 1);
+
+        treinoFocoOperacoes = null;
+        treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
+
+        if (pendentes.length === 0) {
+            notificar("🎉 Você já domina tudo nesta modalidade! Jogue uma partida oficial para manter o ritmo.", "info", 5000);
+        } else if (pendentes.length <= 5) {
+            treinoFocoAbsoluto = pendentes;
+            notificar(`🎯 FOCO ABSOLUTO: ${pendentes.length} ${pendentes.length === 1 ? "operação" : "operações"} para dominar!`, "info", 5000);
+        } else {
+            treinoListaInteligente = pendentes;
+            notificar(`🎯 Treino inteligente: ${pendentes.length} operações para reforçar!`, "info", 4000);
+        }
+        modoTreino = true;
+        iniciarPartidaTreino();
+    }
+
+    async function iniciarFocoAbsolutoDaHome(mod) {
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
+        let modalidade = mod;
+        if (!modalidade || !MODALIDADES[modalidade]) {
+            modalidade = localStorage.getItem("copa_foco_mod") || obterModalidadeMetaAtual() || "0-10";
+        }
+        alunoAtual = nome;
+        turmaAtual = turma;
+        modalidadeAtual = modalidade;
+        treinoAnonimo = false;
+        await carregarFocoTreino(nome, turma, modalidade);
+        await iniciarTreinoInteligente();
+    }
+
+    function iniciarTreinoAnonimo() {
+        treinoAnonimo = true;
+        modoTreino = true;
+        alunoAtual = "Visitante";
+        turmaAtual = "—";
+        modalidadeAtual = "0-10";
+        treinoFocoOperacoes = null;
+        treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
+        focoTreinoTabuadas = [];
+        dificuldadesHistoricas = {};
+        reiniciarVariaveisJogo();
+        document.getElementById("cabecalho-turma").innerText = "🎯 TREINO LIVRE — VISITANTE";
+        mostrarTela("tela-jogo");
+        proximaPergunta();
+    }
+    // ▲▲▲ FIM [14.04]
 
     // ▼▼▼ [14.05] Início de partida ────────────────────────────────────
     function iniciarPartidaTreino() {
@@ -20747,6 +20999,29 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
     // ▲▲▲ FIM [17.11]
+
+    // ▼▼▼ [17.12] Lógica de Abas do Painel do Professor ─── INÍCIO ───
+    
+    function mudarAbaPainel(abaId) {
+        // Esconde todas as abas
+        document.querySelectorAll(".painel-aba-conteudo").forEach(el => el.classList.remove("ativa"));
+        document.querySelectorAll(".painel-aba-btn").forEach(el => el.classList.remove("ativa"));
+
+        // Mostra a aba selecionada
+        const conteudo = document.getElementById(`painel-aba-${abaId}`);
+        const botao = document.getElementById(`btn-aba-${abaId}`);
+        
+        if (conteudo) conteudo.classList.add("ativa");
+        if (botao) botao.classList.add("ativa");
+
+        // Dispara carregamentos específicos se necessário (opcional)
+        if (abaId === "analise") {
+            // Se a aba de análise for aberta, podemos disparar o recarregamento de destaques
+            if (typeof renderizarDestaquesPainel === "function") renderizarDestaquesPainel();
+        }
+    }
+
+    // ▲▲▲ FIM [17.12]
 
     // ▼▼▼ [17.10] Painel — Publicação de versão ───────────────────────
     const CAMINHO_ULTIMA_VERSAO_PAINEL = "config/ultimaVersao";
