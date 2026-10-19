@@ -11379,12 +11379,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return { _ts: Date.now() };
         }
     }
+    
     async function salvarDadosEtapa(patch) {
         try {
             await database.ref(CAMINHO_ETAPA).update(patch);
             etapaEstadoCache = null;
         } catch(e) { console.warn("Falha ao salvar etapa:", e); throw e; }
     }
+    
     function calcularFaseEtapa(d) {
         if (!d || !d.inicioEm) return ETAPA_FASES.sem_agendamento;
         if (d.status === "encerrada") return ETAPA_FASES.encerrada;
@@ -11395,22 +11397,27 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (d.fimPrevistoEm && agora > d.fimPrevistoEm) return ETAPA_FASES.encerrada;
         return ETAPA_FASES.etapa_definida;
     }
+    
     function calcularFimPrevisto(inicioEm, duracao) {
         if (!inicioEm) return null;
         const d = new Date(inicioEm + duracao * 24 * 60 * 60 * 1000);
         d.setHours(23, 59, 59, 999);
         return d.getTime();
     }
+    
     function etapaPermiteClassificatoria(fase) {
         return fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida;
     }
+    
     function etapaPermiteTreinoLivre(fase) {
         return fase === ETAPA_FASES.pre_evento
             || fase === ETAPA_FASES.congelada
             || fase === ETAPA_FASES.encerrada
             || fase === ETAPA_FASES.sem_agendamento;
     }
+    
     function etapaEstaEncerrada(fase) { return fase === ETAPA_FASES.encerrada; }
+    
     function estaNoTop4Congelado(fase) { return fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada; }
     // ▲▲▲ FIM [07.06]
 
@@ -19504,8 +19511,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início agendado</span><span class="painel-etapa-valor">${fmtDataHora(d.inicioEm)}</span></div>`;
         if (d.iniciadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início efetivo</span><span class="painel-etapa-valor">${fmtDataHora(d.iniciadaEm)}</span></div>`;
         if (d.votacaoFechadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Votação fechada em</span><span class="painel-etapa-valor">${fmtDataHora(d.votacaoFechadaEm)}</span></div>`;
-        if (d.duracaoEscolhida) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Duração escolhida</span><span class="painel-etapa-valor">${d.duracaoEscolhida} dias (prazo de calendário)</span></div>`;
-        if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerramento previsto</span><span class="painel-etapa-valor">${fmtDataHora(d.fimPrevistoEm)} — 23h59</span></div>`;
+        if (d.duracaoEscolhida) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Duração escolhida</span><span class="painel-etapa-valor">${d.duracaoEscolhida} dias</span></div>`;
+        
+        // Removida a duplicação do "23h59" aqui
+        if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerramento previsto</span><span class="painel-etapa-valor">${fmtDataHora(d.fimPrevistoEm)}</span></div>`;
+        
         if (d.congeladoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Congelada em</span><span class="painel-etapa-valor">${fmtDataHora(d.congeladoEm)}</span></div>`;
         if (d.motivoCongelamento) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Motivo</span><span class="painel-etapa-valor">${escaparHtml(d.motivoCongelamento)}</span></div>`;
         if (d.encerradoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerrada em</span><span class="painel-etapa-valor">${fmtDataHora(d.encerradoEm)}</span></div>`;
@@ -19547,7 +19557,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const sugestao = d.fimPrevistoEm || (Date.now() + 7 * 24 * 60 * 60 * 1000);
         const inputValue = timestampParaDataInput(sugestao);
         const atualTxt = d.fimPrevistoEm
-            ? formatarDataHoraCurta(d.fimPrevistoEm) + " às 23h59"
+            ? formatarDataHoraCurta(d.fimPrevistoEm)
             : "não definido";
 
         const avisoTest = d.modoTeste
@@ -19556,7 +19566,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         let auditoria = "";
         if (d.ultimaExtensao && d.ultimaExtensao.em) {
-            const quem = "professor";
             const deTxt = d.ultimaExtensao.deTs ? formatarDataCurta(d.ultimaExtensao.deTs) : "—";
             const paraTxt = d.ultimaExtensao.paraTs ? formatarDataCurta(d.ultimaExtensao.paraTs) : "—";
             const motivo = d.ultimaExtensao.motivo ? escaparHtml(d.ultimaExtensao.motivo) : "não informado";
@@ -19577,8 +19586,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             <div class="extensao-etapa-grid">
                 <div class="extensao-etapa-campo">
-                    <label class="extensao-etapa-label" for="extensao-nova-data">Nova data de encerramento (fim do dia, 23h59)</label>
-                    <input type="date" id="extensao-nova-data" class="extensao-etapa-input" value="${inputValue}">
+                    <!-- Alterado para datetime-local -->
+                    <label class="extensao-etapa-label" for="extensao-nova-data">Nova data e hora de encerramento</label>
+                    <input type="datetime-local" id="extensao-nova-data" class="extensao-etapa-input" value="${inputValue}">
                 </div>
                 <div class="extensao-etapa-campo">
                     <label class="extensao-etapa-label" for="extensao-motivo">Motivo (opcional — fica registrado)</label>
@@ -19599,16 +19609,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function timestampParaDataInput(ts) {
         const d = new Date(ts);
         const pad = (n) => String(n).padStart(2, "0");
-        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        // Formato exigido pelo datetime-local: YYYY-MM-DDTHH:mm
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    function dataInputParaTimestampFimDoDia(valor) {
+    function dataInputParaTimestamp(valor) {
         if (!valor) return null;
-        const partes = String(valor).split("-").map(Number);
-        if (partes.length !== 3 || partes.some(n => !Number.isFinite(n))) return null;
-        const [ano, mes, dia] = partes;
-        const d = new Date(ano, mes - 1, dia, 23, 59, 59, 999);
-        const t = d.getTime();
+        const t = new Date(valor).getTime();
         return Number.isFinite(t) ? t : null;
     }
 
@@ -19622,11 +19629,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const motivo = (inputMotivo && inputMotivo.value ? inputMotivo.value : "").trim();
 
         if (!valor) {
-            mostrarMsgExtensao("erro", "❌ Escolha uma nova data antes de aplicar.");
+            mostrarMsgExtensao("erro", "❌ Escolha uma nova data e hora antes de aplicar.");
             return;
         }
 
-        const novoTs = dataInputParaTimestampFimDoDia(valor);
+        const novoTs = dataInputParaTimestamp(valor);
         if (!Number.isFinite(novoTs)) {
             mostrarMsgExtensao("erro", "❌ Data inválida. Use o seletor do campo.");
             return;
@@ -19638,14 +19645,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
 
         const d = await obterDadosEtapa(true);
-        const fmtNova = formatarDataCurta(novoTs);
-        const fmtAtual = d.fimPrevistoEm ? formatarDataCurta(d.fimPrevistoEm) : "não definido";
+        const fmtNova = formatarDataHoraCurta(novoTs);
+        const fmtAtual = d.fimPrevistoEm ? formatarDataHoraCurta(d.fimPrevistoEm) : "não definido";
         const confirmacao = `📅 Estender o encerramento da etapa?\n\n`
             + `De: ${fmtAtual}\n`
-            + `Para: ${fmtNova} (23h59)\n`
+            + `Para: ${fmtNova}\n`
             + (motivo ? `Motivo: ${motivo}\n` : "")
             + `\n✅ Partidas e ranking NÃO são afetados.\n`
-            + `⚠️ O app vai encerrar automaticamente após a nova data.`;
+            + `⚠️ O app vai encerrar automaticamente após a nova data/hora.`;
 
         if (!confirm(confirmacao)) return;
 
@@ -19665,7 +19672,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             }
             await salvarDadosEtapa(patch);
             etapaEstadoCache = null;
-            mostrarMsgExtensao("ok", `✅ Encerramento atualizado para ${fmtNova} às 23h59.`);
+            mostrarMsgExtensao("ok", `✅ Encerramento atualizado para ${fmtNova}.`);
             notificar(`Encerramento estendido para ${fmtNova}.`, "sucesso", 5000);
             try { somNovoRecorde(); } catch(e) {}
 
@@ -19715,7 +19722,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 }
             });
             etapaEstadoCache = null;
-            mostrarMsgExtensao("ok", `✅ Revertido para o prazo natural: ${fmtNovo} às 23h59.`);
+            mostrarMsgExtensao("ok", `✅ Revertido para o prazo natural: ${fmtNovo}.`);
             notificar(`Prazo revertido para ${fmtNovo}.`, "info", 4000);
 
             setTimeout(async () => {
@@ -19743,12 +19750,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const d = await obterDadosEtapa(true);
         let sug;
         if (d.inicioEm) {
-            const dt = new Date(d.inicioEm);
-            sug = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}T${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+            sug = timestampParaDataInput(d.inicioEm);
         } else {
             const dt = new Date(Date.now() + 24*60*60*1000);
             dt.setHours(8, 0, 0, 0);
-            sug = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}T${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+            sug = timestampParaDataInput(dt.getTime());
         }
         const resp = prompt("📅 Data e hora de início da etapa (formato: AAAA-MM-DDTHH:MM):", sug);
         if (!resp) return;
@@ -19762,6 +19768,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível agendar.", "erro"); }
     }
+    
     async function iniciarEtapaAgora() {
         if (!exigirProfessorAutenticado()) return;
         if (!confirm("Iniciar a etapa agora? A votação será aberta automaticamente.")) return;
@@ -19775,6 +19782,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível iniciar a etapa.", "erro"); }
     }
+    
     async function congelarEtapa() {
         if (!exigirProfessorAutenticado()) return;
         if (!confirm("⏸️ Congelar a etapa?\n\n• Alunos não poderão jogar a classificatória (apenas treino livre).\n• O ranking fica visível mas não muda.\n• ⚠️ A pausa INTERROMPE o ciclo automático — a votação não avança e o encerramento fica suspenso.\n• Ao descongelar, o ciclo volta ao normal.\n\nDeseja continuar?")) return;
@@ -19787,6 +19795,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível congelar.", "erro"); }
     }
+    
     async function descongelarEtapa() {
         if (!exigirProfessorAutenticado()) return;
         if (!confirm("▶️ Descongelar a etapa? Alunos poderão voltar a jogar a classificatória.")) return;
@@ -19797,6 +19806,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível descongelar.", "erro"); }
     }
+    
     async function encerrarEtapa() {
         if (!exigirProfessorAutenticado()) return;
         const d = await obterDadosEtapa(true);
@@ -19820,6 +19830,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível encerrar.", "erro"); }
     }
+    
     async function resetarCicloEtapa() {
         if (!exigirProfessorAutenticado()) return;
         if (!confirm("🗑️ Resetar o ciclo da etapa?\n\n• Volta ao estado 'Não agendada'\n• NÃO apaga partidas nem ranking\n• NÃO fecha a votação atual (use o bloco de votação para resetar)\n\nContinuar?")) return;
@@ -19831,6 +19842,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível resetar.", "erro"); }
     }
+    
     async function ativarModoTeste() {
         if (!exigirProfessorAutenticado()) return;
         try {
@@ -19840,6 +19852,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível ativar modo teste.", "erro"); }
     }
+    
     async function desativarModoTeste() {
         if (!exigirProfessorAutenticado()) return;
         try {
