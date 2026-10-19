@@ -9152,7 +9152,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <div id="tela-mais" class="card hidden">
         <h2>⚙️ Mais Opções</h2>
         <div class="mais-grid">
-            <button onclick="abrirCorrida()" class="botao-corrida" aria-label="Abrir o modo Corridas de Tabuada">
+            <button id="btn-menu-corrida" onclick="abrirCorrida()" class="botao-corrida" aria-label="Abrir o modo Corridas de Tabuada">
                 <span class="icone">🏁</span>
                 <span>
                     Corridas de Tabuada
@@ -16273,16 +16273,27 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     function resetarRankingParaEstadoLimpo() {
-        // Modo Olimpíadas
+        // Modo Só Olimpíadas
         if (modoEventoAtual === "olimpiadas") {
             document.getElementById("aba-minha-turma")?.classList.add("hidden");
             document.getElementById("aba-global")?.classList.add("hidden");
+            document.getElementById("aba-corridas")?.classList.remove("hidden");
             mudarEscopoRanking("corridas");
             return;
         }
-
-        document.getElementById("aba-minha-turma")?.classList.remove("hidden");
-        document.getElementById("aba-global")?.classList.remove("hidden");
+        
+        // Modo Só Classificatória
+        if (modoEventoAtual === "classificatoria") {
+            document.getElementById("aba-minha-turma")?.classList.remove("hidden");
+            document.getElementById("aba-global")?.classList.remove("hidden");
+            document.getElementById("aba-corridas")?.classList.add("hidden");
+        } 
+        // Modo Ambos
+        else {
+            document.getElementById("aba-minha-turma")?.classList.remove("hidden");
+            document.getElementById("aba-global")?.classList.remove("hidden");
+            document.getElementById("aba-corridas")?.classList.remove("hidden");
+        }
 
         tipoRankingAtual = null;
         metricaRankingAtual = "pontos";
@@ -17049,8 +17060,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [14.03]
 
     // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
-    // v10.10.2 · Inclui a chamada do renderizarPainelModoEvento().
-
     const TELAS_COM_NAV_GLOBAL = new Set([
         "tela-inicial", "tela-mais", "tela-ranking",
         "tela-desempenho", "tela-album", "tela-hall-fama", "tela-perfil",
@@ -17110,7 +17119,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (id === "tela-painel") {
             renderizarPainelEtapa();
             renderizarPainelVersao();
-            renderizarPainelModoEvento(); // <--- CHAMADA ADICIONADA AQUI
+            renderizarPainelModoEvento();
             renderizarPainelVotacao();
             renderizarPainelConfig();
             renderizarDestaquesPainel();
@@ -17119,6 +17128,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             renderizarPainelEvento();
             renderizarPainelOtimizacao();
         }
+        if (id === "tela-mais") {
+            atualizarVisibilidadeMenuMais();
+        }
         if (id !== "tela-resultado") {
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -17126,141 +17138,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
         }
     }
-
-    async function registrarAluno(treino) {
-        const nomeBruto = document.getElementById("nome-aluno").value;
-        const turma = document.getElementById("turma-aluno").value;
-        const v = validarNomeCompleto(nomeBruto);
-        if (!v.ok) { notificar(v.motivo, "aviso", 5000); document.getElementById("nome-aluno").focus(); return; }
-        const nome = v.normalizado;
-        document.getElementById("nome-aluno").value = nome;
-        if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
-
-        if (!treino) {
-            const fase = await resolverFaseAtual();
-            if (!etapaPermiteClassificatoria(fase.tipo)) {
-                notificar("A Etapa Classificatória não está disponível no momento. Use o Modo Treino Livre.", "aviso", 6000);
-                return;
-            }
-        }
-
-        alunoAtual = nome; turmaAtual = turma;
-        modalidadeAtual = document.getElementById("modalidade-tabuada").value;
-        modoTreino = treino;
-        treinoAnonimo = false;
-        salvarTurmaENomeAluno(turma, nome);
-        treinoFocoOperacoes = null;
-        treinoListaInteligente = null;
-        treinoFocoAbsoluto = null;
-        iniciarListenerMsgAluno();
-        if (!modoTreino) {
-            const r = await verificarVinculo(nome, turma);
-            if (!r.permitido) {
-                notificar(r.mensagem, "aviso", 8000);
-                const querAjuda = confirm(`${r.mensagem}\n\nQuer mandar uma mensagem para o professor agora?`);
-                if (querAjuda) { msgEstado.bloqueadoInfo = r; abrirFalarComProfessor(); }
-                return;
-            }
-            if (r.status === "novo") notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
-            else if (r.status === "revinculado") notificar(`Bem-vindo de volta! Como você ficou mais de 2 dias sem acessar o app, liberamos este aparelho automaticamente.`, "info", 8000);
-            const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
-            await carregarFocoTreino(nome, turma, modalidadeAtual);
-            melhorMediaAluno = medias.melhorMediaAluno;
-            mediaTurma = medias.mediaTurma;
-            const div = document.getElementById("preparacao-conteudo");
-            let msg = "";
-            if (melhorMediaAluno) {
-                if (mediaTurma && melhorMediaAluno < mediaTurma) msg = "🚀 Você já é mais rápido que a média da turma!";
-                else if (mediaTurma && melhorMediaAluno > mediaTurma) msg = "💪 Você está abaixo da média — com treino vai superar!";
-                else msg = "🏆 Chance de bater seu próprio recorde!";
-            } else msg = "🎯 Primeira partida! Vamos criar sua melhor média!";
-            div.innerHTML = `<div class="preparacao-grid"><div class="prep-card"><span class="prep-rotulo">👤 Aluno</span><span class="prep-valor">${escaparHtml(nome)}</span></div><div class="prep-card"><span class="prep-rotulo">🏫 Turma</span><span class="prep-valor">${turma}</span></div><div class="prep-card"><span class="prep-rotulo">📚 Modalidade</span><span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span></div><div class="prep-card"><span class="prep-rotulo">⏱️ Formato</span><span class="prep-valor">20 questões · 10s cada</span></div></div><div class="prep-bloco"><h4>📋 Como funciona?</h4><ul><li><strong>20 perguntas</strong> de multiplicação.</li><li>Até <strong>10 segundos</strong> por questão.</li><li>Respostas rápidas valem <strong>mais pontos</strong>.</li><li>Apenas o seu <strong>melhor resultado</strong> entra na classificação.</li></ul></div><div class="prep-bloco"><h4>📊 Suas referências</h4><div class="prep-referencias-linha"><div><span class="prep-rotulo">Seu melhor tempo médio dos acertos</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div><div><span class="prep-rotulo">Tempo médio dos acertos da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div></div></div>${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado</strong><br>${descreverFocoTreino()}</div>` : ""}<div class="prep-motivacao" style="margin-top:14px;">${msg}</div><div style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffc107;border-radius:10px;padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;color:#6d4c41;margin-top:14px;">⚠️ <strong>Lembrete:</strong> seu nome cadastrado é <strong>${escaparHtml(nome)}</strong>. Se você se classificar e o nome não conferir com a chamada oficial, poderá ser <strong>desclassificado</strong>. Qualquer correção, procure o professor <em>antes</em> do fim da etapa.</div>`;
-            mostrarTela("tela-preparacao");
-            window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
-        } else {
-            await carregarFocoTreino(nome, turma, modalidadeAtual);
-            await iniciarTreinoInteligente();
-        }
-    }
-
-    function _mostrarLoadingTreinoInteligente() {
-        mostrarTela("tela-aprender");
-        const ctn = document.getElementById("aprender-conteudo");
-        if (!ctn) return;
-        ctn.innerHTML = `
-            <div style="padding:60px 24px;text-align:center;color:var(--text-muted);">
-                <div style="font-size:34px;line-height:1;margin-bottom:14px;opacity:.85;" aria-hidden="true">⏳</div>
-                <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">A preparar o treino…</div>
-                <div style="font-size:13px;line-height:1.5;">Escolhendo as operações certas para você.</div>
-            </div>
-        `;
-    }
-
-    async function iniciarTreinoInteligente() {
-        _mostrarLoadingTreinoInteligente();
-
-        let lista = [];
-        try {
-            lista = await montarListaTreinoInteligente(alunoAtual, turmaAtual, modalidadeAtual);
-        } catch(e) {
-            console.warn("[Treino Inteligente] Falha ao montar lista:", e);
-            mostrarTela("tela-inicial");
-            notificar("Não foi possível preparar o treino agora. Tente novamente.", "erro", 5000);
-            return;
-        }
-
-        const pendentes = lista.filter(i => i.peso > 1);
-
-        treinoFocoOperacoes = null;
-        treinoListaInteligente = null;
-        treinoFocoAbsoluto = null;
-
-        if (pendentes.length === 0) {
-            notificar("🎉 Você já domina tudo nesta modalidade! Jogue uma partida oficial para manter o ritmo.", "info", 5000);
-        } else if (pendentes.length <= 5) {
-            treinoFocoAbsoluto = pendentes;
-            notificar(`🎯 FOCO ABSOLUTO: ${pendentes.length} ${pendentes.length === 1 ? "operação" : "operações"} para dominar!`, "info", 5000);
-        } else {
-            treinoListaInteligente = pendentes;
-            notificar(`🎯 Treino inteligente: ${pendentes.length} operações para reforçar!`, "info", 4000);
-        }
-        modoTreino = true;
-        iniciarPartidaTreino();
-    }
-
-    async function iniciarFocoAbsolutoDaHome(mod) {
-        const nome = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-        if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
-        let modalidade = mod;
-        if (!modalidade || !MODALIDADES[modalidade]) {
-            modalidade = localStorage.getItem("copa_foco_mod") || obterModalidadeMetaAtual() || "0-10";
-        }
-        alunoAtual = nome;
-        turmaAtual = turma;
-        modalidadeAtual = modalidade;
-        treinoAnonimo = false;
-        await carregarFocoTreino(nome, turma, modalidade);
-        await iniciarTreinoInteligente();
-    }
-
-    function iniciarTreinoAnonimo() {
-        treinoAnonimo = true;
-        modoTreino = true;
-        alunoAtual = "Visitante";
-        turmaAtual = "—";
-        modalidadeAtual = "0-10";
-        treinoFocoOperacoes = null;
-        treinoListaInteligente = null;
-        treinoFocoAbsoluto = null;
-        focoTreinoTabuadas = [];
-        dificuldadesHistoricas = {};
-        reiniciarVariaveisJogo();
-        document.getElementById("cabecalho-turma").innerText = "🎯 TREINO LIVRE — VISITANTE";
-        mostrarTela("tela-jogo");
-        proximaPergunta();
-    }
-    // ▲▲▲ FIM [14.04]
 
     // ▼▼▼ [14.05] Início de partida ────────────────────────────────────
     function iniciarPartidaTreino() {
@@ -20759,7 +20636,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [17.09]
 
-    // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória vs Olimpíadas) ─── INÍCIO ───
+    // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória, Olimpíadas, Ambos) ─── INÍCIO ───
     const CAMINHO_MODO_EVENTO = "config/modo_evento";
     let modoEventoAtual = "classificatoria"; // Padrão
 
@@ -20777,11 +20654,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     async function alterarModoEvento(novoModo) {
         if (!exigirProfessorAutenticado()) return;
-        if (novoModo !== "classificatoria" && novoModo !== "olimpiadas") return;
+        if (novoModo !== "classificatoria" && novoModo !== "olimpiadas" && novoModo !== "ambos") return;
 
-        const msg = novoModo === "olimpiadas" 
-            ? "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, e o Ranking abrirá direto na aba Corridas.\n\nConfirmar?"
-            : "🏆 MUDAR PARA MODO CLASSIFICATÓRIA\n\nO foco do app voltará a ser as partidas oficiais de 20 perguntas.\n\nConfirmar?";
+        let msg = "";
+        if (novoModo === "olimpiadas") {
+            msg = "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, as partidas de 20 perguntas sumirão do Ranking e as Corridas ficarão disponíveis.\n\nConfirmar?";
+        } else if (novoModo === "classificatoria") {
+            msg = "🏆 MUDAR PARA MODO SÓ CLASSIFICATÓRIA\n\nO foco do app voltará a ser as partidas oficiais de 20 perguntas. O menu de Corridas de Tabuada será DESATIVADO.\n\nConfirmar?";
+        } else {
+            msg = "🌟 MUDAR PARA MODO AMBOS (COPA COMPLETA)\n\nO app permitirá que os alunos joguem TANTO as partidas oficiais de 20 perguntas QUANTO as Corridas de Tabuada.\n\nConfirmar?";
+        }
             
         if (!confirm(msg)) return;
 
@@ -20791,9 +20673,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             notificar(`Modo alterado para: ${novoModo.toUpperCase()}`, "sucesso");
             renderizarPainelModoEvento();
             
-            // Força a atualização das telas visíveis
+            // Força a atualização das telas visíveis imediatamente
             await atualizarTelaInicialComEtapa();
             resetarRankingParaEstadoLimpo();
+            atualizarVisibilidadeMenuMais();
         } catch(e) {
             console.warn("[Modo Evento] Falha ao salvar:", e);
             notificar("Não foi possível alterar o modo.", "erro");
@@ -20808,16 +20691,28 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         
         const btnClass = modo === "classificatoria" ? "botao-verde" : "botao-secundario";
         const btnOlim = modo === "olimpiadas" ? "botao-verde" : "botao-secundario";
+        const btnAmbos = modo === "ambos" ? "botao-verde" : "botao-secundario";
         
         container.innerHTML = `
-            <div style="display:flex; gap:8px; margin-bottom:12px;">
-                <button class="${btnClass}" onclick="alterarModoEvento('classificatoria')" style="margin:0; flex:1;">🏆 Classificatória</button>
-                <button class="${btnOlim}" onclick="alterarModoEvento('olimpiadas')" style="margin:0; flex:1;">🏟️ Olimpíadas</button>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+                <button class="${btnClass}" onclick="alterarModoEvento('classificatoria')" style="margin:0; flex:1 1 120px;">🏆 Só Classificatória</button>
+                <button class="${btnOlim}" onclick="alterarModoEvento('olimpiadas')" style="margin:0; flex:1 1 120px;">🏟️ Só Olimpíadas</button>
+                <button class="${btnAmbos}" onclick="alterarModoEvento('ambos')" style="margin:0; flex:1 1 120px;">🌟 Ambos</button>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); text-align:center;">
-                Modo ativo agora: <strong style="color:var(--neon-cyan);">${modo === "olimpiadas" ? "Olimpíadas (Corridas em foco)" : "Classificatória (Partidas em foco)"}</strong>
+                Modo ativo agora: <strong style="color:var(--neon-cyan);">
+                    ${modo === "olimpiadas" ? "Olimpíadas (Corridas em foco)" : modo === "ambos" ? "Ambos (Copa Completa)" : "Só Classificatória (Partidas em foco)"}
+                </strong>
             </div>
         `;
+    }
+
+    function atualizarVisibilidadeMenuMais() {
+        const btnCorrida = document.getElementById("btn-menu-corrida");
+        if (btnCorrida) {
+            // Se for SÓ classificatória, esconde. Se for Olimpíadas ou Ambos, mostra.
+            btnCorrida.style.display = (modoEventoAtual === "classificatoria") ? "none" : "flex";
+        }
     }
     // ▲▲▲ FIM [17.11]
 
@@ -22566,9 +22461,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
-    // v10.10.2 · Coach ciente do Modo Olimpíadas (foco em corridas).
-    // v10.9.0-fix · Otimização de leitura de dados aplicada na coleta do prompt.
-
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
 
@@ -22619,9 +22511,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (fab) fab.classList.remove("pulse");
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Helpers de análise (mesma estrutura anterior)
-    // ─────────────────────────────────────────────────────────────────
     function analisarTabuadasDoAluno(mapaGlobal) {
         const resumo = {};
         [2, 3, 4, 5, 6, 7, 8, 9].forEach(tab => {
@@ -22691,7 +22580,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         let mapaGlobal = {};
         try { mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma) || {}; } catch(e) {}
 
-        // ▼▼▼ v10.9.0-fix: Otimização de leitura de dados no Coach ▼▼▼
         const posicoes = {};
         await Promise.all(mods.map(async (mod) => {
             const listaT = await obterMelhoresDaTurma(mod, turma);
@@ -22708,7 +22596,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 gap
             };
         }));
-        // ▲▲▲
 
         const porTabuada = analisarTabuadasDoAluno(mapaGlobal);
         const operacoesProblematicas = identificarOperacoesProblematicas(mapaGlobal, 8);
@@ -22729,7 +22616,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
         const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
 
-        // Se estiver no modo olimpíadas, omite o competitivo clássico e foca na velocidade
         if (modoEventoAtual !== "olimpiadas") {
             L.push("🏆 COMPETITIVO:");
             for (const mod of ["2-5", "6-9", "0-10"]) {
@@ -22903,9 +22789,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return modos.sort((a, b) => usos[b] - usos[a]).map(m => `${nomes[m] || m}: ${usos[m]}×`).join(" · ");
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Construção do prompt (persona de COACH)
-    // ─────────────────────────────────────────────────────────────────
     function construirPromptIA(nome, turma, dadosPerfil) {
         const temNome  = nome  && String(nome).trim().length  > 0;
         const temTurma = turma && String(turma).trim().length > 0;
@@ -22949,9 +22832,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
 
         // ─── Bloco dinâmico do Modo do Evento ───
-        const modoEventoBloco = modoEventoAtual === "olimpiadas"
-            ? `\n⚠️ O EVENTO ATUAL É O MODO OLIMPÍADAS ⚠️\nO foco da competição neste momento são as CORRIDAS DE TABUADA. As partidas oficiais de 20 perguntas estão pausadas ou fora de foco. Os alunos estão competindo por velocidade (Corridas por Tempo e por Distância). Se o aluno perguntar sobre ranking, foque no ranking das corridas. Se ele perguntar sobre como melhorar, sugira treinos de fluência e corridas.\n`
-            : `\n🏆 O EVENTO ATUAL É A CLASSIFICATÓRIA DA COPA 🏆\nO foco são as partidas oficiais de 20 perguntas e a busca pelo Top 4 da turma.\n`;
+        let modoEventoBloco = "";
+        if (modoEventoAtual === "olimpiadas") {
+            modoEventoBloco = `\n⚠️ O EVENTO ATUAL É O MODO OLIMPÍADAS ⚠️\nO foco da competição neste momento são as CORRIDAS DE TABUADA. As partidas oficiais de 20 perguntas estão pausadas ou fora de foco. Os alunos estão competindo por velocidade (Corridas por Tempo e por Distância). Se o aluno perguntar sobre ranking, foque no ranking das corridas. Se ele perguntar sobre como melhorar, sugira treinos de fluência e corridas.\n`;
+        } else if (modoEventoAtual === "ambos") {
+            modoEventoBloco = `\n🏆 O EVENTO ATUAL É A COPA COMPLETA (CLASSIFICATÓRIA + OLIMPÍADAS) 🏆\nO app está com as duas modalidades ativas! O aluno pode jogar as partidas oficiais de 20 perguntas (focando no Top 4) E TAMBÉM participar das Corridas de Tabuada (para velocidade). Se ele perguntar sobre como melhorar, você pode sugerir tanto os treinos clássicos quanto as corridas.\n`;
+        } else {
+            modoEventoBloco = `\n🏆 O EVENTO ATUAL É A CLASSIFICATÓRIA DA COPA 🏆\nO foco são as partidas oficiais de 20 perguntas e a busca pelo Top 4 da turma. As corridas estão desativadas.\n`;
+        }
 
         return `Você é o COACH PESSOAL da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
 
@@ -22991,8 +22879,8 @@ O MENU DEVE SER SEMPRE ESTE:
 ═══ PLAYBOOK — COMO RESPONDER A CADA OPÇÃO ═══
 
 1️⃣ ANÁLISE COMPLETA:
-   Apresente um "relatório de atleta": posições nas 3 modalidades (se for classificatória), % do mapa,
-   tabuadas fortes/fracas, velocidade, sequência, MÉDIA GERAL por modalidade.
+   Apresente um "relatório de atleta": posições nas 3 modalidades (se for classificatória),
+   % do mapa, tabuadas fortes/fracas, velocidade, sequência, MÉDIA GERAL por modalidade.
    Termine com UMA RECOMENDAÇÃO específica ("seu foco agora é dominar a tabuada do 7").
 
 2️⃣ PLANO DE TREINO:
@@ -23036,7 +22924,7 @@ O MENU DEVE SER SEMPRE ESTE:
 1️⃣1️⃣ PARA QUE SERVE A CORRIDA DE TABUADA:
    Explique com entusiasmo que a corrida é um modo focado em FLUÊNCIA.
    Detalhe os 5 benefícios: Mapa (pinta as operações), Certificados (Ouro/Lendária exigem velocidade), Fluência (automaticidade), Ranking Próprio (Tempo ou Distância) e Álbum (medalhas).
-   Lembre-o de que a corrida NÃO substitui as partidas oficiais de 20 perguntas para o ranking da turma (quando estiver no modo Classificatória).
+   Lembre-o de que a corrida NÃO substitui as partidas oficiais de 20 perguntas para o ranking da turma (quando estiver no modo Classificatória ou Ambos).
 
 ═══ TOM E ESTILO ═══
 • Fale como um treinador motivador, MAS com clareza de médico.
@@ -23134,9 +23022,6 @@ O MENU DEVE SER SEMPRE ESTE:
 Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regras Invioláveis.`;
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // Abertura do modal (loading → coleta → preenche)
-    // ─────────────────────────────────────────────────────────────────
     async function abrirAjudaIA() {
         const m = document.getElementById("modal-ajuda-ia");
         const loading = document.getElementById("ia-modal-loading");
