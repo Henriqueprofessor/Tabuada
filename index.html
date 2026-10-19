@@ -22447,6 +22447,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
     // v10.10.2 · Coach ciente do Modo Olimpíadas (foco em corridas).
+    // v10.9.0-fix · Otimização de leitura de dados aplicada na coleta do prompt.
 
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
@@ -22569,25 +22570,25 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         let mapaGlobal = {};
         try { mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma) || {}; } catch(e) {}
-        const rankingGeral = await obterRanking().catch(() => []);
 
+        // ▼▼▼ v10.9.0-fix: Otimização de leitura de dados no Coach ▼▼▼
         const posicoes = {};
-        for (const mod of mods) {
-            const rankingMod = rankingGeral.filter(r => r.modalidade === mod);
-            const daTurma = rankingMod.filter(r => r.turma === turma);
-            const mT = new Map();
-            daTurma.forEach(r => { const k = normalizarNome(r.nome); if (!mT.has(k) || ehMelhorResultado(r, mT.get(k))) mT.set(k, r); });
-            const listaT = Array.from(mT.values()).sort(compararParaOrdenacao);
+        await Promise.all(mods.map(async (mod) => {
+            const listaT = await obterMelhoresDaTurma(mod, turma);
             const idxT = listaT.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome));
 
-            const mG = new Map();
-            rankingMod.forEach(r => { const k = `${normalizarNome(r.nome)}|${r.turma}`; if (!mG.has(k) || ehMelhorResultado(r, mG.get(k))) mG.set(k, r); });
-            const listaG = Array.from(mG.values()).sort(compararParaOrdenacao);
+            const listaG = await obterRankingPorPontos(mod, null);
             const idxG = listaG.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
 
-            const gap = calcularGapTop4(rankingMod, nome, turma);
-            posicoes[mod] = { turma: idxT === -1 ? null : { posicao: idxT + 1, total: listaT.length }, geral: idxG === -1 ? null : { posicao: idxG + 1, total: listaG.length }, gap };
-        }
+            const gap = calcularGapTop4(listaT, nome, turma);
+
+            posicoes[mod] = {
+                turma: idxT === -1 ? null : { posicao: idxT + 1, total: listaT.length },
+                geral: idxG === -1 ? null : { posicao: idxG + 1, total: listaG.length },
+                gap
+            };
+        }));
+        // ▲▲▲
 
         const porTabuada = analisarTabuadasDoAluno(mapaGlobal);
         const operacoesProblematicas = identificarOperacoesProblematicas(mapaGlobal, 8);
@@ -22827,7 +22828,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             blocoProxAlvo += `\n`;
         }
 
-        // ─── NOVO: Bloco dinâmico do Modo do Evento ───
+        // ─── Bloco dinâmico do Modo do Evento ───
         const modoEventoBloco = modoEventoAtual === "olimpiadas"
             ? `\n⚠️ O EVENTO ATUAL É O MODO OLIMPÍADAS ⚠️\nO foco da competição neste momento são as CORRIDAS DE TABUADA. As partidas oficiais de 20 perguntas estão pausadas ou fora de foco. Os alunos estão competindo por velocidade (Corridas por Tempo e por Distância). Se o aluno perguntar sobre ranking, foque no ranking das corridas. Se ele perguntar sobre como melhorar, sugira treinos de fluência e corridas.\n`
             : `\n🏆 O EVENTO ATUAL É A CLASSIFICATÓRIA DA COPA 🏆\nO foco são as partidas oficiais de 20 perguntas e a busca pelo Top 4 da turma.\n`;
