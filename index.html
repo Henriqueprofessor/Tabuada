@@ -12217,14 +12217,29 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const chave = chaveAlunoCopa(nome, turma);
             const snap = await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chave}/${mod}`).once("value");
             const dados = snap.val();
-            if (dados) { localStorage.setItem(chaveLocalMapa(nome, turma, mod), JSON.stringify(dados)); return dados; }
+            
+            // Se o Firebase tem dados, salvamos no cache e retornamos
+            if (dados) { 
+                localStorage.setItem(chaveLocalMapa(nome, turma, mod), JSON.stringify(dados)); 
+                return dados; 
+            }
+            
+            // Se o Firebase respondeu vazio, significa que o mapa foi limpo.
+            // Precisamos remover o cache local antigo para não mostrar dados fantasmas.
+            localStorage.removeItem(chaveLocalMapa(nome, turma, mod));
             return null;
-        } catch(e) { console.warn("Falha ao ler mapa do Firebase:", e); return null; }
+            
+        } catch(e) { 
+            console.warn("Falha ao ler mapa do Firebase, usando fallback local (offline):", e); 
+            return obterMapaLocal(nome, turma, mod); 
+        }
     }
+    
     function obterMapaLocal(nome, turma, mod) {
         try { const raw = localStorage.getItem(chaveLocalMapa(nome, turma, mod)); return raw ? JSON.parse(raw) : null; }
         catch(e) { return null; }
     }
+    
     async function salvarMapaFirebase(nome, turma, mod, dados) {
         localStorage.setItem(chaveLocalMapa(nome, turma, mod), JSON.stringify(dados));
         try {
@@ -12277,7 +12292,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const combinado = {};
         mods.forEach((m, i) => {
             let dados = resultados[i];
-            if (!dados || !Object.keys(dados).length) dados = obterMapaLocal(nome, turma, m) || {};
+            // Se o Firebase respondeu vazio, o obterMapaFirebase já limpou o cache local e retornou null.
+            // Por via das dúvidas, não chamamos obterMapaLocal aqui para não ressuscitar dados antigos.
+            if (!dados) return;
+            
             Object.entries(dados).forEach(([k, d]) => {
                 const h = normalizarHistoricoOperacao(d);
                 if (!combinado[k]) combinado[k] = { historico: [] };
@@ -19880,11 +19898,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▼▼▼ [17.06] Reset + exportação + gerenciar alunos ─────────────
     
-    // NOVO: Reset Definitivo (Limpa tudo via API direta, evitando travar o console)
+    // Reset Definitivo (Limpa tudo via API direta + LocalStorage)
     async function confirmarResetDefinitivo() {
         if (!exigirProfessorAutenticado()) return;
         
-        if (!confirm("🚨 ATENÇÃO MÁXIMA 🚨\n\nIsso vai apagar ABSOLUTAMENTE TUDO: partidas, rankings, medalhas, mapas, histórico, certificados, corridas e mensagens.\n\nO painel, as configurações e a senha serão mantidos.\n\nUse isso APENAS antes de começar um novo evento oficial.\n\nDeseja continuar?")) return;
+        if (!confirm("🚨 ATENÇÃO MÁXIMA 🚨\n\nIsso vai apagar ABSOLUTAMENTE TUDO: partidas, rankings, medalhas, mapas, histórico, certificados, corridas e mensagens.\n\nO painel, as configurações e a senha serão mantidos.\n\nDeseja continuar?")) return;
         
         if (!confirm("Última confirmação: apagar todos os dados dos alunos agora?")) return;
 
@@ -19914,13 +19932,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             }
         }
         
-        // Limpa caches locais para evitar dados fantasmas
+        // Limpa TODO o cache local relacionado ao app no dispositivo atual
         try {
-            localStorage.removeItem(STORAGE_RANKING);
-            localStorage.removeItem(STORAGE_PARTIDAS);
-            localStorage.removeItem(STORAGE_ALBUM_VISTAS);
-            localStorage.removeItem("copa_album_onboarding_visto");
-            localStorage.removeItem(STORAGE_PATENTE_VISTA);
+            const chavesParaLimpar = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('copa') || key.startsWith('turmaAluno') || key.startsWith('nomeAluno') || key === 'rankingCEIB' || key === 'partidasCEIB')) {
+                    chavesParaLimpar.push(key);
+                }
+            }
+            chavesParaLimpar.forEach(k => localStorage.removeItem(k));
+            
             albumSessaoCache = { chave: null, ts: 0, resultado: null };
             hallFamaCache = null;
         } catch(e) {}
@@ -19934,7 +19956,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             btn.textContent = "🚨 APAGAR TUDO (Reset Definitivo)";
         }
 
-        // Recarrega a página para limpar qualquer resíduo na memória
         setTimeout(() => { location.reload(); }, 2500);
     }
 
