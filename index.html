@@ -19879,6 +19879,65 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [17.05]
 
     // ▼▼▼ [17.06] Reset + exportação + gerenciar alunos ─────────────
+    
+    // NOVO: Reset Definitivo (Limpa tudo via API direta, evitando travar o console)
+    async function confirmarResetDefinitivo() {
+        if (!exigirProfessorAutenticado()) return;
+        
+        if (!confirm("🚨 ATENÇÃO MÁXIMA 🚨\n\nIsso vai apagar ABSOLUTAMENTE TUDO: partidas, rankings, medalhas, mapas, histórico, certificados, corridas e mensagens.\n\nO painel, as configurações e a senha serão mantidos.\n\nUse isso APENAS antes de começar um novo evento oficial.\n\nDeseja continuar?")) return;
+        
+        if (!confirm("Última confirmação: apagar todos os dados dos alunos agora?")) return;
+
+        const btn = document.querySelector('button[onclick="confirmarResetDefinitivo()"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "⏳ APAGANDO... (aguarde)";
+        }
+
+        const caminhos = [
+            "resultados", "partidas", "partidas_por_aluno", "ranking_resumo",
+            "copaV2", "copa_medals", "copa_estrelas", "copa_secoes_completas",
+            "copa_posicao_baseline", "copa_snapshot_diario", "copa_certificados",
+            "copa_treinos_focados", "copa_treinos_por_modalidade", "copa_corridas",
+            "mensagens", "vinculos"
+        ];
+        
+        console.log("⏳ [Reset Definitivo] Iniciando a limpeza...");
+        notificar("Iniciando limpeza geral. Não feche a página...", "info", 4000);
+
+        for (const c of caminhos) {
+            console.log("Apagando nó: " + c + "...");
+            try { 
+                await database.ref(c).remove(); 
+            } catch(e) { 
+                console.warn("Aviso ao apagar " + c + ":", e); 
+            }
+        }
+        
+        // Limpa caches locais para evitar dados fantasmas
+        try {
+            localStorage.removeItem(STORAGE_RANKING);
+            localStorage.removeItem(STORAGE_PARTIDAS);
+            localStorage.removeItem(STORAGE_ALBUM_VISTAS);
+            localStorage.removeItem("copa_album_onboarding_visto");
+            localStorage.removeItem(STORAGE_PATENTE_VISTA);
+            albumSessaoCache = { chave: null, ts: 0, resultado: null };
+            hallFamaCache = null;
+        } catch(e) {}
+
+        console.log("✅ TUDO APAGADO COM SUCESSO!");
+        notificar("✅ Reset Definitivo concluído! O app está limpo.", "sucesso", 8000);
+        try { somConclusao(); dispararConfetes(); } catch(e) {}
+        
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "🚨 APAGAR TUDO (Reset Definitivo)";
+        }
+
+        // Recarrega a página para limpar qualquer resíduo na memória
+        setTimeout(() => { location.reload(); }, 2500);
+    }
+
     async function limparAlbumPorFiltro(turma) {
         const caminhos = [
             CAMINHO_MEDALS,
@@ -19906,6 +19965,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             } catch(e) { console.warn(`Erro ao limpar ${c} da turma ${turma}:`, e); }
         }
     }
+    
     async function limparMensagensPorFiltro(turma) {
         if (turma === "todas") { try { await database.ref(CAMINHO_MENSAGENS).set({ _reset: true }); } catch(e) {} return; }
         try {
@@ -19915,6 +19975,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             for (const chave of Object.keys(dados)) { if (chave.endsWith(sufixo)) { await database.ref(`${CAMINHO_MENSAGENS}/${chave}`).set({ _reset: true }); } }
         } catch(e) {}
     }
+    
     function abrirResetTurma() { if (!exigirProfessorAutenticado()) return; document.getElementById("painel-reset").classList.toggle("hidden"); }
     
     async function confirmarReset() {
@@ -19934,12 +19995,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const partidasN = partidas.filter(p => !resultadoCombinaFiltro(p, turma, mod));
         for (const p of partidas) { if (!partidasN.includes(p) && p.idPartida) await database.ref(`${CAMINHO_PARTIDAS}/${p.idPartida}`).set({ _reset: true }); }
 
-        // ▼ v10.9.0 · LIMPEZA DOS NOVOS NÓS DE OTIMIZAÇÃO ▼
         if (turma === "todas" && mod === "todas") {
             try { await database.ref(CAMINHO_PARTIDAS_POR_ALUNO).set({ _reset: true }); } catch(e) {}
             try { await database.ref(CAMINHO_RANKING_RESUMO).set({ _reset: true }); } catch(e) {}
         }
-        // ▲▲▲
 
         await limparCopaV2PorFiltro(turma, mod);
         limparLocalStorageCopaV2(turma, mod);
