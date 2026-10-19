@@ -15670,7 +15670,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.05]
 
     // ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
-    // v10.10.1 · Adicionado suporte ao novo ranking por distância.
+    // v10.10.2 · Suporte ao modo olimpíadas, ranking de corridas e
+    // textos explicativos completos em todos os modais.
 
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
@@ -15801,10 +15802,87 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return `<div class="comparativo-mini-grid">${cards.join("")}</div>`;
     }
 
-    function descreverRankingPontos() { return `<div class="ranking-desc-titulo"><span aria-hidden="true">🏆</span> Como funciona o Ranking de Pontos</div>...`; }
-    function descreverRankingVelocidade(escopo) { return `<div class="ranking-desc-titulo"><span aria-hidden="true">⚡</span> Como funciona o Ranking de Velocidade</div>...`; }
-    function descreverRankingMedia(escopo) { return `<div class="ranking-desc-titulo"><span aria-hidden="true">🏅</span> Como funciona o Ranking de Média</div>...`; }
-    function descreverRankingDesafio() { return `<div class="ranking-desc-titulo"><span aria-hidden="true">🏫</span> Como funciona o Desafio entre Turmas</div>...`; }
+    function descreverRankingPontos() { 
+        return `
+            <div class="ranking-desc-titulo"><span aria-hidden="true">🏆</span> Como funciona o Ranking de Pontos</div>
+            <div class="ranking-desc-subtitulo">📊 O que é</div>
+            <p>O ranking principal da Copa. Ele mostra quem fez mais pontos nas <strong>partidas oficiais de 20 perguntas</strong>.</p>
+            
+            <div class="ranking-desc-subtitulo">🧮 Como funciona</div>
+            <ul>
+                <li>Só entra no ranking a sua <strong>melhor partida oficial</strong> na modalidade.</li>
+                <li>Quanto mais rápido acertar, mais pontos ganha.</li>
+                <li>Os <strong>4 melhores</strong> de cada turma avançam para a Final.</li>
+            </ul>
+
+            <div class="ranking-desc-subtitulo">⚖️ Critérios de desempate</div>
+            <p>Se dois alunos fizerem a mesma pontuação, ganha quem:</p>
+            <ul>
+                <li>Tiver <strong>mais acertos</strong>.</li>
+                <li>Se empatar nos acertos, tiver o <strong>menor tempo médio</strong>.</li>
+                <li>Se empatar no tempo, tiver a <strong>maior sequência</strong>.</li>
+            </ul>
+
+            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> treinar ajuda a acertar mais rápido. Mas só as partidas oficiais contam pontos aqui!</div>
+        `; 
+    }
+    
+    function descreverRankingVelocidade(escopo) { 
+        return `
+            <div class="ranking-desc-titulo"><span aria-hidden="true">⚡</span> Como funciona o Ranking de Velocidade</div>
+            
+            <div class="ranking-desc-subtitulo">📊 O que é</div>
+            <p>Este ranking premia a <strong>fluência</strong>: acertar tudo no menor tempo possível.</p>
+            
+            <div class="ranking-desc-subtitulo">🧮 Critérios</div>
+            <p>Para entrar aqui, você precisa ter pelo menos uma <strong>partida perfeita (20/20)</strong>.</p>
+            <ul>
+                <li>Apenas as suas partidas perfeitas são consideradas.</li>
+                <li>Vence quem tiver o <strong>menor tempo médio</strong> de acertos.</li>
+                <li>Empate no tempo médio: ganha quem tiver mais acertos abaixo de 0,8s.</li>
+            </ul>
+
+            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> responda rápido, mas não perca a precisão. Uma partida com 19 acertos em 1 segundo não entra neste ranking — só 20/20.</div>
+        `; 
+    }
+
+    function descreverRankingMedia(escopo) { 
+        return `
+            <div class="ranking-desc-titulo"><span aria-hidden="true">🏅</span> Como funciona o Ranking de Média</div>
+            
+            <div class="ranking-desc-subtitulo">📊 O que é</div>
+            <p>Diferente do Ranking de Pontos (que pega só sua melhor partida), o Ranking de Média avalia a sua <strong>consistência</strong>. Ele mostra a média de pontos de <strong>todas as suas partidas oficiais</strong>.</p>
+            
+            <div class="ranking-desc-subtitulo">🧮 Como funciona</div>
+            <ul>
+                <li>Soma os pontos de todas as partidas oficiais na modalidade.</li>
+                <li>Divide pelo número de partidas.</li>
+                <li><strong>Partidas canceladas (✕) contam!</strong> Cancelar uma partida ruim derruba a sua média.</li>
+                <li>Para entrar no ranking, você precisa de pelo menos <strong>5 partidas oficiais</strong> em cada modalidade.</li>
+            </ul>
+
+            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> o segredo aqui não é uma partida excepcional, mas sim jogar bem sempre. Treinar é ótimo, mas não entra na média — só as partidas oficiais contam.</div>
+        `; 
+    }
+    
+    function descreverRankingDesafio() { 
+        return `
+            <div class="ranking-desc-titulo"><span aria-hidden="true">🏫</span> Como funciona o Desafio entre Turmas</div>
+            
+            <div class="ranking-desc-subtitulo">📊 O que é</div>
+            <p>É a disputa saudável entre as turmas do colégio. Aqui, o esforço coletivo vale mais do que o individual.</p>
+            
+            <div class="ranking-desc-subtitulo">🧮 Como é calculado</div>
+            <ul>
+                <li>Pegamos os <strong>4 melhores alunos</strong> de cada turma (por pontuação).</li>
+                <li>Fazemos a média dos pontos desses 4 alunos.</li>
+                <li>A turma com a maior média fica em 1º lugar.</li>
+                <li>Só entram no ranking as turmas que têm <strong>pelo menos 4 alunos</strong> com partidas oficiais registradas.</li>
+            </ul>
+
+            <div class="ranking-desc-dica"><strong>💡 Dica:</strong> não basta só um aluno ser craque. A turma precisa que os outros colegas também joguem e façam pontos para subir no ranking!</div>
+        `; 
+    }
 
     function descreverRankingCorridas(distanciaId) {
         const cfg = CORRIDA_DISTANCIAS[distanciaId];
@@ -15876,6 +15954,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.body.style.overflow = "hidden";
         setTimeout(() => { modal.querySelector(".modal-explicacao-fechar")?.focus(); }, 30);
     }
+
     function fecharModalExplicacaoRanking() {
         const modal = document.getElementById("modal-explicacao-ranking");
         if (!modal) return;
