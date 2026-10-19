@@ -13546,12 +13546,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const todasPartidas = await obterHistoricoAluno(nome, turma);
         const partidas = todasPartidas.filter(ehPartidaCompleta);
 
-        const [mapaGlobal, medalhasPersistidas, snapTreinos, ...listasPorMod] = await Promise.all([
+        const [mapaGlobal, medalhasPersistidas, snapTreinos] = await Promise.all([
             obterDesempenhoOperacoesGlobal(nome, turma),
             obterMedalsFirebase(nome, turma),
-            database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null),
-            ...Object.keys(MODALIDADES).map(mod => obterMelhoresDaTurma(mod, turma).catch(() => []))
+            database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
         ]);
+
+        // ▼ Otimização para Olimpíadas: Se não for classificatória/ambos, não busca posições
+        let listasPorMod = [[], [], []];
+        if (modoEventoAtual !== "olimpiadas") {
+            listasPorMod = await Promise.all(
+                Object.keys(MODALIDADES).map(mod => obterMelhoresDaTurma(mod, turma).catch(() => []))
+            );
+        }
 
         const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
         const totalPartidas = partidas.length;
@@ -13567,6 +13574,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const melhorTempoMedio19Ou20 = perfeitasOuQuase.length ? Math.min(...perfeitasOuQuase.map(p => Number(p.tempoMedio))) : null;
         const acertouPrimeiraAlguma = partidas.some(p => p.acertouPrimeira === true);
         const temPartidaComBaixoAcerto = partidas.some(p => Number(p.acertos) < 5);
+        
         const diasSet = new Set();
         const partidasPorDia = {};
         ordenadas.forEach(p => {
@@ -13596,32 +13604,41 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         const posicoes = {};
         const mods = Object.keys(MODALIDADES);
-        mods.forEach((mod, idx) => {
-            try {
-                const listaOrdenada = listasPorMod[idx] || [];
-                const idxAluno = listaOrdenada.findIndex(x =>
-                    normalizarNome(x.nome) === normalizarNome(nome) && x.turma === turma
-                );
-                posicoes[mod] = idxAluno === -1 ? null : idxAluno + 1;
-            } catch(e) {
-                posicoes[mod] = null;
-            }
-        });
+        
+        if (modoEventoAtual !== "olimpiadas") {
+            mods.forEach((mod, idx) => {
+                try {
+                    const listaOrdenada = listasPorMod[idx] || [];
+                    const idxAluno = listaOrdenada.findIndex(x =>
+                        normalizarNome(x.nome) === normalizarNome(nome) && x.turma === turma
+                    );
+                    posicoes[mod] = idxAluno === -1 ? null : idxAluno + 1;
+                } catch(e) {
+                    posicoes[mod] = null;
+                }
+            });
+        }
+
         const posicoesValidas = Object.values(posicoes).filter(p => p !== null);
         const melhorPosicao = posicoesValidas.length ? Math.min(...posicoesValidas) : null;
         const modalidadesTop4 = Object.values(posicoes).filter(p => p !== null && p <= 4).length;
-        if (totalPartidas >= 5) {
+        
+        if (modoEventoAtual !== "olimpiadas" && totalPartidas >= 5) {
             for (const mod of Object.keys(MODALIDADES)) {
                 if (posicoes[mod] !== null) await registrarBaselineSeVazio(nome, turma, mod, posicoes[mod]);
             }
         }
+        
         let subiuRanking = false;
-        for (const mod of Object.keys(MODALIDADES)) {
-            const baseline = await obterBaselinePosicao(nome, turma, mod);
-            if (baseline !== null && posicoes[mod] !== null && posicoes[mod] < baseline - 2) { subiuRanking = true; break; }
+        if (modoEventoAtual !== "olimpiadas") {
+            for (const mod of Object.keys(MODALIDADES)) {
+                const baseline = await obterBaselinePosicao(nome, turma, mod);
+                if (baseline !== null && posicoes[mod] !== null && posicoes[mod] < baseline - 2) { subiuRanking = true; break; }
+            }
+            await registrarSnapshotDiarioSeTop4(nome, turma, posicoes);
         }
-        await registrarSnapshotDiarioSeTop4(nome, turma, posicoes);
-        const diasNoTop4 = await contarDiasNoTop4(nome, turma);
+        
+        const diasNoTop4 = (modoEventoAtual !== "olimpiadas") ? await contarDiasNoTop4(nome, turma) : 0;
         const conquistasCount = Object.keys(medalhasPersistidas).length;
 
         const chavesValidas = [];
@@ -13692,7 +13709,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             posicoes, melhorPosicao, modalidadesTop4, subiuRanking, diasNoTop4,
             operacoesDominadas, operacoesDominadas25, operacoesDominadas69, operacoesPrecisao95,
             baseSolida, mestreDesafios, mapaCompleto, guardaPrecisao, lendaMapa, diasMapa100: dias100.length,
-            // ⚙️ AQUI ESTAVA O ERRO: Foi corrigido para "modalidadesCom17k" (minúsculo)
             media25, media69, media010, mediaMaxima, modalidadesCom17K: modalidadesCom17k, modalidadesCom17k, todasMedias17k,
             _medalhasPersistidas: medalhasPersistidas
         };
@@ -13703,11 +13719,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function calcularMedalhasDesbloqueadas(dados) {
         const desbloqueadas = [];
         const bloqueadas = [];
-        MEDALS.forEach(m => {
+        
+        // Filtra as medalhas que fazem sentido no modo atual
+        const medalhasPermitidas = MEDALS.filter(m => {
+            if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
+            return true;
+        });
+
+        medalhasPermitidas.forEach(m => {
             if (m.id === "colecionador") return;
             try { (m.condicao(dados) ? desbloqueadas : bloqueadas).push(m); }
             catch(e) { bloqueadas.push(m); }
         });
+        
         const col = MEDALS_POR_ID.colecionador;
         if (col) {
             const dadosCol = { ...dados, conquistasCount: desbloqueadas.length };
@@ -13757,12 +13781,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         vaga_garantida:      { campo: "melhorPosicao",            alvo: 4,     unidade: "posições", invertido: true },
         consistente:         { campo: "diasNoTop4",               alvo: 3,     unidade: "dias no top 4" },
         classificado_triplo: { campo: "modalidadesTop4",          alvo: 2,     unidade: "modalidades no top 4" },
-        // ⚙️ Consistência — progresso baseado na maior média entre as 3 modalidades
         primeira_media:      { campo: "mediaMaxima", alvo: 8000,  unidade: "pts de média" },
         consistente_media:   { campo: "mediaMaxima", alvo: 12000, unidade: "pts de média" },
         regular_media:       { campo: "mediaMaxima", alvo: 15000, unidade: "pts de média" },
         elite_media:         { campo: "mediaMaxima", alvo: 17000, unidade: "pts de média" },
-        // Lenda da Média — progresso = quantas das 3 modalidades já passaram de 17k
         lenda_media:         { campo: "modalidadesCom17k", alvo: 3, unidade: "modalidades com média ≥ 17.000" }
     };
 
@@ -13785,7 +13807,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     function encontrarProximaConquista(dados, persistidas) {
         let melhor = null;
-        MEDALS.forEach(m => {
+        
+        const medalhasPermitidas = MEDALS.filter(m => {
+            if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
+            return true;
+        });
+
+        medalhasPermitidas.forEach(m => {
             if (persistidas[m.id]) return;
             const prog = calcularProgressoMedalha(m, dados);
             if (!prog) return;
@@ -14433,19 +14461,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.09]
 
     // ▼▼▼ [11.10] Corpo do álbum + figurinhas ────────────────────────
-    // v10.5.1 · P16: cada figurinha CONQUISTADA recebe uma classe
-    // de animação conforme o emoji, dando "vida própria" ao ícone.
-    // Figurinhas vazias permanecem estáticas para contraste.
-    // v10.6.xb · Ajuste de linguagem: "para sempre" → "na mesma
-    // competição" no rodapé, para não prometer algo que o reset
-    // da próxima Copa não cumpre.
-
     function renderizarCorpoAlbum() {
         const c = document.getElementById("album-conteudo");
         if (!c) return;
         const { persistidas } = albumEstado;
         if (!persistidas) { c.innerHTML = ""; return; }
-        const passa = (m) => passaFiltrosAlbum(m, persistidas[m.id]);
+        
+        const passa = (m) => {
+            if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
+            return passaFiltrosAlbum(m, persistidas[m.id]);
+        };
+        
         const secoesVisiveis = SECOES.filter(s => MEDALS.some(m => m.secao === s.id && passa(m)));
         if (secoesVisiveis.length === 0) {
             c.innerHTML = `<div class="album-estado-vazio"><span class="emoji">🔍</span><h3>Nenhuma medalha corresponde aos filtros</h3><p>Ajuste os filtros ou limpe tudo para ver o álbum completo.</p><button class="botao-verde" onclick="limparFiltrosAlbum()" style="width:auto;margin:0;">🧹 Limpar filtros</button></div>`;
@@ -16278,6 +16304,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             document.getElementById("aba-minha-turma")?.classList.add("hidden");
             document.getElementById("aba-global")?.classList.add("hidden");
             document.getElementById("aba-corridas")?.classList.remove("hidden");
+            tipoRankingAtual = "corridas";
+            metricaRankingAtual = corridaTipoRankingAtual === "tempo" ? "100m" : "sprint_10";
             mudarEscopoRanking("corridas");
             return;
         }
@@ -20638,7 +20666,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória, Olimpíadas, Ambos) ─── INÍCIO ───
     const CAMINHO_MODO_EVENTO = "config/modo_evento";
-    let modoEventoAtual = "classificatoria"; // Padrão
+    let modoEventoAtual = "classificatoria";
 
     async function obterModoEvento(forcar = false) {
         try {
@@ -20658,7 +20686,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         let msg = "";
         if (novoModo === "olimpiadas") {
-            msg = "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, as partidas de 20 perguntas sumirão do Ranking e as Corridas ficarão disponíveis.\n\nConfirmar?";
+            msg = "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, o Hall da Fama e o Álbum esconderão as categorias de partidas de 20 perguntas.\n\nConfirmar?";
         } else if (novoModo === "classificatoria") {
             msg = "🏆 MUDAR PARA MODO SÓ CLASSIFICATÓRIA\n\nO foco do app voltará a ser as partidas oficiais de 20 perguntas. O menu de Corridas de Tabuada será DESATIVADO.\n\nConfirmar?";
         } else {
@@ -20673,6 +20701,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             notificar(`Modo alterado para: ${novoModo.toUpperCase()}`, "sucesso");
             renderizarPainelModoEvento();
             
+            // Limpa caches para forçar recálculo com o novo modo
+            hallFamaCache = null;
+            albumSessaoCache = { chave: null, ts: 0, resultado: null };
+            comparativoTurmaCache = null;
+
             // Força a atualização das telas visíveis imediatamente
             await atualizarTelaInicialComEtapa();
             resetarRankingParaEstadoLimpo();
@@ -20710,7 +20743,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function atualizarVisibilidadeMenuMais() {
         const btnCorrida = document.getElementById("btn-menu-corrida");
         if (btnCorrida) {
-            // Se for SÓ classificatória, esconde. Se for Olimpíadas ou Ambos, mostra.
             btnCorrida.style.display = (modoEventoAtual === "classificatoria") ? "none" : "flex";
         }
     }
@@ -21159,9 +21191,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [18.01]
 
     // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
-    // v10.9.1 · Hotfix: Cards agora mostram os 3 primeiros colocados
-    // (pódio) em vez de apenas 1.
-
     async function abrirHallDaFama() {
         mostrarTela("tela-hall-fama");
         await renderizarHallDaFama();
@@ -21252,7 +21281,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         try {
             const metricas = await calcularMetricasHallFama();
 
-            // v10.9.0-fix: Não usa mais obterRanking(). Lê os alunos únicos do resumo.
             const alunosUnicos = new Map();
             if (await otimizacaoV109Ativa()) {
                 const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/media`).once("value");
@@ -21369,11 +21397,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             destaques.media       = metricas.media;
 
             let turmaInfo = null;
-            try {
-                const r = await calcularMediasTop4Turmas("0-10");
-                turmaInfo = r;
-            } catch(e) {
-                console.warn("Falha ao calcular Turma de Elite:", e);
+            if (modoEventoAtual !== "olimpiadas") {
+                try {
+                    const r = await calcularMediasTop4Turmas("0-10");
+                    turmaInfo = r;
+                } catch(e) {
+                    console.warn("Falha ao calcular Turma de Elite:", e);
+                }
             }
 
             const mestresEmJornada = await calcularMestresMapa(destaques.mapa);
@@ -21423,9 +21453,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             }
 
             const totalGeral = lista.length;
-            const top3 = lista.slice(0, 3); // Pega o pódio
+            const top3 = lista.slice(0, 3);
             
-            // Renderiza os 3 primeiros
             const itensHtml = top3.map((item, i) => {
                 const pos = i + 1;
                 const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : "🥉";
@@ -21442,7 +21471,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             const linhaPosicao = hallLinhaPosicao(lista, tipoValor);
 
-            // O botão de ver ranking completo só aparece se houver MAIS de 3 alunos (já que os 3 primeiros já estão na tela)
             const botao = totalGeral > 3
                 ? `<button class="hall-ver-ranking-btn" onclick="abrirHallCategoria('${categoriaId}')">🏆 Ver ranking completo (${totalGeral}) →</button>`
                 : "";
@@ -21465,39 +21493,45 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         html += renderizarCardMaiorMapaVerde(dados);
 
         html += buildCard("Mestre da Velocidade", "Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas abaixo de 0,8s.", "🏆", dados.velocidade, "velocidade", "velocidade");
-        html += buildCard("Total de Acertos", "Soma de todos os acertos acumulados. Jogar muito é recompensado!", "✅", dados.acertos, "acertos", "acertos");
-        html += buildCard("Maratonista da Copa", "Quem jogou o maior número de partidas. Dedicação total!", "🏃", dados.maratonista, "maratonista", "maratonista");
         html += buildCard("Presença VIP", "Quem jogou em mais dias diferentes. Constância é a chave!", "📅", dados.presenca, "presenca", "presenca");
         html += buildCard("Mestre do Treino", "Quem mais completou treinos identificados. Constância é a chave!", "🧠", dados.treino, "treino", "treino");
 
-        html += buildCard("Média Consistente", "Quem mantém a maior média geral somando as 3 modalidades (mínimo de 5 partidas em cada).", "📊", dados.media, "media", "media");
+        // ▼▼▼ FILTRO DE MODO OLIMPÍADAS AQUI ▼▼▼
+        if (modoEventoAtual !== "olimpiadas") {
+            html += buildCard("Total de Acertos", "Soma de todos os acertos acumulados. Jogar muito é recompensado!", "✅", dados.acertos, "acertos", "acertos");
+            html += buildCard("Maratonista da Copa", "Quem jogou o maior número de partidas. Dedicação total!", "🏃", dados.maratonista, "maratonista", "maratonista");
+            html += buildCard("Média Consistente", "Quem mantém a maior média geral somando as 3 modalidades (mínimo de 5 partidas em cada).", "📊", dados.media, "media", "media");
+        }
+        // ▲▲▲ FIM DO FILTRO ▲▲▲
 
         const minimo = dados.minimoTurma || MIN_ALUNOS_RANKING_TURMA;
         const minhaTurmaTurmas = dados.minhaTurmaTurmas;
 
-        if (dados.turmas && dados.turmas.length > 0) {
-            const top3 = dados.turmas.slice(0, 3);
-            const itensHtml = top3.map((t, i) => {
-                const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉";
-                const ehMinha = turmaAluno && t.turma === turmaAluno;
-                return `<li class="hall-item" ${ehMinha ? `style="${ehVoceStyle}"` : ""}>
-                    <span class="hall-item-pos">${medal}</span>
-                    <span class="hall-item-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? ' <span style="color:var(--neon-green);font-weight:800;">← Sua</span>' : ''}<small>${hallFormatarSubLinha(t, "turmas")}</small></span>
-                    <span class="hall-item-valor">${hallFormatarValor(t, "turmas")}</span>
-                </li>`;
-            }).join("");
-            const botao = dados.turmas.length > 3
-                ? `<button class="hall-ver-ranking-btn" onclick="abrirHallCategoria('turmas')">🏆 Ver ranking completo (${dados.turmas.length}) →</button>`
-                : "";
-            html += `<div class="hall-card">
-                <div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div>
-                <div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos (modalidade completa 1-10). Mínimo de <strong>${minimo} alunos</strong>.</div>
-                <ul class="hall-lista">${itensHtml}</ul>
-                ${botao}
-                ${minhaTurmaTurmas ? renderizarAvisoTurmaFora(minhaTurmaTurmas, "0-10") : ""}
-            </div>`;
-        } else {
-            html += `<div class="hall-card"><div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div><div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos.</div><div class="hall-vazio">Nenhuma turma tem <strong>${minimo} alunos</strong> com resultado ainda.</div>${minhaTurmaTurmas ? renderizarAvisoTurmaFora(minhaTurmaTurmas, "0-10") : ""}</div>`;
+        if (modoEventoAtual !== "olimpiadas") {
+            if (dados.turmas && dados.turmas.length > 0) {
+                const top3 = dados.turmas.slice(0, 3);
+                const itensHtml = top3.map((t, i) => {
+                    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉";
+                    const ehMinha = turmaAluno && t.turma === turmaAluno;
+                    return `<li class="hall-item" ${ehMinha ? `style="${ehVoceStyle}"` : ""}>
+                        <span class="hall-item-pos">${medal}</span>
+                        <span class="hall-item-nome">Turma ${escaparHtml(t.turma)}${ehMinha ? ' <span style="color:var(--neon-green);font-weight:800;">← Sua</span>' : ''}<small>${hallFormatarSubLinha(t, "turmas")}</small></span>
+                        <span class="hall-item-valor">${hallFormatarValor(t, "turmas")}</span>
+                    </li>`;
+                }).join("");
+                const botao = dados.turmas.length > 3
+                    ? `<button class="hall-ver-ranking-btn" onclick="abrirHallCategoria('turmas')">🏆 Ver ranking completo (${dados.turmas.length}) →</button>`
+                    : "";
+                html += `<div class="hall-card">
+                    <div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div>
+                    <div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos (modalidade completa 1-10). Mínimo de <strong>${minimo} alunos</strong>.</div>
+                    <ul class="hall-lista">${itensHtml}</ul>
+                    ${botao}
+                    ${minhaTurmaTurmas ? renderizarAvisoTurmaFora(minhaTurmaTurmas, "0-10") : ""}
+                </div>`;
+            } else {
+                html += `<div class="hall-card"><div class="hall-card-titulo"><span class="icone">🏫</span> Turma de Elite</div><div class="hall-card-sub">Turma com a melhor média dos 4 melhores alunos.</div><div class="hall-vazio">Nenhuma turma tem <strong>${minimo} alunos</strong> com resultado ainda.</div>${minhaTurmaTurmas ? renderizarAvisoTurmaFora(minhaTurmaTurmas, "0-10") : ""}</div>`;
+            }
         }
 
         container.innerHTML = html;
