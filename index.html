@@ -10873,20 +10873,18 @@ function verificarVersao() {
 verificarVersao();
 	// ▲▲▲ FIM [05.01]
 
-	// ▼▼▼ [05.02] Firebase e caminhos ──────────────────────────────────────
-// v10.9.0 · Projeto Firebase trocado para classificatoria-copa-tabuada1
-const firebaseConfig = {
-    apiKey: "AIzaSyCYH2ukVT3TexFIpYAVfCsGpD-vaCncGLU",
-    authDomain: "classificatoria-copa-tabuada1.firebaseapp.com",
-    databaseURL: "https://classificatoria-copa-tabuada1-default-rtdb.firebaseio.com",
-    projectId: "classificatoria-copa-tabuada1",
-    storageBucket: "classificatoria-copa-tabuada1.firebasestorage.app",
-    messagingSenderId: "563498510333",
-    appId: "1:563498510333:web:288bd4d26b59be475ddb94"
-    // measurementId: "G-3LB2LLP2DG"  ← opcional; o app não usa Analytics
-};
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+    // ▼▼▼ [05.02] Firebase e caminhos ──────────────────────────────────────
+    const firebaseConfig = {
+        apiKey: "AIzaSyCYH2ukVT3TexFIpYAVfCsGpD-vaCncGLU",
+        authDomain: "classificatoria-copa-tabuada1.firebaseapp.com",
+        databaseURL: "https://classificatoria-copa-tabuada1-default-rtdb.firebaseio.com",
+        projectId: "classificatoria-copa-tabuada1",
+        storageBucket: "classificatoria-copa-tabuada1.firebasestorage.app",
+        messagingSenderId: "563498510333",
+        appId: "1:563498510333:web:288bd4d26b59be475ddb94"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
     const CAMINHO_RANKING = "resultados";
     const CAMINHO_PARTIDAS = "partidas";
@@ -10907,13 +10905,11 @@ const database = firebase.database();
     const CAMINHO_TREINOS_FOCADOS   = "copa_treinos_focados";
     const CAMINHO_TREINOS_POR_MOD   = "copa_treinos_por_modalidade";
     const CAMINHO_EVENTO            = "copa_evento";
-    // v10.9.0 · Otimização de leitura de dados ────────────────────────────
-    // Estes 3 caminhos são o coração da otimização. Ver blocos [05.12] e
-    // [13.12] para detalhes.
     const CAMINHO_RANKING_RESUMO     = "ranking_resumo";
     const CAMINHO_PARTIDAS_POR_ALUNO = "partidas_por_aluno";
     const CAMINHO_OTIMIZACAO_V109    = "config/otimizacao_v109";
-    // ─────────────────────────────────────────────────────────────────────
+    const CAMINHO_HALL_RESUMO        = "copa_hall_resumo"; // ⚠️ NOVO: O "Boletim de Ouro"
+    
     const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
     const PREFIXO_LOCAL_CORES = "copaV2_cores_";
     const PREFIXO_LEGADO_CORES = "ceib_cores_";
@@ -10998,7 +10994,7 @@ const database = firebase.database();
         { id: "tartaruga_ninja",    nome: "Tartaruga Ninja",      icone: "🐢", secao: "primeiros_passos", raridade: "comum",   recompensaEstrelas: 1, requisito: "Completar uma partida com menos de 5 acertos.", descricao: "Toda jornada tem começo.", dica: "Toda jornada tem começo. Continue tentando!", condicao: d => d.temPartidaComBaixoAcerto },
         { id: "sorte_principiante", nome: "Sorte de Principiante",icone: "🍀", secao: "primeiros_passos", raridade: "comum",   recompensaEstrelas: 1, requisito: "Acerte a 1ª pergunta de uma partida.", descricao: "Bom começo!", dica: "A primeira é sempre a mais importante!", condicao: d => d.acertouPrimeiraAlguma },
         { id: "volta_amanha",       nome: "Volta Amanhã",         icone: "🌅", secao: "primeiros_passos", raridade: "incomum", recompensaEstrelas: 2, requisito: "Jogar em 2 dias diferentes.", descricao: "Constância é o segredo.", dica: "Jogue hoje e volte amanhã para ganhar.", condicao: d => d.diasDistintosJogados >= 2 },
-        { id: "rei_chute",           nome: "Rei do Chute",         icone: "🎲", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Acerte 3 questões em menos de 0,8s cada.", descricao: "Rápido no gatilho!", dica: "Seja rápido sem perder a precisão.", condicao: d => d.temposRapidosMax >= 3 },
+        { id: "rei_chute",           nome: "Rei do Chute",         icone: "🎲", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Acerte 3 questões em 1s ou menos cada.", descricao: "Rápido no gatilho!", dica: "Seja rápido sem perder a precisão.", condicao: d => d.temposRapidosMax >= 3 },
         { id: "raio",                nome: "Raio",                 icone: "⚡", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Ter tempo médio abaixo de 2,0s em uma partida.", descricao: "Você é veloz!", dica: "Responda rápido e mantenha o ritmo.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 2.0 },
         { id: "velocidade_relampago",nome: "Velocidade Relâmpago", icone: "🚀", secao: "velocidade", raridade: "raro",    recompensaEstrelas: 3, requisito: "Acerte 20/20 com tempo médio abaixo de 1,2s.", descricao: "Perfeição e velocidade juntas.", dica: "Perfeição e velocidade juntas — o desafio máximo.", condicao: d => d.partidasCom20Acertos >= 1 && d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito < 1.2 },
         { id: "ventania",            nome: "Ventania",             icone: "💨", secao: "velocidade", raridade: "raro",    recompensaEstrelas: 3, requisito: "Ter tempo médio abaixo de 1,5s em uma partida.", descricao: "Rápido como o vento!", dica: "Você precisa ser mais rápido que a média.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 1.5 },
@@ -11036,7 +11032,6 @@ const database = firebase.database();
         { id: "vaga_garantida",     nome: "Vaga Garantida",     icone: "🎟️",secao: "rumo_final", raridade: "raro",    recompensaEstrelas: 3, requisito: "Entrar no Top 4 da sua turma em qualquer modalidade.", descricao: "Vaga garantida!", dica: "Fique entre os 4 melhores da sua turma.", condicao: d => d.melhorPosicao !== null && d.melhorPosicao <= 4 },
         { id: "consistente",        nome: "Consistente",        icone: "🛡️",secao: "rumo_final", raridade: "epico",   recompensaEstrelas: 5, requisito: "Ficar no Top 4 por 3 dias diferentes.", descricao: "Consistência é tudo!", dica: "Mantenha sua posição por vários dias.", condicao: d => d.diasNoTop4 >= 3 },
         { id: "classificado_triplo",nome: "Classificado Triplo",icone: "🏆", secao: "rumo_final", raridade: "epico",   recompensaEstrelas: 5, requisito: "Ficar no Top 4 em 2 ou mais modalidades.", descricao: "Polivalente!", dica: "Domine múltiplas modalidades.", condicao: d => d.modalidadesTop4 >= 2 },
-        // ⚙️ NOVA SEÇÃO: Consistência (médias de pontos por modalidade)
         { id: "primeira_media",  nome: "Primeira Média",   icone: "🏅", secao: "consistencia", raridade: "comum",    recompensaEstrelas: 2,  requisito: "Ter média ≥ 8.000 pts em qualquer modalidade.", descricao: "Sua média começou a brilhar.", dica: "Jogue mais partidas oficiais e mantenha um bom ritmo.", condicao: d => d.mediaMaxima >= 8000 },
         { id: "consistente_media", nome: "Consistente",    icone: "🎖️", secao: "consistencia", raridade: "incomum",  recompensaEstrelas: 4,  requisito: "Ter média ≥ 12.000 pts em qualquer modalidade.", descricao: "Você está cada vez mais regular.", dica: "Mantenha o ritmo — a média reflete o conjunto das partidas.", condicao: d => d.mediaMaxima >= 12000 },
         { id: "regular_media",   nome: "Regular",          icone: "🏆", secao: "consistencia", raridade: "raro",     recompensaEstrelas: 8,  requisito: "Ter média ≥ 15.000 pts em qualquer modalidade.", descricao: "Poucos chegam aqui com consistência.", dica: "Acerte rápido e sem erros, partida após partida.", condicao: d => d.mediaMaxima >= 15000 },
@@ -13733,7 +13728,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
         ]);
 
-        // ▼ Otimização para Olimpíadas: Se não for classificatória/ambos, não busca posições
         let listasPorMod = [[], [], []];
         if (modoEventoAtual !== "olimpiadas") {
             listasPorMod = await Promise.all(
@@ -13744,13 +13738,32 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const ordenadas = [...partidas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
         const totalPartidas = partidas.length;
         const melhorPontuacao = partidas.length ? Math.max(...partidas.map(p => Number(p.pontos) || 0)) : 0;
+        
+        const totalAcertos = todasPartidas.reduce((sum, p) => sum + (Number(p.acertos) || 0), 0);
+
         const partidasCom20Acertos = partidas.filter(p => Number(p.acertos) === 20).length;
         const maiorSequenciaMax = partidas.length ? Math.max(...partidas.map(p => Number(p.maiorSequencia) || 0)) : 0;
         const temposRapidosMax = partidas.length ? Math.max(...partidas.map(p => Number(p.temposRapidos) || 0)) : 0;
         const partidasValidas = partidas.filter(p => Number(p.acertos) >= 10 && Number(p.tempoMedio) > 0);
         const melhorTempoMedio = partidasValidas.length ? Math.min(...partidasValidas.map(p => Number(p.tempoMedio))) : null;
+        
         const perfeitas = partidas.filter(p => Number(p.acertos) === 20 && Number(p.tempoMedio) > 0);
         const melhorTempoMedioPerfeito = perfeitas.length ? Math.min(...perfeitas.map(p => Number(p.tempoMedio))) : null;
+        
+        // ⚠️ NOVO: Lógica corrigida para o Hall da Fama (Mestre da Velocidade)
+        let maxTemposRapidosPerfeito = 0;
+        let melhorTempoPerfeitoParaHall = null;
+        perfeitas.forEach(p => {
+            const tr = Number(p.temposRapidos) || 0;
+            const tm = Number(p.tempoMedio) || 999;
+            if (tr > maxTemposRapidosPerfeito) {
+                maxTemposRapidosPerfeito = tr;
+                melhorTempoPerfeitoParaHall = tm;
+            } else if (tr === maxTemposRapidosPerfeito && (melhorTempoPerfeitoParaHall === null || tm < melhorTempoPerfeitoParaHall)) {
+                melhorTempoPerfeitoParaHall = tm;
+            }
+        });
+
         const perfeitasOuQuase = partidas.filter(p => Number(p.acertos) >= 19 && Number(p.tempoMedio) > 0);
         const melhorTempoMedio19Ou20 = perfeitasOuQuase.length ? Math.min(...perfeitasOuQuase.map(p => Number(p.tempoMedio))) : null;
         const acertouPrimeiraAlguma = partidas.some(p => p.acertouPrimeira === true);
@@ -13880,9 +13893,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const todasMedias17k = modalidadesCom17k === 3;
 
         return {
-            totalPartidas, melhorPontuacao,
+            totalPartidas, melhorPontuacao, totalAcertos,
             partidasCom20Acertos, maiorSequenciaMax, conquistasCount,
             temposRapidosMax, melhorTempoMedio, melhorTempoMedioPerfeito, melhorTempoMedio19Ou20,
+            maxTemposRapidosPerfeito, melhorTempoPerfeitoParaHall,
             acertouPrimeiraAlguma, temPartidaComBaixoAcerto,
             diasDistintosJogados, maxPartidasEmUmDia, temJogoNoturno,
             temVoltaPorCima, melhorouNaSegundaTentativa,
@@ -14021,8 +14035,69 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (!persistidas[m.id]) { persistidas[m.id] = { data: agora }; novas.push(m.id); }
         });
         if (novas.length > 0) await salvarMedalsFirebase(nome, turma, persistidas);
+        
         const secoes = await verificarSecoesCompletas(nome, turma, persistidas);
+        
+        await salvarResumoHall(nome, turma, dados, persistidas, secoes.secoesCompletas, secoes.estrelas);
+
         return { persistidas, novas, dados, novasSecoes: secoes.novasSecoes, estrelas: secoes.estrelas, secoesCompletas: secoes.reg };
+    }
+
+    async function salvarResumoHall(nome, turma, dados, persistidas, secoesCompletas, estrelas) {
+        try {
+            const chave = chaveAlbum(nome, turma);
+            
+            const pesosRar = { comum: 1, incomum: 2, raro: 3, epico: 5, lendario: 8 };
+            let scoreRaro = 0;
+            let qtdRaras = 0;
+            Object.keys(persistidas).forEach(id => {
+                const m = MEDALS_POR_ID[id];
+                if (!m) return;
+                scoreRaro += pesosRar[m.raridade] || 1;
+                if (m.raridade === "raro" || m.raridade === "epico" || m.raridade === "lendario") qtdRaras++;
+            });
+
+            let bonusSecoes = 0;
+            let qtdSecoesCompletas = 0;
+            SECOES.forEach(s => {
+                if (!secoesCompletas || !secoesCompletas[s.id]) return;
+                const medsSecao = MEDALS.filter(m => m.secao === s.id);
+                const somaPesos = medsSecao.reduce((sum, m) => sum + (pesosRar[m.raridade] || 1), 0);
+                bonusSecoes += Math.round(somaPesos * 0.7);
+                qtdSecoesCompletas++;
+            });
+
+            const scoreAlbum = scoreRaro + bonusSecoes;
+            const qtdMedalhas = Object.keys(persistidas).length;
+            const pctMapa = Math.round((dados.operacoesDominadas / TOTAL_OPERACOES_MAPA) * 100);
+
+            const resumo = {
+                nome: nome,
+                turma: turma,
+                qtdMedalhas: qtdMedalhas,
+                qtdEstrelas: estrelas,
+                scoreAlbum: scoreAlbum,
+                qtdRaras: qtdRaras,
+                qtdSecoesCompletas: qtdSecoesCompletas,
+                pctMapa: pctMapa,
+                dominadas: dados.operacoesDominadas,
+                totalAcertos: dados.totalAcertos,
+                totalPartidas: dados.totalPartidas,
+                diasDistintos: dados.diasDistintosJogados,
+                treinosFocados: dados.treinosFocados,
+                maxTemposRapidosPerfeito: dados.maxTemposRapidosPerfeito || 0,
+                melhorTempoPerfeito: dados.melhorTempoPerfeitoParaHall || dados.melhorTempoMedioPerfeito || 0,
+                mediaGeral: (dados.media25 + dados.media69 + dados.media010) / 3,
+                media25: dados.media25,
+                media69: dados.media69,
+                media010: dados.media010,
+                atualizadoEm: Date.now()
+            };
+
+            await database.ref(`${CAMINHO_HALL_RESUMO}/${chave}`).set(resumo);
+        } catch(e) {
+            console.warn("[Hall Resumo] Falha ao salvar boletim:", e);
+        }
     }
 
     async function verificarSecoesCompletas(nome, turma, persistidas) {
@@ -14042,12 +14117,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const alterou = novasSecoes.length > 0 || !reg._vistoEm;
         if (alterou) await salvarSecoesCompletas(nome, turma, reg);
 
-        // Soma estrelas: medalhas + seções completas + certificados
         let estrelas = 0;
         Object.keys(persistidas).forEach(id => { const m = MEDALS_POR_ID[id]; if (m) estrelas += m.recompensaEstrelas; });
         SECOES.forEach(s => { if (reg[s.id]) estrelas += s.recompensaCompleta.estrelas; });
 
-        // Certificados conquistados (Prata/Ouro/Lendária) também contam estrelas
         try {
             const certs = await obterCertificadosFirebase(nome, turma);
             Object.keys(certs || {}).forEach(mod => {
@@ -17631,7 +17704,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         alternarBotoes(true);
         temposRespostas.push({ acertou, tempo });
         if (perguntaAtual === 1 && acertou) acertouPrimeira = true;
-        if (acertou && tempo < 0.8) temposRapidos++;
+        
+        // ⚠️ NOVO: Agora conta acertos em 1 segundo ou menos
+        if (acertou && tempo <= 1.0) temposRapidos++;
+        
         if (acertou) somAcerto(); else somErro();
         if (!modoTreino && !acertou) {
             const d = document.getElementById("pergunta");
@@ -17640,7 +17716,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const pAntes = pontosAcumulados;
         pontosAcumulados += pontos;
 
-        // Estatística por tabuada (mantida)
         const tab = tabuadaAtualPergunta;
         if (tab !== null && !isNaN(tab)) {
             if (!desempenhoTabuadas[tab]) desempenhoTabuadas[tab] = { acertos: 0, total: 0, tempoTotal: 0 };
@@ -17649,14 +17724,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (acertou) desempenhoTabuadas[tab].acertos++;
         }
 
-        // ▼▼▼ NOVO FORMATO: guarda cada resposta individual para a janela deslizante
         const u = perguntasGeradas[perguntasGeradas.length - 1];
         if (u) {
             const k = `${u.fA}x${u.fB}`;
             if (!desempenhoOperacoes[k]) desempenhoOperacoes[k] = { respostas: [] };
             desempenhoOperacoes[k].respostas.push({ acertou, tempo: tempo || 0 });
         }
-        // ▲▲▲
 
         if (acertou) {
             acertos++; sequenciaAtual++; maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
@@ -17665,15 +17738,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         } else { erros++; sequenciaAtual = 0; }
         atualizarStatus(pAntes);
 
-        // ▼▼▼ Feedback rico no treino: pausa quando erra
         if (modoTreino && !acertou) {
             const u2 = perguntasGeradas[perguntasGeradas.length - 1] || {};
             const fA = u2.fA || tabuadaAtualPergunta || 1;
             const fB = u2.fB || 1;
             mostrarFeedbackErroTreino(fA, fB, respostaCorreta);
-            return; // não chama proximaPergunta — o aluno decide quando avançar
+            return;
         }
-        // ▲▲▲
 
         setTimeout(() => { if (!finalizando) proximaPergunta(); }, 250);
     }
@@ -21589,7 +21660,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (tipoValor === "medalhas")      return `${item.qtdMedalhas} 🏅`;
         if (tipoValor === "estrelas")      return `${item.qtdEstrelas} ⭐`;
         if (tipoValor === "album")         return `${item.scoreAlbum} pts`;
-        if (tipoValor === "mapa")          return `${item.pctMapa}%`; // Não mostrará contagem exata se não tivermos o mapa
+        if (tipoValor === "mapa")          return `${item.pctMapa}%`;
         if (tipoValor === "velocidade")    return `${item.maxTemposRapidosPerfeito} ⚡`;
         if (tipoValor === "acertos")       return `${item.totalAcertos} ✅`;
         if (tipoValor === "maratonista")   return `${item.totalPartidas} 🎮`;
@@ -21605,13 +21676,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (tipoValor === "album") {
             sub += ` · ${item.qtdRaras} raras · ${item.qtdSecoesCompletas} ${item.qtdSecoesCompletas === 1 ? "seção" : "seções"}`;
         } else if (tipoValor === "velocidade") {
-            const tPerf = Number.isFinite(item.melhorTempoPerfeito) && item.melhorTempoPerfeito !== Infinity
+            const tPerf = Number.isFinite(item.melhorTempoPerfeito) && item.melhorTempoPerfeito > 0
                 ? item.melhorTempoPerfeito.toFixed(2) + "s" : "—";
-            sub += ` · ${item.partidasPerfeitas} ${item.partidasPerfeitas === 1 ? "perfeita" : "perfeitas"} · ${tPerf}`;
+            sub += ` · ${item.totalPartidas} partidas · ${tPerf}`;
         } else if (tipoValor === "maratonista") {
-            sub += ` · média ${Math.round(item.mediaPontos).toLocaleString("pt-BR")} pts`;
+            sub += ` · média ${Math.round(item.mediaGeral).toLocaleString("pt-BR")} pts`;
         } else if (tipoValor === "presenca") {
-            sub += ` · ${item.totalPartidas} ${item.totalPartidas === 1 ? "partida" : "partidas"}`;
+            sub += ` · ${item.totalPartidas} partidas`;
         } else if (tipoValor === "treino") {
             sub += ` · ${item.totalAcertos} acertos totais`;
         } else if (tipoValor === "turmas") {
@@ -21668,134 +21739,52 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando os destaques da Copa…</div>`;
 
         try {
-            const metricas = await calcularMetricasHallFama();
-            const alunosUnicos = new Map();
-
-            if (await otimizacaoV109Ativa()) {
-                const snap = await database.ref(`${CAMINHO_RANKING_RESUMO}/media`).once("value");
-                const dados = snap.val() || {};
-                for (const mod of ["2-5", "6-9", "0-10"]) {
-                    const alunosMod = dados[mod] || {};
-                    Object.values(alunosMod).forEach(a => {
-                        if (!a || !a.nome) return;
-                        const k = `${normalizarNome(a.nome)}|${a.turma}`;
-                        if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: a.nome, turma: a.turma });
-                    });
-                }
-            } else {
-                const ranking = await obterRanking();
-                ranking.forEach(r => {
-                    const k = `${normalizarNome(r.nome)}|${r.turma}`;
-                    if (!alunosUnicos.has(k)) alunosUnicos.set(k, { nome: r.nome, turma: r.turma });
-                });
-            }
-
-            // ⚠️ OTIMIZAÇÃO: Leitura em lote de nós LEVES (sem o mapa completo)
-            const [snapMedals, snapSecoes, snapCerts, snapTreinos] = await Promise.all([
-                database.ref(CAMINHO_MEDALS).once("value").catch(() => null),
-                database.ref(CAMINHO_SECOES_COMPLETAS).once("value").catch(() => null),
-                database.ref(CAMINHO_CERTIFICADOS).once("value").catch(() => null),
-                database.ref(CAMINHO_TREINOS_FOCADOS).once("value").catch(() => null)
+            const [snapHall, turmaInfo] = await Promise.all([
+                database.ref(CAMINHO_HALL_RESUMO).once("value"),
+                (modoEventoAtual !== "olimpiadas") ? calcularMediasTop4Turmas("0-10").catch(() => null) : Promise.resolve(null)
             ]);
 
-            const dadosMedals = snapMedals ? snapMedals.val() || {} : {};
-            const dadosSecoes = snapSecoes ? snapSecoes.val() || {} : {};
-            const dadosCerts = snapCerts ? snapCerts.val() || {} : {};
-            const dadosTreinos = snapTreinos ? snapTreinos.val() || {} : {};
+            const dadosHall = snapHall.val() || {};
+            const destaques = { medalhas: [], estrelas: [], album: [], mapa: [], velocidade: [], acertos: [], maratonista: [], presenca: [], treino: [], media: [] };
 
-            const destaques = { medalhas: [], estrelas: [], album: [], mapa: [] };
+            Object.values(dadosHall).forEach(aluno => {
+                if (!aluno || !aluno.nome) return;
 
-            alunosUnicos.forEach((aluno, chave) => {
-                const persistidas = dadosMedals[chave] || {};
-                const secoesReg = dadosSecoes[chave] || {};
-                const certsAluno = dadosCerts[chave] || {};
-                const treinosFocados = dadosTreinos[chave] ? Number(dadosTreinos[chave]) || 0 : 0;
-
-                const qtdMedalhas = Object.keys(persistidas).length;
-                let qtdEstrelas = 0;
-
-                Object.keys(persistidas).forEach(id => {
-                    const m = MEDALS_POR_ID[id];
-                    if (m) qtdEstrelas += m.recompensaEstrelas;
-                });
-
-                SECOES.forEach(s => { if (secoesReg[s.id]) qtdEstrelas += s.recompensaCompleta.estrelas; });
-
-                Object.keys(certsAluno || {}).forEach(mod => {
-                    const pMod = certsAluno[mod] || {};
-                    Object.keys(pMod).forEach(nivel => {
-                        const cfg = CERT_NIVEIS[nivel];
-                        if (cfg && cfg.estrelas) qtdEstrelas += cfg.estrelas;
-                    });
-                });
-
-                // ⚠️ Nota: Sem ler o mapa completo, estimamos o progresso pelo número de certificados
-                const temCertLendario = certsAluno["0-10"] && certsAluno["0-10"].lendaria;
-                const pctMapaEstimado = temCertLendario ? 100 : Math.min(99, qtdMedalhas * 2); // Estimativa visual apenas
-
-                if (qtdMedalhas > 0) {
-                    destaques.medalhas.push({ ...aluno, qtdMedalhas });
-                    destaques.estrelas.push({ ...aluno, qtdEstrelas });
-
-                    const pesosRar = { comum: 1, incomum: 2, raro: 3, epico: 5, lendario: 8 };
-                    let scoreRaro = 0;
-                    let qtdRaras = 0;
-                    Object.keys(persistidas).forEach(id => {
-                        const m = MEDALS_POR_ID[id];
-                        if (!m) return;
-                        scoreRaro += pesosRar[m.raridade] || 1;
-                        if (m.raridade === "raro" || m.raridade === "epico" || m.raridade === "lendario") qtdRaras++;
-                    });
-
-                    let bonusSecoes = 0;
-                    let qtdSecoesCompletas = 0;
-                    SECOES.forEach(s => {
-                        if (!secoesReg[s.id]) return;
-                        const medsSecao = MEDALS.filter(m => m.secao === s.id);
-                        const somaPesos = medsSecao.reduce((sum, m) => sum + (pesosRar[m.raridade] || 1), 0);
-                        bonusSecoes += Math.round(somaPesos * 0.7);
-                        qtdSecoesCompletas++;
-                    });
-
-                    const scoreAlbum = scoreRaro + bonusSecoes;
-                    destaques.album.push({
-                        ...aluno,
-                        qtdMedalhas, pctAlbum: Math.round((qtdMedalhas / MEDALS.length) * 100),
-                        scoreRaro, bonusSecoes, scoreAlbum, qtdRaras, qtdSecoesCompletas
-                    });
-                }
-                
-                // O card do mapa agora usa a estimativa
-                if (pctMapaEstimado > 0) {
-                    destaques.mapa.push({ ...aluno, dominadas: temCertLendario ? 100 : 0, pctMapa: pctMapaEstimado });
-                }
+                destaques.medalhas.push(aluno);
+                destaques.estrelas.push(aluno);
+                destaques.album.push(aluno);
+                destaques.mapa.push(aluno);
+                destaques.velocidade.push(aluno);
+                destaques.acertos.push(aluno);
+                destaques.maratonista.push(aluno);
+                destaques.presenca.push(aluno);
+                destaques.treino.push(aluno);
+                destaques.media.push(aluno);
             });
 
             destaques.medalhas.sort((a, b) => b.qtdMedalhas - a.qtdMedalhas);
             destaques.estrelas.sort((a, b) => b.qtdEstrelas - a.qtdEstrelas);
             destaques.album.sort((a, b) => b.scoreAlbum - a.scoreAlbum || b.qtdMedalhas - a.qtdMedalhas);
-            destaques.mapa.sort((a, b) => b.pctMapa - a.pctMapa);
+            destaques.mapa.sort((a, b) => b.pctMapa - a.pctMapa || b.dominadas - a.dominadas);
+            destaques.velocidade.sort((a, b) => b.maxTemposRapidosPerfeito - a.maxTemposRapidosPerfeito || a.melhorTempoPerfeito - b.melhorTempoPerfeito);
+            destaques.acertos.sort((a, b) => b.totalAcertos - a.totalAcertos);
+            destaques.maratonista.sort((a, b) => b.totalPartidas - a.totalPartidas);
+            destaques.presenca.sort((a, b) => b.diasDistintos - a.diasDistintos || b.totalPartidas - a.totalPartidas);
+            destaques.treino.sort((a, b) => b.treinosFocados - a.treinosFocados || b.totalAcertos - a.totalAcertos);
+            
+            let listaMedia = [];
+            try { listaMedia = await obterRankingMediaGeralCombinada(null); } catch(e) {}
+            destaques.media = listaMedia;
 
-            destaques.velocidade  = metricas.velocidade;
-            destaques.acertos     = metricas.acertos;
-            destaques.maratonista = metricas.maratonista;
-            destaques.presenca    = metricas.presenca;
-            destaques.treino      = metricas.treino;
-            destaques.media       = metricas.media;
-
-            let turmaInfo = null;
-            if (modoEventoAtual !== "olimpiadas") {
-                try {
-                    const r = await calcularMediasTop4Turmas("0-10");
-                    turmaInfo = r;
-                } catch(e) { console.warn("Falha ao calcular Turma de Elite:", e); }
-            }
+            const mestresEmJornada = await calcularMestresMapa(destaques.mapa);
 
             hallFamaCache = {
                 medalhas:     destaques.medalhas,
                 estrelas:     destaques.estrelas,
                 album:        destaques.album,
                 mapa:         destaques.mapa,
+                mestres:      mestresEmJornada.mestres,
+                emJornada:    mestresEmJornada.emJornada,
                 velocidade:   destaques.velocidade,
                 acertos:      destaques.acertos,
                 maratonista:  destaques.maratonista,
@@ -21805,7 +21794,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 turmas:       turmaInfo ? turmaInfo.ranking : [],
                 minhaTurmaTurmas: turmaInfo ? turmaInfo.minhaTurma : null,
                 minimoTurma:  turmaInfo ? turmaInfo.minimo : MIN_ALUNOS_RANKING_TURMA,
-                totalAlunos:  alunosUnicos.size
+                totalAlunos:  Object.keys(dadosHall).length
             };
 
             hallFamaUltimaAtualizacao = Date.now();
@@ -21850,8 +21839,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             const linhaPosicao = hallLinhaPosicao(lista, tipoValor);
 
-            // ⚠️ REMOVIDO: O botão "Ver ranking completo" foi deletado daqui.
-
             return `<div class="hall-card">
                 <div class="hall-card-titulo"><span class="icone">${iconeTitulo}</span> ${titulo}</div>
                 <div class="hall-card-sub">${subtitulo}</div>
@@ -21861,12 +21848,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         };
 
         let html = "";
-
         html += buildCard("Mais Medalhas", "Quem colecionou o maior número de medalhas no Álbum.", "🏅", dados.medalhas, "medalhas");
         html += buildCard("Mais Estrelas", "Quem acumulou mais estrelas — as medalhas raras valem mais.", "⭐", dados.estrelas, "estrelas");
         html += buildCard("Álbum de Elite", "Raridade das medalhas + bônus por seções completas.", "💎", dados.album, "album");
-        html += buildCard("Maior Mapa Verde", "Quem dominou mais operações (estimado pelos certificados).", "🗺️", dados.mapa, "mapa");
-        html += buildCard("Mestre da Velocidade", "Quem acertou 20/20 e deu mais respostas abaixo de 0,8s.", "🏆", dados.velocidade, "velocidade");
+        
+        // ⚠️ TEXTO CORRIGIDO
+        html += buildCard("Maior Mapa Verde", "Quem dominou mais operações do mapa (90% de acerto em 5+ tentativas).", "🗺️", dados.mapa, "mapa");
+        html += buildCard("Mestre da Velocidade", "Quem acertou 20/20 e deu mais respostas em até 1 segundo.", "🏆", dados.velocidade, "velocidade");
+        
         html += buildCard("Presença VIP", "Quem jogou em mais dias diferentes.", "📅", dados.presenca, "presenca");
         html += buildCard("Mestre do Treino", "Quem mais completou treinos identificados.", "🧠", dados.treino, "treino");
 
@@ -23336,10 +23325,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [18.08]
 
     // ▼▼▼ [18.09] Modal "Como funciona o Hall da Fama" ──────────────
-    // v10.6.x · Explicação pedagógica do Hall da Fama. Lista as 11
-    // categorias, explica como entrar, critérios mínimos e destaques.
-    // Reutiliza as classes genéricas do modal do Ranking ([02.73]/[04.19]).
-
     function construirConteudoComoFuncionaHall() {
         return `
             <div class="hall-desc-titulo"><span aria-hidden="true">🏆</span> Como funciona o Hall da Fama</div>
@@ -23370,7 +23355,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 </div>
                 <div class="hall-desc-categoria cat-velocidade">
                     <strong><span class="hall-desc-cat-emoji">🏆</span> Mestre da Velocidade</strong>
-                    Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas abaixo de 0,8s.
+                    Quem acertou 20/20 e, nessa partida perfeita, deu mais respostas em até 1 segundo.
                 </div>
                 <div class="hall-desc-categoria cat-acertos">
                     <strong><span class="hall-desc-cat-emoji">✅</span> Total de Acertos</strong>
@@ -23439,7 +23424,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         document.body.style.overflow = "";
     }
 
-    // Fechar com tecla ESC (instalado uma única vez)
     if (!window._modalExplicacaoHallEscInstalado) {
         window._modalExplicacaoHallEscInstalado = true;
         document.addEventListener("keydown", function (e) {
