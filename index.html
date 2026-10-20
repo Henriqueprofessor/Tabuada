@@ -9857,6 +9857,15 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <div id="painel-versao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
                 </div>
 
+                <!-- NOVO: Forçar Atualização -->
+                <div class="senha-container" style="border-left: 4px solid #f59e0b;">
+                    <h4 style="margin-top:0; color: #fde68a;">🚀 Forçar Atualização Global</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">
+                        Se você alterou o encerramento do evento ou publicou um HTML novo, clique aqui. Isso enviará um comando para <strong>recarregar a página</strong> de todos os alunos que estiverem com o app aberto neste exato momento. 
+                    </p>
+                    <button onclick="forcarAtualizacaoGlobal()" class="botao-forcar" style="width:100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; font-weight: 800;">⚡ Forçar Recarregamento em Todos os Alunos</button>
+                </div>
+
                 <div class="senha-container">
                     <h4 style="margin-top:0;">📦 Otimização de leitura (v10.9.0)</h4>
                     <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">
@@ -21158,6 +21167,29 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▲▲▲ FIM [17.12]
 
+    // ▼▼▼ [17.13] Forçar Atualização Global ─── INÍCIO ───
+    async function forcarAtualizacaoGlobal() {
+        if (!exigirProfessorAutenticado()) return;
+        
+        const ok = confirm(
+            "🚀 FORÇAR ATUALIZAÇÃO\n\n" +
+            "Todos os alunos que estiverem com o aplicativo aberto neste momento terão a tela recarregada automaticamente.\n\n" +
+            "Use isso após publicar um HTML novo no GitHub ou alterar regras no painel.\n\n" +
+            "Deseja enviar o comando?"
+        );
+        if (!ok) return;
+
+        try {
+            await database.ref("config/comando_reload").set(Date.now());
+            notificar("✅ Comando de atualização enviado!", "sucesso", 4000);
+            try { somNovoRecorde(); } catch(e) {}
+        } catch(e) {
+            console.warn("[Sistema] Falha ao enviar comando:", e);
+            notificar("❌ Não foi possível enviar o comando.", "erro");
+        }
+    }
+    // ▲▲▲ FIM [17.13]
+
     // ▼▼▼ [17.10] Painel — Publicação de versão ───────────────────────
     const CAMINHO_ULTIMA_VERSAO_PAINEL = "config/ultimaVersao";
     const CAMINHO_VERSAO_META_PAINEL = "config/ultimaVersaoMeta";
@@ -24845,6 +24877,9 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         // ─── PWA: registra Service Worker (opcional; falha em silêncio) ───
         registrarServiceWorker();
 
+        // ─── ATIVA O LISTENER DE ATUALIZAÇÃO FORÇADA ───
+        iniciarListenerAtualizacaoForcada();
+
         // ─── Carrega o modo do evento (Classificatória ou Olimpíadas) ───
         await obterModoEvento();
 
@@ -25098,6 +25133,33 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         if (typeof abrirChangelog === "function") abrirChangelog();
     }
     // ▲▲▲ FIM [19.04]
+
+    // ▼▼▼ [19.04.bis] Listener de Atualização Forçada ─── INÍCIO ───
+    function iniciarListenerAtualizacaoForcada() {
+        try {
+            database.ref("config/comando_reload").on("value", (snap) => {
+                const ts = snap.val();
+                if (!ts) return;
+                
+                // Verifica se este comando é mais novo que o último recarregamento
+                const ultimo = Number(localStorage.getItem('ultimo_reload_forcado') || 0);
+                if (ts > ultimo) {
+                    // Salva o timestamp para não entrar em loop infinito
+                    localStorage.setItem('ultimo_reload_forcado', ts);
+                    
+                    console.info("[Sistema] O professor solicitou uma atualização. Recarregando...");
+                    
+                    // Faz um "cache-bust" na URL para garantir que baixe o HTML novo
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("v", Date.now().toString(36));
+                    window.location.replace(url.toString());
+                }
+            });
+        } catch(e) {
+            console.info("[Sistema] Listener de atualização indisponível.");
+        }
+    }
+    // ▲▲▲ FIM [19.04.bis]
 
     // ▼▼▼ [19.05] Botão "Verificar versão" — consulta sob demanda ─────
     // v10.4.9 · Handler do botão 🔄 ao lado do badge.
