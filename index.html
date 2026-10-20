@@ -11636,7 +11636,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     let modalMapaBackup = null;
 
     const STORAGE_FOCO_MOD = "copa_foco_mod";
-    let _homeMapaCache = null; // ⚠️ NOVO: Cache para evitar dupla leitura na Home
+    let _homeMapaCache = null; // { alunoKey, dados }
 
     async function renderizarMapaHome() {
         const container = document.getElementById("mapa-home-container");
@@ -11660,10 +11660,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const todasChaves = [];
             FATORES_MAPA.forEach(a => FATORES_MAPA.forEach(b => todasChaves.push(`${a}x${b}`)));
             const totalOps = todasChaves.length;
+            const alunoKey = chaveAlbum(nome, turma);
 
-            // ⚠️ OTIMIZAÇÃO: Verifica se já temos no cache antes de bater no Firebase
-            const mapaGlobal = _homeMapaCache || await obterDesempenhoOperacoesGlobal(nome, turma);
-            _homeMapaCache = mapaGlobal;
+            // ⚠️ OTIMIZAÇÃO: Verifica se o cache é do aluno atual
+            let mapaGlobal;
+            if (_homeMapaCache && _homeMapaCache.alunoKey === alunoKey) {
+                mapaGlobal = _homeMapaCache.dados;
+            } else {
+                mapaGlobal = await obterDesempenhoOperacoesGlobal(nome, turma);
+                _homeMapaCache = { alunoKey, dados: mapaGlobal };
+            }
 
             const pendentesPorMod = {};
             const dominadasPorMod = {};
@@ -11766,6 +11772,138 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 <div class="mapa-home-vazio">Não foi possível carregar agora.</div>
             </div>`;
         }
+    }
+
+    function escolherModFoco(mod) {
+        if (!MODALIDADES[mod]) return;
+        localStorage.setItem(STORAGE_FOCO_MOD, mod);
+        renderizarMapaHome();
+    }
+
+    async function iniciarTreinoInteligenteParaMod(mod) {
+        if (!MODALIDADES[mod]) return;
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { notificar("Você precisa se identificar.", "aviso"); return; }
+        alunoAtual = nome;
+        turmaAtual = turma;
+        modalidadeAtual = mod;
+        treinoAnonimo = false;
+        treinoFocoOperacoes = null;
+        treinoListaInteligente = null;
+        treinoFocoAbsoluto = null;
+        await carregarFocoTreino(nome, turma, mod);
+        await iniciarTreinoInteligente();
+    }
+
+    async function abrirMapaCompleto() {
+        const modal = document.getElementById("modal-mapa-completo");
+        const container = document.getElementById("modal-mapa-completo-conteudo");
+        if (!modal || !container) return;
+
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+
+        if (!nome || !turma) {
+            container.innerHTML = `<div class="mapa-home-vazio" style="padding:28px 12px;">Você ainda não se identificou.<br>Jogue uma partida para liberar o mapa completo.</div>`;
+            modal.classList.remove("hidden");
+            setTimeout(() => document.querySelector("#modal-mapa-completo .modal-close")?.focus(), 80);
+            return;
+        }
+
+        container.innerHTML = `<div class="desempenho-loading">⏳ Carregando seu mapa…</div>`;
+        modal.classList.remove("hidden");
+        setTimeout(() => document.querySelector("#modal-mapa-completo .modal-close")?.focus(), 80);
+
+        try {
+            modalMapaBackup = { mapaFonteAgregada, mapaFonteUltima, modalidadeAtual, modoVisualizacaoMapa };
+
+            alunoAtual = nome;
+            turmaAtual = turma;
+            treinoFocoOperacoes = null;
+            treinoListaInteligente = null;
+            treinoFocoAbsoluto = null;
+
+            modalMapaFonteAgregada = await obterDesempenhoOperacoesGlobal(nome, turma);
+
+            try {
+                const partidas = await obterHistoricoAluno(nome, turma);
+                if (partidas && partidas.length && partidas[0].desempenhoOperacoes) {
+                    modalMapaFonteUltima = partidas[0].desempenhoOperacoes;
+                } else {
+                    modalMapaFonteUltima = {};
+                }
+            } catch(e) {
+                modalMapaFonteUltima = {};
+            }
+
+            trocarModMapaCompleto("todas");
+        } catch(e) {
+            console.warn("Falha ao abrir mapa completo:", e);
+            container.innerHTML = `<div class="mapa-home-vazio" style="padding:28px 12px;">Não foi possível carregar seu mapa agora.<br>Tente novamente em instantes.</div>`;
+        }
+    }
+
+    function renderizarModalMapaCompleto() {
+        const container = document.getElementById("modal-mapa-completo-conteudo");
+        if (!container) return;
+
+        const abas = [
+            { id: "todas", label: "🌐 Todas", titulo: "Todas as tabuadas (1 a 10)" },
+            { id: "2-5",   label: "📚 2-5",   titulo: "Só as tabuadas 2, 3, 4 e 5" },
+            { id: "6-9",   label: "🎯 6-9",   titulo: "Só as tabuadas 6, 7, 8 e 9" }
+        ];
+
+        const tabsHtml = abas.map(a => {
+            const ativa = modalMapaMod === a.id ? "ativa" : "";
+            return `<button class="mapa-completo-tab ${ativa}" onclick="trocarModMapaCompleto('${a.id}')" aria-pressed="${modalMapaMod === a.id}" title="${escaparHtml(a.titulo)}">${a.label}</button>`;
+        }).join("");
+
+        container.innerHTML = `
+            <div class="mapa-completo-tabs" role="tablist" aria-label="Visão do mapa">${tabsHtml}</div>
+            <div id="modal-mapa-completo-map-area">${renderizarMapa()}</div>
+        `;
+    }
+
+    function trocarModMapaCompleto(mod) {
+        if (mod !== "todas" && mod !== "2-5" && mod !== "6-9") return;
+        modalMapaMod = mod;
+
+        mapaFonteAgregada = modalMapaFonteAgregada;
+        mapaFonteUltima    = modalMapaFonteUltima;
+
+        modalidadeAtual = mod === "todas" ? "0-10" : mod;
+
+        const area = document.getElementById("modal-mapa-completo-map-area");
+        if (area) {
+            area.innerHTML = renderizarMapa();
+        } else {
+            renderizarModalMapaCompleto();
+        }
+    }
+
+    function fecharMapaCompleto(e) {
+        if (e && e.target && e.target.closest(".mapa-completo-modal-card")) return;
+        const modal = document.getElementById("modal-mapa-completo");
+        if (modal) modal.classList.add("hidden");
+
+        const modalExp = document.getElementById("modal-explicacao-mapa");
+        if (modalExp && !modalExp.classList.contains("hidden")) {
+            modalExp.classList.add("hidden");
+        }
+        document.body.style.overflow = "";
+
+        if (modalMapaBackup) {
+            mapaFonteAgregada   = modalMapaBackup.mapaFonteAgregada   ?? {};
+            mapaFonteUltima     = modalMapaBackup.mapaFonteUltima     ?? {};
+            modalidadeAtual     = modalMapaBackup.modalidadeAtual;
+            modoVisualizacaoMapa = modalMapaBackup.modoVisualizacaoMapa || "agregado";
+            modalMapaBackup = null;
+        }
+    }
+
+    function irParaMapaCompleto() {
+        abrirMapaCompleto();
     }
     // ▲▲▲ FIM [07.08.bis]
 
@@ -12292,14 +12430,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const snap = await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chave}/${mod}`).once("value");
             const dados = snap.val();
             
-            // Se o Firebase tem dados, salvamos no cache e retornamos
             if (dados) { 
                 localStorage.setItem(chaveLocalMapa(nome, turma, mod), JSON.stringify(dados)); 
                 return dados; 
             }
             
-            // Se o Firebase respondeu vazio, significa que o mapa foi limpo.
-            // Precisamos remover o cache local antigo para não mostrar dados fantasmas.
             localStorage.removeItem(chaveLocalMapa(nome, turma, mod));
             return null;
             
@@ -12319,10 +12454,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         try {
             const chave = chaveAlunoCopa(nome, turma);
             await database.ref(`${CAMINHO_MAPA_TABUADAS}/${chave}/${mod}`).set(dados);
+            // ⚠️ OTIMIZAÇÃO: Limpa o cache da Home pois os dados mudaram
+            if (typeof _homeMapaCache !== "undefined") _homeMapaCache = null;
         } catch(e) { console.warn("Mapa salvo apenas localmente:", e); }
     }
 
-    // Recebe deltas no formato { "7x8": { respostas: [{acertou, tempo}, ...] } }
     async function incrementarMapaAluno(nome, turma, mod, deltas, opcoes = {}) {
         if (!deltas || Object.keys(deltas).length === 0) return;
         let atual = await obterMapaFirebase(nome, turma, mod) || obterMapaLocal(nome, turma, mod) || {};
@@ -12339,7 +12475,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     });
                 });
             } else if (d.tentativas || d.acertos || d.erros) {
-                // Compatibilidade retroativa se algum ponto do código antigo passar contagem
                 const tot = (d.acertos || 0) + (d.erros || 0);
                 const ac  = d.acertos || 0;
                 for (let i = 0; i < tot; i++) hist.push({ acertou: i < ac, tempo: 0, data: agora });
@@ -12348,6 +12483,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             atual[k] = { historico: hist };
         });
         await salvarMapaFirebase(nome, turma, mod, atual);
+        // ⚠️ OTIMIZAÇÃO: Garante limpeza do cache após salvar
+        if (typeof _homeMapaCache !== "undefined") _homeMapaCache = null;
         return atual;
     }
 
@@ -12358,7 +12495,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function obterDesempenhoOperacoesGlobal(nome, turma) {
-        // ▼ P36 — Paraleliza as 3 leituras de modalidade (antes: sequencial, 3× a latência)
         const mods = Object.keys(MODALIDADES);
         const resultados = await Promise.all(
             mods.map(m => obterMapaFirebase(nome, turma, m).catch(() => null))
@@ -12366,8 +12502,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const combinado = {};
         mods.forEach((m, i) => {
             let dados = resultados[i];
-            // Se o Firebase respondeu vazio, o obterMapaFirebase já limpou o cache local e retornou null.
-            // Por via das dúvidas, não chamamos obterMapaLocal aqui para não ressuscitar dados antigos.
             if (!dados) return;
             
             Object.entries(dados).forEach(([k, d]) => {
@@ -21197,7 +21331,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [18.01] Home E-Sports — Hero com saudação + Ritmo na Copa ─
-    // v10.10.2 · Suporte ao Modo Olimpíadas.
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -21210,36 +21343,34 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const heroNome = document.getElementById("hero-nome-destaque");
         if (heroNome) heroNome.textContent = nome ? nome.split(" ")[0] : "Aluno";
 
-        // Sem identificação: zera a frase e limpa o card do ritmo
         if (!nome || !turma) {
             atualizarFraseHero(null);
             renderizarRitmoCopa(null);
             return;
         }
 
-        // ─── Ajuste do Hero no Modo Olimpíadas ───
         const heroSub = document.getElementById("hero-sub-dinamica");
         if (modoEventoAtual === "olimpiadas") {
             if (heroSub) heroSub.innerHTML = "Bem-vindo às <strong>Olimpíadas da Tabuada</strong>! Mostre sua velocidade e precisão nas Corridas.";
-            renderizarRitmoCopa(null); // Esconde o ritmo na copa
-            return; // Para por aqui
+            renderizarRitmoCopa(null);
+            return;
         }
 
         try {
-            // ⚠️ OTIMIZAÇÃO: Conta treinos pelo nó de treinos e oficiais pelo resumo, sem baixar o histórico completo
             const chave = chaveAlbum(nome, turma);
             
-            const [snapTreinos, snapResumoMedia] = await Promise.all([
+            // ⚠️ OTIMIZAÇÃO: Busca apenas o resumo do aluno (3 leituras pequenas) em vez de tudo
+            const [snapTreinos, snapM25, snapM69, snapM010] = await Promise.all([
                 database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chave}`).once("value").catch(() => null),
-                database.ref(`${CAMINHO_RANKING_RESUMO}/media`).once("value").catch(() => null)
+                database.ref(`${CAMINHO_RANKING_RESUMO}/media/2-5/${chave}`).once("value").catch(() => null),
+                database.ref(`${CAMINHO_RANKING_RESUMO}/media/6-9/${chave}`).once("value").catch(() => null),
+                database.ref(`${CAMINHO_RANKING_RESUMO}/media/0-10/${chave}`).once("value").catch(() => null)
             ]);
 
             let oficiais = 0;
-            const dadosMedia = snapResumoMedia ? snapResumoMedia.val() || {} : {};
-            for (const mod of ["2-5", "6-9", "0-10"]) {
-                const alunoMod = (dadosMedia[mod] && dadosMedia[mod][chave]) || {};
-                oficiais += (Number(alunoMod.partidasOficiais) || 0);
-            }
+            [snapM25, snapM69, snapM010].forEach(s => {
+                if (s && s.val()) oficiais += (Number(s.val().partidasOficiais) || 0);
+            });
 
             const treinos = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
 
@@ -21253,7 +21384,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // Atualiza o subtítulo do hero conforme a proporção treinos × oficiais
     function atualizarFraseHero(dados) {
         const el = document.getElementById("hero-sub-dinamica");
         if (!el) return;
@@ -21278,7 +21408,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         else                   el.textContent = "Você tem equilibrado treinos e partidas oficiais.";
     }
 
-    // Card "Seu Ritmo na Copa" — card AUTÔNOMO, fora do hero.
     function renderizarRitmoCopa(dados) {
         const ctn = document.getElementById("ritmo-copa-container");
         if (!ctn) return;
@@ -21296,14 +21425,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 <div class="home-ritmo-cabecalho">
                     <span class="home-ritmo-titulo">
                         🎯 Seu Ritmo na Copa
-                        <button type="button"
-                                id="btn-como-funciona-ritmo"
-                                class="btn-como-funciona-inline"
-                                onclick="abrirModalComoFuncionaRitmo()"
-                                aria-haspopup="dialog"
-                                aria-controls="modal-explicacao-ritmo"
-                                aria-label="Como funciona o Ritmo na Copa"
-                                title="Como funciona?">?</button>
+                        <button type="button" id="btn-como-funciona-ritmo" class="btn-como-funciona-inline" onclick="abrirModalComoFuncionaRitmo()" aria-haspopup="dialog" aria-controls="modal-explicacao-ritmo" aria-label="Como funciona o Ritmo na Copa" title="Como funciona?">?</button>
                     </span>
                 </div>
                 <div class="home-ritmo-vazio"><strong>Comece agora!</strong> Jogue uma partida oficial ou faça um treino para acompanhar seu ritmo aqui.</div>
@@ -21318,14 +21440,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             <div class="home-ritmo-cabecalho">
                 <span class="home-ritmo-titulo">
                     🎯 Seu Ritmo na Copa
-                    <button type="button"
-                            id="btn-como-funciona-ritmo"
-                            class="btn-como-funciona-inline"
-                            onclick="abrirModalComoFuncionaRitmo()"
-                            aria-haspopup="dialog"
-                            aria-controls="modal-explicacao-ritmo"
-                            aria-label="Como funciona o Ritmo na Copa"
-                            title="Como funciona?">?</button>
+                    <button type="button" id="btn-como-funciona-ritmo" class="btn-como-funciona-inline" onclick="abrirModalComoFuncionaRitmo()" aria-haspopup="dialog" aria-controls="modal-explicacao-ritmo" aria-label="Como funciona o Ritmo na Copa" title="Como funciona?">?</button>
                 </span>
                 <span class="home-ritmo-numeros">
                     <span><span class="num cyan">${oficiais.toLocaleString("pt-BR")}</span>${oficiais === 1 ? "partida oficial" : "partidas oficiais"}</span>
@@ -21343,9 +21458,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         </div>`;
     }
 
-    // ─────────────────────────────────────────────────────────────────────
-    // Funções legadas mantidas para não quebrar dependências externas.
-    // ─────────────────────────────────────────────────────────────────────
     function classificarZonaHome(pos) {
         if (!pos) return { cls: "sem-dados", icone: "⚪", label: "Sem partida ainda" };
         if (pos <= 4) return { cls: "zona-top4", icone: "🎟️", label: "Zona de classificação" };
@@ -24679,30 +24791,18 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
-        // ─── PWA: registra Service Worker (opcional; falha em silêncio) ───
         registrarServiceWorker();
-
-        // ─── ATIVA O LISTENER DE ATUALIZAÇÃO FORÇADA ───
         iniciarListenerAtualizacaoForcada();
 
-        // ─── Carrega o modo do evento (Classificatória ou Olimpíadas) ───
-        await obterModoEvento();
-
-        // ─── Renderização da UI base (SÍNCRONA — não bloqueia) ───
+        // ─── 1. Renderização base IMEDIATA ───
         mostrarTela("tela-inicial");
         atualizarBotaoMinhaTurma();
         mudarTipoRanking("turma");
         configurarToqueSecreto();
         inicializarAudio();
         atualizarAcessoSeConhecido();
-        
-        try { await verificarBadgeAlbum(); } catch(e) { console.warn("Badge do álbum indisponível:", e); }
-        
-        // ⚠️ OTIMIZAÇÃO: Removida a leitura global de mensagens do boot (atualizarBadgeMsgPainel)
-        // O badge do aluno já é atualizado pelo listener em tempo real (iniciarListenerMsgAluno).
-        // O painel do professor atualiza o dele quando abre a aba de mensagens.
 
-        // ─── Popula versão em 3 lugares ───
+        // ─── 2. Atualizações de UI (não bloqueiam) ───
         const elVHeader = document.getElementById("header-versao-atual");
         if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
         const elV = document.getElementById("changelog-versao-atual");
@@ -24710,41 +24810,33 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const elVMenu = document.getElementById("mais-versao-atual");
         if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
 
-        // ─── Verificações de versão (não bloqueiam a Home) ───
         verificarVersaoPublicada().catch(() => {});
         try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
-
         iniciarListenerMsgAluno();
 
-        // ─── Dispara as leituras em paralelo. A Home pinta antes de a etapa ser verificada. ───
-        const pTelaInicial = atualizarTelaInicialComEtapa()
-            .catch(e => console.warn("Falha ao atualizar tela inicial:", e));
-        const pHomeEsports = preencherHomeEsports()
-            .catch(e => console.warn("Falha ao preencher home:", e));
-        const pMapaHome = renderizarMapaHome()
-            .catch(e => console.warn("Falha ao renderizar mapa home:", e));
-        const pTreinoInt = renderizarTreinoInteligenteHome()
-            .catch(e => console.warn("Falha ao renderizar treino inteligente:", e));
+        // ─── 3. Busca o modo do evento em paralelo (não trava a tela) ───
+        obterModoEvento().then(async () => {
+            const pHomeEsports = preencherHomeEsports().catch(e => console.warn("Falha home:", e));
+            const pMapaHome = renderizarMapaHome().catch(e => console.warn("Falha mapa:", e));
+            await Promise.all([pHomeEsports, pMapaHome]);
+            try { ativarObserverAlertaFoco(); } catch(e) {}
+            try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
+        }).catch(e => console.warn("Falha modo evento:", e));
 
-        // ─── Ciclo da etapa e votação — roda em background, sem bloquear ───
+        const pTelaInicial = atualizarTelaInicialComEtapa().catch(e => console.warn("Falha tela inicial:", e));
+        const pTreinoInt = renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
+
         const pCicloEtapa = (async () => {
             try {
                 await verificarEIniciarEtapaSeNecessario();
                 await verificarEFecharVotacaoSeNecessario();
                 await verificarEEncerrarEtapaSeNecessario();
-            } catch(e) {
-                console.warn("Falha ao processar ciclo da etapa:", e);
-            }
+            } catch(e) { console.warn("Falha ciclo:", e); }
             try { await atualizarTelaInicialComEtapa(); } catch(e) {}
             try { await renderizarCardVotacao(); } catch(e) {}
         })();
 
-        // Aguarda tudo para os logs saírem na ordem certa
-        await Promise.all([pTelaInicial, pHomeEsports, pMapaHome, pTreinoInt, pCicloEtapa]);
-
-        // Ativa o observer que dispara o alerta de foco sempre que a Home é exibida
-        try { ativarObserverAlertaFoco(); } catch(e) { console.warn("Falha ao ativar observer do alerta:", e); }
-        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
+        await Promise.all([pTelaInicial, pTreinoInt, pCicloEtapa]);
 
         if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
         votacaoTimerInterval = setInterval(async () => {
