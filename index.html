@@ -15470,15 +15470,44 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     async function _obterListaBestDoResumo(mod, turma) {
         if (await otimizacaoV109Ativa()) {
             try {
-                const ref = turma
+                // 1. Prepara a busca do "best" (melhor partida)
+                const refBest = turma
                     ? database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}`)
                     : database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}`);
-                const snap = await ref.once("value");
-                const dados = snap.val() || {};
-                const lista = Object.values(dados).filter(r => r && r.nome);
-                return lista.sort(compararParaOrdenacao); // Retorna [] se vazio, nunca null
+                
+                // 2. Prepara a busca do "media" (que tem o total de partidas)
+                // Se houver turma, filtra pelo índice para não baixar a escola inteira
+                const refMedia = turma
+                    ? database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}`).orderByChild("turma").equalTo(turma)
+                    : database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}`);
+
+                // Executa as duas leituras em paralelo
+                const [snapBest, snapMedia] = await Promise.all([
+                    refBest.once("value"),
+                    refMedia.once("value")
+                ]);
+
+                const dadosBest = snapBest.val() || {};
+                const dadosMedia = snapMedia.val() || {};
+                const lista = [];
+
+                // Cruza os dados: para cada melhor resultado, busca o total de jogos correspondente
+                Object.entries(dadosBest).forEach(([alunoKey, best]) => {
+                    if (!best || !best.nome) return;
+                    
+                    const mediaAluno = dadosMedia[alunoKey] || {};
+                    // Usa partidasOficiais (que conta completas + parciais)
+                    const totalPartidas = Number(mediaAluno.partidasOficiais) || 0;
+
+                    lista.push({
+                        ...best,
+                        totalPartidas: totalPartidas // Adiciona o campo que estava faltando
+                    });
+                });
+
+                return lista.sort(compararParaOrdenacao);
             } catch(e) {
-                console.warn("[Otimização] Falha ao ler best do resumo:", e);
+                console.warn("[Otimização] Falha ao ler best+media do resumo:", e);
                 return null; // Só cai no fallback se der erro na rede
             }
         }
@@ -15505,7 +15534,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function obterRankingPorPrecisao(mod, t = null) {
-        // ⚠️ OTIMIZAÇÃO: Usa o resumo em vez de baixar o ranking inteiro
         const resumo = await _obterListaBestDoResumo(mod, t);
         if (resumo !== null) {
             return resumo.sort((a, b) => (b.acertos || 0) - (a.acertos || 0) || (a.tempoMedio || 999) - (b.tempoMedio || 999) || (b.pontos || 0) - (a.pontos || 0) || (b.maiorSequencia || 0) - (a.maiorSequencia || 0));
