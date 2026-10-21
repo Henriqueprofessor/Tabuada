@@ -11400,9 +11400,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.05]
 
     // ▼▼▼ [07.06] Ciclo de vida da etapa ───────────────────────── INÍCIO ───
+    // v10.13.11 · O app agora suporta a fase "etapa_aberta" (ativa sem votação).
     const ETAPA_FASES = {
         sem_agendamento: "sem_agendamento",
         pre_evento: "pre_evento",
+        etapa_aberta: "etapa_aberta", // NOVO
         etapa_votacao: "etapa_votacao",
         etapa_definida: "etapa_definida",
         congelada: "congelada",
@@ -11434,11 +11436,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (!d || !d.inicioEm) return ETAPA_FASES.sem_agendamento;
         if (d.status === "encerrada") return ETAPA_FASES.encerrada;
         if (d.status === "congelada") return ETAPA_FASES.congelada;
+        
         const agora = Date.now();
         if (agora < d.inicioEm) return ETAPA_FASES.pre_evento;
-        if (!d.votacaoFechadaEm) return ETAPA_FASES.etapa_votacao;
-        if (d.fimPrevistoEm && agora > d.fimPrevistoEm) return ETAPA_FASES.encerrada;
-        return ETAPA_FASES.etapa_definida;
+        
+        if (d.votacaoFechadaEm) {
+            if (d.fimPrevistoEm && agora > d.fimPrevistoEm) return ETAPA_FASES.encerrada;
+            return ETAPA_FASES.etapa_definida;
+        }
+        
+        // Se a votação não foi aberta explicitamente, a etapa está apenas Aberta
+        if (d.votacaoAberta === true) return ETAPA_FASES.etapa_votacao;
+        
+        return ETAPA_FASES.etapa_aberta;
     }
     
     function calcularFimPrevisto(inicioEm, duracao) {
@@ -11449,7 +11459,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     
     function etapaPermiteClassificatoria(fase) {
-        return fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida;
+        return fase === ETAPA_FASES.etapa_aberta || fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida;
     }
     
     function etapaPermiteTreinoLivre(fase) {
@@ -11460,7 +11470,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     
     function etapaEstaEncerrada(fase) { return fase === ETAPA_FASES.encerrada; }
-    
     function estaNoTop4Congelado(fase) { return fase === ETAPA_FASES.congelada || fase === ETAPA_FASES.encerrada; }
     // ▲▲▲ FIM [07.06]
 
@@ -11555,8 +11564,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.07]
 
     // ▼▼▼ [07.08] Tela inicial dinâmica ────────────────────────── INÍCIO ───
-    // v10.13.10 · BUGFIX: O card agora verifica se a votação foi realmente
-    // aberta (dadosVot.inicio) antes de mostrar o placar e o tempo restante.
     async function atualizarTelaInicialComEtapa() {
         const heroPre = document.getElementById("hero-pre-evento");
         const heroNorm = document.getElementById("hero-classificatoria-normal");
@@ -11582,7 +11589,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             fase = { tipo: ETAPA_FASES.sem_agendamento, dados: {} };
         }
 
-        // ⚙️ L1 — Modo teste: faixa âmbar discreta no topo
         if (fase.dados.modoTeste && fase.tipo !== ETAPA_FASES.encerrada) {
             if (bannerCtn) bannerCtn.innerHTML = `<div class="modo-teste-banner"><span class="emoji">🧪</span> Modo teste — resultados não entram no ranking</div>`;
         }
@@ -11620,30 +11626,33 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 </div>`;
             iniciarCd = true;
             inicioEmCd = fase.dados.inicioEm;
+        } else if (fase.tipo === ETAPA_FASES.etapa_aberta) {
+            heroPre.classList.add("hidden");
+            heroNorm.classList.remove("hidden");
+            if (statusCtn) statusCtn.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div><span class="badge-status andamento">Em andamento</span></div>
+                    <div>📅 Iniciada em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>.</div>
+                    <div>🗳️ A votação ainda não foi aberta pelo professor. Aguarde!</div>
+                    ${infoModUnica}
+                    ${regraTop4}
+                </div>`;
         } else if (fase.tipo === ETAPA_FASES.etapa_votacao) {
             heroPre.classList.add("hidden");
             heroNorm.classList.remove("hidden");
             
             const dadosVot = await obterDadosVotacao().catch(() => ({}));
-            const votacaoAberta = !!dadosVot.inicio;
-            let votacaoHtml = "";
-
-            if (votacaoAberta) {
-                const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
-                const v7 = votos.filter(v => String(v.opcao) === "7").length;
-                const v14 = votos.filter(v => String(v.opcao) === "14").length;
-                const fechamento = calcularFechamentoVotacao(dadosVot.inicio, fase.dados.fimPrevistoEm);
-                const resta = tempoRestanteHumano(fechamento - Date.now());
-                votacaoHtml = `<div>🗳️ Votação fecha em <strong>${resta}</strong>. Placar parcial: <strong>7 dias</strong> (${v7}) vs <strong>14 dias</strong> (${v14}).</div>`;
-            } else {
-                votacaoHtml = `<div>🗳️ Aguardando o professor abrir a votação para definir a duração da etapa.</div>`;
-            }
+            const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
+            const v7 = votos.filter(v => String(v.opcao) === "7").length;
+            const v14 = votos.filter(v => String(v.opcao) === "14").length;
+            const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio, fase.dados.fimPrevistoEm) : null;
+            const resta = fechamento ? tempoRestanteHumano(fechamento - Date.now()) : "em breve";
 
             if (statusCtn) statusCtn.innerHTML = `
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                    <div><span class="badge-status andamento">Em andamento ${votacaoAberta ? '· Votação aberta' : ''}</span></div>
+                    <div><span class="badge-status andamento">Em andamento · Votação aberta</span></div>
                     <div>📅 Iniciada em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>.</div>
-                    ${votacaoHtml}
+                    <div>🗳️ Votação fecha em <strong>${resta}</strong>. Placar parcial: <strong>7 dias</strong> (${v7}) vs <strong>14 dias</strong> (${v14}).</div>
                     ${infoModUnica}
                     ${regraTop4}
                 </div>`;
@@ -20048,35 +20057,37 @@ function abrirBuscarAlunoComMeusDados() {
         try { d = await obterDadosEtapa(true); } catch(e) { container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o ciclo da etapa agora.</div>`; return; }
         const fase = calcularFaseEtapa(d);
         const fmtDataHora = (ts) => ts ? formatarDataHoraCurta(ts) : "—";
+        
         const faseLabel = {
             [ETAPA_FASES.sem_agendamento]: "⚪ Não agendada",
             [ETAPA_FASES.pre_evento]: "🟣 Pré-evento (aguardando início)",
+            [ETAPA_FASES.etapa_aberta]: "🔵 Etapa ativa · Votação não iniciada",
             [ETAPA_FASES.etapa_votacao]: "🟠 Etapa ativa · Votação em andamento",
             [ETAPA_FASES.etapa_definida]: "🟢 Etapa ativa · Prazo definido",
             [ETAPA_FASES.congelada]: "⏸️ Pausada (congelada para correção)",
             [ETAPA_FASES.encerrada]: "🏁 Encerrada"
         }[fase];
+        
         let html = `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Status</span><span class="painel-etapa-valor">${faseLabel}</span></div>`;
         html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início agendado</span><span class="painel-etapa-valor">${fmtDataHora(d.inicioEm)}</span></div>`;
         if (d.iniciadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Início efetivo</span><span class="painel-etapa-valor">${fmtDataHora(d.iniciadaEm)}</span></div>`;
         if (d.votacaoFechadaEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Votação fechada em</span><span class="painel-etapa-valor">${fmtDataHora(d.votacaoFechadaEm)}</span></div>`;
         if (d.duracaoEscolhida) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Duração escolhida</span><span class="painel-etapa-valor">${d.duracaoEscolhida} dias</span></div>`;
-        
-        // Removida a duplicação do "23h59" aqui
         if (d.fimPrevistoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerramento previsto</span><span class="painel-etapa-valor">${fmtDataHora(d.fimPrevistoEm)}</span></div>`;
-        
         if (d.congeladoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Congelada em</span><span class="painel-etapa-valor">${fmtDataHora(d.congeladoEm)}</span></div>`;
         if (d.motivoCongelamento) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Motivo</span><span class="painel-etapa-valor">${escaparHtml(d.motivoCongelamento)}</span></div>`;
         if (d.encerradoEm) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Encerrada em</span><span class="painel-etapa-valor">${fmtDataHora(d.encerradoEm)}</span></div>`;
         if (d.modoTeste) html += `<div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Modo</span><span class="painel-etapa-valor" style="color:#b45309;">🧪 TESTE (encerramento liberado)</span></div>`;
+        
         html += `<div class="painel-etapa-rotulo" style="margin-top:14px;font-weight:700;color:#102a43;">Ações</div>`;
         html += `<div class="painel-etapa-acoes">`;
+        
         if (fase === ETAPA_FASES.sem_agendamento) {
             html += `<button onclick="agendarInicioEtapa()" class="botao-verde">📅 Agendar início</button>`;
         } else if (fase === ETAPA_FASES.pre_evento) {
             html += `<button onclick="iniciarEtapaAgora()" class="botao-verde">▶️ Iniciar agora</button>`;
             html += `<button onclick="agendarInicioEtapa()" class="botao-secundario">✏️ Reagendar</button>`;
-        } else if (fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida) {
+        } else if (fase === ETAPA_FASES.etapa_aberta || fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida) {
             html += `<button onclick="congelarEtapa()" class="botao-forcar">⏸️ Congelar etapa</button>`;
             if (d.modoTeste) html += `<button onclick="encerrarEtapa()" class="botao-forcar">🏁 Encerrar agora (teste)</button>`;
         } else if (fase === ETAPA_FASES.congelada) {
@@ -20091,27 +20102,19 @@ function abrirBuscarAlunoComMeusDados() {
         else html += `<button onclick="ativarModoTeste()" class="botao-secundario" style="margin:0;">🧪 Ativar modo teste</button>`;
         html += `</div>`;
 
-        // ▼ [P34] Bloco de extensão de prazo
         html += renderizarBlocoExtensaoPrazo(d, fase);
-        // ▲ [P34]
-
         container.innerHTML = html;
     }
 
-    // ▼ [P34] — Renderiza o card de extensão (inserido no painel da etapa)
     function renderizarBlocoExtensaoPrazo(d, fase) {
-        const fasesValidas = [ETAPA_FASES.etapa_definida, ETAPA_FASES.etapa_votacao, ETAPA_FASES.congelada, ETAPA_FASES.encerrada];
+        const fasesValidas = [ETAPA_FASES.etapa_aberta, ETAPA_FASES.etapa_definida, ETAPA_FASES.etapa_votacao, ETAPA_FASES.congelada, ETAPA_FASES.encerrada];
         if (!fasesValidas.includes(fase)) return "";
 
         const sugestao = d.fimPrevistoEm || (Date.now() + 7 * 24 * 60 * 60 * 1000);
         const inputValue = timestampParaDataInput(sugestao);
-        const atualTxt = d.fimPrevistoEm
-            ? formatarDataHoraCurta(d.fimPrevistoEm)
-            : "não definido";
+        const atualTxt = d.fimPrevistoEm ? formatarDataHoraCurta(d.fimPrevistoEm) : "não definido";
 
-        const avisoTest = d.modoTeste
-            ? ` <span class="aviso-test">🧪 Modo teste ativo — encerramento liberado a qualquer momento</span>`
-            : "";
+        const avisoTest = d.modoTeste ? ` <span class="aviso-test">🧪 Modo teste ativo — encerramento liberado a qualquer momento</span>` : "";
 
         let auditoria = "";
         if (d.ultimaExtensao && d.ultimaExtensao.em) {
@@ -20127,15 +20130,12 @@ function abrirBuscarAlunoComMeusDados() {
         return `<div class="extensao-etapa-wrap">
             <div class="extensao-etapa-titulo">📅 Estender encerramento da etapa</div>
             <p class="extensao-etapa-sub">Use quando precisar adiar o fim da etapa por atraso, feriado ou decisão pedagógica. Não afeta partidas nem ranking.</p>
-
             <div class="extensao-etapa-atual">
                 <span>Encerramento atual: <strong>${atualTxt}</strong>${avisoTest}</span>
                 ${auditoria}
             </div>
-
             <div class="extensao-etapa-grid">
                 <div class="extensao-etapa-campo">
-                    <!-- Alterado para datetime-local -->
                     <label class="extensao-etapa-label" for="extensao-nova-data">Nova data e hora de encerramento</label>
                     <input type="datetime-local" id="extensao-nova-data" class="extensao-etapa-input" value="${inputValue}">
                 </div>
@@ -20144,87 +20144,48 @@ function abrirBuscarAlunoComMeusDados() {
                     <input type="text" id="extensao-motivo" class="extensao-etapa-input" placeholder="Ex: feriado escolar, ajuste pedagógico…" maxlength="200">
                 </div>
             </div>
-
             <div class="extensao-etapa-btns">
                 <button class="extensao-etapa-btn-aplicar" onclick="estenderEncerramentoEtapa()">📅 Aplicar novo encerramento</button>
                 <button class="botao-secundario" onclick="reverterExtensaoEtapa()" ${btnReverterDis}>↩️ Reverter para ${d.duracaoEscolhida || 7} dias</button>
             </div>
-
             <div id="extensao-msg" class="extensao-etapa-msg hidden"></div>
         </div>`;
     }
 
-    // ▼ [P34] — Helpers de conversão de data
     function timestampParaDataInput(ts) {
         const d = new Date(ts);
         const pad = (n) => String(n).padStart(2, "0");
-        // Formato exigido pelo datetime-local: YYYY-MM-DDTHH:mm
         return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
-
     function dataInputParaTimestamp(valor) {
         if (!valor) return null;
         const t = new Date(valor).getTime();
         return Number.isFinite(t) ? t : null;
     }
-
-    // ▼ [P34] — Handler: aplica novo encerramento
+    
     async function estenderEncerramentoEtapa() {
         if (!exigirProfessorAutenticado()) return;
-
         const inputData = document.getElementById("extensao-nova-data");
         const inputMotivo = document.getElementById("extensao-motivo");
         const valor = inputData ? inputData.value : "";
         const motivo = (inputMotivo && inputMotivo.value ? inputMotivo.value : "").trim();
-
-        if (!valor) {
-            mostrarMsgExtensao("erro", "❌ Escolha uma nova data e hora antes de aplicar.");
-            return;
-        }
-
+        if (!valor) { mostrarMsgExtensao("erro", "❌ Escolha uma nova data e hora antes de aplicar."); return; }
         const novoTs = dataInputParaTimestamp(valor);
-        if (!Number.isFinite(novoTs)) {
-            mostrarMsgExtensao("erro", "❌ Data inválida. Use o seletor do campo.");
-            return;
-        }
-
-        if (novoTs <= Date.now()) {
-            mostrarMsgExtensao("erro", "❌ A nova data precisa estar no futuro.");
-            return;
-        }
-
+        if (!Number.isFinite(novoTs)) { mostrarMsgExtensao("erro", "❌ Data inválida. Use o seletor do campo."); return; }
+        if (novoTs <= Date.now()) { mostrarMsgExtensao("erro", "❌ A nova data precisa estar no futuro."); return; }
         const d = await obterDadosEtapa(true);
         const fmtNova = formatarDataHoraCurta(novoTs);
         const fmtAtual = d.fimPrevistoEm ? formatarDataHoraCurta(d.fimPrevistoEm) : "não definido";
-        const confirmacao = `📅 Estender o encerramento da etapa?\n\n`
-            + `De: ${fmtAtual}\n`
-            + `Para: ${fmtNova}\n`
-            + (motivo ? `Motivo: ${motivo}\n` : "")
-            + `\n✅ Partidas e ranking NÃO são afetados.\n`
-            + `⚠️ O app vai encerrar automaticamente após a nova data/hora.`;
-
+        const confirmacao = `📅 Estender o encerramento da etapa?\n\nDe: ${fmtAtual}\nPara: ${fmtNova}\n` + (motivo ? `Motivo: ${motivo}\n` : "") + `\n✅ Partidas e ranking NÃO são afetados.\n⚠️ O app vai encerrar automaticamente após a nova data/hora.`;
         if (!confirm(confirmacao)) return;
-
         try {
-            const patch = {
-                fimPrevistoEm: novoTs,
-                ultimaExtensao: {
-                    em: Date.now(),
-                    deTs: d.fimPrevistoEm || null,
-                    paraTs: novoTs,
-                    motivo: motivo || "não informado"
-                }
-            };
-            if (d.status === "encerrada") {
-                patch.status = "ativa";
-                patch.encerradoEm = null;
-            }
+            const patch = { fimPrevistoEm: novoTs, ultimaExtensao: { em: Date.now(), deTs: d.fimPrevistoEm || null, paraTs: novoTs, motivo: motivo || "não informado" } };
+            if (d.status === "encerrada") { patch.status = "ativa"; patch.encerradoEm = null; }
             await salvarDadosEtapa(patch);
             etapaEstadoCache = null;
             mostrarMsgExtensao("ok", `✅ Encerramento atualizado para ${fmtNova}.`);
             notificar(`Encerramento estendido para ${fmtNova}.`, "sucesso", 5000);
             try { somNovoRecorde(); } catch(e) {}
-
             setTimeout(async () => {
                 try { await renderizarPainelEtapa(); } catch(e) {}
                 try { await atualizarTelaInicialComEtapa(); } catch(e) {}
@@ -20235,45 +20196,20 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    // ▼ [P34] — Handler: reverte para o prazo natural (início + duração)
     async function reverterExtensaoEtapa() {
         if (!exigirProfessorAutenticado()) return;
-
         const d = await obterDadosEtapa(true);
-        if (!d.inicioEm || !d.duracaoEscolhida) {
-            mostrarMsgExtensao("erro", "❌ Não há prazo natural para reverter (falta início agendado ou duração escolhida).");
-            return;
-        }
-
+        if (!d.inicioEm || !d.duracaoEscolhida) { mostrarMsgExtensao("erro", "❌ Não há prazo natural para reverter (falta início agendado ou duração escolhida)."); return; }
         const fimNatural = calcularFimPrevisto(d.inicioEm, d.duracaoEscolhida);
-        if (!Number.isFinite(fimNatural)) {
-            mostrarMsgExtensao("erro", "❌ Não foi possível recalcular o prazo natural.");
-            return;
-        }
-
+        if (!Number.isFinite(fimNatural)) { mostrarMsgExtensao("erro", "❌ Não foi possível recalcular o prazo natural."); return; }
         const fmtAtual = d.fimPrevistoEm ? formatarDataCurta(d.fimPrevistoEm) : "—";
         const fmtNovo = formatarDataCurta(fimNatural);
-        const duracao = d.duracaoEscolhida;
-
-        if (!confirm(`↩️ Reverter para o prazo natural da votação?\n\n`
-            + `Atual: ${fmtAtual}\n`
-            + `Natural: ${fmtNovo} (${duracao} dias após o início)\n\n`
-            + `Continuar?`)) return;
-
+        if (!confirm(`↩️ Reverter para o prazo natural da votação?\n\nAtual: ${fmtAtual}\nNatural: ${fmtNovo} (${d.duracaoEscolhida} dias após o início)\n\nContinuar?`)) return;
         try {
-            await salvarDadosEtapa({
-                fimPrevistoEm: fimNatural,
-                ultimaExtensao: {
-                    em: Date.now(),
-                    deTs: d.fimPrevistoEm || null,
-                    paraTs: fimNatural,
-                    motivo: "reversão para prazo natural"
-                }
-            });
+            await salvarDadosEtapa({ fimPrevistoEm: fimNatural, ultimaExtensao: { em: Date.now(), deTs: d.fimPrevistoEm || null, paraTs: fimNatural, motivo: "reversão para prazo natural" } });
             etapaEstadoCache = null;
             mostrarMsgExtensao("ok", `✅ Revertido para o prazo natural: ${fmtNovo}.`);
             notificar(`Prazo revertido para ${fmtNovo}.`, "info", 4000);
-
             setTimeout(async () => {
                 try { await renderizarPainelEtapa(); } catch(e) {}
                 try { await atualizarTelaInicialComEtapa(); } catch(e) {}
@@ -20284,7 +20220,6 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    // ▼ [P34] — Helper: mensagem inline no bloco de extensão
     function mostrarMsgExtensao(tipo, texto) {
         const el = document.getElementById("extensao-msg");
         if (!el) return;
@@ -20292,15 +20227,13 @@ function abrirBuscarAlunoComMeusDados() {
         el.textContent = texto;
         el.classList.remove("hidden");
     }
-    // ▲ FIM [P34]
 
     async function agendarInicioEtapa() {
         if (!exigirProfessorAutenticado()) return;
         const d = await obterDadosEtapa(true);
         let sug;
-        if (d.inicioEm) {
-            sug = timestampParaDataInput(d.inicioEm);
-        } else {
+        if (d.inicioEm) sug = timestampParaDataInput(d.inicioEm);
+        else {
             const dt = new Date(Date.now() + 24*60*60*1000);
             dt.setHours(8, 0, 0, 0);
             sug = timestampParaDataInput(dt.getTime());
@@ -20311,7 +20244,7 @@ function abrirBuscarAlunoComMeusDados() {
         if (!Number.isFinite(ts)) { notificar("Data inválida.", "erro"); return; }
         if (ts <= Date.now() - 60000) { notificar("A data precisa estar no futuro.", "aviso"); return; }
         try {
-            await salvarDadosEtapa({ inicioEm: ts, status: "agendada", iniciadaEm: null, votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, congeladoEm: null, motivoCongelamento: null, encerradoEm: null });
+            await salvarDadosEtapa({ inicioEm: ts, status: "agendada", iniciadaEm: null, votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, congeladoEm: null, motivoCongelamento: null, encerradoEm: null, votacaoAberta: false });
             notificar(`Etapa agendada para ${formatarDataHoraCurta(ts)}.`, "sucesso", 5000);
             await renderizarPainelEtapa();
             await atualizarTelaInicialComEtapa();
@@ -20320,12 +20253,11 @@ function abrirBuscarAlunoComMeusDados() {
     
     async function iniciarEtapaAgora() {
         if (!exigirProfessorAutenticado()) return;
-        if (!confirm("Iniciar a etapa agora? A votação será aberta automaticamente.")) return;
+        if (!confirm("Iniciar a etapa agora? A votação poderá ser aberta manualmente depois.")) return;
         const agora = Date.now();
         try {
-            await salvarDadosEtapa({ inicioEm: agora, iniciadaEm: agora, status: "ativa", votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null });
-            await abrirVotacaoAutomatica(agora);
-            notificar("Etapa iniciada e votação aberta!", "sucesso", 5000);
+            await salvarDadosEtapa({ inicioEm: agora, iniciadaEm: agora, status: "ativa", votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, votacaoAberta: false });
+            notificar("Etapa iniciada! Abra a votação quando quiser.", "sucesso", 5000);
             await renderizarPainelEtapa();
             await renderizarPainelVotacao();
             await atualizarTelaInicialComEtapa();
@@ -20334,7 +20266,7 @@ function abrirBuscarAlunoComMeusDados() {
     
     async function congelarEtapa() {
         if (!exigirProfessorAutenticado()) return;
-        if (!confirm("⏸️ Congelar a etapa?\n\n• Alunos não poderão jogar a classificatória (apenas treino livre).\n• O ranking fica visível mas não muda.\n• ⚠️ A pausa INTERROMPE o ciclo automático — a votação não avança e o encerramento fica suspenso.\n• Ao descongelar, o ciclo volta ao normal.\n\nDeseja continuar?")) return;
+        if (!confirm("⏸️ Congelar a etapa?\n\n• Alunos não poderão jogar a classificatória (apenas treino livre).\n• O ranking fica visível mas não muda.\n• ⚠️ A pausa INTERROMPE o ciclo automático.\n\nDeseja continuar?")) return;
         const motivo = prompt("📝 Motivo do congelamento (opcional, ficará registrado no painel):");
         if (motivo === null) return;
         try {
@@ -20362,14 +20294,8 @@ function abrirBuscarAlunoComMeusDados() {
         const agora = Date.now();
         const fase = calcularFaseEtapa(d);
         if (!d.modoTeste && fase !== ETAPA_FASES.congelada) {
-            if (d.fimPrevistoEm && agora < d.fimPrevistoEm) {
-                notificar("A etapa ainda não pode ser encerrada — o prazo ainda não venceu. Ative o modo teste para encerrar antes.", "aviso", 6000);
-                return;
-            }
-            if (!d.fimPrevistoEm) {
-                notificar("Ainda não há prazo definido. Aguarde o fechamento da votação.", "aviso", 6000);
-                return;
-            }
+            if (d.fimPrevistoEm && agora < d.fimPrevistoEm) { notificar("A etapa ainda não pode ser encerrada — o prazo ainda não venceu. Ative o modo teste para encerrar antes.", "aviso", 6000); return; }
+            if (!d.fimPrevistoEm) { notificar("Ainda não há prazo definido. Aguarde o fechamento da votação.", "aviso", 6000); return; }
         }
         if (!confirm("🏁 Encerrar a etapa?\n\nO ranking ficará congelado (só leitura). Esta ação pode ser resetada depois usando 'Resetar ciclo'.")) return;
         try {
@@ -20382,7 +20308,7 @@ function abrirBuscarAlunoComMeusDados() {
     
     async function resetarCicloEtapa() {
         if (!exigirProfessorAutenticado()) return;
-        if (!confirm("🗑️ Resetar o ciclo da etapa?\n\n• Volta ao estado 'Não agendada'\n• NÃO apaga partidas nem ranking\n• NÃO fecha a votação atual (use o bloco de votação para resetar)\n\nContinuar?")) return;
+        if (!confirm("🗑️ Resetar o ciclo da etapa?\n\n• Volta ao estado 'Não agendada'\n• NÃO apaga partidas nem ranking\n\nContinuar?")) return;
         try {
             await database.ref(CAMINHO_ETAPA).remove();
             etapaEstadoCache = null;
@@ -20455,11 +20381,7 @@ function abrirBuscarAlunoComMeusDados() {
         d.setHours(23, 59, 59, 999);
         d.setDate(d.getDate() + 3);
         const fechamentoVotacao = d.getTime();
-        
-        // Se o evento tiver um fim previsto menor que a votação padrão, a votação obedece o evento.
-        if (fimEtapaTs && fimEtapaTs < fechamentoVotacao) {
-            return fimEtapaTs;
-        }
+        if (fimEtapaTs && fimEtapaTs < fechamentoVotacao) return fimEtapaTs;
         return fechamentoVotacao;
     }
 
@@ -20471,11 +20393,7 @@ function abrirBuscarAlunoComMeusDados() {
     async function calcularElegibilidadeVoto(nome, turma) {
         const cfg = await obterConfiguracao();
         const minVerdes = calcularMinVerdes(cfg.percentualMapa);
-        
-        if (!nome || !turma) {
-            return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
-        }
-
+        if (!nome || !turma) return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
         try {
             const partidas = (await obterHistoricoAluno(nome, turma)).filter(ehPartidaCompleta);
             const totalPartidas = partidas.length;
@@ -20488,10 +20406,7 @@ function abrirBuscarAlunoComMeusDados() {
                 if (dominadaParaNivel(h, { minTentativas: MAPA_MIN_TENT_PADRAO, minTaxa: 0.9 })) verdes++;
             });
             return { totalPartidas, verdes, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: totalPartidas >= cfg.minPartidas && verdes >= minVerdes };
-        } catch(e) {
-            console.warn("Falha ao calcular elegibilidade:", e);
-            return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false };
-        }
+        } catch(e) { return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false }; }
     }
 
     async function registrarVoto(opcao) {
@@ -20541,14 +20456,13 @@ function abrirBuscarAlunoComMeusDados() {
         const etapa = await obterDadosEtapa();
         const fase = calcularFaseEtapa(etapa);
         const dados = await obterDadosVotacao();
-        const votacaoRelevante = !!etapa.inicioEm && (fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida);
+        const votacaoRelevante = !!etapa.inicioEm && (fase === ETAPA_FASES.etapa_aberta || fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida);
         if (btnMenu) btnMenu.style.display = votacaoRelevante ? "" : "none";
         if (!dados.inicio || !etapa.inicioEm || !votacaoRelevante) {
             if (badgeMenu) badgeMenu.classList.add("hidden");
             return;
         }
         
-        // Calcula o fechamento respeitando o fim do evento
         const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
         const agora = Date.now();
         const encerrada = agora > fechamento || !!etapa.votacaoFechadaEm;
@@ -20602,10 +20516,13 @@ function abrirBuscarAlunoComMeusDados() {
         const etapa = await obterDadosEtapa(true);
         if (!etapa.inicioEm) { notificar("Agende o início da etapa antes de abrir a votação.", "aviso", 5000); return; }
         
-        const fechamento = calcularFechamentoVotacao(etapa.inicioEm, etapa.fimPrevistoEm);
+        const inicioVotacao = Date.now();
+        const fechamento = calcularFechamentoVotacao(inicioVotacao, etapa.fimPrevistoEm);
         if (!confirm(`Abrir votação agora?\n\nEla será encerrada automaticamente em ${formatarDataCurta(fechamento)}.`)) return;
+        
         try {
-            await database.ref(CAMINHO_VOTACAO).set({ inicio: etapa.inicioEm });
+            await database.ref(CAMINHO_VOTACAO).set({ inicio: inicioVotacao });
+            await salvarDadosEtapa({ votacaoAberta: true });
             notificar("Votação aberta!", "sucesso");
             await renderizarPainelVotacao();
             await renderizarCardVotacao();
@@ -20617,7 +20534,7 @@ function abrirBuscarAlunoComMeusDados() {
         if (!confirm("⚠️ Resetar votação? Todos os votos serão apagados.\n\nObs: NÃO apaga o histórico de partidas nem o ranking.")) return;
         try {
             await database.ref(CAMINHO_VOTACAO).remove();
-            await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null });
+            await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, votacaoAberta: false });
             notificar("Votação resetada.", "sucesso");
             await renderizarPainelVotacao();
             await renderizarCardVotacao();
@@ -20643,15 +20560,18 @@ function abrirBuscarAlunoComMeusDados() {
         if (!container) return;
         const etapa = await obterDadosEtapa(true);
         const dados = await obterDadosVotacao();
+        
         if (!etapa.inicioEm) {
-            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">Defina primeiro o <strong>início da etapa</strong> no bloco acima. A votação abre automaticamente quando o prazo chegar (ou pelo botão abaixo).</p>`;
+            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">Defina primeiro o <strong>início da etapa</strong> no bloco acima. Você poderá abrir a votação manualmente quando desejar.</p>`;
             return;
         }
+        
         if (!dados.inicio) {
-            const fech = calcularFechamentoVotacao(etapa.inicioEm, etapa.fimPrevistoEm);
-            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (ou até o fim do evento, o que for menor).</p><button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação agora</button>`;
+            const fech = calcularFechamentoVotacao(Date.now(), etapa.fimPrevistoEm);
+            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (até ${formatarDataCurta(fech)}).</p><button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação agora</button>`;
             return;
         }
+        
         const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
         const encerrada = Date.now() > fechamento || !!etapa.votacaoFechadaEm;
         const votos = dados.votos ? Object.values(dados.votos) : [];
@@ -22637,27 +22557,26 @@ function abrirBuscarAlunoComMeusDados() {
 
 
     // ▼▼▼ [18.03] Detalhes da etapa (modal) ─────────────────────────
-    // v10.13.5 · MELHORIA: O modal agora exibe um aviso claro quando
-    // o Modo Classificatória Única está ativo, informando qual modalidade
-    // está valendo para o ranking oficial.
     async function abrirDetalhesEtapa() {
         const container = document.getElementById("detalhes-etapa-conteudo");
         const modal = document.getElementById("modal-detalhes-etapa");
         if (!container || !modal) return;
         const etapa = await obterDadosEtapa();
         const fase = calcularFaseEtapa(etapa);
+        
         const faseLabel = {
             [ETAPA_FASES.sem_agendamento]: "⚪ Não agendada",
             [ETAPA_FASES.pre_evento]: "🟣 Pré-evento (aguardando início)",
+            [ETAPA_FASES.etapa_aberta]: "🔵 Etapa ativa · Votação não iniciada",
             [ETAPA_FASES.etapa_votacao]: "🟠 Etapa ativa · Votação em andamento",
             [ETAPA_FASES.etapa_definida]: "🟢 Etapa ativa · Prazo definido",
             [ETAPA_FASES.congelada]: "⏸️ Pausada (congelada)",
             [ETAPA_FASES.encerrada]: "🏁 Encerrada"
         }[fase];
+        
         let html = "";
         html += `<div class="info-secao"><span class="info-icone">📍</span><div class="info-conteudo"><h4 class="info-titulo">Status Atual</h4><p class="info-texto"><strong>${faseLabel}</strong></p></div></div>`;
 
-        // ⚠️ v10.13.5 — Aviso do Modo Classificatória Única
         const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
             ? modalidadeClassificatoriaUnicaAtiva()
             : null;
@@ -22676,7 +22595,6 @@ function abrirBuscarAlunoComMeusDados() {
         }
 
         if (etapa.inicioEm) html += `<div class="info-secao"><span class="info-icone">📅</span><div class="info-conteudo"><h4 class="info-titulo">Data de Início</h4><p class="info-texto">${formatarDataHoraCurta(etapa.inicioEm)}</p></div></div>`;
-        
         if (etapa.fimPrevistoEm) html += `<div class="info-secao"><span class="info-icone">🏁</span><div class="info-conteudo"><h4 class="info-titulo">Encerramento Previsto</h4><p class="info-texto">${formatarDataHoraCurta(etapa.fimPrevistoEm)}</p></div></div>`;
         
         html += `<div class="info-secao"><span class="info-icone">📋</span><div class="info-conteudo"><h4 class="info-titulo">Regras da Etapa</h4><ul class="info-lista"><li><strong>20 questões</strong> de multiplicação</li><li>Até <strong>10 segundos</strong> por questão</li><li><strong>Calculadora permitida</strong> para conferência</li><li>Os <strong>4 melhores</strong> de cada turma/modalidade avançam para a Final</li></ul></div></div>`;
