@@ -16677,11 +16677,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.06.bis]
 
 // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
-    // v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única
-    //   • aplicarModoUnicoNoFiltroModalidade() trava o <select #filtro-modalidade>
-    //     na modalidade ativa (quando a flag está setada).
-    //   • Chamado em resetarRankingParaEstadoLimpo() e mudarEscopoRanking()
-    //     para garantir estado consistente em qualquer entrada no Ranking.
     let metricaRankingAtual = "pontos";
     let corridaTipoRankingAtual = "tempo";
 
@@ -16714,7 +16709,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (escopo !== "turma" && escopo !== "global" && escopo !== "corridas") return;
         tipoRankingAtual = escopo;
 
-        // ⚠️ v10.13.0 · P-B4 (Pacote 3)
         aplicarModoUnicoNoFiltroModalidade();
 
         document.getElementById("ranking-conteudo-escopo")?.classList.remove("hidden");
@@ -16807,10 +16801,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     function resetarRankingParaEstadoLimpo() {
-        // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Trava a modalidade única ANTES de qualquer coisa
         aplicarModoUnicoNoFiltroModalidade();
 
-        // Modo Só Olimpíadas
         if (modoEventoAtual === "olimpiadas") {
             document.getElementById("aba-minha-turma")?.classList.add("hidden");
             document.getElementById("aba-global")?.classList.add("hidden");
@@ -16821,18 +16813,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return;
         }
         
-        // Modo Só Classificatória
-        if (modoEventoAtual === "classificatoria") {
-            document.getElementById("aba-minha-turma")?.classList.remove("hidden");
-            document.getElementById("aba-global")?.classList.remove("hidden");
-            document.getElementById("aba-corridas")?.classList.add("hidden");
-        } 
-        // Modo Ambos
-        else {
-            document.getElementById("aba-minha-turma")?.classList.remove("hidden");
-            document.getElementById("aba-global")?.classList.remove("hidden");
-            document.getElementById("aba-corridas")?.classList.remove("hidden");
-        }
+        // Modo Classificatória (Único ou Normal)
+        document.getElementById("aba-minha-turma")?.classList.remove("hidden");
+        document.getElementById("aba-global")?.classList.remove("hidden");
+        document.getElementById("aba-corridas")?.classList.add("hidden");
 
         tipoRankingAtual = null;
         metricaRankingAtual = "pontos";
@@ -21455,21 +21439,10 @@ function abrirBuscarAlunoComMeusDados() {
     }
     // ▲▲▲ FIM [17.09]
 
-    // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória, Olimpíadas, Ambos) ─── INÍCIO ───
-    // v10.13.0 · P-B4 (Pacote 1) — Modo Classificatória Única
-    //
-    // O bloco agora gerencia DUAS flags em config:
-    //   • config/modo_evento               → "classificatoria" | "olimpiadas" | "ambos"
-    //   • config/modo_classificatoria      → "normal" | "2-5" | "6-9" | "0-10"
-    //
-    // Regras:
-    //   • O Modo Olimpíadas IGNORA o modo classificatória única. Se o professor
-    //     mudar para "olimpiadas", a flag é forçada para "normal".
-    //   • Em "classificatoria" e "ambos", a flag funciona normalmente.
-    //   • Cache curto (30s) com invalidação explícita nas trocas.
-    //   • Tolerância a permission_denied: se as regras do Firebase ainda não
-    //     liberarem config/modo_classificatoria, assume "normal" e loga uma
-    //     única vez (sem quebrar a UI).
+    // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória ou Olimpíadas) ─── INÍCIO ───
+    // v10.13.7 · SIMPLIFICAÇÃO: O modo "Ambos" foi removido. O app opera
+    // exclusivamente em "Só Classificatória" ou "Só Olimpíadas".
+    // Se mudar para Olimpíadas, a flag de class. única volta a "normal".
 
     const CAMINHO_MODO_EVENTO = "config/modo_evento";
     const CAMINHO_MODO_CLASSIFICATORIA = "config/modo_classificatoria";
@@ -21488,20 +21461,18 @@ function abrirBuscarAlunoComMeusDados() {
         _modoClassificatoriaCache = { valor: null, ts: 0 };
     }
 
-    // ─── Leitura do modo evento (compatível com o código anterior) ───
     async function obterModoEvento(forcar = false) {
         try {
             const snap = await database.ref(CAMINHO_MODO_EVENTO).once("value");
             const modo = snap.val() || "classificatoria";
-            modoEventoAtual = modo;
-            return modo;
+            modoEventoAtual = (modo === "olimpiadas") ? "olimpiadas" : "classificatoria";
+            return modoEventoAtual;
         } catch(e) {
             console.warn("[Modo Evento] Falha ao ler, assumindo classificatoria:", e);
             return "classificatoria";
         }
     }
 
-    // ─── Leitura do modo classificatória única ───
     async function obterModoClassificatoria(forcar = false) {
         const agora = Date.now();
         if (!forcar && _modoClassificatoriaCache.valor !== null
@@ -21529,26 +21500,21 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    // Retorna a modalidade única ativa, ou null se modo "normal".
     function modalidadeClassificatoriaUnicaAtiva() {
         if (modoEventoAtual === "olimpiadas") return null;
         if (!modoClassificatoriaAtual || modoClassificatoriaAtual === MODO_CLASSIFICATORIA_NORMAL) return null;
         return MODALIDADES[modoClassificatoriaAtual] ? modoClassificatoriaAtual : null;
     }
 
-    // ─── Alterar modo evento (agora também zera a flag classificatória única
-    //     quando muda para Olimpíadas) ───
     async function alterarModoEvento(novoModo) {
         if (!exigirProfessorAutenticado()) return;
-        if (novoModo !== "classificatoria" && novoModo !== "olimpiadas" && novoModo !== "ambos") return;
+        if (novoModo !== "classificatoria" && novoModo !== "olimpiadas") return;
 
         let msg = "";
         if (novoModo === "olimpiadas") {
-            msg = "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, o Hall da Fama e o Álbum esconderão as categorias de partidas de 20 perguntas.\n\n⚠️ O Modo Classificatória Única será desativado (volta para 'normal').\n\nConfirmar?";
+            msg = "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, o Hall da Fama e o Álbum esconderão as categorias de partidas de 20 perguntas.\n\n⚠️ O Modo Classificatória Única será desativado (volta para 'Normal').\n\nConfirmar?";
         } else if (novoModo === "classificatoria") {
             msg = "🏆 MUDAR PARA MODO SÓ CLASSIFICATÓRIA\n\nO foco do app voltará a ser as partidas oficiais de 20 perguntas. O menu de Corridas de Tabuada será DESATIVADO.\n\nConfirmar?";
-        } else {
-            msg = "🌟 MUDAR PARA MODO AMBOS (COPA COMPLETA)\n\nO app permitirá que os alunos joguem TANTO as partidas oficiais de 20 perguntas QUANTO as Corridas de Tabuada.\n\nConfirmar?";
         }
 
         if (!confirm(msg)) return;
@@ -21557,7 +21523,6 @@ function abrirBuscarAlunoComMeusDados() {
             await database.ref(CAMINHO_MODO_EVENTO).set(novoModo);
             modoEventoAtual = novoModo;
 
-            // Modo Olimpíadas ignora a classificatória única → zera a flag.
             if (novoModo === "olimpiadas" && modoClassificatoriaAtual !== MODO_CLASSIFICATORIA_NORMAL) {
                 try {
                     await database.ref(CAMINHO_MODO_CLASSIFICATORIA).set(MODO_CLASSIFICATORIA_NORMAL);
@@ -21568,16 +21533,13 @@ function abrirBuscarAlunoComMeusDados() {
             }
 
             invalidarCacheModoClassificatoria();
-
             notificar(`Modo alterado para: ${novoModo.toUpperCase()}`, "sucesso");
 
-            // Limpa caches para forçar recálculo com o novo modo
             hallFamaCache = null;
             albumSessaoCache = { chave: null, ts: 0, resultado: null };
             comparativoTurmaCache = null;
             _homeMapaCache = null;
 
-            // Força atualização das telas visíveis imediatamente
             await atualizarTelaInicialComEtapa();
             resetarRankingParaEstadoLimpo();
             atualizarVisibilidadeMenuMais();
@@ -21588,15 +21550,13 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    // ─── Alterar modo classificatória única ───
     async function alterarModoClassificatoria(novoModo) {
         if (!exigirProfessorAutenticado()) return;
         if (!MODOS_CLASSIFICATORIA_VALIDOS.includes(novoModo)) return;
 
-        // Bloqueia quando o evento está em Olimpíadas
         const modoEvento = await obterModoEvento(true);
         if (modoEvento === "olimpiadas") {
-            notificar("⚠️ O Modo Olimpíadas ignora o Modo Classificatória Única. Mude para 'Só Classificatória' ou 'Ambos' primeiro.", "aviso", 6000);
+            notificar("⚠️ O Modo Olimpíadas ignora o Modo Classificatória Única. Mude para 'Só Classificatória' primeiro.", "aviso", 6000);
             return;
         }
 
@@ -21621,7 +21581,6 @@ function abrirBuscarAlunoComMeusDados() {
                 `• Botão "▶ Jogar" das outras modalidades fica bloqueado na Home\n` +
                 `• Ranking oficial passa a mostrar apenas essa modalidade\n` +
                 `• Medalhas que dependem das 3 modalidades são ocultadas do Álbum\n` +
-                `• O Modo Olimpíadas ignora esta regra\n` +
                 `• Partidas já registradas nas outras modalidades NÃO são apagadas\n\n` +
                 `Continuar?`;
         }
@@ -21633,7 +21592,6 @@ function abrirBuscarAlunoComMeusDados() {
             modoClassificatoriaAtual = novoModo;
             invalidarCacheModoClassificatoria();
 
-            // Invalida caches que dependem do conjunto de modalidades
             _homeMapaCache = null;
             hallFamaCache = null;
             albumSessaoCache = { chave: null, ts: 0, resultado: null };
@@ -21643,7 +21601,6 @@ function abrirBuscarAlunoComMeusDados() {
             try { somNovoRecorde(); } catch(e) {}
 
             renderizarPainelModoEvento();
-            // Os Pacotes 2/3/4 vão enriquecer estes re-renders.
             try { await atualizarTelaInicialComEtapa(); } catch(e) {}
         } catch(e) {
             console.warn("[Modo Classificatória] Falha ao salvar:", e);
@@ -21655,7 +21612,6 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    // ─── Render do painel ───
     async function renderizarPainelModoEvento() {
         const container = document.getElementById("painel-modo-evento-conteudo");
         if (!container) return;
@@ -21663,21 +21619,18 @@ function abrirBuscarAlunoComMeusDados() {
         const modoEvento = await obterModoEvento(true);
         const modoClassif = await obterModoClassificatoria(true);
 
-        // ── Seção 1: Modo do Evento ──
+        // ── Seção 1: Modo do Evento (Apenas 2 botões) ──
         const btnClass = modoEvento === "classificatoria" ? "botao-verde" : "botao-secundario";
         const btnOlim  = modoEvento === "olimpiadas"     ? "botao-verde" : "botao-secundario";
-        const btnAmbos = modoEvento === "ambos"          ? "botao-verde" : "botao-secundario";
 
         const labelEvento =
             modoEvento === "olimpiadas"     ? "Olimpíadas (Corridas em foco)" :
-            modoEvento === "ambos"          ? "Ambos (Copa Completa)" :
                                               "Só Classificatória (Partidas em foco)";
 
         let html = `
             <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-                <button class="${btnClass}" onclick="alterarModoEvento('classificatoria')" style="margin:0; flex:1 1 120px;">🏆 Só Classificatória</button>
-                <button class="${btnOlim}"  onclick="alterarModoEvento('olimpiadas')"     style="margin:0; flex:1 1 120px;">🏟️ Só Olimpíadas</button>
-                <button class="${btnAmbos}" onclick="alterarModoEvento('ambos')"          style="margin:0; flex:1 1 120px;">🌟 Ambos</button>
+                <button class="${btnClass}" onclick="alterarModoEvento('classificatoria')" style="margin:0; flex:1 1 45%;">🏆 Só Classificatória</button>
+                <button class="${btnOlim}"  onclick="alterarModoEvento('olimpiadas')"     style="margin:0; flex:1 1 45%;">🏟️ Só Olimpíadas</button>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); text-align:center; margin-bottom:18px;">
                 Modo ativo agora: <strong style="color:var(--neon-cyan);">${labelEvento}</strong>
@@ -21699,7 +21652,7 @@ function abrirBuscarAlunoComMeusDados() {
             const dis = bloqueadoPorOlimpiadas ? "disabled" : "";
             const op = bloqueadoPorOlimpiadas ? "opacity:.5; cursor:not-allowed;" : "";
             return `<button class="${cls}" onclick="alterarModoClassificatoria('${valor}')" ${dis}
-                style="margin:0; flex:1 1 110px; ${op}">${rotulos[valor]}</button>`;
+                style="margin:0; flex:1 1 22%; ${op}">${rotulos[valor]}</button>`;
         };
 
         html += `
@@ -21720,8 +21673,7 @@ function abrirBuscarAlunoComMeusDados() {
                 </div>
                 ${bloqueadoPorOlimpiadas
                     ? `<div style="font-size:11.5px; color:#fde68a; background:rgba(251,191,36,.08); border-left:3px solid #fbbf24; border-radius:8px; padding:8px 12px; line-height:1.5;">
-                        ⚠️ O Modo Olimpíadas está ativo. A Classificatória Única só funciona em
-                        <strong>Só Classificatória</strong> ou <strong>Ambos</strong>.
+                        ⚠️ O Modo Olimpíadas está ativo. A Classificatória Única só funciona em <strong>Só Classificatória</strong>.
                     </div>`
                     : `<div style="font-size:11.5px; color:var(--text-secondary); text-align:center;">
                         Modo ativo agora: <strong style="color:var(--neon-cyan);">${rotulos[modoClassif] || modoClassif}</strong>
@@ -22590,6 +22542,9 @@ function abrirBuscarAlunoComMeusDados() {
 
 
     // ▼▼▼ [18.03] Detalhes da etapa (modal) ─────────────────────────
+    // v10.13.5 · MELHORIA: O modal agora exibe um aviso claro quando
+    // o Modo Classificatória Única está ativo, informando qual modalidade
+    // está valendo para o ranking oficial.
     async function abrirDetalhesEtapa() {
         const container = document.getElementById("detalhes-etapa-conteudo");
         const modal = document.getElementById("modal-detalhes-etapa");
@@ -22606,16 +22561,35 @@ function abrirBuscarAlunoComMeusDados() {
         }[fase];
         let html = "";
         html += `<div class="info-secao"><span class="info-icone">📍</span><div class="info-conteudo"><h4 class="info-titulo">Status Atual</h4><p class="info-texto"><strong>${faseLabel}</strong></p></div></div>`;
+
+        // ⚠️ v10.13.5 — Aviso do Modo Classificatória Única
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+        if (modUnica) {
+            const nomeMod = MODALIDADES[modUnica]?.nome || modUnica;
+            html += `<div class="info-secao">
+                <span class="info-icone">🎯</span>
+                <div class="info-conteudo">
+                    <h4 class="info-titulo">Foco da Etapa: Modo Classificatória Única</h4>
+                    <p class="info-texto">Para manter o foco e a equidade, a classificação oficial desta etapa está avaliando apenas a modalidade <strong>${escaparHtml(nomeMod)}</strong>.</p>
+                    <div class="info-destaque azul" style="margin-top:8px;">
+                        💡 As demais modalidades estão disponíveis apenas para <strong>treino</strong> e não contam pontos para o ranking oficial.
+                    </div>
+                </div>
+            </div>`;
+        }
+
         if (etapa.inicioEm) html += `<div class="info-secao"><span class="info-icone">📅</span><div class="info-conteudo"><h4 class="info-titulo">Data de Início</h4><p class="info-texto">${formatarDataHoraCurta(etapa.inicioEm)}</p></div></div>`;
         
-        // Correção: Removido o "às 23h59" fixo. Agora mostra a hora exata que foi salva no painel.
         if (etapa.fimPrevistoEm) html += `<div class="info-secao"><span class="info-icone">🏁</span><div class="info-conteudo"><h4 class="info-titulo">Encerramento Previsto</h4><p class="info-texto">${formatarDataHoraCurta(etapa.fimPrevistoEm)}</p></div></div>`;
         
         html += `<div class="info-secao"><span class="info-icone">📋</span><div class="info-conteudo"><h4 class="info-titulo">Regras da Etapa</h4><ul class="info-lista"><li><strong>20 questões</strong> de multiplicação</li><li>Até <strong>10 segundos</strong> por questão</li><li><strong>Calculadora permitida</strong> para conferência</li><li>Os <strong>4 melhores</strong> de cada turma/modalidade avançam para a Final</li></ul></div></div>`;
+        
         html += `<div class="info-secao"><span class="info-icone">🎓</span><div class="info-conteudo"><h4 class="info-titulo">Certificados de Maestria</h4><p class="info-texto">Você pode conquistar <strong>3 certificados</strong> por modalidade conforme domina as operações:</p><ul class="info-lista"><li>🥈 <strong>Mestre da Tabuada (Prata)</strong> — 85% do mapa com 5+ tentativas por operação e 80% de acerto recente</li><li>🥇 <strong>Lenda da Tabuada (Ouro)</strong> — 95% do mapa, 8+ tentativas, 90% de acerto e velocidade</li><li>💎 <strong>Maestria Total (Lendária)</strong> — 100% do mapa, 10+ tentativas, 90% + velocidade comprovada</li></ul><div class="info-destaque verde">🏆 O certificado fica salvo para sempre no seu Álbum. Se você cair de rendimento depois, ele <strong>não é perdido</strong> — é uma conquista histórica!</div></div></div>`;
+        
         if (fase === ETAPA_FASES.etapa_votacao) {
             const dadosVot = await obterDadosVotacao();
-            // Correção: passar o fimPrevistoEm para o cálculo
             const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio, etapa.fimPrevistoEm) : null;
             const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
             const v7 = votos.filter(v => String(v.opcao) === "7").length;
@@ -22624,7 +22598,9 @@ function abrirBuscarAlunoComMeusDados() {
         } else if (fase === ETAPA_FASES.etapa_definida && etapa.duracaoEscolhida) {
             html += `<div class="info-secao"><span class="info-icone">✅</span><div class="info-conteudo"><h4 class="info-titulo">Votação Encerrada</h4><p class="info-texto">A duração oficial da etapa foi definida em <strong>${etapa.duracaoEscolhida} dias</strong>.</p></div></div>`;
         }
+        
         html += `<div class="info-secao"><span class="info-icone">🚨</span><div class="info-conteudo"><div class="info-destaque vermelho" style="margin:0;">Lembre-se: seu nome deve estar completo e idêntico à chamada oficial.</div></div></div>`;
+        
         container.innerHTML = html;
         modal.classList.remove("hidden");
         setTimeout(() => document.querySelector("#modal-detalhes-etapa .modal-close")?.focus(), 80);
@@ -23281,10 +23257,8 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
-    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
-    //   construirPromptIA injeta um bloco dinâmico "Modo Classificatória Única"
-    //   quando a flag está ativa. O Coach passa a saber que só uma modalidade
-    //   conta para ranking/medalhas e adapta as respostas.
+    // v10.13.7 · SIMPLIFICAÇÃO: Removido o modo "Ambos" do prompt.
+    // O app agora foca exclusivamente em "Classificatória" ou "Olimpíadas".
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
 
@@ -23659,13 +23633,11 @@ function abrirBuscarAlunoComMeusDados() {
         let modoEventoBloco = "";
         if (modoEventoAtual === "olimpiadas") {
             modoEventoBloco = `\n⚠️ O EVENTO ATUAL É O MODO OLIMPÍADAS ⚠️\nO foco da competição neste momento são as CORRIDAS DE TABUADA. As partidas oficiais de 20 perguntas estão pausadas ou fora de foco. Os alunos estão competindo por velocidade (Corridas por Tempo e por Distância). Se o aluno perguntar sobre ranking, foque no ranking das corridas. Se ele perguntar sobre como melhorar, sugira treinos de fluência e corridas.\n`;
-        } else if (modoEventoAtual === "ambos") {
-            modoEventoBloco = `\n🏆 O EVENTO ATUAL É A COPA COMPLETA (CLASSIFICATÓRIA + OLIMPÍADAS) 🏆\nO app está com as duas modalidades ativas! O aluno pode jogar as partidas oficiais de 20 perguntas (focando no Top 4) E TAMBÉM participar das Corridas de Tabuada (para velocidade). Se ele perguntar sobre como melhorar, você pode sugerir tanto os treinos clássicos quanto as corridas.\n`;
         } else {
             modoEventoBloco = `\n🏆 O EVENTO ATUAL É A CLASSIFICATÓRIA DA COPA 🏆\nO foco são as partidas oficiais de 20 perguntas e a busca pelo Top 4 da turma. As corridas estão desativadas.\n`;
         }
 
-        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+        // ⚠️ v10.13.7 — Modo Classificatória Única
         const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
             ? modalidadeClassificatoriaUnicaAtiva() : null;
         let modoUnicoBloco = "";
@@ -23733,7 +23705,7 @@ O MENU DEVE SER SEMPRE ESTE:
 5️⃣ TOP 4:
    Use os gaps do bloco COMPETITIVO. Diga a posição atual, quanto falta de pontos.
    Se já está no Top 4, celebre e diga para MANTER.
-   (Se estiver no modo Olimpíadas, lembre que a classificação oficial está pausada.)
+   (Se estiver no modo Olimpíadas, lembre que a classificação oficial está pausada).
 
 6️⃣ VELOCIDADE:
    Compare o melhor tempo médio do aluno com as metas dos certificados.
