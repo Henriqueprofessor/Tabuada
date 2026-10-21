@@ -9118,7 +9118,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <header class="esports-header">
             <div class="esports-logo" id="titulo-secreto">
                 <span class="emoji-logo">🏆</span>
-                <span>Copa da Tabuada</span>
+                <span id="header-nome-evento">Copa da Tabuada</span> <!-- ID ADICIONADO AQUI -->
                 <button
                     type="button"
                     class="logo-versao"
@@ -21440,10 +21440,7 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [17.09]
 
     // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória ou Olimpíadas) ─── INÍCIO ───
-    // v10.13.7 · SIMPLIFICAÇÃO: O modo "Ambos" foi removido. O app opera
-    // exclusivamente em "Só Classificatória" ou "Só Olimpíadas".
-    // Se mudar para Olimpíadas, a flag de class. única volta a "normal".
-
+    // v10.13.8 · O header da Home agora muda o título se estiver em Olimpíadas.
     const CAMINHO_MODO_EVENTO = "config/modo_evento";
     const CAMINHO_MODO_CLASSIFICATORIA = "config/modo_classificatoria";
 
@@ -21461,14 +21458,30 @@ function abrirBuscarAlunoComMeusDados() {
         _modoClassificatoriaCache = { valor: null, ts: 0 };
     }
 
+    function atualizarHeaderModoEvento() {
+        const elNome = document.getElementById("header-nome-evento");
+        const tituloOriginal = "Copa da Tabuada CEIB 2026 · Etapa Classificatória";
+        const tituloOlimpiadas = "Olimpíadas da Tabuada CEIB 2026";
+
+        if (modoEventoAtual === "olimpiadas") {
+            if (elNome) elNome.textContent = "Olimpíadas da Tabuada";
+            document.title = tituloOlimpiadas;
+        } else {
+            if (elNome) elNome.textContent = "Copa da Tabuada";
+            document.title = tituloOriginal;
+        }
+    }
+
     async function obterModoEvento(forcar = false) {
         try {
             const snap = await database.ref(CAMINHO_MODO_EVENTO).once("value");
             const modo = snap.val() || "classificatoria";
             modoEventoAtual = (modo === "olimpiadas") ? "olimpiadas" : "classificatoria";
+            atualizarHeaderModoEvento();
             return modoEventoAtual;
         } catch(e) {
             console.warn("[Modo Evento] Falha ao ler, assumindo classificatoria:", e);
+            atualizarHeaderModoEvento();
             return "classificatoria";
         }
     }
@@ -21533,6 +21546,7 @@ function abrirBuscarAlunoComMeusDados() {
             }
 
             invalidarCacheModoClassificatoria();
+            atualizarHeaderModoEvento(); // ⚠️ Atualiza o título/header imediatamente
             notificar(`Modo alterado para: ${novoModo.toUpperCase()}`, "sucesso");
 
             hallFamaCache = null;
@@ -21618,6 +21632,8 @@ function abrirBuscarAlunoComMeusDados() {
 
         const modoEvento = await obterModoEvento(true);
         const modoClassif = await obterModoClassificatoria(true);
+
+        atualizarHeaderModoEvento(); // ⚠️ Garante o título certo ao abrir o painel
 
         // ── Seção 1: Modo do Evento (Apenas 2 botões) ──
         const btnClass = modoEvento === "classificatoria" ? "botao-verde" : "botao-secundario";
@@ -25179,10 +25195,9 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [19.02]
 
     // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
-    // v10.13.4 · BUGFIX: O app agora aguarda o carregamento do Modo 
-    // Classificatória Única (config/modo_classificatoria) antes de 
-    // renderizar a Home. Antes, a tela renderizava como "normal" e 
-    // não atualizava após a leitura assíncrona da flag.
+    // v10.13.8 · O boot agora aguarda a leitura das flags de modo e
+    // atualiza o título da aba e o cabeçalho da Home antes de renderizar
+    // o restante da interface.
     async function registrarServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
         const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -25217,14 +25232,17 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
         iniciarListenerMsgAluno();
 
-        // ⚠️ v10.13.4 · Aguarda AMBOS os modos (Evento e Classificatória Única) 
-        // antes de renderizar a Home, evitando que a tela pisque ou mostre os
-        // botões errados por um breve momento.
+        // ⚠️ v10.13.8 · Aguarda AMBOS os modos antes de renderizar a Home.
+        // Isso evita que o título e os cards pisquem ou mostrem dados errados.
         try {
             await Promise.all([
                 obterModoEvento(),
                 obterModoClassificatoria()
             ]);
+            // Atualiza o título da aba e o cabeçalho da Home imediatamente
+            if (typeof atualizarHeaderModoEvento === "function") {
+                atualizarHeaderModoEvento();
+            }
         } catch (e) {
             console.warn("[Boot] Falha ao carregar configurações de modo:", e);
         }
