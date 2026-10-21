@@ -20680,6 +20680,9 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [17.05]
 
     // ▼▼▼ [17.06] Reset + exportação + gerenciar alunos ─────────────
+    // v10.13.2 · BUGFIX: Incluído o nó `copa_hall_resumo` nas listas de
+    // reset (definitivo e por turma) para evitar que o Hall da Fama
+    // continue mostrando dados antigos após a limpeza.
     
     // Reset Definitivo (Limpa tudo via API direta + LocalStorage)
     async function confirmarResetDefinitivo() {
@@ -20700,7 +20703,8 @@ function abrirBuscarAlunoComMeusDados() {
             "copaV2", "copa_medals", "copa_estrelas", "copa_secoes_completas",
             "copa_posicao_baseline", "copa_snapshot_diario", "copa_certificados",
             "copa_treinos_focados", "copa_treinos_por_modalidade", "copa_corridas",
-            "mensagens", "vinculos"
+            "mensagens", "vinculos",
+            "copa_hall_resumo" // ⚠️ ADICIONADO AQUI
         ];
         
         console.log("⏳ [Reset Definitivo] Iniciando a limpeza...");
@@ -20750,7 +20754,8 @@ function abrirBuscarAlunoComMeusDados() {
             CAMINHO_POSICAO_BASELINE,
             CAMINHO_SNAPSHOT_DIARIO,
             CAMINHO_CERTIFICADOS,
-            CAMINHO_TREINOS_FOCADOS
+            CAMINHO_TREINOS_FOCADOS,
+            CAMINHO_HALL_RESUMO // ⚠️ ADICIONADO AQUI
         ];
         if (turma === "todas") {
             for (const c of caminhos) { try { await database.ref(c).set({ _reset: true }); } catch(e) { console.warn(`Erro ao limpar ${c}:`, e); } }
@@ -20894,6 +20899,7 @@ function abrirBuscarAlunoComMeusDados() {
                 try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
                 try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
                 try { await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
+                try { await database.ref(`${CAMINHO_HALL_RESUMO}/${alunoKey}`).set({ _reset: true }); } catch(e) {} // ⚠️ ADICIONADO AQUI
             }
             await carregarListaAlunos();
             renderizarRanking();
