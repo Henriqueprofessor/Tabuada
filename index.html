@@ -10994,7 +10994,10 @@ verificarVersao();
         { id: "tartaruga_ninja",    nome: "Tartaruga Ninja",      icone: "🐢", secao: "primeiros_passos", raridade: "comum",   recompensaEstrelas: 1, requisito: "Completar uma partida com menos de 5 acertos.", descricao: "Toda jornada tem começo.", dica: "Toda jornada tem começo. Continue tentando!", condicao: d => d.temPartidaComBaixoAcerto },
         { id: "sorte_principiante", nome: "Sorte de Principiante",icone: "🍀", secao: "primeiros_passos", raridade: "comum",   recompensaEstrelas: 1, requisito: "Acerte a 1ª pergunta de uma partida.", descricao: "Bom começo!", dica: "A primeira é sempre a mais importante!", condicao: d => d.acertouPrimeiraAlguma },
         { id: "volta_amanha",       nome: "Volta Amanhã",         icone: "🌅", secao: "primeiros_passos", raridade: "incomum", recompensaEstrelas: 2, requisito: "Jogar em 2 dias diferentes.", descricao: "Constância é o segredo.", dica: "Jogue hoje e volte amanhã para ganhar.", condicao: d => d.diasDistintosJogados >= 2 },
-        { id: "rei_chute",           nome: "Rei do Chute",         icone: "🎲", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Acerte 3 questões em 1s ou menos cada.", descricao: "Rápido no gatilho!", dica: "Seja rápido sem perder a precisão.", condicao: d => d.temposRapidosMax >= 3 },
+        
+        // ⚠️ MEDALHA CORRIGIDA
+        { id: "rei_chute",           nome: "Rei do Chute",         icone: "🎲", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Acerte 3+ questões em até 0,5s com precisão menor que 80% na partida.", descricao: "Chutou rápido e acertou algumas!", dica: "Responda rápido e não se preocupe em acertar tudo — o foco é a velocidade no chute.", condicao: d => d.temReiChute === true },
+        
         { id: "raio",                nome: "Raio",                 icone: "⚡", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Ter tempo médio abaixo de 2,0s em uma partida.", descricao: "Você é veloz!", dica: "Responda rápido e mantenha o ritmo.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 2.0 },
         { id: "velocidade_relampago",nome: "Velocidade Relâmpago", icone: "🚀", secao: "velocidade", raridade: "raro",    recompensaEstrelas: 3, requisito: "Acerte 20/20 com tempo médio abaixo de 1,2s.", descricao: "Perfeição e velocidade juntas.", dica: "Perfeição e velocidade juntas — o desafio máximo.", condicao: d => d.partidasCom20Acertos >= 1 && d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito < 1.2 },
         { id: "ventania",            nome: "Ventania",             icone: "💨", secao: "velocidade", raridade: "raro",    recompensaEstrelas: 3, requisito: "Ter tempo médio abaixo de 1,5s em uma partida.", descricao: "Rápido como o vento!", dica: "Você precisa ser mais rápido que a média.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 1.5 },
@@ -11129,13 +11132,14 @@ let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontos
 let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
 let treinoAnonimo = false;
 let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
+let chutesRapidos = 0; // ⚠️ NOVO: Contador para o Rei do Chute
 let desempenhoOperacoes = {};
 let mapaFonteUltima = {};
 let mapaFonteAgregada = {};
 let modoVisualizacaoMapa = "agregado";
 let treinoFocoOperacoes = null;
 let treinoListaInteligente = null;
-let treinoFocoAbsoluto = null; // v10.4.1 — força operações pendentes quando faltam ≤5
+let treinoFocoAbsoluto = null;
 let aguardandoFeedbackErro = false;
 let promocoesRecentes = [];
 let pilhaDetalhes = [];
@@ -13744,13 +13748,23 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const partidasCom20Acertos = partidas.filter(p => Number(p.acertos) === 20).length;
         const maiorSequenciaMax = partidas.length ? Math.max(...partidas.map(p => Number(p.maiorSequencia) || 0)) : 0;
         const temposRapidosMax = partidas.length ? Math.max(...partidas.map(p => Number(p.temposRapidos) || 0)) : 0;
+
+        // ⚠️ NOVO: Lógica do Rei do Chute
+        const temReiChute = partidas.some(p => {
+            const chutes = Number(p.chutesRapidos) || 0;
+            const acertosP = Number(p.acertos) || 0;
+            const errosP = Number(p.erros) || 0;
+            const totRespostas = acertosP + errosP;
+            const precisao = totRespostas > 0 ? acertosP / totRespostas : 1;
+            return chutes >= 3 && precisao < 0.8;
+        });
+
         const partidasValidas = partidas.filter(p => Number(p.acertos) >= 10 && Number(p.tempoMedio) > 0);
         const melhorTempoMedio = partidasValidas.length ? Math.min(...partidasValidas.map(p => Number(p.tempoMedio))) : null;
         
         const perfeitas = partidas.filter(p => Number(p.acertos) === 20 && Number(p.tempoMedio) > 0);
         const melhorTempoMedioPerfeito = perfeitas.length ? Math.min(...perfeitas.map(p => Number(p.tempoMedio))) : null;
         
-        // ⚠️ NOVO: Lógica corrigida para o Hall da Fama (Mestre da Velocidade)
         let maxTemposRapidosPerfeito = 0;
         let melhorTempoPerfeitoParaHall = null;
         perfeitas.forEach(p => {
@@ -13896,7 +13910,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             totalPartidas, melhorPontuacao, totalAcertos,
             partidasCom20Acertos, maiorSequenciaMax, conquistasCount,
             temposRapidosMax, melhorTempoMedio, melhorTempoMedioPerfeito, melhorTempoMedio19Ou20,
-            maxTemposRapidosPerfeito, melhorTempoPerfeitoParaHall,
+            maxTemposRapidosPerfeito, melhorTempoPerfeitoParaHall, temReiChute, // ⚠️ INCLUÍDO AQUI
             acertouPrimeiraAlguma, temPartidaComBaixoAcerto,
             diasDistintosJogados, maxPartidasEmUmDia, temJogoNoturno,
             temVoltaPorCima, melhorouNaSegundaTentativa,
@@ -17603,7 +17617,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         else if (treinoListaInteligente && treinoListaInteligente.length) t = `🎯 TREINO INTELIGENTE — ${treinoListaInteligente.length} operações pendentes`;
         document.getElementById("cabecalho-turma").innerText = t;
         mostrarTela("tela-jogo");
-        // ⚙️ [13] — Treino sempre tem botão de cancelar
         atualizarVisibilidadeBotaoCancelar();
         proximaPergunta();
     }
@@ -17619,7 +17632,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         reiniciarVariaveisJogo();
         document.getElementById("cabecalho-turma").innerText = `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
         mostrarTela("tela-jogo");
-        // ⚙️ [13] — Oficial: botão só aparece a partir da 2ª partida da modalidade
         atualizarVisibilidadeBotaoCancelar();
         proximaPergunta();
     }
@@ -17629,9 +17641,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         aguardandoFeedbackErro = false;
         perguntaAtual = 0; pontosAcumulados = 0; acertos = 0; erros = 0; sequenciaAtual = 0; maiorSequencia = 0;
         temposCorretas = []; temposRespostas = []; desempenhoTabuadas = {};
-        desempenhoOperacoes = {}; // { "7x8": { respostas: [{acertou, tempo}, ...] } }
+        desempenhoOperacoes = {}; 
         perguntasGeradas = []; tabuadaAtualPergunta = null;
         acertouPrimeira = false; temposRapidos = 0;
+        chutesRapidos = 0; // ⚠️ ZERA O CHUTE AQUI
         jogoAtivo = true; finalizando = false;
         if (timerInterval) clearInterval(timerInterval);
         if (timerTimeout) clearTimeout(timerTimeout);
@@ -17705,9 +17718,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         temposRespostas.push({ acertou, tempo });
         if (perguntaAtual === 1 && acertou) acertouPrimeira = true;
         
-        // ⚠️ NOVO: Agora conta acertos em 1 segundo ou menos
+        // ⚠️ HALL DA FAMA: Conta acertos rápidos (até 1s)
         if (acertou && tempo <= 1.0) temposRapidos++;
         
+        // ⚠️ REI DO CHUTE: Conta acertos rápidos (< 0,5s)
+        if (acertou && tempo < 0.5) chutesRapidos++;
+
         if (acertou) somAcerto(); else somErro();
         if (!modoTreino && !acertou) {
             const d = document.getElementById("pergunta");
@@ -17850,12 +17866,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
     // ▲▲▲ FIM [14.07]
+
     // ▼▼▼ [14.08] Finalização ──────────────────────────────────────────
     async function finalizarCircuito() {
         if (finalizando) return;
         finalizando = true; jogoAtivo = false;
         
-        // ⚠️ OTIMIZAÇÃO: Limpa o cache do mapa para forçar leitura atualizada na próxima tela
         _homeMapaCache = null;
 
         const _ov = document.getElementById("feedback-erro-treino");
@@ -17897,7 +17913,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             pontos: pontosAcumulados, acertos, erros, tempoMedio, maiorSequencia,
             desempenhoTabuadas, desempenhoOperacoes,
             data: new Date().toISOString(), idPartida: criarChavePartida({ nome: alunoAtual }),
-            temposRapidos, acertouPrimeira,
+            temposRapidos, chutesRapidos, acertouPrimeira, // ⚠️ SALVA AQUI
             completa: partidaCompleta,
             treinoFocado: treinoFocoOperacoes ? treinoFocoOperacoes.map(o => ({ fA: o.fA, fB: o.fB })) : null,
             treinoInteligente: treinoListaInteligente ? treinoListaInteligente.length : 0
