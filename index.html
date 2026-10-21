@@ -11400,11 +11400,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.05]
 
     // ▼▼▼ [07.06] Ciclo de vida da etapa ───────────────────────── INÍCIO ───
-    // v10.13.11 · O app agora suporta a fase "etapa_aberta" (ativa sem votação).
+    // v10.13.12 · Adiciona a fase 'etapa_aberta' (ativa mas sem votação).
     const ETAPA_FASES = {
         sem_agendamento: "sem_agendamento",
         pre_evento: "pre_evento",
-        etapa_aberta: "etapa_aberta", // NOVO
+        etapa_aberta: "etapa_aberta",
         etapa_votacao: "etapa_votacao",
         etapa_definida: "etapa_definida",
         congelada: "congelada",
@@ -11445,7 +11445,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return ETAPA_FASES.etapa_definida;
         }
         
-        // Se a votação não foi aberta explicitamente, a etapa está apenas Aberta
         if (d.votacaoAberta === true) return ETAPA_FASES.etapa_votacao;
         
         return ETAPA_FASES.etapa_aberta;
@@ -11474,6 +11473,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.06]
 
     // ▼▼▼ [07.07] Countdown ────────────────────────────────────── INÍCIO ───
+    // v10.13.12 · Ao chegar a zero, limpa o cache e usa 'finally' para
+    // garantir a atualização da tela, mesmo que a rede oscile.
     let countdownFinalInterval = null;
 
     function formatarContagemDeTempo(ms) {
@@ -11513,26 +11514,24 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             atualizarCountdownVisual(inicioEm);
             if (Date.now() >= inicioEm) {
                 pararCountdown();
-                verificarEIniciarEtapaSeNecessario().then(async () => {
-                    await atualizarTelaInicialComEtapa();
-                    await renderizarCardVotacao();
-                });
+                etapaEstadoCache = null; // Limpa o cache para forçar a leitura do banco
+                verificarEIniciarEtapaSeNecessario()
+                    .catch(e => console.warn("Erro ao iniciar etapa:", e))
+                    .finally(async () => {
+                        await atualizarTelaInicialComEtapa();
+                        await renderizarCardVotacao();
+                    });
             }
         }, 1000);
     }
 
-    // ─── NOVO: Countdown de Encerramento (Últimas 24h) ───
     function iniciarCountdownFinal(fimEm) {
         const container = document.getElementById("countdown-final-container");
         if (!container) return;
-
         if (countdownFinalInterval) clearInterval(countdownFinalInterval);
-
         const atualizarTimer = () => {
             const agora = Date.now();
             const restante = fimEm - agora;
-
-            // Se já passou, ou se falta mais de 24h, esconde.
             if (restante <= 0 || restante > 24 * 60 * 60 * 1000) {
                 container.classList.add("hidden");
                 container.innerHTML = "";
@@ -11542,8 +11541,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 }
                 return;
             }
-
-            // Se falta menos de 24h, mostra o timer
             const t = formatarContagemDeTempo(restante);
             container.classList.remove("hidden");
             container.innerHTML = `
@@ -11557,9 +11554,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 </div>
             `;
         };
-
-        atualizarTimer(); // Roda uma vez imediatamente
-        countdownFinalInterval = setInterval(atualizarTimer, 1000); // Atualiza a cada segundo
+        atualizarTimer();
+        countdownFinalInterval = setInterval(atualizarTimer, 1000);
     }
     // ▲▲▲ FIM [07.07]
 
@@ -12210,6 +12206,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.08.quater]
 
     // ▼▼▼ [07.09] Auto-início, fechamento e encerramento da etapa ─────────
+    // v10.13.12 · Remove a votação automática ao iniciar a etapa.
     async function verificarEIniciarEtapaSeNecessario() {
         const d = await obterDadosEtapa(true);
         if (!d.inicioEm) return;
@@ -12218,18 +12215,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (agora < d.inicioEm) return;
         if (!d.votacaoFechadaEm && !d.iniciadaEm) {
             try {
-                await salvarDadosEtapa({ iniciadaEm: agora, status: "ativa" });
-                await abrirVotacaoAutomatica(d.inicioEm);
+                await salvarDadosEtapa({ iniciadaEm: agora, status: "ativa", votacaoAberta: false });
             } catch(e) { console.warn("Falha ao iniciar etapa automaticamente:", e); }
         }
-    }
-
-    async function abrirVotacaoAutomatica(inicioEm) {
-        try {
-            const snap = await database.ref(CAMINHO_VOTACAO).once("value");
-            if (snap.exists() && snap.val()?.inicio) return;
-            await database.ref(CAMINHO_VOTACAO).set({ inicio: inicioEm || Date.now() });
-        } catch(e) { console.warn("Falha ao abrir votação automática:", e); }
     }
 
     async function verificarEFecharVotacaoSeNecessario() {
@@ -12244,9 +12232,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const vot = await obterDadosVotacao();
         if (!vot.inicio) return;
 
-        // NOVO: calcula o fechamento considerando o limite do fim do evento
         const fechamento = calcularFechamentoVotacao(vot.inicio, etapaAtual.fimPrevistoEm);
-        
         if (Date.now() < fechamento) return;
 
         const votos = vot.votos ? Object.values(vot.votos) : [];
@@ -20526,6 +20512,7 @@ function abrirBuscarAlunoComMeusDados() {
             notificar("Votação aberta!", "sucesso");
             await renderizarPainelVotacao();
             await renderizarCardVotacao();
+            await atualizarTelaInicialComEtapa();
         } catch(e) { notificar("Não foi possível abrir a votação.", "erro"); console.warn(e); }
     }
     
