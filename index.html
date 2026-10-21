@@ -16736,6 +16736,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.06.bis]
 
 // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
+    // v10.13.11 · BUGFIX: A classe .aba-principal tem display:flex, o que
+    // sobrescrevia a classe .hidden. Agora usamos style.display direto
+    // e ajustamos o grid para 1 coluna no modo Olimpíadas.
     let metricaRankingAtual = "pontos";
     let corridaTipoRankingAtual = "tempo";
 
@@ -16766,6 +16769,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     function mudarEscopoRanking(escopo) {
         if (escopo !== "turma" && escopo !== "global" && escopo !== "corridas") return;
+        
+        // Impede que troque para abas inválidas dependendo do modo
+        if (modoEventoAtual === "classificatoria" && escopo === "corridas") return;
+        if (modoEventoAtual === "olimpiadas" && escopo !== "corridas") return;
+
         tipoRankingAtual = escopo;
 
         aplicarModoUnicoNoFiltroModalidade();
@@ -16862,10 +16870,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function resetarRankingParaEstadoLimpo() {
         aplicarModoUnicoNoFiltroModalidade();
 
+        const escopoEl = document.querySelector(".ranking-escopo");
+        const btnTurma = document.getElementById("aba-minha-turma");
+        const btnGlobal = document.getElementById("aba-global");
+        const btnCorridas = document.getElementById("aba-corridas");
+
         if (modoEventoAtual === "olimpiadas") {
-            document.getElementById("aba-minha-turma")?.classList.add("hidden");
-            document.getElementById("aba-global")?.classList.add("hidden");
-            document.getElementById("aba-corridas")?.classList.remove("hidden");
+            // Força o display none/flex via JS para vencer a especificidade do CSS
+            if (btnTurma) btnTurma.style.display = "none";
+            if (btnGlobal) btnGlobal.style.display = "none";
+            if (btnCorridas) btnCorridas.style.display = "flex";
+            
+            // Ajusta o grid de 3 colunas para 1 coluna
+            if (escopoEl) escopoEl.style.gridTemplateColumns = "1fr";
+            
             tipoRankingAtual = "corridas";
             metricaRankingAtual = corridaTipoRankingAtual === "tempo" ? "100m" : "sprint_10";
             mudarEscopoRanking("corridas");
@@ -16873,9 +16891,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
         
         // Modo Classificatória (Único ou Normal)
-        document.getElementById("aba-minha-turma")?.classList.remove("hidden");
-        document.getElementById("aba-global")?.classList.remove("hidden");
-        document.getElementById("aba-corridas")?.classList.add("hidden");
+        if (btnTurma) btnTurma.style.display = "flex";
+        if (btnGlobal) btnGlobal.style.display = "flex";
+        if (btnCorridas) btnCorridas.style.display = "none";
+        
+        if (escopoEl) escopoEl.style.gridTemplateColumns = ""; // Restaura o CSS padrão (3 colunas)
 
         tipoRankingAtual = null;
         metricaRankingAtual = "pontos";
