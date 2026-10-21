@@ -22957,8 +22957,8 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [18.06.bis]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.13.2 · BUGFIX: Timeout de 5s no Promise.all do card para não
-    // travar a tela se o ranking/histórico estiverem lentos.
+    // v10.13.13 · BUGFIX: Adicionado ETAPA_FASES.etapa_aberta nas verificações
+    // de 'etapaAtiva' para que o botão Jogar libere assim que a contagem zerar.
     let _homeModalidadesToken = 0;
 
     function modalidadePermitidaParaOficial(mod) {
@@ -22997,7 +22997,13 @@ function abrirBuscarAlunoComMeusDados() {
             ? modalidadeClassificatoriaUnicaAtiva()
             : null;
 
-        const etapaAtiva = (fase && (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida));
+        // ⚠️ v10.13.13 — Inclui a fase etapa_aberta
+        const etapaAtiva = (fase && (
+            fase.tipo === ETAPA_FASES.etapa_aberta || 
+            fase.tipo === ETAPA_FASES.etapa_votacao || 
+            fase.tipo === ETAPA_FASES.etapa_definida
+        ));
+        
         const tituloAcao = "Minhas Posições";
         let subtitulo;
         if (etapaAtiva) {
@@ -23013,7 +23019,6 @@ function abrirBuscarAlunoComMeusDados() {
         if (nome && turma) {
             try {
                 const chave = chaveAlbum(nome, turma);
-                // Timeout de 5s para não travar a interface
                 const timeoutPromise = new Promise(resolve => setTimeout(() => resolve([]), 5000));
                 
                 const [r25, r69, r010, partidas, snapTreinos] = await Promise.all([
@@ -23233,7 +23238,14 @@ function abrirBuscarAlunoComMeusDados() {
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { mostrarTela("tela-single"); return; }
         const fase = await resolverFaseAtual();
-        const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
+        
+        // ⚠️ v10.13.13 — Inclui a fase etapa_aberta
+        const etapaAtiva = (
+            fase.tipo === ETAPA_FASES.etapa_aberta || 
+            fase.tipo === ETAPA_FASES.etapa_votacao || 
+            fase.tipo === ETAPA_FASES.etapa_definida
+        );
+        
         if (!etapaAtiva) {
             notificar("⏸️ A etapa classificatória não está aberta agora. Use o botão Treinar para aquecer!", "aviso", 5000);
             return;
