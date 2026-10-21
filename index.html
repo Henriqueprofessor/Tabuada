@@ -18891,6 +18891,7 @@ function abrirBuscarAlunoComMeusDados() {
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [15.01] Marcos + helpers ─────────────────────────────────────
+    // v10.13.14 · Força a meta a usar a modalidade ativa se o Modo Único estiver ligado.
     const MARCOS_PONTOS = [
         { pts: 3000,  nome: "Aprendiz",   icone: "🎓" },
         { pts: 6000,  nome: "Praticante", icone: "📘" },
@@ -18924,6 +18925,11 @@ function abrirBuscarAlunoComMeusDados() {
     }
     function formatarPtsMeta(n) { return Math.round(n).toLocaleString("pt-BR"); }
     function obterModalidadeMetaAtual() {
+        // ⚠️ v10.13.14 — Prioriza a modalidade do Modo Classificatória Única
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva() : null;
+        if (modUnica) return modUnica;
+        
         const sel = document.getElementById("modalidade-tabuada");
         return sel && sel.value ? sel.value : "0-10";
     }
@@ -21949,6 +21955,8 @@ function abrirBuscarAlunoComMeusDados() {
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [18.01] Home E-Sports — Hero com saudação + Ritmo na Copa ─
+    // v10.13.14 · O Ritmo na Copa agora lê direto do histórico (evita atraso
+    // do resumo) e exibe o nome da modalidade no título se estiver no modo único.
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -21974,37 +21982,47 @@ function abrirBuscarAlunoComMeusDados() {
             return;
         }
 
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva() : null;
+        
+        if (modUnica && heroSub) {
+            heroSub.innerHTML = `🎯 Etapa Classificatória Única: Foco total em <strong>${escaparHtml(MODALIDADES[modUnica].nome)}</strong>.`;
+        }
+
         try {
             const chave = chaveAlbum(nome, turma);
-            
-            // ⚠️ OTIMIZAÇÃO: Busca apenas o resumo do aluno (3 leituras pequenas) em vez de tudo
-            const [snapTreinos, snapM25, snapM69, snapM010] = await Promise.all([
-                database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chave}`).once("value").catch(() => null),
-                database.ref(`${CAMINHO_RANKING_RESUMO}/media/2-5/${chave}`).once("value").catch(() => null),
-                database.ref(`${CAMINHO_RANKING_RESUMO}/media/6-9/${chave}`).once("value").catch(() => null),
-                database.ref(`${CAMINHO_RANKING_RESUMO}/media/0-10/${chave}`).once("value").catch(() => null)
-            ]);
-
             let oficiais = 0;
-            [snapM25, snapM69, snapM010].forEach(s => {
-                if (s && s.val()) oficiais += (Number(s.val().partidasOficiais) || 0);
-            });
+            let treinos = 0;
 
-            const treinos = snapTreinos && snapTreinos.val() ? Number(snapTreinos.val()) || 0 : 0;
+            if (modUnica) {
+                // No modo único, busca apenas os dados da modalidade ativa
+                const partidas = await obterHistoricoAluno(nome, turma, modUnica).catch(() => []);
+                oficiais = partidas.length;
+                const snapTreinos = await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chave}/${modUnica}`).once("value").catch(() => null);
+                treinos = (snapTreinos && snapTreinos.val()) ? Number(snapTreinos.val()) : 0;
+            } else {
+                // Modo normal, soma tudo
+                const partidas = await obterHistoricoAluno(nome, turma).catch(() => []);
+                oficiais = partidas.length;
+                const snapTreinos = await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chave}`).once("value").catch(() => null);
+                treinos = (snapTreinos && snapTreinos.val()) ? Number(snapTreinos.val()) : 0;
+            }
 
-            atualizarFraseHero({ oficiais, treinos });
-            renderizarRitmoCopa({ oficiais, treinos });
+            atualizarFraseHero({ oficiais, treinos }, modUnica);
+            renderizarRitmoCopa({ oficiais, treinos }, modUnica);
 
         } catch (e) {
             console.warn("[Home] Falha ao preencher hero:", e);
-            atualizarFraseHero(null);
-            renderizarRitmoCopa(null);
+            atualizarFraseHero(null, modUnica);
+            renderizarRitmoCopa(null, modUnica);
         }
     }
 
-    function atualizarFraseHero(dados) {
+    function atualizarFraseHero(dados, modUnica = null) {
         const el = document.getElementById("hero-sub-dinamica");
         if (!el) return;
+
+        if (modUnica) return; // Se for modo único, o texto já foi setado acima
 
         if (!dados || (dados.oficiais === 0 && dados.treinos === 0)) {
             el.textContent = "Sua jornada na Copa começa na primeira partida oficial!";
@@ -22026,7 +22044,7 @@ function abrirBuscarAlunoComMeusDados() {
         else                   el.textContent = "Você tem equilibrado treinos e partidas oficiais.";
     }
 
-    function renderizarRitmoCopa(dados) {
+    function renderizarRitmoCopa(dados, modUnica = null) {
         const ctn = document.getElementById("ritmo-copa-container");
         if (!ctn) return;
 
@@ -22037,12 +22055,13 @@ function abrirBuscarAlunoComMeusDados() {
 
         const { oficiais, treinos } = dados;
         const total = oficiais + treinos;
+        const sufixoMod = modUnica ? ` · ${escaparHtml(MODALIDADES[modUnica].nome)}` : "";
 
         if (total === 0) {
             ctn.innerHTML = `<div class="home-ritmo-card">
                 <div class="home-ritmo-cabecalho">
                     <span class="home-ritmo-titulo">
-                        🎯 Seu Ritmo na Copa
+                        🎯 Seu Ritmo na Copa${sufixoMod}
                         <button type="button" id="btn-como-funciona-ritmo" class="btn-como-funciona-inline" onclick="abrirModalComoFuncionaRitmo()" aria-haspopup="dialog" aria-controls="modal-explicacao-ritmo" aria-label="Como funciona o Ritmo na Copa" title="Como funciona?">?</button>
                     </span>
                 </div>
@@ -22057,7 +22076,7 @@ function abrirBuscarAlunoComMeusDados() {
         ctn.innerHTML = `<div class="home-ritmo-card">
             <div class="home-ritmo-cabecalho">
                 <span class="home-ritmo-titulo">
-                    🎯 Seu Ritmo na Copa
+                    🎯 Seu Ritmo na Copa${sufixoMod}
                     <button type="button" id="btn-como-funciona-ritmo" class="btn-como-funciona-inline" onclick="abrirModalComoFuncionaRitmo()" aria-haspopup="dialog" aria-controls="modal-explicacao-ritmo" aria-label="Como funciona o Ritmo na Copa" title="Como funciona?">?</button>
                 </span>
                 <span class="home-ritmo-numeros">
