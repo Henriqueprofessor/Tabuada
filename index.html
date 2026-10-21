@@ -11555,9 +11555,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.07]
 
     // ▼▼▼ [07.08] Tela inicial dinâmica ────────────────────────── INÍCIO ───
-    // v10.4.4 · P32 — CTA único virou card de modalidades (renderizarModalidadesHome)
+    // v10.13.2 · BUGFIX: Timeout de 3s na busca da fase para evitar
+    // que o esqueleto da Home fique preso em redes lentas.
+    // Fallback visual caso a renderização falhe.
     async function atualizarTelaInicialComEtapa() {
-        const fase = await resolverFaseAtual();
         const heroPre = document.getElementById("hero-pre-evento");
         const heroNorm = document.getElementById("hero-classificatoria-normal");
         const statusCtn = document.getElementById("home-status-etapa");
@@ -11570,6 +11571,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (statusCtn) statusCtn.innerHTML = "";
         if (bannerCtn) bannerCtn.innerHTML = "";
         if (countdownCtn) countdownCtn.classList.add("hidden");
+
+        let fase;
+        try {
+            // Timeout de 3s para não travar a interface se o Firebase estiver lento
+            fase = await Promise.race([
+                resolverFaseAtual(),
+                new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 3000))
+            ]);
+        } catch(e) {
+            console.warn("[Home] Timeout ou falha ao buscar fase. Usando fallback.", e);
+            fase = { tipo: ETAPA_FASES.sem_agendamento, dados: {} };
+        }
 
         // ⚙️ L1 — Modo teste: faixa âmbar discreta no topo
         if (fase.dados.modoTeste && fase.tipo !== ETAPA_FASES.encerrada) {
@@ -11600,12 +11613,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const fim = fase.dados.fimPrevistoEm ? formatarDataHoraCurta(fase.dados.fimPrevistoEm) : "--";
             if (statusCtn) statusCtn.innerHTML = `<span class="badge-status andamento">Em andamento</span><div>Encerra em <strong>${fim}</strong></div><div>Duração oficial: <strong>${dur}</strong></div>`;
             
-            // ▼▼▼ CHAMADA DO CONTADOR REGRESSIVO (ÚLTIMAS 24H) ▼▼▼
             if (fase.dados.fimPrevistoEm) {
                 iniciarCountdownFinal(fase.dados.fimPrevistoEm);
             }
-            // ▲▲▲
-            
         } else if (fase.tipo === ETAPA_FASES.congelada) {
             heroPre.classList.add("hidden");
             heroNorm.classList.remove("hidden");
@@ -11616,11 +11626,19 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (statusCtn) statusCtn.innerHTML = `<span class="badge-status encerrada">Encerrada</span><div>A classificação final está disponível. Obrigado por participar!</div>`;
         }
 
-        // ▼▼▼ P32 — Renderiza o card "Minhas Posições · Jogar/Treinar" no lugar do antigo CTA único
+        // ▼▼▼ P32 — Renderiza o card "Minhas Posições · Jogar/Treinar"
         try {
             await renderizarModalidadesHome(fase);
         } catch(e) {
             console.warn("[Home] Falha ao renderizar modalidades:", e);
+            // Fallback visual caso o card falhe de vez
+            const ctn = document.getElementById("acao-principal-container");
+            if (ctn) {
+                ctn.innerHTML = `<div class="home-modalidades-card" style="text-align:center;padding:24px;">
+                    <div class="home-empty-msg">Não foi possível carregar suas posições agora.</div>
+                    <button class="home-btn-link" style="margin-top:12px;" onclick="atualizarTelaInicialComEtapa()">🔄 Tentar novamente</button>
+                </div>`;
+            }
         }
         // ▲▲▲
 
@@ -22937,15 +22955,10 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [18.06.bis]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.13.0 · P-B4 (Pacote 2) — Modo Classificatória Única
-    //   • Banner informativo no topo do card quando a flag está setada
-    //   • Modalidade ativa destacada; outras esmaecidas com aviso "Só treino"
-    //   • Botão Jogar bloqueado nas modalidades não-ativas
-    //   • Atalho de treino foca na modalidade ativa
-    //   • jogarModalidadeHome respeita a flag (com toast explicativo)
+    // v10.13.2 · BUGFIX: Timeout de 5s no Promise.all do card para não
+    // travar a tela se o ranking/histórico estiverem lentos.
     let _homeModalidadesToken = 0;
 
-    // Helper local — consulta a flag e diz se a modalidade pode ser jogada oficialmente
     function modalidadePermitidaParaOficial(mod) {
         const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
             ? modalidadeClassificatoriaUnicaAtiva()
@@ -22978,12 +22991,11 @@ function abrirBuscarAlunoComMeusDados() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
 
-        // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Modo Classificatória Única
         const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
             ? modalidadeClassificatoriaUnicaAtiva()
             : null;
 
-        const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
+        const etapaAtiva = (fase && (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida));
         const tituloAcao = "Minhas Posições";
         let subtitulo;
         if (etapaAtiva) {
@@ -22999,27 +23011,30 @@ function abrirBuscarAlunoComMeusDados() {
         if (nome && turma) {
             try {
                 const chave = chaveAlbum(nome, turma);
+                // Timeout de 5s para não travar a interface
+                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve([]), 5000));
+                
                 const [r25, r69, r010, partidas, snapTreinos] = await Promise.all([
-                    obterRankingPorPontos("2-5", turma).catch(() => []),
-                    obterRankingPorPontos("6-9", turma).catch(() => []),
-                    obterRankingPorPontos("0-10", turma).catch(() => []),
-                    obterHistoricoAluno(nome, turma).catch(() => []),
-                    database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chave}`).once("value").catch(() => null)
+                    Promise.race([obterRankingPorPontos("2-5", turma).catch(() => []), timeoutPromise]),
+                    Promise.race([obterRankingPorPontos("6-9", turma).catch(() => []), timeoutPromise]),
+                    Promise.race([obterRankingPorPontos("0-10", turma).catch(() => []), timeoutPromise]),
+                    Promise.race([obterHistoricoAluno(nome, turma).catch(() => []), timeoutPromise]),
+                    Promise.race([database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chave}`).once("value").catch(() => null), timeoutPromise])
                 ]);
-                const treinosPorMod = (snapTreinos && snapTreinos.val()) || {};
+                const treinosPorMod = (snapTreinos && snapTreinos.val && snapTreinos.val()) || {};
 
                 const montar = (mod, ranking) => {
-                    const idx = ranking.findIndex(r =>
+                    const idx = (ranking || []).findIndex(r =>
                         normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
                     );
-                    const minhas = partidas.filter(p => p.modalidade === mod);
+                    const minhas = (partidas || []).filter(p => p.modalidade === mod);
                     const melhor = minhas.length
                         ? minhas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
                         : null;
                     const treinos = Number(treinosPorMod[mod]) || 0;
                     return {
                         posicao: idx === -1 ? null : idx + 1,
-                        total: ranking.length,
+                        total: (ranking || []).length,
                         pontos: melhor ? (Number(melhor.pontos) || 0) : 0,
                         oficiaisCount: minhas.length,
                         treinosCount: treinos,
@@ -23045,7 +23060,6 @@ function abrirBuscarAlunoComMeusDados() {
             const treinos = info.treinosCount;
             const totalJogos = oficiais + treinos;
 
-            // ⚠️ v10.13.0 · P-B4 (Pacote 2) — estado desta modalidade
             const ehModAtiva = !modUnicaAtiva || mod === modUnicaAtiva;
             const bloqueada = !ehModAtiva;
 
@@ -23091,19 +23105,16 @@ function abrirBuscarAlunoComMeusDados() {
                     </div>`;
             }
 
-            // Jogar só é permitido se: etapa ativa E (sem restrição OU é a mod ativa)
             const jogavelNestaMod = etapaAtiva && ehModAtiva;
             const jogarCls = jogavelNestaMod ? "jogar" : "jogar desabilitado";
             const conviteCls = (!jogou && treinos === 0 && jogavelNestaMod) ? " convite" : "";
 
-            // Aviso extra quando a modalidade está bloqueada pela flag
             const avisoBloqueio = bloqueada
                 ? `<div class="home-mod-aviso-bloqueio" style="margin-top:6px; font-size:11px; font-weight:700; color:#fde68a; background:rgba(251,191,36,.08); border-left:3px solid #fbbf24; border-radius:6px; padding:5px 9px; line-height:1.35;">
                     🎯 Etapa oficial focada em outra modalidade — aqui só dá para treinar.
                 </div>`
                 : "";
 
-            // Classe extra na linha inteira quando bloqueada
             const linhaCls = bloqueada ? " modalidade-bloqueada" : "";
             const linhaStyle = bloqueada ? 'style="opacity:.72;"' : '';
 
@@ -23129,7 +23140,6 @@ function abrirBuscarAlunoComMeusDados() {
             ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
             : "";
 
-        // Banner informativo no topo do card quando há restrição
         const bannerModUnica = modUnicaAtiva
             ? `<div class="home-modalidades-banner-unica" style="background: linear-gradient(135deg, rgba(14,165,233,.14) 0%, rgba(124,58,237,.10) 100%); border:1px solid rgba(34,211,238,.45); border-left:4px solid var(--neon-cyan); border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:12.5px; line-height:1.5; color:#a5f3fc;">
                 🎯 <strong>Modo Classificatória Única</strong><br>
@@ -23163,7 +23173,6 @@ function abrirBuscarAlunoComMeusDados() {
     async function _carregarAtalhoModalidadesAsync(nome, turma, rotulos, modUnicaAtiva) {
         const meuToken = ++_homeModalidadesToken;
         try {
-            // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Se há modo único, foca só na modalidade ativa
             let c25, c69, c010;
             if (modUnicaAtiva) {
                 const c = await contarPendentesTreino(nome, turma, modUnicaAtiva).catch(() => ({ pendentes: 0 }));
@@ -23208,7 +23217,6 @@ function abrirBuscarAlunoComMeusDados() {
     async function jogarModalidadeHome(mod) {
         if (!MODALIDADES[mod]) return;
 
-        // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Verificar Modo Classificatória Única
         if (!modalidadePermitidaParaOficial(mod)) {
             const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
                 ? modalidadeClassificatoriaUnicaAtiva() : null;
