@@ -25207,6 +25207,10 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [19.02]
 
     // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
+    // v10.13.4 · BUGFIX: O app agora aguarda o carregamento do Modo 
+    // Classificatória Única (config/modo_classificatoria) antes de 
+    // renderizar a Home. Antes, a tela renderizava como "normal" e 
+    // não atualizava após a leitura assíncrona da flag.
     async function registrarServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
         const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -25241,13 +25245,25 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
         iniciarListenerMsgAluno();
 
-        obterModoEvento().then(async () => {
-            const pHomeEsports = preencherHomeEsports().catch(e => console.warn("Falha home:", e));
-            const pMapaHome = renderizarMapaHome().catch(e => console.warn("Falha mapa:", e));
-            await Promise.all([pHomeEsports, pMapaHome]);
-            try { ativarObserverAlertaFoco(); } catch(e) {}
-            try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
-        }).catch(e => console.warn("Falha modo evento:", e));
+        // ⚠️ v10.13.4 · Aguarda AMBOS os modos (Evento e Classificatória Única) 
+        // antes de renderizar a Home, evitando que a tela pisque ou mostre os
+        // botões errados por um breve momento.
+        try {
+            await Promise.all([
+                obterModoEvento(),
+                obterModoClassificatoria()
+            ]);
+        } catch (e) {
+            console.warn("[Boot] Falha ao carregar configurações de modo:", e);
+        }
+
+        const pHomeEsports = preencherHomeEsports().catch(e => console.warn("Falha home:", e));
+        const pMapaHome = renderizarMapaHome().catch(e => console.warn("Falha mapa:", e));
+        
+        await Promise.all([pHomeEsports, pMapaHome]);
+        
+        try { ativarObserverAlertaFoco(); } catch(e) {}
+        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
 
         const pTelaInicial = atualizarTelaInicialComEtapa().catch(e => console.warn("Falha tela inicial:", e));
         const pTreinoInt = renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
@@ -25269,7 +25285,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         // ⚠️ OTIMIZAÇÃO: Timer leve (não baixa rankings a cada minuto)
         votacaoTimerInterval = setInterval(async () => {
             try {
-                // Salva a fase atual antes de verificar
                 const etapaAntes = await resolverFaseAtual();
                 
                 await verificarEFecharVotacaoSeNecessario();
@@ -25278,7 +25293,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 const card = document.getElementById("card-votacao");
                 if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
                 
-                // Só atualiza a Home se a fase da etapa REALMENTE mudou (ex: encerrou)
                 const etapaDepois = await resolverFaseAtual();
                 if (etapaAntes.tipo !== etapaDepois.tipo) {
                     await atualizarTelaInicialComEtapa();
