@@ -13727,6 +13727,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.01]
 
     // ▼▼▼ [11.02] Compilação dos dados do aluno ─────────────────────────
+    // v10.13.1 · BUGFIX performance:
+    //   • Paraleliza os 3 baselines de ranking (era loop sequencial = 3 roundtrips)
+    //   • Paraleliza leitura de snapshot diário + baselines
+    //   • Economiza 2-5s em redes fracas
     async function compilarDadosAluno(nome, turma) {
         const todasPartidas = await obterHistoricoAluno(nome, turma);
         const partidas = todasPartidas.filter(ehPartidaCompleta);
@@ -13754,7 +13758,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const maiorSequenciaMax = partidas.length ? Math.max(...partidas.map(p => Number(p.maiorSequencia) || 0)) : 0;
         const temposRapidosMax = partidas.length ? Math.max(...partidas.map(p => Number(p.temposRapidos) || 0)) : 0;
 
-        // ⚠️ NOVO: Lógica do Rei do Chute
         const temReiChute = partidas.some(p => {
             const chutes = Number(p.chutesRapidos) || 0;
             const acertosP = Number(p.acertos) || 0;
@@ -13836,22 +13839,33 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const melhorPosicao = posicoesValidas.length ? Math.min(...posicoesValidas) : null;
         const modalidadesTop4 = Object.values(posicoes).filter(p => p !== null && p <= 4).length;
         
+        // ⚠️ v10.13.1 — Paraleliza os 3 baselines (era loop sequencial: 3 roundtrips)
         if (modoEventoAtual !== "olimpiadas" && totalPartidas >= 5) {
-            for (const mod of Object.keys(MODALIDADES)) {
-                if (posicoes[mod] !== null) await registrarBaselineSeVazio(nome, turma, mod, posicoes[mod]);
-            }
+            await Promise.all(
+                Object.keys(MODALIDADES)
+                    .filter(mod => posicoes[mod] !== null)
+                    .map(mod => registrarBaselineSeVazio(nome, turma, mod, posicoes[mod]).catch(() => {}))
+            );
         }
         
         let subiuRanking = false;
+        let diasNoTop4 = 0;
         if (modoEventoAtual !== "olimpiadas") {
-            for (const mod of Object.keys(MODALIDADES)) {
-                const baseline = await obterBaselinePosicao(nome, turma, mod);
-                if (baseline !== null && posicoes[mod] !== null && posicoes[mod] < baseline - 2) { subiuRanking = true; break; }
-            }
-            await registrarSnapshotDiarioSeTop4(nome, turma, posicoes);
+            // ⚠️ v10.13.1 — Paraleliza os 3 reads de baseline + snapshot em paralelo
+            // (era 3 loops sequenciais: 3 reads + 1 write + 1 read = 5 roundtrips)
+            const [baselines] = await Promise.all([
+                Promise.all(
+                    Object.keys(MODALIDADES).map(mod => obterBaselinePosicao(nome, turma, mod).catch(() => null))
+                ),
+                registrarSnapshotDiarioSeTop4(nome, turma, posicoes).catch(() => {})
+            ]);
+            subiuRanking = Object.keys(MODALIDADES).some((mod, i) =>
+                baselines[i] !== null && posicoes[mod] !== null && posicoes[mod] < baselines[i] - 2
+            );
+            // Depois do snapshot registrado, conta os dias
+            diasNoTop4 = await contarDiasNoTop4(nome, turma).catch(() => 0);
         }
         
-        const diasNoTop4 = (modoEventoAtual !== "olimpiadas") ? await contarDiasNoTop4(nome, turma) : 0;
         const conquistasCount = Object.keys(medalhasPersistidas).length;
 
         const chavesValidas = [];
@@ -13915,7 +13929,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             totalPartidas, melhorPontuacao, totalAcertos,
             partidasCom20Acertos, maiorSequenciaMax, conquistasCount,
             temposRapidosMax, melhorTempoMedio, melhorTempoMedioPerfeito, melhorTempoMedio19Ou20,
-            maxTemposRapidosPerfeito, melhorTempoPerfeitoParaHall, temReiChute, // ⚠️ INCLUÍDO AQUI
+            maxTemposRapidosPerfeito, melhorTempoPerfeitoParaHall, temReiChute,
             acertouPrimeiraAlguma, temPartidaComBaixoAcerto,
             diasDistintosJogados, maxPartidasEmUmDia, temJogoNoturno,
             temVoltaPorCima, melhorouNaSegundaTentativa,
@@ -16843,77 +16857,117 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     // ▲▲▲ FIM [13.07]
 
-    // ▼▼▼ [13.08] Perfil de aluno (busca) ─────────────────────────────
-    // v10.9.1 · Hotfix: Adicionadas as abas (Todas, 2-5, 6-9) no mapa
-    // do perfil para que o aluno/professor possa ver todas as modalidades
-    // sem ficar preso à última partida jogada.
+// ▼▼▼ [13.08] Perfil de aluno (busca) ─────────────────────────────
+// v10.9.1 · Hotfix: Adicionadas as abas (Todas, 2-5, 6-9) no mapa
+//
+// v10.13.1 · BUGFIX carregarPerfil:
+//   • Timeout do sync: 5s → 20s (realista para redes fracas)
+//   • Leituras paralelas (ranking, medalhas, mapa) disparadas ANTES do sync
+//   • Não recompila dados após timeout (o sync original já está em background)
+//   • Cache em background: quando o sync terminar, albumSessaoCache aquece
+//   • Empty state correto na seção "Em progresso" quando dadosCompilados = null
 
-    let perfilMapaMod = "todas";
+let perfilMapaMod = "todas";
 
-    async function carregarPerfil() {
-        const nome = document.getElementById("perfil-nome").value.trim();
-        const turma = document.getElementById("perfil-turma").value;
-        if (!nome || !turma) { notificar("Digite nome e turma", "aviso"); return; }
-        const partidas = await obterHistoricoAluno(nome, turma);
-        if (!partidas.length) { notificar("Nenhuma partida encontrada.", "aviso"); return; }
-        const melhor = partidas.reduce((a, b) => a.pontos > b.pontos ? a : b);
+async function carregarPerfil() {
+    const nome = document.getElementById("perfil-nome").value.trim();
+    const turma = document.getElementById("perfil-turma").value;
+    if (!nome || !turma) { notificar("Digite nome e turma", "aviso"); return; }
 
-        // ▼ Sincroniza medalhas/seções/estrelas antes de ler (garante dados frescos)
-        let dadosCompilados = null;
+    const partidas = await obterHistoricoAluno(nome, turma);
+    if (!partidas.length) { notificar("Nenhuma partida encontrada.", "aviso"); return; }
+    const melhor = partidas.reduce((a, b) => a.pontos > b.pontos ? a : b);
+
+    // ⚠️ v10.13.1 — Dispara leituras paralelas ANTES do sync.
+    // Elas são independentes do sync e vão rodar enquanto o sync acontece.
+    // Economiza 2-5s em redes fracas.
+    const rankingPromise   = obterRankingPorPontos(melhor.modalidade, turma).catch(() => []);
+    const medalhasPromise  = obterMedalsFirebase(melhor.nome, melhor.turma).catch(() => ({}));
+    const mapaPromise      = obterDesempenhoOperacoesGlobal(melhor.nome, melhor.turma).catch(() => ({}));
+
+    // ⚠️ v10.13.1 — Sync de medalhas com timeout realista.
+    let dadosCompilados = null;
+    const chave = `${normalizarNome(melhor.nome)}|${melhor.turma}`;
+    const agora = Date.now();
+
+    const cacheAlbumQuente = typeof albumSessaoCache !== "undefined"
+        && albumSessaoCache.chave === chave
+        && (agora - albumSessaoCache.ts) < ALBUM_CACHE_MS
+        && albumSessaoCache.resultado;
+
+    if (cacheAlbumQuente) {
+        // Cache já quente de uma sessão anterior — instantâneo.
+        dadosCompilados = albumSessaoCache.resultado.dados || null;
+        perfilSyncCache = { chave, ts: agora };
+    } else {
+        notificar("🔄 Sincronizando conquistas…", "info", 5000);
+        const syncPromise = sincronizarMedalhas(melhor.nome, melhor.turma);
         try {
-            const chave = `${normalizarNome(melhor.nome)}|${melhor.turma}`;
-            const agora = Date.now();
-            const precisaSincronizar = perfilSyncCache.chave !== chave
-                || (agora - perfilSyncCache.ts) > PERFIL_SYNC_CACHE_MS;
-
-            if (precisaSincronizar) {
-                notificar("🔄 Sincronizando conquistas…", "info", 1500);
-                const r = await Promise.race([
-                    sincronizarMedalhas(melhor.nome, melhor.turma),
-                    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 5000))
-                ]);
-                dadosCompilados = r?.dados || null;
-                perfilSyncCache = { chave, ts: agora };
-            } else {
-                // Cache válido — mas ainda precisamos dos dados compilados para calcular progresso
-                dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma);
-            }
+            const resultadoSync = await Promise.race([
+                syncPromise,
+                new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 20000))
+            ]);
+            dadosCompilados = resultadoSync?.dados || null;
+            perfilSyncCache = { chave, ts: agora };
+            // Unifica as fontes de cache (album + perfil)
+            albumSessaoCache = { chave, ts: agora, resultado: resultadoSync };
         } catch (e) {
-            console.warn("Sync do perfil falhou ou expirou:", e);
-            // fallback: tenta compilar direto (pode ser mais lento, mas garante progresso)
-            try { dadosCompilados = await compilarDadosAluno(melhor.nome, melhor.turma); } catch(_) {}
+            // ⚠️ v10.13.1 — NÃO recompila. O sync original está rodando em
+            // background (Promise.race não cancela o perdedor). Quando ele
+            // terminar, o `.then` abaixo aquece o albumSessaoCache, e a
+            // próxima consulta será instantânea.
+            console.info("[Perfil] Sync expirou — mostrando dados parciais:", e?.message || e);
+            dadosCompilados = null;
+            syncPromise
+                .then(resultado => {
+                    if (resultado && typeof albumSessaoCache !== "undefined") {
+                        albumSessaoCache = { chave, ts: Date.now(), resultado };
+                    }
+                })
+                .catch(() => { /* já falhou no race, ignora */ });
         }
-        // ▲
+    }
 
-        const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
-        document.getElementById("perfil-melhor-pontos").innerHTML = `<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
-        document.getElementById("perfil-media-acertos").innerHTML = `<span class="estatistica-destaque">${ma.toFixed(1)}</span> /20`;
-        document.getElementById("perfil-melhor-tempo").innerHTML = `<span class="estatistica-destaque">${melhor.tempoMedio.toFixed(2)}</span> s`;
-        document.getElementById("perfil-total-partidas").innerHTML = `<span class="estatistica-destaque">${partidas.length}</span>`;
-        document.getElementById("perfil-melhor-sequencia").innerHTML = `<span class="estatistica-destaque">${melhor.maiorSequencia}</span>`;
-        const rt = await obterRankingPorPontos(melhor.modalidade, turma);
-        const ip = rt.findIndex(r => normalizarNome(r.nome) === normalizarNome(melhor.nome));
-        const pos = ip === -1 ? rt.length + 1 : ip + 1;
-        const status = pos <= VAGAS_CLASSIFICACAO ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
-        document.getElementById("perfil-melhor-status").innerHTML = `<span class="tag tag-${status === 'Classificado' ? 'classificado' : status === 'Reserva' ? 'reserva' : 'participante'}">${status}</span>`;
-        const medalhasAluno = await obterMedalsFirebase(melhor.nome, melhor.turma);
-        const idsMedalhas = Object.keys(medalhasAluno || {}).filter(id => MEDALS_POR_ID[id]);
+    // ⚠️ v10.13.1 — Aguarda as leituras paralelas disparadas no início
+    const [rt, medalhasAluno, mapaGlobal2] = await Promise.all([
+        rankingPromise, medalhasPromise, mapaPromise
+    ]);
 
-        // ─── Bloco 1: conquistadas (como hoje)
-        if (idsMedalhas.length > 0) {
-            document.getElementById("perfil-conquistas").innerHTML = idsMedalhas.map(id => {
-                const m = MEDALS_POR_ID[id];
-                const rar = RARIDADES[m.raridade];
-                return `<div class="conquista-card desbloqueada" title="${escaparHtml(m.descricao)} · ${rar.nome}">${m.icone} ${escaparHtml(m.nome)}</div>`;
-            }).join("");
+    const ma = partidas.reduce((s, p) => s + p.acertos, 0) / partidas.length;
+    document.getElementById("perfil-melhor-pontos").innerHTML = `<span class="estatistica-destaque">${melhor.pontos}</span> pts`;
+    document.getElementById("perfil-media-acertos").innerHTML = `<span class="estatistica-destaque">${ma.toFixed(1)}</span> /20`;
+    document.getElementById("perfil-melhor-tempo").innerHTML = `<span class="estatistica-destaque">${melhor.tempoMedio.toFixed(2)}</span> s`;
+    document.getElementById("perfil-total-partidas").innerHTML = `<span class="estatistica-destaque">${partidas.length}</span>`;
+    document.getElementById("perfil-melhor-sequencia").innerHTML = `<span class="estatistica-destaque">${melhor.maiorSequencia}</span>`;
+
+    const ip = rt.findIndex(r => normalizarNome(r.nome) === normalizarNome(melhor.nome));
+    const pos = ip === -1 ? rt.length + 1 : ip + 1;
+    const status = pos <= VAGAS_CLASSIFICACAO ? "Classificado" : (pos <= 6 ? "Reserva" : "Participante");
+    document.getElementById("perfil-melhor-status").innerHTML = `<span class="tag tag-${status === 'Classificado' ? 'classificado' : status === 'Reserva' ? 'reserva' : 'participante'}">${status}</span>`;
+
+    const idsMedalhas = Object.keys(medalhasAluno || {}).filter(id => MEDALS_POR_ID[id]);
+
+    // ─── Bloco 1: conquistadas
+    if (idsMedalhas.length > 0) {
+        document.getElementById("perfil-conquistas").innerHTML = idsMedalhas.map(id => {
+            const m = MEDALS_POR_ID[id];
+            const rar = RARIDADES[m.raridade];
+            return `<div class="conquista-card desbloqueada" title="${escaparHtml(m.descricao)} · ${rar.nome}">${m.icone} ${escaparHtml(m.nome)}</div>`;
+        }).join("");
+    } else {
+        document.getElementById("perfil-conquistas").innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Nenhuma medalha conquistada ainda. <button onclick="abrirAlbum()" style="width:auto;background:transparent;color:#0066cc;text-decoration:underline;padding:0;margin:0 0 0 4px;font-size:13px;font-weight:700;box-shadow:none;border:none;cursor:pointer;">Ver no Álbum →</button></div>`;
+    }
+
+    // ─── Bloco 2: em progresso
+    const containerProg = document.getElementById("perfil-conquistas-progresso");
+    if (containerProg) {
+        // ⚠️ v10.13.1 — Empty state CORRETO quando o sync não retornou dados.
+        // Antes, dadosCompilados = null fazia o bloco mostrar "Todas as
+        // medalhas foram conquistadas! 🏆" — mensagem errada.
+        if (!dadosCompilados) {
+            containerProg.innerHTML = `<div style="font-size:13px;color:#94a3b8;padding:8px 0;font-style:italic;line-height:1.5;">⏳ O progresso das medalhas está sendo sincronizado em segundo plano.<br>Tente novamente em instantes — na próxima consulta já deve estar pronto.</div>`;
         } else {
-            document.getElementById("perfil-conquistas").innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Nenhuma medalha conquistada ainda. <button onclick="abrirAlbum()" style="width:auto;background:transparent;color:#0066cc;text-decoration:underline;padding:0;margin:0 0 0 4px;font-size:13px;font-weight:700;box-shadow:none;border:none;cursor:pointer;">Ver no Álbum →</button></div>`;
-        }
-
-        // ─── Bloco 2: em progresso (só as 6 mais próximas de desbloquear)
-        const containerProg = document.getElementById("perfil-conquistas-progresso");
-        if (containerProg) {
-            const dados = dadosCompilados || {};
+            const dados = dadosCompilados;
             const idsConquistados = new Set(idsMedalhas);
 
             const emProgresso = MEDALS
@@ -16924,8 +16978,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     return { medalha: m, prog };
                 })
                 .filter(Boolean)
-                .sort((a, b) => b.prog.pct - a.prog.pct)   // mais perto de conquistar primeiro
-                .slice(0, 6);                               // mostra só as 6 melhores
+                .sort((a, b) => b.prog.pct - a.prog.pct)
+                .slice(0, 6);
 
             if (emProgresso.length === 0) {
                 containerProg.innerHTML = `<div style="font-size:13px;color:#64748b;padding:8px 0;">Todas as medalhas foram conquistadas! 🏆</div>`;
@@ -16947,80 +17001,81 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 }).join("");
             }
         }
-
-        if (melhor.desempenhoTabuadas) desempenhoTabuadas = melhor.desempenhoTabuadas;
-        alunoAtual = melhor.nome; turmaAtual = melhor.turma;
-        treinoFocoOperacoes = null; promocoesRecentes = [];
-        mapaFonteUltima = melhor.desempenhoOperacoes || {};
-        mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(melhor.nome, melhor.turma);
-        if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
-
-        // Inicializa o mapa do perfil na aba "Todas"
-        perfilMapaMod = "todas";
-        renderizarMapaPerfil();
-
-        document.getElementById("perfil-conteudo").classList.remove("hidden");
     }
 
-    function renderizarMapaPerfil() {
-        const container = document.getElementById("perfil-mapa");
-        if (!container) return;
+    if (melhor.desempenhoTabuadas) desempenhoTabuadas = melhor.desempenhoTabuadas;
+    alunoAtual = melhor.nome; turmaAtual = melhor.turma;
+    treinoFocoOperacoes = null; promocoesRecentes = [];
+    mapaFonteUltima = melhor.desempenhoOperacoes || {};
+    mapaFonteAgregada = mapaGlobal2 || {};
+    if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
 
-        const abas = [
-            { id: "todas", label: "🌐 Todas", titulo: "Todas as tabuadas (1 a 10)" },
-            { id: "2-5",   label: "📚 2-5",   titulo: "Só as tabuadas 2, 3, 4 e 5" },
-            { id: "6-9",   label: "🎯 6-9",   titulo: "Só as tabuadas 6, 7, 8 e 9" }
-        ];
+    // Inicializa o mapa do perfil na aba "Todas"
+    perfilMapaMod = "todas";
+    renderizarMapaPerfil();
 
-        const tabsHtml = abas.map(a => {
-            const ativa = perfilMapaMod === a.id ? "ativa" : "";
-            return `<button class="mapa-completo-tab ${ativa}" onclick="trocarModMapaPerfil('${a.id}')" aria-pressed="${perfilMapaMod === a.id}" title="${escaparHtml(a.titulo)}">${a.label}</button>`;
-        }).join("");
+    document.getElementById("perfil-conteudo").classList.remove("hidden");
+}
 
-        // Define modalidadeAtual para o renderizador global
-        modalidadeAtual = perfilMapaMod === "todas" ? "0-10" : perfilMapaMod;
+function renderizarMapaPerfil() {
+    const container = document.getElementById("perfil-mapa");
+    if (!container) return;
 
-        container.innerHTML = `
-            <div class="mapa-completo-tabs" role="tablist" aria-label="Visão do mapa" style="margin-bottom:12px;">${tabsHtml}</div>
-            <div>${renderizarMapa()}</div>
-        `;
-    }
+    const abas = [
+        { id: "todas", label: "🌐 Todas", titulo: "Todas as tabuadas (1 a 10)" },
+        { id: "2-5",   label: "📚 2-5",   titulo: "Só as tabuadas 2, 3, 4 e 5" },
+        { id: "6-9",   label: "🎯 6-9",   titulo: "Só as tabuadas 6, 7, 8 e 9" }
+    ];
 
-    function trocarModMapaPerfil(mod) {
-        if (mod !== "todas" && mod !== "2-5" && mod !== "6-9") return;
-        perfilMapaMod = mod;
-        renderizarMapaPerfil();
-    }
+    const tabsHtml = abas.map(a => {
+        const ativa = perfilMapaMod === a.id ? "ativa" : "";
+        return `<button class="mapa-completo-tab ${ativa}" onclick="trocarModMapaPerfil('${a.id}')" aria-pressed="${perfilMapaMod === a.id}" title="${escaparHtml(a.titulo)}">${a.label}</button>`;
+    }).join("");
 
-    function abrirBuscarAluno() {
-        mostrarTela("tela-perfil");
-        const nome = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-        const atalho = document.getElementById("perfil-atalho-meu");
-        if (!atalho) return;
-        if (nome && turma) atalho.classList.remove("hidden");
-        else atalho.classList.add("hidden");
-    }
-    function preencherPerfilComMeusDados() {
-        const nome = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-        if (!nome || !turma) { notificar("Você ainda não se identificou neste aparelho.", "aviso"); return; }
-        document.getElementById("perfil-nome").value = nome;
-        document.getElementById("perfil-turma").value = turma;
-        carregarPerfil();
-    }
-    function abrirBuscarAlunoComMeusDados() {
-        const nome = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-        if (!nome || !turma) { notificar("Você ainda não se identificou neste aparelho.", "aviso"); return; }
-        mostrarTela("tela-perfil");
-        const atalho = document.getElementById("perfil-atalho-meu");
-        if (atalho) atalho.classList.add("hidden");
-        document.getElementById("perfil-nome").value = nome;
-        document.getElementById("perfil-turma").value = turma;
-        carregarPerfil();
-    }
-    // ▲▲▲ FIM [13.08]
+    // Define modalidadeAtual para o renderizador global
+    modalidadeAtual = perfilMapaMod === "todas" ? "0-10" : perfilMapaMod;
+
+    container.innerHTML = `
+        <div class="mapa-completo-tabs" role="tablist" aria-label="Visão do mapa" style="margin-bottom:12px;">${tabsHtml}</div>
+        <div>${renderizarMapa()}</div>
+    `;
+}
+
+function trocarModMapaPerfil(mod) {
+    if (mod !== "todas" && mod !== "2-5" && mod !== "6-9") return;
+    perfilMapaMod = mod;
+    renderizarMapaPerfil();
+}
+
+function abrirBuscarAluno() {
+    mostrarTela("tela-perfil");
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    const atalho = document.getElementById("perfil-atalho-meu");
+    if (!atalho) return;
+    if (nome && turma) atalho.classList.remove("hidden");
+    else atalho.classList.add("hidden");
+}
+function preencherPerfilComMeusDados() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { notificar("Você ainda não se identificou neste aparelho.", "aviso"); return; }
+    document.getElementById("perfil-nome").value = nome;
+    document.getElementById("perfil-turma").value = turma;
+    carregarPerfil();
+}
+function abrirBuscarAlunoComMeusDados() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    if (!nome || !turma) { notificar("Você ainda não se identificou neste aparelho.", "aviso"); return; }
+    mostrarTela("tela-perfil");
+    const atalho = document.getElementById("perfil-atalho-meu");
+    if (atalho) atalho.classList.add("hidden");
+    document.getElementById("perfil-nome").value = nome;
+    document.getElementById("perfil-turma").value = turma;
+    carregarPerfil();
+}
+// ▲▲▲ FIM [13.08]
 
     // ▼▼▼ [13.12] Otimização v10.9.0 — Gravação desnormalizada + backfill ─── INÍCIO ───
     // Coração da otimização. Aqui ficam:
