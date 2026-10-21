@@ -9126,7 +9126,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.11.0</button>
+                >v10.13.0</button>
                 <button
                     type="button"
                     class="logo-verificar"
@@ -9310,7 +9310,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.11.0</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.13.0</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -10217,7 +10217,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.11.0 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.13.0 · atual</span>
+                <h4 class="changelog-titulo">🎯 Modo Classificatória Única</h4>
+                <p class="changelog-descricao">Agora o professor pode <strong>focar a etapa oficial em uma única modalidade</strong> — Tabuadas 2-5, 6-9 ou 1-10. Quando ativado, o botão "Jogar" das outras modalidades fica bloqueado na Home (só o Treinar funciona), o Ranking oficial mostra apenas a modalidade ativa e algumas medalhas que dependem das três modalidades ficam ocultas até o modo voltar ao normal. As corridas de tabuada continuam funcionando normalmente. Perfeito para eventos temáticos (ex: "Semana da Tabuada do 7") ou para testar uma modalidade isolada.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao" id="changelog-versao-anterior-v1011">v10.11.0</span>
                 <h4 class="changelog-titulo">🎯 Modos de Evento, Abas no Painel e Atualização Global</h4>
                 <p class="changelog-descricao">O aplicativo agora está pronto para 3 modos diferentes de competição: <strong>Só Classificatória</strong>, <strong>Só Olimpíadas</strong> e <strong>Ambos</strong>. Se você escolher Só Olimpíadas, o app esconde tudo o que é das partidas de 20 perguntas e foca 100% nas corridas. O painel do professor foi dividido em <strong>Abas</strong> para ficar mais rápido de usar. Além disso, adicionamos um botão de <strong>Forçar Atualização</strong> no painel: se você mudar algo, pode recarregar a tela de todos os alunos conectados com um clique. Também adicionamos um contador regressivo na tela inicial para as últimas 24 horas do evento e melhoramos a votação para respeitar a data final.</p>
             </div>
@@ -10227,11 +10232,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <p class="changelog-descricao">O app agora está pronto para múltiplos eventos! Adicionamos a modalidade <strong>Corrida por Distância</strong> (Sprint 10, Meia 20 e Ultra 50), onde o aluno precisa terminar as perguntas no menor tempo e cada erro soma +3 segundos. Além disso, o professor pode ativar o <strong>Modo Olimpíadas</strong> no painel, que esconde as partidas de 20 perguntas da tela inicial e foca 100% nas corridas, alterando até o comportamento do seu Coach. Tudo isso mantendo o Modo Classificatória original intacto para quando precisar.</p>
             </div>
             <div class="changelog-item">
-                <span class="changelog-versao" id="changelog-versao-anterior-v1010">v10.10.0</span>
+                <span class="changelog-versao" id="changelog-versao-anterior-v1010b">v10.10.0</span>
                 <h4 class="changelog-titulo">🏁 Rankings das Corridas + Melhorias na Experiência</h4>
                 <p class="changelog-descricao">Agora você pode consultar o ranking das <strong>Corridas de Tabuada</strong> direto na tela principal de Classificação (nova aba 🏁 Corridas), sem precisar jogar para ver quem está liderando. Os cards do <strong>Hall da Fama</strong> foram atualizados para mostrar o <strong>pódio dos 3 primeiros colocados</strong> em vez de apenas o líder. O <strong>Mapa de Tabuadas</strong> no perfil do aluno ganhou abas para alternar entre as modalidades sem ficar preso à última partida jogada. Também adicionamos um botão de <strong>Voltar</strong> no final da tela de seleção das Corridas, corrigimos as cores do card "Ritmo na Copa" para ficarem iguais às de "Minhas Posições", e atualizamos o seu <strong>Coach da Copa</strong> para explicar direitinho como as Corridas podem te ajudar!</p>
             </div>
-            <!-- Os itens anteriores continuam intactos abaixo... -->
         </div>
     </div>
 </div>
@@ -10858,7 +10862,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-const APP_VERSION = "10.11.0";
+// v10.13.0 · P-B4 (Pacote 4) — bump oficial após o Modo Classificatória Única
+const APP_VERSION = "10.13.0";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -13925,15 +13930,32 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.02]
 
     // ▼▼▼ [11.03] Cálculo de conquistas + progresso ────────────────────
+    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+    //   medalhaVisivelNoModoAtual(m) centraliza a decisão de quais medalhas
+    //   podem aparecer/desbloquear no modo atual. É usada pelo cálculo, pela
+    //   próxima conquista e pela renderização do Álbum ([11.08] e [11.10]).
+
+    // ⚠️ v10.13.0 · P-B4 (Pacote 4)
+    const MEDALHAS_OCULTAS_MODO_UNICO = new Set(["poliglota", "classificado_triplo", "lenda_media"]);
+
+    function medalhaVisivelNoModoAtual(m) {
+        if (!m) return false;
+        // Olimpíadas: categorias de ranking oficial ficam ocultas (regra antiga)
+        if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
+        // Modo Classificatória Única: esconde medalhas que dependem das 3 modalidades
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+        if (modUnica && MEDALHAS_OCULTAS_MODO_UNICO.has(m.id)) return false;
+        return true;
+    }
+
     function calcularMedalhasDesbloqueadas(dados) {
         const desbloqueadas = [];
         const bloqueadas = [];
         
         // Filtra as medalhas que fazem sentido no modo atual
-        const medalhasPermitidas = MEDALS.filter(m => {
-            if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
-            return true;
-        });
+        const medalhasPermitidas = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
 
         medalhasPermitidas.forEach(m => {
             if (m.id === "colecionador") return;
@@ -14016,11 +14038,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
     function encontrarProximaConquista(dados, persistidas) {
         let melhor = null;
-        
-        const medalhasPermitidas = MEDALS.filter(m => {
-            if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
-            return true;
-        });
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — usa o helper que já cobre olimpíadas e modo único
+        const medalhasPermitidas = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
 
         medalhasPermitidas.forEach(m => {
             if (persistidas[m.id]) return;
@@ -14469,16 +14489,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▼▼▼ [11.08] Renderização — capa, cabeçalho, filtros, corpo ────────
     // v10.7.2 · O botão "Como funciona o Álbum?" saiu do rodapé de
     // #album-conteudo-view (bloco [03.11]) e virou um ícone circular
-    // compacto "?" ao lado da saudação "ÁLBUM DE CONQUISTAS" no cabeçalho
-    // dinâmico. Como o cabeçalho é regenerado a cada abertura, o botão
-    // acompanha automaticamente. O modal (#modal-explicacao-album) não
-    // mudou.
+    // compacto "?" ao lado da saudação.
+    //
+    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+    //   renderizarCapa / renderizarCabecalhoAlbum / abrirAlbum passam a
+    //   contar apenas as medalhas VISÍVEIS (medalhaVisivelNoModoAtual).
 
     function renderizarCapa() {
         const { nome, turma, persistidas, estrelas } = albumEstado;
-        const total = MEDALS.length;
-        const coladas = Object.keys(persistidas).length;
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Conta só as medalhas visíveis
+        const medalsVisiveis = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
+        const total = medalsVisiveis.length;
+        const coladas = medalsVisiveis.filter(m => persistidas[m.id]).length;
         const pct = total ? Math.round((coladas / total) * 100) : 0;
+
         document.getElementById("album-capa-nome").textContent = nome || "—";
         document.getElementById("album-capa-turma").textContent = turma || "—";
         document.getElementById("album-capa-prog-num").textContent = `${coladas} / ${total} (${pct}%)`;
@@ -14492,22 +14517,29 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const container = document.getElementById("album-header");
         if (!container) return;
         const { nome, turma, persistidas, dados, estrelas, secoesCompletas } = albumEstado;
-        const total = MEDALS.length;
-        const coladas = Object.keys(persistidas).length;
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Conta só as medalhas visíveis
+        const medalsVisiveis = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
+        const total = medalsVisiveis.length;
+        const coladas = medalsVisiveis.filter(m => persistidas[m.id]).length;
         const pct = total ? Math.round((coladas / total) * 100) : 0;
+
         const patente = calcularPatente(estrelas);
         const contagemRar = { comum: 0, incomum: 0, raro: 0, epico: 0, lendario: 0 };
         const totalRar    = { comum: 0, incomum: 0, raro: 0, epico: 0, lendario: 0 };
-        MEDALS.forEach(m => { totalRar[m.raridade]++; if (persistidas[m.id]) contagemRar[m.raridade]++; });
+        medalsVisiveis.forEach(m => { totalRar[m.raridade]++; if (persistidas[m.id]) contagemRar[m.raridade]++; });
+
         const linhasRar = Object.keys(RARIDADES).map(k => {
             const r = RARIDADES[k];
-            const completa = contagemRar[k] === totalRar[k];
+            const completa = contagemRar[k] === totalRar[k] && totalRar[k] > 0;
             return `<div class="album-raridade-linha ${completa ? "completa" : ""}"><span class="rot">${r.emoji} ${r.nome}${completa ? " ✓" : ""}</span><span class="num">${contagemRar[k]} / ${totalRar[k]}</span></div>`;
         }).join("");
+
         const badgesConquistados = SECOES.filter(s => secoesCompletas && secoesCompletas[s.id]);
         const badgesRow = badgesConquistados.length > 0
             ? `<div class="album-badges-row"><span class="album-badges-rotulo">🏅 Badges:</span>${badgesConquistados.map(s => `<span class="album-badge-pill" title="Seção ${escaparHtml(s.nome)} completa">${s.recompensaCompleta.badge}</span>`).join("")}</div>`
             : "";
+
         const prox = encontrarProximaConquista(dados, persistidas);
         let htmlProx;
         if (prox) {
@@ -14519,8 +14551,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 : `Faltam <strong>${formatarValorMeta(faltaValor, p.casa)} ${p.unidade}</strong>`;
             htmlProx = `<div class="album-proxima"><span class="icone">${m.icone}</span><div class="conteudo"><div class="titulo">🎯 PRÓXIMA CONQUISTA</div><div class="nome">${escaparHtml(m.nome)}</div><div class="falta">${faltaTxt} · ${p.pct.toFixed(0)}%</div><div class="mini-barra"><div class="fill" style="width:${p.pct.toFixed(0)}%"></div></div></div></div>`;
         } else {
-            const faltamSemMeta = MEDALS.filter(m => !persistidas[m.id] && !METAS_MEDAL[m.id]).length;
-            if (coladas === total) htmlProx = `<div class="album-sem-proxima">🏆 <strong>Álbum completo!</strong> Você desbloqueou todas as medalhas. Parabéns!</div>`;
+            const faltamSemMeta = medalsVisiveis.filter(m => !persistidas[m.id] && !METAS_MEDAL[m.id]).length;
+            if (coladas === total) htmlProx = `<div class="album-sem-proxima">🏆 <strong>Álbum completo!</strong> Você desbloqueou todas as medalhas disponíveis no modo atual. Parabéns!</div>`;
             else if (faltamSemMeta > 0) htmlProx = `<div class="album-sem-proxima">🎯 Continue jogando — <strong>${faltamSemMeta}</strong> medalha${faltamSemMeta === 1 ? "" : "s"} ${faltamSemMeta === 1 ? "está" : "estão"} prestes a aparecer!</div>`;
             else htmlProx = `<div class="album-sem-proxima">🎯 Continue jogando para desbloquear mais medalhas!</div>`;
         }
@@ -14592,7 +14624,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (info) info.style.opacity = "0.4";
         albumEstado.pronta = false;
         try {
-            // ▼ P36 — Usa cache de sessão se estiver válido
             const chaveCache = `${normalizarNome(nome)}|${turma}`;
             const agora = Date.now();
             const cacheValido = albumSessaoCache.chave === chaveCache
@@ -14615,9 +14646,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             salvarPatenteVista(patenteAtual.id);
             albumEstado = { nome, turma, persistidas, dados, estrelas, pronta: true, novasMedalhas: novas || [], novasSecoes: novasSecoes || [], secoesCompletas: secoesCompletas || {}, novaPatente };
             renderizarCapa();
-            const totalColadas = Object.keys(persistidas).length;
+
+            // ⚠️ v10.13.0 · P-B4 (Pacote 4) — marca como visto contando só as visíveis
+            const modUnicaParaContagem = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                ? modalidadeClassificatoriaUnicaAtiva()
+                : null;
+            let totalColadas;
+            if (modUnicaParaContagem) {
+                totalColadas = Object.keys(persistidas)
+                    .filter(id => !MEDALHAS_OCULTAS_MODO_UNICO.has(id))
+                    .length;
+            } else {
+                totalColadas = Object.keys(persistidas).length;
+            }
             marcarAlbumVisto(totalColadas);
-            // Só toca som / mostra popups quando é uma compilação nova (não em cache)
+
             if (!cacheValido) {
                 if (novas && novas.length > 0) setTimeout(() => somColarFigurinha(), 250);
                 if (novasSecoes && novasSecoes.length > 0) setTimeout(() => mostrarPopupSecaoCompleta(novasSecoes, estrelas), 550);
@@ -14729,39 +14772,47 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.09]
 
     // ▼▼▼ [11.10] Corpo do álbum + figurinhas ────────────────────────
+    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+    //   renderizarCorpoAlbum esconde as medalhas ocultas via
+    //   medalhaVisivelNoModoAtual. As contagens de "total" e "coladas"
+    //   também passam a considerar apenas as visíveis.
+
     function renderizarCorpoAlbum() {
         const c = document.getElementById("album-conteudo");
         if (!c) return;
         const { persistidas } = albumEstado;
         if (!persistidas) { c.innerHTML = ""; return; }
-        
+
         const passa = (m) => {
-            if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
+            if (!medalhaVisivelNoModoAtual(m)) return false;
             return passaFiltrosAlbum(m, persistidas[m.id]);
         };
-        
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Conta só as medalhas visíveis
+        const medalsVisiveis = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
+        const totalGeral   = medalsVisiveis.length;
+        const coladasGeral = medalsVisiveis.filter(m => persistidas[m.id]).length;
+
         const secoesVisiveis = SECOES.filter(s => MEDALS.some(m => m.secao === s.id && passa(m)));
         if (secoesVisiveis.length === 0) {
             c.innerHTML = `<div class="album-estado-vazio"><span class="emoji">🔍</span><h3>Nenhuma medalha corresponde aos filtros</h3><p>Ajuste os filtros ou limpe tudo para ver o álbum completo.</p><button class="botao-verde" onclick="limparFiltrosAlbum()" style="width:auto;margin:0;">🧹 Limpar filtros</button></div>`;
             return;
         }
-        const totalGeral   = MEDALS.length;
-        const coladasGeral = Object.keys(persistidas).length;
         const medalhasAproximadas = Object.values(persistidas).some(p => p && p.aproximada);
         let html = "";
         if (temFiltroAtivo()) {
-            const visiveis = MEDALS.filter(passa).length;
+            const visiveis = medalsVisiveis.filter(passa).length;
             html += `<div class="album-aviso-filtro">🔎 Mostrando <strong>${visiveis}</strong> de <strong>${totalGeral}</strong> medalhas · <button class="album-link-limpar" onclick="limparFiltrosAlbum()">Limpar filtros</button></div>`;
         }
         html += `<div class="album-secoes">`;
         secoesVisiveis.forEach(secao => {
-            const todasSecao = MEDALS.filter(m => m.secao === secao.id);
+            const todasSecao = medalsVisiveis.filter(m => m.secao === secao.id);
             const medsFiltradas = ordenarMedalhasAlbum(todasSecao.filter(passa), persistidas);
             if (!medsFiltradas.length) return;
             const coladasSecao = todasSecao.filter(m => persistidas[m.id]).length;
             const totalSecao   = todasSecao.length;
-            const pctSecao     = Math.round((coladasSecao / totalSecao) * 100);
-            const completa     = coladasSecao === totalSecao;
+            const pctSecao     = totalSecao ? Math.round((coladasSecao / totalSecao) * 100) : 0;
+            const completa     = totalSecao > 0 && coladasSecao === totalSecao;
             const estrelasCheias = "⭐".repeat(coladasSecao);
             const estrelasVazias = "⚪".repeat(totalSecao - coladasSecao);
             html += `<section class="album-secao ${completa ? "completa" : ""}" data-secao="${secao.id}" role="region" aria-label="${escaparHtml(secao.nome)} — ${coladasSecao} de ${totalSecao} medalhas coladas${completa ? " — seção completa" : ""}"><header class="album-secao-header"><div class="album-secao-linha1"><span class="album-secao-icone">${secao.icone}</span><span class="album-secao-nome">${escaparHtml(secao.nome)}</span><span class="album-secao-prog-num">${coladasSecao} / ${totalSecao}</span></div><p class="album-secao-desc">${escaparHtml(secao.descricao)}</p><div class="album-secao-stars" aria-hidden="true">${estrelasCheias}${estrelasVazias}</div><div class="album-secao-barra"><div class="album-secao-barra-fill" data-width="${pctSecao}%" style="width:0%"></div></div>${completa ? `<div class="album-secao-msg-completa">🎉 Seção completa! Você é fera em ${escaparHtml(secao.nome)}!</div>` : ""}</header><div class="album-grid">`;
@@ -14782,33 +14833,22 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // v10.5.1 · P16: mapeia emoji → classe de animação CSS.
-    // Retorna "" para emojis sem animação específica (figurinha fica estática).
     function obterAnimacaoDaMedalha(icone) {
         const mapa = {
-            // Glow (brilho dourado)
             "🏆": "anim-glow", "🏅": "anim-glow", "🎖️": "anim-glow",
             "🥇": "anim-glow", "🥈": "anim-glow", "🥉": "anim-glow",
             "⭐": "anim-glow", "🆕": "anim-glow",
-            // Flash (relâmpago)
             "⚡": "anim-flash", "🌩️": "anim-flash",
-            // Girar (rotação suave)
             "🎯": "anim-girar", "🎲": "anim-girar", "🌐": "anim-girar",
             "🌀": "anim-girar", "🗺️": "anim-girar", "🎟️": "anim-girar",
-            // Fogo (tremulação)
             "🔥": "anim-fogo",
-            // Cintilar (brilho cintilante)
             "💎": "anim-cintilar", "☄️": "anim-cintilar", "🔬": "anim-cintilar",
-            // Bounce (pulo)
             "🌱": "anim-bounce", "💪": "anim-bounce",
             "📈": "anim-bounce", "📚": "anim-bounce",
-            // Balanço (rotação lateral)
             "👑": "anim-balanco", "🎓": "anim-balanco", "⚔️": "anim-balanco",
             "🕰️": "anim-balanco", "📅": "anim-balanco",
-            // Vibrar (vibração horizontal)
             "🚀": "anim-vibrar", "💨": "anim-vibrar",
             "🏃": "anim-vibrar", "🚶": "anim-vibrar",
-            // Pulse (pulsação de escala)
             "🛡️": "anim-pulse", "🍀": "anim-pulse",
             "🌅": "anim-pulse", "🧱": "anim-pulse"
         };
@@ -14822,8 +14862,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const classes = ["album-figurinha", colada ? "colada" : "vazia", `r-${medalha.raridade}`];
         if (ehNova) classes.push("recem-colada");
 
-        // v10.5.1 · P16: adiciona classe de animação SÓ se a medalha está
-        // colada. Figurinhas vazias permanecem com o ícone cinza estático.
         if (colada) {
             const classeAnim = obterAnimacaoDaMedalha(medalha.icone);
             if (classeAnim) classes.push(classeAnim);
@@ -15680,16 +15718,79 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
 
     // ▼▼▼ [13.03.bis] Médias Gerais — ranking combinado (3 modalidades) ───
-    // v10.9.0 · Usa ranking_resumo/media quando disponível.
-    // A estrutura `media/{mod}/{alunoKey}` já contém somaPontos e partidasOficiais,
-    // então podemos calcular a média sem baixar `partidas` inteiro.
+    // v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única
+    //   Quando a flag está setada, o ranking de Média considera SÓ a modalidade
+    //   ativa. O critério "5 partidas em cada uma das 3" vira "5 partidas na ativa".
+    //   A estrutura de retorno é preservada (media25/media69/media010/mediaGeral)
+    //   para não quebrar renderizadores legados — campos das outras modalidades
+    //   ficam zerados.
     async function obterRankingMediaGeralCombinada(turma = null) {
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+
+        // ═════════ MODO CLASSIFICATÓRIA ÚNICA ═════════
+        if (modUnica) {
+            const montarRegistro = (nome, turmaAluno, totalPartidas, mediaGeral) => ({
+                nome, turma: turmaAluno,
+                totalPartidas,
+                qtd25:  modUnica === "2-5"  ? totalPartidas : 0,
+                qtd69:  modUnica === "6-9"  ? totalPartidas : 0,
+                qtd010: modUnica === "0-10" ? totalPartidas : 0,
+                media25:  modUnica === "2-5"  ? mediaGeral : 0,
+                media69:  modUnica === "6-9"  ? mediaGeral : 0,
+                media010: modUnica === "0-10" ? mediaGeral : 0,
+                mediaGeral,
+                _modUnica: modUnica
+            });
+
+            // Tentativa otimizada (resumo)
+            if (await otimizacaoV109Ativa()) {
+                try {
+                    const ref = database.ref(`${CAMINHO_RANKING_RESUMO}/media/${modUnica}`);
+                    const snap = turma
+                        ? await ref.orderByChild("turma").equalTo(turma).once("value")
+                        : await ref.once("value");
+                    const dadosMod = snap.val() || {};
+                    const resultado = Object.entries(dadosMod)
+                        .map(([alunoKey, dados]) => {
+                            if (!dados || !dados.nome) return null;
+                            if (turma && dados.turma !== turma) return null;
+                            const t = Number(dados.partidasOficiais) || 0;
+                            if (t < MEDIA_MIN_PARTIDAS) return null;
+                            const s = Number(dados.somaPontos) || 0;
+                            const media = t > 0 ? s / t : 0;
+                            return montarRegistro(dados.nome, dados.turma, t, media);
+                        })
+                        .filter(Boolean)
+                        .sort((x, y) => y.mediaGeral - x.mediaGeral || y.totalPartidas - x.totalPartidas);
+                    if (resultado.length > 0) return resultado;
+                } catch(e) {
+                    console.warn("[Otimização] Falha ao ler media (modo único):", e);
+                }
+            }
+
+            // Fallback legacy (modo único)
+            const partidas = await obterPartidas();
+            const filtro = partidas.filter(p => (!turma || p.turma === turma) && p.modalidade === modUnica);
+            const porAluno = new Map();
+            filtro.forEach(p => {
+                const k = `${normalizarNome(p.nome)}|${p.turma}`;
+                if (!porAluno.has(k)) porAluno.set(k, { nome: p.nome, turma: p.turma, soma: 0, partidas: 0 });
+                const a = porAluno.get(k);
+                a.soma += Number(p.pontos) || 0;
+                a.partidas++;
+            });
+            return Array.from(porAluno.values())
+                .filter(a => a.partidas >= MEDIA_MIN_PARTIDAS)
+                .map(a => montarRegistro(a.nome, a.turma, a.partidas, a.soma / a.partidas))
+                .sort((x, y) => y.mediaGeral - x.mediaGeral || y.totalPartidas - x.totalPartidas);
+        }
+
+        // ═════════ MODO NORMAL (código original) ═════════
         if (await otimizacaoV109Ativa()) {
             try {
                 const mods = ["2-5", "6-9", "0-10"];
-                // Lê o nó `media` inteiro de cada modalidade (é pequeno —
-                // 1 registro por aluno por modalidade). OU filtra por turma
-                // quando possível (índice .indexOn: "turma").
                 const snapshots = await Promise.all(mods.map(mod => {
                     const ref = database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}`);
                     if (turma) {
@@ -15738,12 +15839,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     })
                     .sort((x, y) => y.mediaGeral - x.mediaGeral || y.totalPartidas - x.totalPartidas);
 
-                // Se o resumo tiver dados, usa. Se estiver vazio (backfill
-                // não rodou ainda), cai no fallback.
                 if (resultado.length > 0) return resultado;
             } catch(e) {
                 console.warn("[Otimização] Falha ao ler media do resumo:", e);
-                // cai no fallback
             }
         }
 
@@ -16001,6 +16099,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
     // v10.10.2 · Suporte ao modo olimpíadas, ranking de corridas e
     // textos explicativos completos em todos os modais.
+    //
+    // v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única:
+    //   • `mod` é forçado para a modalidade ativa quando a flag está setada
+    //   • A tabela da métrica "Média" passa a mostrar 1 coluna de modalidade
+    //   • O <select #filtro-modalidade> é travado por aplicarModoUnicoNoFiltroModalidade
+    //     (chamado aqui também, como reforço de segurança)
 
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
@@ -16271,8 +16375,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const corpo = document.getElementById("modal-explicacao-ranking-corpo");
         if (!modal || !corpo) return;
         
-        // Garante que o conteúdo está atualizado com o estado atual
-        // (evita que o aluno clique antes do renderizador terminar)
         if (!corpo.innerHTML.trim()) {
             renderizarDescricaoRanking(tipoRankingAtual, metricaRankingAtual);
         }
@@ -16308,6 +16410,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (!tb || !ti) return;
             if (!tipoRankingAtual) return;
 
+            // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Reforço de segurança: garante
+            // que o <select #filtro-modalidade> está travado quando a flag está setada.
+            if (typeof aplicarModoUnicoNoFiltroModalidade === "function") {
+                aplicarModoUnicoNoFiltroModalidade();
+            }
+
             const bannerEl = document.getElementById("banner-posicao-global");
             const mediasCtnEl = document.getElementById("medias-turmas-container");
             const tabelaWrap = document.querySelector("#tela-ranking .tabela-container");
@@ -16319,7 +16427,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             mostrarSkeletonRanking(8);
             atualizarHintTurmaAluno();
 
-            const mod = document.getElementById("filtro-modalidade")?.value || "0-10";
+            // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Força a modalidade ativa
+            let mod = document.getElementById("filtro-modalidade")?.value || "0-10";
+            const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                ? modalidadeClassificatoriaUnicaAtiva()
+                : null;
+            if (modUnicaAtiva) mod = modUnicaAtiva;
+
             const selTurma = document.getElementById("filtro-turma");
             const turmaSelecionada = selTurma?.value || "901";
             const turmaAluno = obterTurmaSalvaAluno();
@@ -16395,6 +16509,32 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             else if (metricaRankingAtual === "media") {
                 const turmaFiltro = (tipoRankingAtual === "turma") ? turma : null;
                 rank = await obterRankingMediaGeralCombinada(turmaFiltro);
+
+                // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única:
+                // mostra só a coluna da modalidade ativa + a coluna Média.
+                if (modUnicaAtiva) {
+                    const nomeMod = MODALIDADES[modUnicaAtiva]?.nome || modUnicaAtiva;
+                    tit = (tipoRankingAtual === "turma")
+                        ? `🏅 Média · Turma ${turma} · ${nomeMod}`
+                        : `🏅 Média Global · ${nomeMod}`;
+                    ti.innerText = tit;
+                    th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Média (${escaparHtml(nomeMod)})</th></tr>`;
+                    if (!rank.length) {
+                        tb.innerHTML = `<tr><td colspan="4"><div class="ranking-vazio"><span class="emoji-vazio">🏅</span>Nenhum aluno com <strong>${MEDIA_MIN_PARTIDAS} partidas oficiais</strong> em <strong>${escaparHtml(nomeMod)}</strong> ainda.<br>Jogue mais para entrar!</div></td></tr>`;
+                        return;
+                    }
+                    let h = "";
+                    for (let i = 0; i < rank.length; i++) {
+                        const r = rank[i], p = i + 1;
+                        const pc = p <= 3 ? `podio-${p}` : "";
+                        const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : "";
+                        const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
+                        h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${Math.round(r.mediaGeral).toLocaleString("pt-BR")}</td></tr>`;
+                    }
+                    tb.innerHTML = h; return;
+                }
+
+                // Modo normal (código original)
                 tit = (tipoRankingAtual === "turma") ? `🏅 Média · Turma ${turma}` : `🏅 Média Global — todas as turmas`;
                 ti.innerText = tit; th.innerHTML = `<tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>📚 2-5</th><th>🎯 6-9</th><th>⭐ 1-10</th><th>Média Geral</th></tr>`;
                 if (!rank.length) { tb.innerHTML = `<tr><td colspan="7"><div class="ranking-vazio"><span class="emoji-vazio">🏅</span>Nenhum aluno com <strong>${MEDIA_MIN_PARTIDAS} partidas oficiais</strong> em <strong>cada uma das 3 modalidades</strong> ainda.<br>Jogue mais para entrar!</div></td></tr>`; return; }
@@ -16505,12 +16645,45 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.06.bis]
 
 // ▼▼▼ [13.07] Controle de escopo e métrica do ranking ──────────────
+    // v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única
+    //   • aplicarModoUnicoNoFiltroModalidade() trava o <select #filtro-modalidade>
+    //     na modalidade ativa (quando a flag está setada).
+    //   • Chamado em resetarRankingParaEstadoLimpo() e mudarEscopoRanking()
+    //     para garantir estado consistente em qualquer entrada no Ranking.
     let metricaRankingAtual = "pontos";
     let corridaTipoRankingAtual = "tempo";
+
+    function aplicarModoUnicoNoFiltroModalidade() {
+        const sel = document.getElementById("filtro-modalidade");
+        if (!sel) return;
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+        if (modUnica) {
+            Array.from(sel.options).forEach(o => {
+                const ehAtiva = o.value === modUnica;
+                o.hidden = !ehAtiva;
+                o.disabled = !ehAtiva;
+            });
+            sel.value = modUnica;
+            sel.disabled = true;
+            sel.title = "Modo Classificatória Única ativo — modalidade travada";
+        } else {
+            Array.from(sel.options).forEach(o => {
+                o.hidden = false;
+                o.disabled = false;
+            });
+            sel.disabled = false;
+            sel.title = "";
+        }
+    }
 
     function mudarEscopoRanking(escopo) {
         if (escopo !== "turma" && escopo !== "global" && escopo !== "corridas") return;
         tipoRankingAtual = escopo;
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 3)
+        aplicarModoUnicoNoFiltroModalidade();
 
         document.getElementById("ranking-conteudo-escopo")?.classList.remove("hidden");
         document.getElementById("aba-minha-turma")?.classList.toggle("ativa", escopo === "turma");
@@ -16602,6 +16775,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     function resetarRankingParaEstadoLimpo() {
+        // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Trava a modalidade única ANTES de qualquer coisa
+        aplicarModoUnicoNoFiltroModalidade();
+
         // Modo Só Olimpíadas
         if (modoEventoAtual === "olimpiadas") {
             document.getElementById("aba-minha-turma")?.classList.add("hidden");
@@ -17391,6 +17567,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [14.03]
 
     // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
+    // v10.13.0 · P-B4 (Pacote 2) — Modo Classificatória Única
+    //   • registrarAluno() rejeita modalidade bloqueada antes de qualquer gravação
+    //   • A leitura da modalidade selecionada foi movida para antes do bloco de validação
     const TELAS_COM_NAV_GLOBAL = new Set([
         "tela-inicial", "tela-mais", "tela-ranking",
         "tela-desempenho", "tela-album", "tela-hall-fama", "tela-perfil",
@@ -17480,16 +17659,27 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.getElementById("nome-aluno").value = nome;
         if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
 
+        // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Precisa ler a modalidade antes de validar
+        const modalidadeSelecionada = document.getElementById("modalidade-tabuada").value;
+
         if (!treino) {
             const fase = await resolverFaseAtual();
             if (!etapaPermiteClassificatoria(fase.tipo)) {
                 notificar("A Etapa Classificatória não está disponível no momento. Use o Modo Treino Livre.", "aviso", 6000);
                 return;
             }
+            // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Verificar Modalidade Única
+            if (typeof modalidadePermitidaParaOficial === "function" && !modalidadePermitidaParaOficial(modalidadeSelecionada)) {
+                const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                    ? modalidadeClassificatoriaUnicaAtiva() : null;
+                const nomeMod = modUnica && MODALIDADES[modUnica] ? MODALIDADES[modUnica].nome : "outra modalidade";
+                notificar(`🎯 A etapa oficial está focada em ${nomeMod}. Selecione essa modalidade para jogar, ou use o Modo Treino para praticar aqui.`, "aviso", 7000);
+                return;
+            }
         }
 
         alunoAtual = nome; turmaAtual = turma;
-        modalidadeAtual = document.getElementById("modalidade-tabuada").value;
+        modalidadeAtual = modalidadeSelecionada;
         modoTreino = treino;
         treinoAnonimo = false;
         salvarTurmaENomeAluno(turma, nome);
@@ -17607,6 +17797,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [14.04]
 
     // ▼▼▼ [14.05] Início de partida ────────────────────────────────────
+    // v10.13.0 · P-B4 (Pacote 2) — Defesa em profundidade
+    //   iniciarPartidaClassificatoria valida a modalidade novamente mesmo
+    //   que o caminho normal (registrarAluno) já a tenha validado — para
+    //   cobrir chamadas vindas de jogarNovamente ou de qualquer caminho
+    //   futuro que esqueça a barreira.
     function iniciarPartidaTreino() {
         modoTreino = true;
         reiniciarVariaveisJogo();
@@ -17620,9 +17815,22 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         atualizarVisibilidadeBotaoCancelar();
         proximaPergunta();
     }
+
     function iniciarPartidaClassificatoria() {
         if (!window._pendingGame) return;
         const { nome, turma, modalidade } = window._pendingGame;
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Defesa em profundidade
+        if (typeof modalidadePermitidaParaOficial === "function" && !modalidadePermitidaParaOficial(modalidade)) {
+            const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                ? modalidadeClassificatoriaUnicaAtiva() : null;
+            const nomeMod = modUnica && MODALIDADES[modUnica] ? MODALIDADES[modUnica].nome : "outra modalidade";
+            notificar(`🎯 A etapa oficial está focada em ${nomeMod}. Esta modalidade está disponível apenas para treino.`, "aviso", 6500);
+            window._pendingGame = null;
+            mostrarTela("tela-inicial");
+            return;
+        }
+
         alunoAtual = nome; turmaAtual = turma; modalidadeAtual = modalidade; modoTreino = false;
         treinoAnonimo = false;
         treinoFocoOperacoes = null;
@@ -17635,16 +17843,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         atualizarVisibilidadeBotaoCancelar();
         proximaPergunta();
     }
+
     function reiniciarVariaveisJogo() {
         const _ov = document.getElementById("feedback-erro-treino");
         if (_ov) _ov.classList.add("hidden");
         aguardandoFeedbackErro = false;
         perguntaAtual = 0; pontosAcumulados = 0; acertos = 0; erros = 0; sequenciaAtual = 0; maiorSequencia = 0;
         temposCorretas = []; temposRespostas = []; desempenhoTabuadas = {};
-        desempenhoOperacoes = {}; 
+        desempenhoOperacoes = {};
         perguntasGeradas = []; tabuadaAtualPergunta = null;
         acertouPrimeira = false; temposRapidos = 0;
-        chutesRapidos = 0; // ⚠️ ZERA O CHUTE AQUI
+        chutesRapidos = 0;
         jogoAtivo = true; finalizando = false;
         if (timerInterval) clearInterval(timerInterval);
         if (timerTimeout) clearTimeout(timerTimeout);
@@ -18033,6 +18242,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [14.08]
 
     // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
+    // v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única:
+    //   • renderizarCardClassificacao mostra só a modalidade ativa (quando setada)
+    //   • renderizarRankingTurmasResultado se esconde quando a partida foi em
+    //     modalidade ≠ ativa (proteção contra troca de flag durante o jogo)
     function gerarCardsComparacao(melhor, tent) {
         const novo = ehMelhorResultado(tent, melhor) && tent.data === melhor.data;
         return `<div class="cards-comparacao"><div class="card-compcard"><div class="card-comp-rotulo">Esta tentativa</div><div class="card-comp-valor">${tent.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div><div class="card-compcard card-recorde"><div class="card-comp-rotulo">${novo ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div><div class="card-comp-valor">${melhor.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div></div>`;
@@ -18041,14 +18254,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     async function renderizarCardClassificacao(r) {
         if (!r || !r.nome || !r.turma) return "";
         const mods = Object.keys(MODALIDADES);
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única
+        const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+        const modsVisiveis = modUnicaAtiva ? [modUnicaAtiva] : mods;
+
         const ranks = await Promise.all(
-            mods.map(m => obterRankingPorPontos(m, r.turma).catch(() => []))
+            modsVisiveis.map(m => obterRankingPorPontos(m, r.turma).catch(() => []))
         );
         const rotulosCurtos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
         let htmlLinhas = "";
         let estaNoTop4Alguma = false;
-        for (let i = 0; i < mods.length; i++) {
-            const mod = mods[i];
+        for (let i = 0; i < modsVisiveis.length; i++) {
+            const mod = modsVisiveis[i];
             const rankingMod = ranks[i] || [];
             const idxMod = rankingMod.findIndex(x => normalizarNome(x.nome) === normalizarNome(r.nome) && x.turma === r.turma);
             const posicao = idxMod === -1 ? null : idxMod + 1;
@@ -18073,9 +18293,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (!localStorage.getItem(ck)) { setTimeout(() => dispararConfetes(), 300); localStorage.setItem(ck, "1"); }
         }
         const avisoNome = `<div class="aviso-nome-classificado">🚨 <strong>Confira seu nome:</strong> "${escaparHtml(r.nome)}". Ele precisa estar completo e <strong>idêntico à chamada oficial</strong>. Nome abreviado ou fora do padrão pode causar <strong>desclassificação</strong>. Se houver erro, fale com o professor antes do fim da etapa.</div>`;
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Aviso quando a flag está setada
+        const avisoModUnica = modUnicaAtiva
+            ? `<div style="font-size:11.5px; color:#a5f3fc; background:rgba(14,165,233,.08); border-left:3px solid var(--neon-cyan); border-radius:8px; padding:8px 12px; margin-top:10px; line-height:1.5;">
+                🎯 Modo Classificatória Única ativo — a etapa oficial está focada em <strong>${escaparHtml(MODALIDADES[modUnicaAtiva].nome)}</strong>.
+            </div>`
+            : "";
+
         return `<div class="minhas-posicoes-card">
             <div class="minhas-posicoes-titulo">🏆 Minhas posições — <span class="tag-turma">Turma ${escaparHtml(r.turma)}</span></div>
             <div class="minhas-posicoes-lista">${htmlLinhas}</div>
+            ${avisoModUnica}
             ${avisoNome}
             <div style="font-size:11.5px;color:var(--text-muted);margin-top:10px;text-align:center;line-height:1.5;">⚠️ Classificação provisória · Top ${VAGAS_CLASSIFICACAO} de cada modalidade avança para a Final.</div>
         </div>`;
@@ -18087,8 +18316,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         container.innerHTML = "";
         if (!turmaAtual) return;
 
+        // ⚠️ v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única:
+        // Se a partida foi numa modalidade que não é a ativa (porque o professor
+        // trocou a flag durante o jogo), esconde o comparativo de turmas.
+        // Não faz sentido mostrar ranking de uma modalidade que não é mais oficial.
+        const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+        if (modUnicaAtiva && modalidade !== modUnicaAtiva) {
+            return;
+        }
+        const modExibir = modUnicaAtiva || modalidade || "0-10";
+
         try {
-            const r = await calcularMediasTop4Turmas(modalidade || "0-10");
+            const r = await calcularMediasTop4Turmas(modExibir);
             const medias = r.ranking;
             const minha = r.minhaTurma;
             const minimo = r.minimo;
@@ -18125,7 +18366,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 ? `<div class="ranking-turmas-lista">${htmlLinhas}</div>`
                 : `<div class="ranking-turmas-vazio">Nenhuma turma com <strong>${minimo} alunos</strong> nesta modalidade ainda.</div>`;
 
-            const avisoHtml = minha ? renderizarAvisoTurmaFora(minha, modalidade) : "";
+            const avisoHtml = minha ? renderizarAvisoTurmaFora(minha, modExibir) : "";
 
             container.innerHTML = `<div class="ranking-turmas-resultado">
                 <div class="ranking-turmas-resultado-titulo">🏫 Ranking das Turmas</div>
@@ -18224,9 +18465,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
     }
 
-    // ⚙️ [13] — NOVO: tela específica quando o aluno cancela antes das 20 perguntas.
-    //   · Alimenta histórico, mapa e média (já salvos antes de chamar esta função).
-    //   · NÃO alimenta medalhas, Hall da Fama, Álbum e ranking.
     async function preencherResultadoParcial(tent) {
         ultimoMelhorOficial = null;
         ultimaTentativa = tent;
@@ -18271,7 +18509,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.getElementById("btn-jogar-novamente")?.classList.remove("hidden");
         document.getElementById("btn-trocar-modalidade")?.classList.remove("hidden");
 
-        // Mapa (afetado por parciais)
         if (tent.desempenhoTabuadas) desempenhoTabuadas = tent.desempenhoTabuadas;
         mapaFonteUltima = tent.desempenhoOperacoes || {};
         mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(tent.nome, tent.turma);
@@ -18284,12 +18521,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             setTimeout(() => { promocoesRecentes = []; }, 6000);
         }
 
-        // Certificados (o mapa é afetado por parciais)
         try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
-        // Álbum NÃO é atualizado (parcial não dá medalha)
         document.getElementById("album-cta-resultado")?.classList.add("hidden");
     }
     // ▲▲▲ FIM [14.09]
+
     // ▼▼▼ [14.09.bis] Alerta de proximidade pós-partida ─────────
     // Encontra o certificado NÃO conquistado mais próximo de ser vencido
     // na modalidade recém-jogada. Retorna null se nenhum está a ≤15 operações.
@@ -18419,6 +18655,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [14.09.bis]
 
     // ▼▼▼ [14.10] Certificados pós-partida + promoções + treino da tela ─
+    // v10.13.0 · P-B4 (Pacote 2) — Modo Classificatória Única
+    //   jogarNovamente() verifica a modalidade antes de reabrir a partida.
     async function verificarCertificadosPosPartida(nome, turma, mod) {
         try {
             const r = await verificarCertificadosNovos(nome, turma, mod);
@@ -18467,6 +18705,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             notificar("A Etapa Classificatória não está mais disponível no momento.", "aviso", 6000);
             return;
         }
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Verificar Modo Classificatória Única
+        if (typeof modalidadePermitidaParaOficial === "function" && !modalidadePermitidaParaOficial(ultimaTentativa.modalidade)) {
+            const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                ? modalidadeClassificatoriaUnicaAtiva() : null;
+            const nomeMod = modUnica && MODALIDADES[modUnica] ? MODALIDADES[modUnica].nome : "outra modalidade";
+            notificar(`🎯 A etapa oficial agora está focada em ${nomeMod}. Esta modalidade está disponível apenas para treino.`, "aviso", 6500);
+            return;
+        }
+
         window._pendingGame = {
             nome: ultimaTentativa.nome,
             turma: ultimaTentativa.turma,
@@ -21109,9 +21357,39 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [17.09]
 
     // ▼▼▼ [17.11] Painel — Modo do Evento (Classificatória, Olimpíadas, Ambos) ─── INÍCIO ───
-    const CAMINHO_MODO_EVENTO = "config/modo_evento";
-    let modoEventoAtual = "classificatoria";
+    // v10.13.0 · P-B4 (Pacote 1) — Modo Classificatória Única
+    //
+    // O bloco agora gerencia DUAS flags em config:
+    //   • config/modo_evento               → "classificatoria" | "olimpiadas" | "ambos"
+    //   • config/modo_classificatoria      → "normal" | "2-5" | "6-9" | "0-10"
+    //
+    // Regras:
+    //   • O Modo Olimpíadas IGNORA o modo classificatória única. Se o professor
+    //     mudar para "olimpiadas", a flag é forçada para "normal".
+    //   • Em "classificatoria" e "ambos", a flag funciona normalmente.
+    //   • Cache curto (30s) com invalidação explícita nas trocas.
+    //   • Tolerância a permission_denied: se as regras do Firebase ainda não
+    //     liberarem config/modo_classificatoria, assume "normal" e loga uma
+    //     única vez (sem quebrar a UI).
 
+    const CAMINHO_MODO_EVENTO = "config/modo_evento";
+    const CAMINHO_MODO_CLASSIFICATORIA = "config/modo_classificatoria";
+
+    const MODO_CLASSIFICATORIA_NORMAL = "normal";
+    const MODOS_CLASSIFICATORIA_VALIDOS = ["normal", "2-5", "6-9", "0-10"];
+
+    let modoEventoAtual = "classificatoria";
+    let modoClassificatoriaAtual = MODO_CLASSIFICATORIA_NORMAL;
+
+    let _modoClassificatoriaCache = { valor: null, ts: 0 };
+    const _MODO_CLASSIFICATORIA_CACHE_MS = 30 * 1000;
+    let _modoClassificatoriaSemPermissaoAvisado = false;
+
+    function invalidarCacheModoClassificatoria() {
+        _modoClassificatoriaCache = { valor: null, ts: 0 };
+    }
+
+    // ─── Leitura do modo evento (compatível com o código anterior) ───
     async function obterModoEvento(forcar = false) {
         try {
             const snap = await database.ref(CAMINHO_MODO_EVENTO).once("value");
@@ -21124,64 +21402,236 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
+    // ─── Leitura do modo classificatória única ───
+    async function obterModoClassificatoria(forcar = false) {
+        const agora = Date.now();
+        if (!forcar && _modoClassificatoriaCache.valor !== null
+                    && (agora - _modoClassificatoriaCache.ts) < _MODO_CLASSIFICATORIA_CACHE_MS) {
+            return _modoClassificatoriaCache.valor;
+        }
+        try {
+            const snap = await database.ref(CAMINHO_MODO_CLASSIFICATORIA).once("value");
+            const bruto = String(snap.val() || MODO_CLASSIFICATORIA_NORMAL);
+            const valido = MODOS_CLASSIFICATORIA_VALIDOS.includes(bruto) ? bruto : MODO_CLASSIFICATORIA_NORMAL;
+            modoClassificatoriaAtual = valido;
+            _modoClassificatoriaCache = { valor: valido, ts: agora };
+            return valido;
+        } catch(e) {
+            const ehPermissao = !!(e && e.message && e.message.includes("permission_denied"));
+            if (ehPermissao && !_modoClassificatoriaSemPermissaoAvisado) {
+                _modoClassificatoriaSemPermissaoAvisado = true;
+                console.info("[Modo Classificatória] Sem permissão para ler config/modo_classificatoria. Assumindo 'normal'.");
+            } else if (!ehPermissao) {
+                console.warn("[Modo Classificatória] Falha ao ler:", e);
+            }
+            modoClassificatoriaAtual = MODO_CLASSIFICATORIA_NORMAL;
+            _modoClassificatoriaCache = { valor: MODO_CLASSIFICATORIA_NORMAL, ts: agora };
+            return MODO_CLASSIFICATORIA_NORMAL;
+        }
+    }
+
+    // Retorna a modalidade única ativa, ou null se modo "normal".
+    function modalidadeClassificatoriaUnicaAtiva() {
+        if (modoEventoAtual === "olimpiadas") return null;
+        if (!modoClassificatoriaAtual || modoClassificatoriaAtual === MODO_CLASSIFICATORIA_NORMAL) return null;
+        return MODALIDADES[modoClassificatoriaAtual] ? modoClassificatoriaAtual : null;
+    }
+
+    // ─── Alterar modo evento (agora também zera a flag classificatória única
+    //     quando muda para Olimpíadas) ───
     async function alterarModoEvento(novoModo) {
         if (!exigirProfessorAutenticado()) return;
         if (novoModo !== "classificatoria" && novoModo !== "olimpiadas" && novoModo !== "ambos") return;
 
         let msg = "";
         if (novoModo === "olimpiadas") {
-            msg = "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, o Hall da Fama e o Álbum esconderão as categorias de partidas de 20 perguntas.\n\nConfirmar?";
+            msg = "🏟️ MUDAR PARA MODO OLIMPÍADAS\n\nO foco do app será as Corridas de Tabuada. O card 'Minhas Posições' será escondido da Home, o Hall da Fama e o Álbum esconderão as categorias de partidas de 20 perguntas.\n\n⚠️ O Modo Classificatória Única será desativado (volta para 'normal').\n\nConfirmar?";
         } else if (novoModo === "classificatoria") {
             msg = "🏆 MUDAR PARA MODO SÓ CLASSIFICATÓRIA\n\nO foco do app voltará a ser as partidas oficiais de 20 perguntas. O menu de Corridas de Tabuada será DESATIVADO.\n\nConfirmar?";
         } else {
             msg = "🌟 MUDAR PARA MODO AMBOS (COPA COMPLETA)\n\nO app permitirá que os alunos joguem TANTO as partidas oficiais de 20 perguntas QUANTO as Corridas de Tabuada.\n\nConfirmar?";
         }
-            
+
         if (!confirm(msg)) return;
 
         try {
             await database.ref(CAMINHO_MODO_EVENTO).set(novoModo);
             modoEventoAtual = novoModo;
+
+            // Modo Olimpíadas ignora a classificatória única → zera a flag.
+            if (novoModo === "olimpiadas" && modoClassificatoriaAtual !== MODO_CLASSIFICATORIA_NORMAL) {
+                try {
+                    await database.ref(CAMINHO_MODO_CLASSIFICATORIA).set(MODO_CLASSIFICATORIA_NORMAL);
+                    modoClassificatoriaAtual = MODO_CLASSIFICATORIA_NORMAL;
+                } catch(e) {
+                    console.warn("[Modo Classificatória] Falha ao zerar flag em Olimpíadas:", e);
+                }
+            }
+
+            invalidarCacheModoClassificatoria();
+
             notificar(`Modo alterado para: ${novoModo.toUpperCase()}`, "sucesso");
-            renderizarPainelModoEvento();
-            
+
             // Limpa caches para forçar recálculo com o novo modo
             hallFamaCache = null;
             albumSessaoCache = { chave: null, ts: 0, resultado: null };
             comparativoTurmaCache = null;
+            _homeMapaCache = null;
 
-            // Força a atualização das telas visíveis imediatamente
+            // Força atualização das telas visíveis imediatamente
             await atualizarTelaInicialComEtapa();
             resetarRankingParaEstadoLimpo();
             atualizarVisibilidadeMenuMais();
+            renderizarPainelModoEvento();
         } catch(e) {
             console.warn("[Modo Evento] Falha ao salvar:", e);
             notificar("Não foi possível alterar o modo.", "erro");
         }
     }
 
+    // ─── Alterar modo classificatória única ───
+    async function alterarModoClassificatoria(novoModo) {
+        if (!exigirProfessorAutenticado()) return;
+        if (!MODOS_CLASSIFICATORIA_VALIDOS.includes(novoModo)) return;
+
+        // Bloqueia quando o evento está em Olimpíadas
+        const modoEvento = await obterModoEvento(true);
+        if (modoEvento === "olimpiadas") {
+            notificar("⚠️ O Modo Olimpíadas ignora o Modo Classificatória Única. Mude para 'Só Classificatória' ou 'Ambos' primeiro.", "aviso", 6000);
+            return;
+        }
+
+        const rotulos = {
+            "normal": "Todas as modalidades (Normal)",
+            "2-5":    "Só Tabuadas 2-5",
+            "6-9":    "Só Tabuadas 6-9",
+            "0-10":   "Só Tabuadas 1-10"
+        };
+        const atualTxt = rotulos[modoClassificatoriaAtual] || modoClassificatoriaAtual;
+        const novoRotulo = rotulos[novoModo];
+
+        let aviso;
+        if (novoModo === MODO_CLASSIFICATORIA_NORMAL) {
+            aviso = `↩️ VOLTAR AO MODO NORMAL\n\nAs 3 modalidades voltam a ficar disponíveis para a etapa oficial.\n\nConfirmar?`;
+        } else {
+            aviso =
+                `🎯 ATIVAR MODO CLASSIFICATÓRIA ÚNICA\n\n` +
+                `De: ${atualTxt}\n` +
+                `Para: ${novoRotulo}\n\n` +
+                `Impacto:\n` +
+                `• Botão "▶ Jogar" das outras modalidades fica bloqueado na Home\n` +
+                `• Ranking oficial passa a mostrar apenas essa modalidade\n` +
+                `• Medalhas que dependem das 3 modalidades são ocultadas do Álbum\n` +
+                `• O Modo Olimpíadas ignora esta regra\n` +
+                `• Partidas já registradas nas outras modalidades NÃO são apagadas\n\n` +
+                `Continuar?`;
+        }
+
+        if (!confirm(aviso)) return;
+
+        try {
+            await database.ref(CAMINHO_MODO_CLASSIFICATORIA).set(novoModo);
+            modoClassificatoriaAtual = novoModo;
+            invalidarCacheModoClassificatoria();
+
+            // Invalida caches que dependem do conjunto de modalidades
+            _homeMapaCache = null;
+            hallFamaCache = null;
+            albumSessaoCache = { chave: null, ts: 0, resultado: null };
+            comparativoTurmaCache = null;
+
+            notificar(`Modo Classificatória Única: ${novoRotulo}`, "sucesso", 5000);
+            try { somNovoRecorde(); } catch(e) {}
+
+            renderizarPainelModoEvento();
+            // Os Pacotes 2/3/4 vão enriquecer estes re-renders.
+            try { await atualizarTelaInicialComEtapa(); } catch(e) {}
+        } catch(e) {
+            console.warn("[Modo Classificatória] Falha ao salvar:", e);
+            if (e && e.message && e.message.includes("permission_denied")) {
+                notificar("❌ Sem permissão para gravar em config/modo_classificatoria. Veja as regras do Firebase.", "erro", 8000);
+            } else {
+                notificar("❌ Não foi possível alterar o modo.", "erro", 5000);
+            }
+        }
+    }
+
+    // ─── Render do painel ───
     async function renderizarPainelModoEvento() {
         const container = document.getElementById("painel-modo-evento-conteudo");
         if (!container) return;
-        
-        const modo = await obterModoEvento(true);
-        
-        const btnClass = modo === "classificatoria" ? "botao-verde" : "botao-secundario";
-        const btnOlim = modo === "olimpiadas" ? "botao-verde" : "botao-secundario";
-        const btnAmbos = modo === "ambos" ? "botao-verde" : "botao-secundario";
-        
-        container.innerHTML = `
+
+        const modoEvento = await obterModoEvento(true);
+        const modoClassif = await obterModoClassificatoria(true);
+
+        // ── Seção 1: Modo do Evento ──
+        const btnClass = modoEvento === "classificatoria" ? "botao-verde" : "botao-secundario";
+        const btnOlim  = modoEvento === "olimpiadas"     ? "botao-verde" : "botao-secundario";
+        const btnAmbos = modoEvento === "ambos"          ? "botao-verde" : "botao-secundario";
+
+        const labelEvento =
+            modoEvento === "olimpiadas"     ? "Olimpíadas (Corridas em foco)" :
+            modoEvento === "ambos"          ? "Ambos (Copa Completa)" :
+                                              "Só Classificatória (Partidas em foco)";
+
+        let html = `
             <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
                 <button class="${btnClass}" onclick="alterarModoEvento('classificatoria')" style="margin:0; flex:1 1 120px;">🏆 Só Classificatória</button>
-                <button class="${btnOlim}" onclick="alterarModoEvento('olimpiadas')" style="margin:0; flex:1 1 120px;">🏟️ Só Olimpíadas</button>
-                <button class="${btnAmbos}" onclick="alterarModoEvento('ambos')" style="margin:0; flex:1 1 120px;">🌟 Ambos</button>
+                <button class="${btnOlim}"  onclick="alterarModoEvento('olimpiadas')"     style="margin:0; flex:1 1 120px;">🏟️ Só Olimpíadas</button>
+                <button class="${btnAmbos}" onclick="alterarModoEvento('ambos')"          style="margin:0; flex:1 1 120px;">🌟 Ambos</button>
             </div>
-            <div style="font-size:12px; color:var(--text-secondary); text-align:center;">
-                Modo ativo agora: <strong style="color:var(--neon-cyan);">
-                    ${modo === "olimpiadas" ? "Olimpíadas (Corridas em foco)" : modo === "ambos" ? "Ambos (Copa Completa)" : "Só Classificatória (Partidas em foco)"}
-                </strong>
+            <div style="font-size:12px; color:var(--text-secondary); text-align:center; margin-bottom:18px;">
+                Modo ativo agora: <strong style="color:var(--neon-cyan);">${labelEvento}</strong>
             </div>
         `;
+
+        // ── Seção 2: Modo Classificatória Única ──
+        const bloqueadoPorOlimpiadas = (modoEvento === "olimpiadas");
+        const rotulos = {
+            "normal": "Normal (3 modalidades)",
+            "2-5":    "Só 2-5",
+            "6-9":    "Só 6-9",
+            "0-10":   "Só 1-10"
+        };
+
+        const botao = (valor) => {
+            const ativo = modoClassif === valor;
+            const cls = ativo ? "botao-verde" : "botao-secundario";
+            const dis = bloqueadoPorOlimpiadas ? "disabled" : "";
+            const op = bloqueadoPorOlimpiadas ? "opacity:.5; cursor:not-allowed;" : "";
+            return `<button class="${cls}" onclick="alterarModoClassificatoria('${valor}')" ${dis}
+                style="margin:0; flex:1 1 110px; ${op}">${rotulos[valor]}</button>`;
+        };
+
+        html += `
+            <div style="border-top:1px dashed rgba(148,163,184,.25); padding-top:16px; margin-top:4px;">
+                <h5 style="margin:0 0 8px 0; font-size:13px; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
+                    🎯 Modo Classificatória Única
+                </h5>
+                <p style="font-size:11.5px; color:var(--text-secondary); margin:0 0 12px 0; line-height:1.5;">
+                    Foca a etapa oficial em <strong>uma única modalidade</strong>. Bloqueia o botão Jogar
+                    das outras modalidades na Home, recorta o Ranking oficial e oculta medalhas
+                    que dependem das 3 modalidades. O Modo Olimpíadas ignora esta regra.
+                </p>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    ${botao("normal")}
+                    ${botao("2-5")}
+                    ${botao("6-9")}
+                    ${botao("0-10")}
+                </div>
+                ${bloqueadoPorOlimpiadas
+                    ? `<div style="font-size:11.5px; color:#fde68a; background:rgba(251,191,36,.08); border-left:3px solid #fbbf24; border-radius:8px; padding:8px 12px; line-height:1.5;">
+                        ⚠️ O Modo Olimpíadas está ativo. A Classificatória Única só funciona em
+                        <strong>Só Classificatória</strong> ou <strong>Ambos</strong>.
+                    </div>`
+                    : `<div style="font-size:11.5px; color:var(--text-secondary); text-align:center;">
+                        Modo ativo agora: <strong style="color:var(--neon-cyan);">${rotulos[modoClassif] || modoClassif}</strong>
+                    </div>`
+                }
+            </div>
+        `;
+
+        container.innerHTML = html;
     }
 
     function atualizarVisibilidadeMenuMais() {
@@ -21667,6 +22117,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [18.01]
 
     // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
+    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+    //   As categorias "Média Consistente" e "Turma de Elite" ficam ocultas
+    //   quando a flag está setada, porque dependem das 3 modalidades.
     async function abrirHallDaFama() {
         mostrarTela("tela-hall-fama");
         await renderizarHallDaFama();
@@ -21754,10 +22207,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         container.innerHTML = `<div class="desempenho-loading">⏳ Carregando os destaques da Copa…</div>`;
 
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva() : null;
+
         try {
             const [snapHall, turmaInfo] = await Promise.all([
                 database.ref(CAMINHO_HALL_RESUMO).once("value"),
-                (modoEventoAtual !== "olimpiadas") ? calcularMediasTop4Turmas("0-10").catch(() => null) : Promise.resolve(null)
+                (modoEventoAtual !== "olimpiadas" && !modUnica)
+                    ? calcularMediasTop4Turmas("0-10").catch(() => null)
+                    : Promise.resolve(null)
             ]);
 
             const dadosHall = snapHall.val() || {};
@@ -21787,9 +22246,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             destaques.maratonista.sort((a, b) => b.totalPartidas - a.totalPartidas);
             destaques.presenca.sort((a, b) => b.diasDistintos - a.diasDistintos || b.totalPartidas - a.totalPartidas);
             destaques.treino.sort((a, b) => b.treinosFocados - a.treinosFocados || b.totalAcertos - a.totalAcertos);
-            
+
+            // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Não busca média no modo único
             let listaMedia = [];
-            try { listaMedia = await obterRankingMediaGeralCombinada(null); } catch(e) {}
+            if (!modUnica) {
+                try { listaMedia = await obterRankingMediaGeralCombinada(null); } catch(e) {}
+            }
             destaques.media = listaMedia;
 
             const mestresEmJornada = await calcularMestresMapa(destaques.mapa);
@@ -21829,6 +22291,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const turmaAluno = obterTurmaSalvaAluno();
         const ehVoceStyle = 'border-color: var(--neon-green); box-shadow: 0 0 12px rgba(16,185,129,.4);';
 
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva() : null;
+
         const buildCard = (titulo, subtitulo, iconeTitulo, lista, tipoValor) => {
             if (!lista || lista.length === 0) {
                 return `<div class="hall-card">
@@ -21867,8 +22333,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         html += buildCard("Mais Medalhas", "Quem colecionou o maior número de medalhas no Álbum.", "🏅", dados.medalhas, "medalhas");
         html += buildCard("Mais Estrelas", "Quem acumulou mais estrelas — as medalhas raras valem mais.", "⭐", dados.estrelas, "estrelas");
         html += buildCard("Álbum de Elite", "Raridade das medalhas + bônus por seções completas.", "💎", dados.album, "album");
-        
-        // ⚠️ TEXTO CORRIGIDO
         html += buildCard("Maior Mapa Verde", "Quem dominou mais operações do mapa (90% de acerto em 5+ tentativas).", "🗺️", dados.mapa, "mapa");
         html += buildCard("Mestre da Velocidade", "Quem acertou 20/20 e deu mais respostas em até 1 segundo.", "🏆", dados.velocidade, "velocidade");
         
@@ -21878,13 +22342,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (modoEventoAtual !== "olimpiadas") {
             html += buildCard("Total de Acertos", "Soma de todos os acertos acumulados.", "✅", dados.acertos, "acertos");
             html += buildCard("Maratonista da Copa", "Quem jogou o maior número de partidas.", "🏃", dados.maratonista, "maratonista");
-            html += buildCard("Média Consistente", "Quem mantém a maior média geral somando as 3 modalidades.", "📊", dados.media, "media");
+            // ⚠️ v10.13.0 · P-B4 (Pacote 4) — esconde "Média Consistente" no modo único
+            if (!modUnica) {
+                html += buildCard("Média Consistente", "Quem mantém a maior média geral somando as 3 modalidades.", "📊", dados.media, "media");
+            }
         }
 
         const minimo = dados.minimoTurma || MIN_ALUNOS_RANKING_TURMA;
         const minhaTurmaTurmas = dados.minhaTurmaTurmas;
 
-        if (modoEventoAtual !== "olimpiadas") {
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — esconde "Turma de Elite" no modo único
+        if (modoEventoAtual !== "olimpiadas" && !modUnica) {
             if (dados.turmas && dados.turmas.length > 0) {
                 const top3 = dados.turmas.slice(0, 3);
                 const itensHtml = top3.map((t, i) => {
@@ -22414,7 +22882,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [18.06.bis]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
+    // v10.13.0 · P-B4 (Pacote 2) — Modo Classificatória Única
+    //   • Banner informativo no topo do card quando a flag está setada
+    //   • Modalidade ativa destacada; outras esmaecidas com aviso "Só treino"
+    //   • Botão Jogar bloqueado nas modalidades não-ativas
+    //   • Atalho de treino foca na modalidade ativa
+    //   • jogarModalidadeHome respeita a flag (com toast explicativo)
     let _homeModalidadesToken = 0;
+
+    // Helper local — consulta a flag e diz se a modalidade pode ser jogada oficialmente
+    function modalidadePermitidaParaOficial(mod) {
+        const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+        return !modUnica || mod === modUnica;
+    }
 
     async function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
@@ -22441,11 +22923,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
 
+        // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Modo Classificatória Única
+        const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva()
+            : null;
+
         const etapaAtiva = (fase.tipo === ETAPA_FASES.etapa_votacao || fase.tipo === ETAPA_FASES.etapa_definida);
         const tituloAcao = "Minhas Posições";
-        const subtitulo = etapaAtiva
-            ? "Escolha uma modalidade para jogar a classificatória ou para treinar. Só o seu melhor resultado oficial conta."
-            : "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
+        let subtitulo;
+        if (etapaAtiva) {
+            subtitulo = modUnicaAtiva
+                ? `A etapa oficial está focada em <strong>${escaparHtml(MODALIDADES[modUnicaAtiva].nome)}</strong>. Use o botão Treinar para praticar as outras modalidades.`
+                : "Escolha uma modalidade para jogar a classificatória ou para treinar. Só o seu melhor resultado oficial conta.";
+        } else {
+            subtitulo = "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
+        }
 
         let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
 
@@ -22498,6 +22990,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             const treinos = info.treinosCount;
             const totalJogos = oficiais + treinos;
 
+            // ⚠️ v10.13.0 · P-B4 (Pacote 2) — estado desta modalidade
+            const ehModAtiva = !modUnicaAtiva || mod === modUnicaAtiva;
+            const bloqueada = !ehModAtiva;
+
             let zonaCls = "sem-dados";
             let posTxt = "—";
             let ptsTxt = "—";
@@ -22540,10 +23036,23 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     </div>`;
             }
 
-            const jogarCls = etapaAtiva ? "jogar" : "jogar desabilitado";
-            const conviteCls = (!jogou && treinos === 0 && etapaAtiva) ? " convite" : "";
+            // Jogar só é permitido se: etapa ativa E (sem restrição OU é a mod ativa)
+            const jogavelNestaMod = etapaAtiva && ehModAtiva;
+            const jogarCls = jogavelNestaMod ? "jogar" : "jogar desabilitado";
+            const conviteCls = (!jogou && treinos === 0 && jogavelNestaMod) ? " convite" : "";
 
-            linhas += `<div class="home-modalidade-linha ${zonaCls}">
+            // Aviso extra quando a modalidade está bloqueada pela flag
+            const avisoBloqueio = bloqueada
+                ? `<div class="home-mod-aviso-bloqueio" style="margin-top:6px; font-size:11px; font-weight:700; color:#fde68a; background:rgba(251,191,36,.08); border-left:3px solid #fbbf24; border-radius:6px; padding:5px 9px; line-height:1.35;">
+                    🎯 Etapa oficial focada em outra modalidade — aqui só dá para treinar.
+                </div>`
+                : "";
+
+            // Classe extra na linha inteira quando bloqueada
+            const linhaCls = bloqueada ? " modalidade-bloqueada" : "";
+            const linhaStyle = bloqueada ? 'style="opacity:.72;"' : '';
+
+            linhas += `<div class="home-modalidade-linha ${zonaCls}${linhaCls}" ${linhaStyle}>
                 <div class="home-mod-l1">
                     <span class="home-mod-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
                     <span class="home-mod-pos">${posTxt}</span>
@@ -22553,8 +23062,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     <span class="home-mod-pts">${ptsTxt}</span>
                 </div>
                 <div class="home-mod-barra-bloco">${barraHtml}</div>
+                ${avisoBloqueio}
                 <div class="home-mod-acoes">
-                    <button type="button" class="home-mod-btn ${jogarCls}${conviteCls}" onclick="jogarModalidadeHome('${mod}')" ${etapaAtiva ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
+                    <button type="button" class="home-mod-btn ${jogarCls}${conviteCls}" onclick="jogarModalidadeHome('${mod}')" ${jogavelNestaMod ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
                     <button type="button" class="home-mod-btn treinar" onclick="treinarModalidadeHome('${mod}')">🎯 Treinar</button>
                 </div>
             </div>`;
@@ -22562,6 +23072,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         const placeholderAtalho = (nome && turma)
             ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
+            : "";
+
+        // Banner informativo no topo do card quando há restrição
+        const bannerModUnica = modUnicaAtiva
+            ? `<div class="home-modalidades-banner-unica" style="background: linear-gradient(135deg, rgba(14,165,233,.14) 0%, rgba(124,58,237,.10) 100%); border:1px solid rgba(34,211,238,.45); border-left:4px solid var(--neon-cyan); border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:12.5px; line-height:1.5; color:#a5f3fc;">
+                🎯 <strong>Modo Classificatória Única</strong><br>
+                A etapa oficial está focada em <strong>${escaparHtml(MODALIDADES[modUnicaAtiva].nome)}</strong>.
+                Você pode treinar nas outras modalidades, mas só esta conta para o ranking.
+            </div>`
             : "";
 
         ctn.innerHTML = `<div class="home-modalidades-card">
@@ -22576,23 +23095,33 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         aria-label="Como funciona o card Minhas Posições"
                         title="Como funciona?">?</button>
             </div>
+            ${bannerModUnica}
             <div class="home-modalidades-sub">${subtitulo}</div>
             <div class="home-modalidades-lista">${linhas}</div>
             <div class="home-modalidades-rodape">⚠️ Classificação provisória · Top 4 de cada modalidade avança para a Final</div>
             <div id="home-modalidades-atalho-slot">${placeholderAtalho}</div>
         </div>`;
 
-        if (nome && turma) _carregarAtalhoModalidadesAsync(nome, turma, rotulos);
+        if (nome && turma) _carregarAtalhoModalidadesAsync(nome, turma, rotulos, modUnicaAtiva);
     }
 
-    async function _carregarAtalhoModalidadesAsync(nome, turma, rotulos) {
+    async function _carregarAtalhoModalidadesAsync(nome, turma, rotulos, modUnicaAtiva) {
         const meuToken = ++_homeModalidadesToken;
         try {
-            const [c25, c69, c010] = await Promise.all([
-                contarPendentesTreino(nome, turma, "2-5").catch(() => ({ pendentes: 0 })),
-                contarPendentesTreino(nome, turma, "6-9").catch(() => ({ pendentes: 0 })),
-                contarPendentesTreino(nome, turma, "0-10").catch(() => ({ pendentes: 0 }))
-            ]);
+            // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Se há modo único, foca só na modalidade ativa
+            let c25, c69, c010;
+            if (modUnicaAtiva) {
+                const c = await contarPendentesTreino(nome, turma, modUnicaAtiva).catch(() => ({ pendentes: 0 }));
+                c25  = modUnicaAtiva === "2-5"  ? c : { pendentes: 0 };
+                c69  = modUnicaAtiva === "6-9"  ? c : { pendentes: 0 };
+                c010 = modUnicaAtiva === "0-10" ? c : { pendentes: 0 };
+            } else {
+                [c25, c69, c010] = await Promise.all([
+                    contarPendentesTreino(nome, turma, "2-5").catch(() => ({ pendentes: 0 })),
+                    contarPendentesTreino(nome, turma, "6-9").catch(() => ({ pendentes: 0 })),
+                    contarPendentesTreino(nome, turma, "0-10").catch(() => ({ pendentes: 0 }))
+                ]);
+            }
 
             if (meuToken !== _homeModalidadesToken) return;
 
@@ -22623,6 +23152,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     async function jogarModalidadeHome(mod) {
         if (!MODALIDADES[mod]) return;
+
+        // ⚠️ v10.13.0 · P-B4 (Pacote 2) — Verificar Modo Classificatória Única
+        if (!modalidadePermitidaParaOficial(mod)) {
+            const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                ? modalidadeClassificatoriaUnicaAtiva() : null;
+            const nomeMod = modUnica && MODALIDADES[modUnica] ? MODALIDADES[modUnica].nome : "outra modalidade";
+            notificar(`🎯 A etapa oficial está focada em ${nomeMod}. Use o botão Treinar para praticar aqui.`, "aviso", 6000);
+            return;
+        }
+
         const selMod = document.getElementById("modalidade-tabuada");
         if (selMod) selMod.value = mod;
         const nome  = obterNomeSalvoAluno();
@@ -22653,6 +23192,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
+    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+    //   construirPromptIA injeta um bloco dinâmico "Modo Classificatória Única"
+    //   quando a flag está ativa. O Coach passa a saber que só uma modalidade
+    //   conta para ranking/medalhas e adapta as respostas.
     const IA_TIMEOUT_COLETA_MS = 4500;
     const STORAGE_COACH_ABERTO = "copa_coach_aberto";
 
@@ -23033,6 +23576,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             modoEventoBloco = `\n🏆 O EVENTO ATUAL É A CLASSIFICATÓRIA DA COPA 🏆\nO foco são as partidas oficiais de 20 perguntas e a busca pelo Top 4 da turma. As corridas estão desativadas.\n`;
         }
 
+        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
+        const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+            ? modalidadeClassificatoriaUnicaAtiva() : null;
+        let modoUnicoBloco = "";
+        if (modUnicaAtiva && modoEventoAtual !== "olimpiadas") {
+            modoUnicoBloco = `\n🎯 MODO CLASSIFICATÓRIA ÚNICA ATIVO 🎯\nA etapa oficial está focada em APENAS UMA modalidade: ${MODALIDADES[modUnicaAtiva].nome}.\nAs outras duas modalidades estão disponíveis APENAS PARA TREINO — não contam para o ranking oficial, para as medalhas da etapa nem para a Final.\n\nCOMO REAGIR:\n• Se o aluno perguntar "por que não posso jogar X?", explique que é uma decisão pedagógica do professor e que ele pode treinar X livremente pelo botão Treinar, sem pressão de ranking.\n• Se perguntar sobre ranking oficial, foque SEMPRE na modalidade ativa (${MODALIDADES[modUnicaAtiva].nome}).\n• Se perguntar sobre as medalhas "Poliglota", "Classificado Triplo" ou "Lenda da Média", explique que elas dependem de jogar as 3 modalidades e ficam SUSPENSAS durante este modo — voltarão quando o professor mudar para "Normal".\n• Se o aluno quiser treinar nas outras modalidades para evoluir no MAPA (o mapa continua valendo nas 3!), incentive — o mapa é global.\n\n`;
+        }
+
         return `Você é o COACH PESSOAL da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
 
 Sua função NÃO é só tirar dúvidas. Você atua como um TREINADOR de atleta:
@@ -23040,7 +23591,7 @@ diagnostica pontos fortes e fracos, prescreve treinos específicos, define metas
 curtas e motiva o aluno a evoluir. Fale com energia de treinador e clareza de médico.
 
 ${identificacao}
-${modoEventoBloco}
+${modoEventoBloco}${modoUnicoBloco}
 ${blocoPerfil}${blocoProxAlvo}
 ═══ SUA MISSÃO — FLUXO OBRIGATÓRIO ═══
 
@@ -23093,7 +23644,7 @@ O MENU DEVE SER SEMPRE ESTE:
 5️⃣ TOP 4:
    Use os gaps do bloco COMPETITIVO. Diga a posição atual, quanto falta de pontos.
    Se já está no Top 4, celebre e diga para MANTER.
-   (Se estiver no modo Olimpíadas, lembre que a classificação oficial está pausada).
+   (Se estiver no modo Olimpíadas, lembre que a classificação oficial está pausada.)
 
 6️⃣ VELOCIDADE:
    Compare o melhor tempo médio do aluno com as metas dos certificados.
