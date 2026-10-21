@@ -20680,17 +20680,16 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [17.05]
 
     // ▼▼▼ [17.06] Reset + exportação + gerenciar alunos ─────────────
-    // v10.13.2 · BUGFIX: Incluído o nó `copa_hall_resumo` nas listas de
-    // reset (definitivo e por turma) para evitar que o Hall da Fama
-    // continue mostrando dados antigos após a limpeza.
+    // v10.13.3 · BUGFIX: Reset Definitivo agora limpa TODOS os nós,
+    // incluindo copa_etapa, votacao, copa_evento e reseta o config.
+    // Adicionado log de erro visual caso o Firebase bloqueie a exclusão.
     
-    // Reset Definitivo (Limpa tudo via API direta + LocalStorage)
     async function confirmarResetDefinitivo() {
         if (!exigirProfessorAutenticado()) return;
         
-        if (!confirm("🚨 ATENÇÃO MÁXIMA 🚨\n\nIsso vai apagar ABSOLUTAMENTE TUDO: partidas, rankings, medalhas, mapas, histórico, certificados, corridas e mensagens.\n\nO painel, as configurações e a senha serão mantidos.\n\nDeseja continuar?")) return;
+        if (!confirm("🚨 ATENÇÃO MÁXIMA 🚨\n\nIsso vai apagar ABSOLUTAMENTE TUDO: partidas, rankings, medalhas, mapas, histórico, certificados, corridas, mensagens, hall da fama E A ETAPA ATUAL.\n\nO painel, a senha e a versão do app serão mantidos.\n\nDeseja continuar?")) return;
         
-        if (!confirm("Última confirmação: apagar todos os dados dos alunos agora?")) return;
+        if (!confirm("Última confirmação: apagar todos os dados dos alunos e da etapa agora?")) return;
 
         const btn = document.querySelector('button[onclick="confirmarResetDefinitivo()"]');
         if (btn) {
@@ -20703,12 +20702,13 @@ function abrirBuscarAlunoComMeusDados() {
             "copaV2", "copa_medals", "copa_estrelas", "copa_secoes_completas",
             "copa_posicao_baseline", "copa_snapshot_diario", "copa_certificados",
             "copa_treinos_focados", "copa_treinos_por_modalidade", "copa_corridas",
-            "mensagens", "vinculos",
-            "copa_hall_resumo" // ⚠️ ADICIONADO AQUI
+            "mensagens", "vinculos", "copa_hall_resumo",
+            "copa_etapa", "votacao", "copa_evento" // ⚠️ ADICIONADOS AQUI
         ];
         
         console.log("⏳ [Reset Definitivo] Iniciando a limpeza...");
         notificar("Iniciando limpeza geral. Não feche a página...", "info", 4000);
+        let erroPermissao = false;
 
         for (const c of caminhos) {
             console.log("Apagando nó: " + c + "...");
@@ -20716,7 +20716,20 @@ function abrirBuscarAlunoComMeusDados() {
                 await database.ref(c).remove(); 
             } catch(e) { 
                 console.warn("Aviso ao apagar " + c + ":", e); 
+                if (e.message && e.message.includes("permission_denied")) {
+                    erroPermissao = true;
+                }
             }
+        }
+
+        // Reseta configurações para o padrão
+        try {
+            await database.ref("config/modo_evento").set("classificatoria");
+            await database.ref("config/modo_classificatoria").set("normal");
+            await database.ref("config/otimizacao_v109").update({ ativo: false });
+        } catch(e) {
+            console.warn("Aviso ao resetar config:", e);
+            if (e.message && e.message.includes("permission_denied")) erroPermissao = true;
         }
         
         // Limpa TODO o cache local relacionado ao app no dispositivo atual
@@ -20732,18 +20745,25 @@ function abrirBuscarAlunoComMeusDados() {
             
             albumSessaoCache = { chave: null, ts: 0, resultado: null };
             hallFamaCache = null;
+            etapaEstadoCache = null;
+            perfilSyncCache = { chave: null, ts: 0 };
         } catch(e) {}
 
-        console.log("✅ TUDO APAGADO COM SUCESSO!");
-        notificar("✅ Reset Definitivo concluído! O app está limpo.", "sucesso", 8000);
-        try { somConclusao(); dispararConfetes(); } catch(e) {}
+        if (erroPermissao) {
+            notificar("⚠️ ATENÇÃO: O Firebase bloqueou a exclusão de alguns dados (permission_denied).\n\nVá no Console do Firebase e apague os nós manualmente.", "erro", 10000);
+            console.error("❌ O Firebase bloqueou a exclusão de alguns dados. Verifique as regras (Rules) do Realtime Database.");
+        } else {
+            console.log("✅ TUDO APAGADO COM SUCESSO!");
+            notificar("✅ Reset Definitivo concluído! O app está limpo.", "sucesso", 8000);
+            try { somConclusao(); dispararConfetes(); } catch(e) {}
+        }
         
         if (btn) {
             btn.disabled = false;
             btn.textContent = "🚨 APAGAR TUDO (Reset Definitivo)";
         }
 
-        setTimeout(() => { location.reload(); }, 2500);
+        setTimeout(() => { location.reload(); }, 3000);
     }
 
     async function limparAlbumPorFiltro(turma) {
@@ -20755,7 +20775,7 @@ function abrirBuscarAlunoComMeusDados() {
             CAMINHO_SNAPSHOT_DIARIO,
             CAMINHO_CERTIFICADOS,
             CAMINHO_TREINOS_FOCADOS,
-            CAMINHO_HALL_RESUMO // ⚠️ ADICIONADO AQUI
+            CAMINHO_HALL_RESUMO
         ];
         if (turma === "todas") {
             for (const c of caminhos) { try { await database.ref(c).set({ _reset: true }); } catch(e) { console.warn(`Erro ao limpar ${c}:`, e); } }
@@ -20899,7 +20919,7 @@ function abrirBuscarAlunoComMeusDados() {
                 try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
                 try { await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
                 try { await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
-                try { await database.ref(`${CAMINHO_HALL_RESUMO}/${alunoKey}`).set({ _reset: true }); } catch(e) {} // ⚠️ ADICIONADO AQUI
+                try { await database.ref(`${CAMINHO_HALL_RESUMO}/${alunoKey}`).set({ _reset: true }); } catch(e) {}
             }
             await carregarListaAlunos();
             renderizarRanking();
