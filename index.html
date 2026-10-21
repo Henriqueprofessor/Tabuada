@@ -12206,7 +12206,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.08.quater]
 
     // ▼▼▼ [07.09] Auto-início, fechamento e encerramento da etapa ─────────
-    // v10.13.12 · Remove a votação automática ao iniciar a etapa.
+    // v10.13.15 · Adicionado agendamento de abertura de votação e 
+    // diferenciação entre votação de duração de etapa e pesquisa livre.
     async function verificarEIniciarEtapaSeNecessario() {
         const d = await obterDadosEtapa(true);
         if (!d.inicioEm) return;
@@ -12220,34 +12221,56 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
+    async function verificarEAbrirVotacaoSeNecessario() {
+        const etapa = await obterDadosEtapa(true);
+        if (etapa.status === "encerrada" || etapa.status === "congelada") return;
+        
+        const vot = await obterDadosVotacao();
+        if (!vot.configurada || vot.aberta || vot.fechadaEm) return;
+        
+        if (vot.inicio && Date.now() >= vot.inicio) {
+            try {
+                await database.ref(CAMINHO_VOTACAO).update({ aberta: true });
+                // Se for duração de etapa, garante que a etapa saiba que a votação abriu
+                if (vot.tipo === "duracao_etapa") {
+                    await salvarDadosEtapa({ votacaoAberta: true });
+                }
+                // Atualiza a tela do aluno se ela estiver aberta
+                atualizarTelaInicialComEtapa();
+                renderizarCardVotacao();
+            } catch(e) { console.warn("Falha ao abrir votação agendada:", e); }
+        }
+    }
+
     async function verificarEFecharVotacaoSeNecessario() {
         let etapaAtual;
         try {
             etapaAtual = await obterDadosEtapa(true);
-            if (etapaAtual.votacaoFechadaEm) return;
-            if (etapaAtual.status === "encerrada") return;
-            if (etapaAtual.status === "congelada") return;
+            if (etapaAtual.status === "encerrada" || etapaAtual.status === "congelada") return;
         } catch(e) { return; }
 
         const vot = await obterDadosVotacao();
-        if (!vot.inicio) return;
+        if (!vot.aberta || vot.fechadaEm) return;
 
-        const fechamento = calcularFechamentoVotacao(vot.inicio, etapaAtual.fimPrevistoEm);
-        if (Date.now() < fechamento) return;
-
-        const votos = vot.votos ? Object.values(vot.votos) : [];
-        const v7  = votos.filter(v => String(v.opcao) === "7").length;
-        const v14 = votos.filter(v => String(v.opcao) === "14").length;
-        const dur = v14 > v7 ? 14 : 7;
-
-        const fim = calcularFimPrevisto(etapaAtual.inicioEm || Date.now(), dur);
-        try {
-            await salvarDadosEtapa({
-                votacaoFechadaEm: Date.now(),
-                duracaoEscolhida: dur,
-                fimPrevistoEm: fim
-            });
-        } catch(e) { console.warn("Falha ao fechar votação:", e); }
+        if (vot.fim && Date.now() >= vot.fim) {
+            try {
+                await database.ref(CAMINHO_VOTACAO).update({ aberta: false, fechadaEm: Date.now() });
+                
+                if (vot.tipo === "duracao_etapa") {
+                    const votos = vot.votos ? Object.values(vot.votos) : [];
+                    const v7  = votos.filter(v => String(v.opcao) === "op1").length; // op1 = 7 dias
+                    const v14 = votos.filter(v => String(v.opcao) === "op2").length; // op2 = 14 dias
+                    const dur = v14 > v7 ? 14 : 7;
+                    const fimEtapa = calcularFimPrevisto(etapaAtual.inicioEm || Date.now(), dur);
+                    
+                    await salvarDadosEtapa({
+                        votacaoFechadaEm: Date.now(),
+                        duracaoEscolhida: dur,
+                        fimPrevistoEm: fimEtapa
+                    });
+                }
+            } catch(e) { console.warn("Falha ao fechar votação:", e); }
+        }
     }
 
     async function verificarEEncerrarEtapaSeNecessario() {
@@ -20368,6 +20391,7 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [17.03]
 
     // ▼▼▼ [17.04] Votação (aluno + painel) ────────────────────────────
+    // v10.13.15 · Permite votações customizadas (pesquisas) e agendamento.
     function calcularFechamentoVotacao(inicioTs, fimEtapaTs = null) {
         const d = new Date(inicioTs);
         d.setHours(23, 59, 59, 999);
@@ -20401,26 +20425,24 @@ function abrirBuscarAlunoComMeusDados() {
         } catch(e) { return { totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes, percentualMapa: cfg.percentualMapa, elegivel: false }; }
     }
 
-    async function registrarVoto(opcao) {
+    async function registrarVoto(opcaoId) {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
         if (!nome || !turma) { notificar("Você precisa se identificar para votar.", "aviso"); return; }
+        
+        const dados = await obterDadosVotacao();
+        if (!dados.aberta) { notificar("A votação não está aberta.", "aviso"); return; }
+        
         const eleg = await calcularElegibilidadeVoto(nome, turma);
         if (!eleg.elegivel) { notificar("Você ainda não atingiu o critério de participação.", "aviso"); return; }
-        const dados = await obterDadosVotacao();
-        if (!dados.inicio) { notificar("A votação ainda não foi aberta.", "aviso"); return; }
-        
-        const etapa = await obterDadosEtapa();
-        const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
-        if (Date.now() > fechamento) { notificar("A votação já foi encerrada.", "aviso"); return; }
         
         const chave = chaveVinculo(nome, turma);
         try {
-            await database.ref(`${CAMINHO_VOTACAO}/votos/${chave}`).set({ nome, turma, opcao: String(opcao), data: Date.now() });
-            notificar(`Voto registrado: ${opcao} dias! 🗳️`, "sucesso");
+            await database.ref(`${CAMINHO_VOTACAO}/votos/${chave}`).set({ nome, turma, opcao: String(opcaoId), data: Date.now() });
+            notificar(`Voto registrado! 🗳️`, "sucesso");
             await renderizarCardVotacao();
             await renderizarPainelVotacao();
-        } catch(e) { notificar("Não foi possível registrar seu voto. Tente novamente.", "erro"); console.warn(e); }
+        } catch(e) { notificar("Não foi possível registrar seu voto.", "erro"); console.warn(e); }
     }
     
     function tempoRestanteHumano(ms) {
@@ -20433,9 +20455,20 @@ function abrirBuscarAlunoComMeusDados() {
         return `${minutos}min`;
     }
     
-    function renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos) {
+    function renderizarGraficoVotacao(dadosVot, votos, totalVotos) {
         if (totalVotos === 0) return `<div class="votacao-grafico"><div style="text-align:center;color:#ede9fe;font-size:13px;padding:14px 0;">Nenhum voto ainda. Seja o primeiro!</div></div>`;
-        return `<div class="votacao-grafico"><div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div><div class="barra-voto"><div class="rotulo-barra"><span>🗓️ 7 dias (encerrar na 1ª semana)</span><span class="num">${pct7}% · ${votos7} ${votos7 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento set" style="width:${pct7}%"></div></div></div><div class="barra-voto"><div class="rotulo-barra"><span>📆 14 dias (estender +1 semana)</span><span class="num">${pct14}% · ${votos14} ${votos14 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento qua" style="width:${pct14}%"></div></div></div><div style="text-align:center;color:#ede9fe;font-size:11.5px;margin-top:8px;">${totalVotos} ${totalVotos === 1 ? "voto computado" : "votos computados"} até agora</div></div>`;
+        
+        const v1 = votos.filter(v => String(v.opcao) === "op1").length;
+        const v2 = votos.filter(v => String(v.opcao) === "op2").length;
+        const pct1 = Math.round((v1 / totalVotos) * 100);
+        const pct2 = Math.round((v2 / totalVotos) * 100);
+        const label1 = dadosVot.tipo === "duracao_etapa" ? "🗓️ 7 dias (encerrar na 1ª semana)" : escaparHtml(dadosVot.opcao1 || "Opção 1");
+        const label2 = dadosVot.tipo === "duracao_etapa" ? "📆 14 dias (estender +1 semana)" : escaparHtml(dadosVot.opcao2 || "Opção 2");
+
+        return `<div class="votacao-grafico"><div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div>
+            <div class="barra-voto"><div class="rotulo-barra"><span>${label1}</span><span class="num">${pct1}% · ${v1} ${v1 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento set" style="width:${pct1}%"></div></div></div>
+            <div class="barra-voto"><div class="rotulo-barra"><span>${label2}</span><span class="num">${pct2}% · ${v2} ${v2 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento qua" style="width:${pct2}%"></div></div></div>
+            <div style="text-align:center;color:#ede9fe;font-size:11.5px;margin-top:8px;">${totalVotos} ${totalVotos === 1 ? "voto computado" : "votos computados"} até agora</div></div>`;
     }
     
     async function renderizarCardVotacao() {
@@ -20445,94 +20478,70 @@ function abrirBuscarAlunoComMeusDados() {
         const btnMenu = document.getElementById("btn-votacao-menu");
         const badgeMenu = document.getElementById("votacao-badge-menu");
         if (!card || !corpo) return;
+        
         const etapa = await obterDadosEtapa();
-        const fase = calcularFaseEtapa(etapa);
         const dados = await obterDadosVotacao();
-        const votacaoRelevante = !!etapa.inicioEm && (fase === ETAPA_FASES.etapa_aberta || fase === ETAPA_FASES.etapa_votacao || fase === ETAPA_FASES.etapa_definida);
-        if (btnMenu) btnMenu.style.display = votacaoRelevante ? "" : "none";
-        if (!dados.inicio || !etapa.inicioEm || !votacaoRelevante) {
+        
+        const votacaoRelevante = (etapa.status !== "encerrada" && etapa.status !== "congelada" && dados.configurada);
+        
+        if (btnMenu) btnMenu.style.display = (dados.aberta) ? "" : "none";
+        
+        if (!dados.aberta) {
             if (badgeMenu) badgeMenu.classList.add("hidden");
             return;
         }
         
-        const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
         const agora = Date.now();
-        const encerrada = agora > fechamento || !!etapa.votacaoFechadaEm;
-        const restanteMs = fechamento - agora;
+        const encerrada = !dados.aberta || (dados.fim && agora > dados.fim) || !!dados.fechadaEm;
+        const restanteMs = dados.fim ? (dados.fim - agora) : 0;
         
         const votos = dados.votos ? Object.values(dados.votos) : [];
         const totalVotos = votos.length;
-        const votos7 = votos.filter(v => String(v.opcao) === "7").length;
-        const votos14 = votos.filter(v => String(v.opcao) === "14").length;
-        const pct7 = totalVotos ? Math.round((votos7 / totalVotos) * 100) : 0;
-        const pct14 = totalVotos ? Math.round((votos14 / totalVotos) * 100) : 0;
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
         const eleg = (nome && turma) ? await calcularElegibilidadeVoto(nome, turma) : await obterConfiguracao().then(cfg => ({ totalPartidas: 0, verdes: 0, minPartidas: cfg.minPartidas, minVerdes: calcularMinVerdes(cfg.percentualMapa), percentualMapa: cfg.percentualMapa, elegivel: false }));
         const chave = (nome && turma) ? chaveVinculo(nome, turma) : null;
         const meuVoto = chave && dados.votos && dados.votos[chave] ? String(dados.votos[chave].opcao) : null;
+        
         if (badgeMenu) {
             if (!encerrada && eleg.elegivel && !meuVoto) badgeMenu.classList.remove("hidden");
             else badgeMenu.classList.add("hidden");
         }
+        
+        const titulo = escaparHtml(dados.titulo || "Votação da Etapa");
+        
         if (encerrada) {
-            const ganhador = etapa.duracaoEscolhida || (votos14 > votos7 ? 14 : 7);
-            const fim = etapa.fimPrevistoEm ? formatarDataHoraCurta(etapa.fimPrevistoEm) : null;
-            let motivo, veredito;
-            if (ganhador === 14) { motivo = "A maioria votou por <strong>estender</strong> a etapa por mais uma semana."; veredito = "A etapa classificatória durará <strong>14 dias</strong>."; }
-            else { motivo = "A maioria votou por <strong>encerrar em 7 dias</strong>."; veredito = "A etapa classificatória durará <strong>7 dias</strong>."; }
-            const fimLinha = fim ? `<div style="font-size:13px;color:#fde68a;text-align:center;margin-top:8px;font-weight:800;">🗓️ Prazo de calendário — encerra em ${fim}</div>` : "";
+            const v1 = votos.filter(v => String(v.opcao) === "op1").length;
+            const v2 = votos.filter(v => String(v.opcao) === "op2").length;
+            const ganhador = v2 > v1 ? (dados.opcao2 || "Opção 2") : (dados.opcao1 || "Opção 1");
+            
             timerContainer.innerHTML = `<span class="votacao-status-timer">🔒 Votação encerrada</span>`;
-            corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador"><strong>Duração oficial: ${ganhador} dias</strong>${veredito}</div>${fimLinha}<div class="detalhe-final">${motivo} · ${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos)}`;
+            corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador"><strong>Vencedor: ${ganhador}</strong></div><div class="detalhe-final">${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGraficoVotacao(dados, votos, totalVotos)}`;
             return;
         }
-        timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)} · ${formatarDataCurta(fechamento)}</span>`;
+        
+        timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)}</span>`;
+        
         if (!eleg.elegivel) {
             const faltaPartidas = Math.max(0, eleg.minPartidas - eleg.totalPartidas);
             const faltaVerdes = Math.max(0, eleg.minVerdes - eleg.verdes);
-            corpo.innerHTML = `<div class="votacao-progresso"><div style="font-weight:800;color:#fff;margin-bottom:6px;">Para votar, você precisa cumprir o critério:</div><div class="linha-prog ${eleg.totalPartidas >= eleg.minPartidas ? 'completa' : ''}"><span class="rotulo">Partidas jogadas</span><span class="valor">${eleg.totalPartidas} / ${eleg.minPartidas}</span></div><div class="linha-prog ${eleg.verdes >= eleg.minVerdes ? 'completa' : ''}"><span class="rotulo">Operações dominadas (${eleg.percentualMapa}% do mapa)</span><span class="valor">${eleg.verdes} / ${eleg.minVerdes}</span></div><span class="falta">${faltaPartidas > 0 ? `Faltam ${faltaPartidas} ${faltaPartidas === 1 ? "partida" : "partidas"}. ` : ""}${faltaVerdes > 0 ? `Faltam ${faltaVerdes} ${faltaVerdes === 1 ? "operação" : "operações"} para dominar.` : ""} ${faltaPartidas === 0 && faltaVerdes === 0 ? "Recarregue para votar!" : ""}</span></div>`;
+            corpo.innerHTML = `<div class="votacao-progresso"><div style="font-weight:800;color:#fff;margin-bottom:6px;">Para votar, você precisa cumprir o critério:</div><div class="linha-prog ${eleg.totalPartidas >= eleg.minPartidas ? 'completa' : ''}"><span class="rotulo">Partidas jogadas</span><span class="valor">${eleg.totalPartidas} / ${eleg.minPartidas}</span></div><div class="linha-prog ${eleg.verdes >= eleg.minVerdes ? 'completa' : ''}"><span class="rotulo">Operações dominadas (${eleg.percentualMapa}% do mapa)</span><span class="valor">${eleg.verdes} / ${eleg.minVerdes}</span></div></div>`;
             return;
         }
+        
         if (meuVoto) {
-            const rotuloVoto = meuVoto === "14" ? "estender a etapa para 14 dias" : "encerrar em 7 dias";
-            corpo.innerHTML = `<div class="votacao-seu-voto">Você votou por <strong>${rotuloVoto}</strong>. Obrigado por participar!</div><div style="font-size:12.5px;color:#ede9fe;text-align:center;margin-top:8px;line-height:1.5;">A duração oficial só será definida quando a votação fechar.</div>${renderizarGraficoVotacao(votos7, votos14, pct7, pct14, totalVotos)}`;
+            const labelVoto = meuVoto === "op2" ? (dados.opcao2 || "Opção 2") : (dados.opcao1 || "Opção 1");
+            corpo.innerHTML = `<div class="votacao-seu-voto">Você votou em <strong>${escaparHtml(labelVoto)}</strong>. Obrigado!</div>${renderizarGraficoVotacao(dados, votos, totalVotos)}`;
             return;
         }
-        corpo.innerHTML = `<div class="votacao-botoes"><button class="btn-voto" onclick="registrarVoto('7')"><strong>7</strong>dias<small>encerrar na 1ª semana</small></button><button class="btn-voto" onclick="registrarVoto('14')"><strong>14</strong>dias<small>estender +1 semana</small></button></div><div style="font-size:12px;color:#ede9fe;text-align:center;margin-top:10px;line-height:1.5;">Após votar, você verá o resultado parcial. Sua escolha não pode ser alterada.</div>`;
-    }
-    
-    async function abrirVotacaoProfessor() {
-        if (!exigirProfessorAutenticado()) return;
-        const dados = await obterDadosVotacao();
-        if (dados.inicio) { notificar("A votação já foi aberta.", "aviso"); return; }
-        const etapa = await obterDadosEtapa(true);
-        if (!etapa.inicioEm) { notificar("Agende o início da etapa antes de abrir a votação.", "aviso", 5000); return; }
         
-        const inicioVotacao = Date.now();
-        const fechamento = calcularFechamentoVotacao(inicioVotacao, etapa.fimPrevistoEm);
-        if (!confirm(`Abrir votação agora?\n\nEla será encerrada automaticamente em ${formatarDataCurta(fechamento)}.`)) return;
+        const label1 = dados.tipo === "duracao_etapa" ? "7 dias" : escaparHtml(dados.opcao1 || "Opção 1");
+        const label2 = dados.tipo === "duracao_etapa" ? "14 dias" : escaparHtml(dados.opcao2 || "Opção 2");
         
-        try {
-            await database.ref(CAMINHO_VOTACAO).set({ inicio: inicioVotacao });
-            await salvarDadosEtapa({ votacaoAberta: true });
-            notificar("Votação aberta!", "sucesso");
-            await renderizarPainelVotacao();
-            await renderizarCardVotacao();
-            await atualizarTelaInicialComEtapa();
-        } catch(e) { notificar("Não foi possível abrir a votação.", "erro"); console.warn(e); }
-    }
-    
-    async function resetarVotacao() {
-        if (!exigirProfessorAutenticado()) return;
-        if (!confirm("⚠️ Resetar votação? Todos os votos serão apagados.\n\nObs: NÃO apaga o histórico de partidas nem o ranking.")) return;
-        try {
-            await database.ref(CAMINHO_VOTACAO).remove();
-            await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, votacaoAberta: false });
-            notificar("Votação resetada.", "sucesso");
-            await renderizarPainelVotacao();
-            await renderizarCardVotacao();
-            await atualizarTelaInicialComEtapa();
-        } catch(e) { notificar("Não foi possível resetar.", "erro"); console.warn(e); }
+        corpo.innerHTML = `<div class="votacao-botoes">
+            <button class="btn-voto" onclick="registrarVoto('op1')"><strong>${label1}</strong></button>
+            <button class="btn-voto" onclick="registrarVoto('op2')"><strong>${label2}</strong></button>
+        </div><div style="font-size:12px;color:#ede9fe;text-align:center;margin-top:10px;line-height:1.5;">Sua escolha não pode ser alterada.</div>`;
     }
     
     async function abrirVotacao() {
@@ -20554,30 +20563,106 @@ function abrirBuscarAlunoComMeusDados() {
         const etapa = await obterDadosEtapa(true);
         const dados = await obterDadosVotacao();
         
-        if (!etapa.inicioEm) {
-            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">Defina primeiro o <strong>início da etapa</strong> no bloco acima. Você poderá abrir a votação manualmente quando desejar.</p>`;
+        let html = `<div style="background:rgba(0,0,0,0.2); padding:14px; border-radius:8px; margin-bottom:14px;">
+            <h5 style="margin:0 0 10px 0; font-size:14px; color:var(--neon-cyan);">🗳️ Configurar Nova Votação</h5>
+            <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:10px;">
+                <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Título da Votação</label>
+                <input type="text" id="vot-titulo" class="extensao-etapa-input" value="${escaparHtml(dados.titulo || 'Duração da Etapa')}" placeholder="Ex: Duração da Etapa"></div>
+                
+                <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Opção 1</label>
+                <input type="text" id="vot-op1" class="extensao-etapa-input" value="${escaparHtml(dados.opcao1 || '7 dias')}" placeholder="Ex: 7 dias"></div>
+                
+                <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Opção 2</label>
+                <input type="text" id="vot-op2" class="extensao-etapa-input" value="${escaparHtml(dados.opcao2 || '14 dias')}" placeholder="Ex: 14 dias"></div>
+                
+                <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Tipo de Votação</label>
+                <select id="vot-tipo" class="extensao-etapa-input">
+                    <option value="duracao_etapa" ${dados.tipo === 'duracao_etapa' ? 'selected' : ''}>Duração da Etapa (afeta o prazo da Copa)</option>
+                    <option value="livre" ${dados.tipo === 'livre' ? 'selected' : ''}>Pesquisa Livre (não afeta o prazo)</option>
+                </select></div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Abertura</label>
+                    <input type="datetime-local" id="vot-inicio" class="extensao-etapa-input" value="${timestampParaDataInput(dados.inicio || Date.now())}"></div>
+                    <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Fechamento</label>
+                    <input type="datetime-local" id="vot-fim" class="extensao-etapa-input" value="${timestampParaDataInput(dados.fim || (Date.now() + 4*24*60*60*1000))}"></div>
+                </div>
+            </div>
+            <button onclick="salvarConfiguracaoVotacao()" class="botao-verde" style="margin:0; width:100%;">💾 Salvar e Agendar Votação</button>
+        </div>`;
+
+        if (!dados.configurada) {
+            html += `<div class="desempenho-empty-msg" style="margin-top:10px;">Nenhuma votação configurada.</div>`;
+            container.innerHTML = html;
             return;
         }
-        
-        if (!dados.inicio) {
-            const fech = calcularFechamentoVotacao(Date.now(), etapa.fimPrevistoEm);
-            container.innerHTML = `<p style="margin:0 0 10px 0;color:#6c757d;">A votação está fechada. Ao abrir, ela ficará disponível por 4 dias (até ${formatarDataCurta(fech)}).</p><button onclick="abrirVotacaoProfessor()" class="botao-verde" style="margin:0;">🗳️ Abrir votação agora</button>`;
-            return;
-        }
-        
-        const fechamento = calcularFechamentoVotacao(dados.inicio, etapa.fimPrevistoEm);
-        const encerrada = Date.now() > fechamento || !!etapa.votacaoFechadaEm;
+
+        // Painel de Status da Votação Atual
+        const agora = Date.now();
+        const encerrada = !dados.aberta || (dados.fim && agora > dados.fim) || !!dados.fechadaEm;
+        const abertura = dados.inicio && agora < dados.inicio;
         const votos = dados.votos ? Object.values(dados.votos) : [];
-        const totalVotos = votos.length;
-        const votos7 = votos.filter(v => String(v.opcao) === "7").length;
-        const votos14 = votos.filter(v => String(v.opcao) === "14").length;
-        const estado = encerrada ? "🔒 Encerrada" : "🟢 Em andamento";
-        const ganhador = etapa.duracaoEscolhida ? `${etapa.duracaoEscolhida} dias` : (votos14 > votos7 ? "14 dias" : "7 dias");
         
-        let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;"><div><strong>Estado:</strong><br>${estado}</div><div><strong>Fecha em:</strong><br>${formatarDataCurta(fechamento)}</div><div><strong>Votos "7 dias":</strong><br>${votos7}</div><div><strong>Votos "14 dias":</strong><br>${votos14}</div><div><strong>Total:</strong><br>${totalVotos}</div><div><strong>Resultado:</strong><br>${totalVotos ? ganhador : "—"}</div></div>`;
-        if (etapa.fimPrevistoEm) html += `<div style="background:#dcfce7;border-left:4px solid #22c55e;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#14532d;">✅ Prazo oficial definido. Encerramento previsto: <strong>${formatarDataHoraCurta(etapa.fimPrevistoEm)}</strong></div>`;
-        html += `<button onclick="resetarVotacao()" class="botao-forcar" style="margin:0;">🗑️ Resetar votação</button>`;
+        let statusTxt = "🔒 Encerrada";
+        if (!encerrada && !abertura) statusTxt = "🟢 Em andamento";
+        else if (!encerrada && abertura) statusTxt = "⏳ Agendada";
+
+        html += `<div style="margin-top:20px; border-top:1px dashed #334155; padding-top:14px;">
+            <h5 style="margin:0 0 10px 0; font-size:13px; color:var(--text-primary);">Status da Votação Atual</h5>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; font-size:13px;">
+                <div><strong>Estado:</strong><br>${statusTxt}</div>
+                <div><strong>Total de Votos:</strong><br>${votos.length}</div>
+                <div><strong>Abre em:</strong><br>${formatarDataHoraCurta(dados.inicio)}</div>
+                <div><strong>Fecha em:</strong><br>${formatarDataHoraCurta(dados.fim)}</div>
+            </div>
+            <button onclick="limparVotacao()" class="botao-forcar" style="margin:0; width:100%;">🗑️ Limpar Votação</button>
+        </div>`;
+
         container.innerHTML = html;
+    }
+
+    async function salvarConfiguracaoVotacao() {
+        if (!exigirProfessorAutenticado()) return;
+        const titulo = document.getElementById("vot-titulo").value.trim();
+        const op1 = document.getElementById("vot-op1").value.trim();
+        const op2 = document.getElementById("vot-op2").value.trim();
+        const tipo = document.getElementById("vot-tipo").value;
+        const inicio = new Date(document.getElementById("vot-inicio").value).getTime();
+        const fim = new Date(document.getElementById("vot-fim").value).getTime();
+
+        if (!titulo || !op1 || !op2) { notificar("Preencha o título e as duas opções.", "aviso"); return; }
+        if (isNaN(inicio) || isNaN(fim)) { notificar("Datas inválidas.", "aviso"); return; }
+        if (fim <= inicio) { notificar("A data de fim deve ser depois da data de início.", "aviso"); return; }
+
+        try {
+            await database.ref(CAMINHO_VOTACAO).update({
+                configurada: true,
+                titulo, opcao1: op1, opcao2: op2, tipo,
+                inicio, fim,
+                aberta: Date.now() >= inicio,
+                fechadaEm: null
+            });
+            notificar("Votação salva e agendada!", "sucesso");
+            await renderizarPainelVotacao();
+            await renderizarCardVotacao();
+            await atualizarTelaInicialComEtapa();
+        } catch(e) {
+            console.warn(e);
+            notificar("Não foi possível salvar a votação.", "erro");
+        }
+    }
+
+    async function limparVotacao() {
+        if (!exigirProfessorAutenticado()) return;
+        if (!confirm("⚠️ Apagar esta votação e todos os votos?")) return;
+        try {
+            await database.ref(CAMINHO_VOTACAO).remove();
+            await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, votacaoAberta: false });
+            notificar("Votação apagada.", "sucesso");
+            await renderizarPainelVotacao();
+            await renderizarCardVotacao();
+            await atualizarTelaInicialComEtapa();
+        } catch(e) { notificar("Não foi possível apagar.", "erro"); }
     }
     // ▲▲▲ FIM [17.04]
 
