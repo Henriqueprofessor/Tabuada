@@ -24583,7 +24583,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         registrarServiceWorker();
         iniciarListenerAtualizacaoForcada();
 
-        // ─── 1. Renderização base IMEDIATA ───
         mostrarTela("tela-inicial");
         atualizarBotaoMinhaTurma();
         mudarTipoRanking("turma");
@@ -24591,7 +24590,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         inicializarAudio();
         atualizarAcessoSeConhecido();
 
-        // ─── 2. Atualizações de UI (não bloqueiam) ───
         const elVHeader = document.getElementById("header-versao-atual");
         if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
         const elV = document.getElementById("changelog-versao-atual");
@@ -24603,7 +24601,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
         iniciarListenerMsgAluno();
 
-        // ─── 3. Busca o modo do evento em paralelo (não trava a tela) ───
         obterModoEvento().then(async () => {
             const pHomeEsports = preencherHomeEsports().catch(e => console.warn("Falha home:", e));
             const pMapaHome = renderizarMapaHome().catch(e => console.warn("Falha mapa:", e));
@@ -24628,13 +24625,24 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         await Promise.all([pTelaInicial, pTreinoInt, pCicloEtapa]);
 
         if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
+        
+        // ⚠️ OTIMIZAÇÃO: Timer leve (não baixa rankings a cada minuto)
         votacaoTimerInterval = setInterval(async () => {
             try {
+                // Salva a fase atual antes de verificar
+                const etapaAntes = await resolverFaseAtual();
+                
                 await verificarEFecharVotacaoSeNecessario();
                 await verificarEEncerrarEtapaSeNecessario();
+                
                 const card = document.getElementById("card-votacao");
                 if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
-                await atualizarTelaInicialComEtapa();
+                
+                // Só atualiza a Home se a fase da etapa REALMENTE mudou (ex: encerrou)
+                const etapaDepois = await resolverFaseAtual();
+                if (etapaAntes.tipo !== etapaDepois.tipo) {
+                    await atualizarTelaInicialComEtapa();
+                }
             } catch(e) { console.warn("Timer votação/etapa:", e); }
         }, 60000);
 
