@@ -11555,8 +11555,8 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.07]
 
     // ▼▼▼ [07.08] Tela inicial dinâmica ────────────────────────── INÍCIO ───
-    // v10.13.9 · MELHORIA: O card "Etapa Classificatória" agora mostra um
-    // resumo detalhado (datas, votação, modo único e regra do Top 4).
+    // v10.13.10 · BUGFIX: O card agora verifica se a votação foi realmente
+    // aberta (dadosVot.inicio) antes de mostrar o placar e o tempo restante.
     async function atualizarTelaInicialComEtapa() {
         const heroPre = document.getElementById("hero-pre-evento");
         const heroNorm = document.getElementById("hero-classificatoria-normal");
@@ -11625,17 +11625,25 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             heroNorm.classList.remove("hidden");
             
             const dadosVot = await obterDadosVotacao().catch(() => ({}));
-            const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
-            const v7 = votos.filter(v => String(v.opcao) === "7").length;
-            const v14 = votos.filter(v => String(v.opcao) === "14").length;
-            const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio, fase.dados.fimPrevistoEm) : null;
-            const resta = fechamento ? tempoRestanteHumano(fechamento - Date.now()) : "em breve";
+            const votacaoAberta = !!dadosVot.inicio;
+            let votacaoHtml = "";
+
+            if (votacaoAberta) {
+                const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
+                const v7 = votos.filter(v => String(v.opcao) === "7").length;
+                const v14 = votos.filter(v => String(v.opcao) === "14").length;
+                const fechamento = calcularFechamentoVotacao(dadosVot.inicio, fase.dados.fimPrevistoEm);
+                const resta = tempoRestanteHumano(fechamento - Date.now());
+                votacaoHtml = `<div>🗳️ Votação fecha em <strong>${resta}</strong>. Placar parcial: <strong>7 dias</strong> (${v7}) vs <strong>14 dias</strong> (${v14}).</div>`;
+            } else {
+                votacaoHtml = `<div>🗳️ Aguardando o professor abrir a votação para definir a duração da etapa.</div>`;
+            }
 
             if (statusCtn) statusCtn.innerHTML = `
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                    <div><span class="badge-status andamento">Em andamento · Votação aberta</span></div>
+                    <div><span class="badge-status andamento">Em andamento ${votacaoAberta ? '· Votação aberta' : ''}</span></div>
                     <div>📅 Iniciada em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>.</div>
-                    <div>🗳️ Votação fecha em <strong>${resta}</strong>. Placar parcial: <strong>7 dias</strong> (${v7}) vs <strong>14 dias</strong> (${v14}).</div>
+                    ${votacaoHtml}
                     ${infoModUnica}
                     ${regraTop4}
                 </div>`;
