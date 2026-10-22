@@ -22055,8 +22055,9 @@ function abrirBuscarAlunoComMeusDados() {
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [18.01] Home E-Sports — Hero com saudação + Ritmo na Copa ─
-    // v10.13.14 · O Ritmo na Copa agora lê direto do histórico (evita atraso
-    // do resumo) e exibe o nome da modalidade no título se estiver no modo único.
+    // v10.13.17 · OTIMIZAÇÃO LCP: O Hero é renderizado na hora com o texto padrão,
+    // e as leituras do Firebase para o "Ritmo na Copa" rodam em background via setTimeout.
+    // Também mantém a adaptação do Modo Classificatória Única (v10.13.14).
     async function preencherHomeEsports() {
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
@@ -22089,40 +22090,39 @@ function abrirBuscarAlunoComMeusDados() {
             heroSub.innerHTML = `🎯 Etapa Classificatória Única: Foco total em <strong>${escaparHtml(MODALIDADES[modUnica].nome)}</strong>.`;
         }
 
-        try {
-            const chave = chaveAlbum(nome, turma);
-            let oficiais = 0;
-            let treinos = 0;
+        // Busca em background (setTimeout) para não bloquear a renderização inicial (LCP)
+        setTimeout(async () => {
+            try {
+                const chave = chaveAlbum(nome, turma);
+                let oficiais = 0;
+                let treinos = 0;
 
-            if (modUnica) {
-                // No modo único, busca apenas os dados da modalidade ativa
-                const partidas = await obterHistoricoAluno(nome, turma, modUnica).catch(() => []);
-                oficiais = partidas.length;
-                const snapTreinos = await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chave}/${modUnica}`).once("value").catch(() => null);
-                treinos = (snapTreinos && snapTreinos.val()) ? Number(snapTreinos.val()) : 0;
-            } else {
-                // Modo normal, soma tudo
-                const partidas = await obterHistoricoAluno(nome, turma).catch(() => []);
-                oficiais = partidas.length;
-                const snapTreinos = await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chave}`).once("value").catch(() => null);
-                treinos = (snapTreinos && snapTreinos.val()) ? Number(snapTreinos.val()) : 0;
+                if (modUnica) {
+                    const partidas = await obterHistoricoAluno(nome, turma, modUnica).catch(() => []);
+                    oficiais = partidas.length;
+                    const snapTreinos = await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chave}/${modUnica}`).once("value").catch(() => null);
+                    treinos = (snapTreinos && snapTreinos.val()) ? Number(snapTreinos.val()) : 0;
+                } else {
+                    const partidas = await obterHistoricoAluno(nome, turma).catch(() => []);
+                    oficiais = partidas.length;
+                    const snapTreinos = await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chave}`).once("value").catch(() => null);
+                    treinos = (snapTreinos && snapTreinos.val()) ? Number(snapTreinos.val()) : 0;
+                }
+
+                atualizarFraseHero({ oficiais, treinos }, modUnica);
+                renderizarRitmoCopa({ oficiais, treinos }, modUnica);
+
+            } catch (e) {
+                console.warn("[Home] Falha ao preencher hero em background:", e);
             }
-
-            atualizarFraseHero({ oficiais, treinos }, modUnica);
-            renderizarRitmoCopa({ oficiais, treinos }, modUnica);
-
-        } catch (e) {
-            console.warn("[Home] Falha ao preencher hero:", e);
-            atualizarFraseHero(null, modUnica);
-            renderizarRitmoCopa(null, modUnica);
-        }
+        }, 10);
     }
 
     function atualizarFraseHero(dados, modUnica = null) {
         const el = document.getElementById("hero-sub-dinamica");
         if (!el) return;
 
-        if (modUnica) return; // Se for modo único, o texto já foi setado acima
+        if (modUnica) return; // Se for modo único, o texto já foi setado no preencherHomeEsports
 
         if (!dados || (dados.oficiais === 0 && dados.treinos === 0)) {
             el.textContent = "Sua jornada na Copa começa na primeira partida oficial!";
@@ -23076,8 +23076,8 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [18.06.bis]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.13.13 · BUGFIX: Adicionado ETAPA_FASES.etapa_aberta nas verificações
-    // de 'etapaAtiva' para que o botão Jogar libere assim que a contagem zerar.
+    // v10.13.17 · OTIMIZAÇÃO LCP: Renderiza o HTML base instantaneamente 
+    // (com dados zerados) e preenche os números do Firebase em background.
     let _homeModalidadesToken = 0;
 
     function modalidadePermitidaParaOficial(mod) {
@@ -23087,7 +23087,7 @@ function abrirBuscarAlunoComMeusDados() {
         return !modUnica || mod === modUnica;
     }
 
-    async function renderizarModalidadesHome(fase) {
+    function renderizarModalidadesHome(fase) {
         const ctn = document.getElementById("acao-principal-container");
         if (!ctn) return;
 
@@ -23111,12 +23111,9 @@ function abrirBuscarAlunoComMeusDados() {
         // ─── MODO CLASSIFICATÓRIA (Padrão) ───
         const nome = obterNomeSalvoAluno();
         const turma = obterTurmaSalvaAluno();
-
         const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
-            ? modalidadeClassificatoriaUnicaAtiva()
-            : null;
+            ? modalidadeClassificatoriaUnicaAtiva() : null;
 
-        // ⚠️ v10.13.13 — Inclui a fase etapa_aberta
         const etapaAtiva = (fase && (
             fase.tipo === ETAPA_FASES.etapa_aberta || 
             fase.tipo === ETAPA_FASES.etapa_votacao || 
@@ -23133,139 +23130,9 @@ function abrirBuscarAlunoComMeusDados() {
             subtitulo = "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
         }
 
-        let dadosPorMod = { "2-5": null, "6-9": null, "0-10": null };
-
-        if (nome && turma) {
-            try {
-                const chave = chaveAlbum(nome, turma);
-                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve([]), 5000));
-                
-                const [r25, r69, r010, partidas, snapTreinos] = await Promise.all([
-                    Promise.race([obterRankingPorPontos("2-5", turma).catch(() => []), timeoutPromise]),
-                    Promise.race([obterRankingPorPontos("6-9", turma).catch(() => []), timeoutPromise]),
-                    Promise.race([obterRankingPorPontos("0-10", turma).catch(() => []), timeoutPromise]),
-                    Promise.race([obterHistoricoAluno(nome, turma).catch(() => []), timeoutPromise]),
-                    Promise.race([database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chave}`).once("value").catch(() => null), timeoutPromise])
-                ]);
-                const treinosPorMod = (snapTreinos && snapTreinos.val && snapTreinos.val()) || {};
-
-                const montar = (mod, ranking) => {
-                    const idx = (ranking || []).findIndex(r =>
-                        normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma
-                    );
-                    const minhas = (partidas || []).filter(p => p.modalidade === mod);
-                    const melhor = minhas.length
-                        ? minhas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a)
-                        : null;
-                    const treinos = Number(treinosPorMod[mod]) || 0;
-                    return {
-                        posicao: idx === -1 ? null : idx + 1,
-                        total: (ranking || []).length,
-                        pontos: melhor ? (Number(melhor.pontos) || 0) : 0,
-                        oficiaisCount: minhas.length,
-                        treinosCount: treinos,
-                        jogou: !!melhor
-                    };
-                };
-                dadosPorMod["2-5"]  = montar("2-5",  r25);
-                dadosPorMod["6-9"]  = montar("6-9",  r69);
-                dadosPorMod["0-10"] = montar("0-10", r010);
-            } catch(e) {
-                console.warn("[Home/Modalidades] Falha ao montar dados:", e);
-            }
-        }
-
         const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
         const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
-
-        let linhas = "";
-        ["2-5", "6-9", "0-10"].forEach(mod => {
-            const info = dadosPorMod[mod] || { posicao: null, total: 0, pontos: 0, oficiaisCount: 0, treinosCount: 0, jogou: false };
-            const jogou = info.jogou;
-            const oficiais = info.oficiaisCount;
-            const treinos = info.treinosCount;
-            const totalJogos = oficiais + treinos;
-
-            const ehModAtiva = !modUnicaAtiva || mod === modUnicaAtiva;
-            const bloqueada = !ehModAtiva;
-
-            let zonaCls = "sem-dados";
-            let posTxt = "—";
-            let ptsTxt = "—";
-            let statusTxt = "Sem partida ainda";
-
-            if (jogou) {
-                const pos = info.posicao;
-                if (pos && pos <= 4)      { zonaCls = "zona-top4";    statusTxt = "Zona de classificação"; }
-                else if (pos && pos <= 6) { zonaCls = "zona-reserva"; statusTxt = "Zona de reserva"; }
-                else if (pos)             { zonaCls = "";             statusTxt = "Em disputa"; }
-                else                      { zonaCls = "";             statusTxt = "Participando"; }
-                posTxt = pos ? `${pos}º <small>de ${info.total}</small>` : "—";
-                ptsTxt = `${info.pontos.toLocaleString("pt-BR")} pts`;
-            } else if (treinos > 0) {
-                zonaCls = "sem-dados";
-                statusTxt = "Sem partida oficial";
-            }
-
-            let barraHtml;
-            if (totalJogos === 0) {
-                barraHtml = `
-                    <div class="home-mod-barra"><div class="home-mod-barra-vazia"></div></div>
-                    <div class="home-mod-barra-legenda">
-                        <span class="legenda-vazia">Nenhuma partida registrada nesta modalidade</span>
-                    </div>`;
-            } else {
-                const pctOfi = (oficiais / totalJogos) * 100;
-                const pctTre = (treinos / totalJogos) * 100;
-                barraHtml = `
-                    <div class="home-mod-barra">
-                        ${oficiais > 0 ? `<div class="home-mod-barra-fill oficiais" style="width:${pctOfi.toFixed(1)}%"></div>` : ""}
-                        ${treinos  > 0 ? `<div class="home-mod-barra-fill treinos"  style="width:${pctTre.toFixed(1)}%"></div>` : ""}
-                    </div>
-                    <div class="home-mod-barra-legenda">
-                        <span>Ritmo da modalidade</span>
-                        <span class="numeros">
-                            <span class="num-of">${oficiais} ${oficiais === 1 ? "oficial" : "oficiais"}</span>
-                            <span class="num-tr">${treinos} ${treinos === 1 ? "treino" : "treinos"}</span>
-                        </span>
-                    </div>`;
-            }
-
-            const jogavelNestaMod = etapaAtiva && ehModAtiva;
-            const jogarCls = jogavelNestaMod ? "jogar" : "jogar desabilitado";
-            const conviteCls = (!jogou && treinos === 0 && jogavelNestaMod) ? " convite" : "";
-
-            const avisoBloqueio = bloqueada
-                ? `<div class="home-mod-aviso-bloqueio" style="margin-top:6px; font-size:11px; font-weight:700; color:#fde68a; background:rgba(251,191,36,.08); border-left:3px solid #fbbf24; border-radius:6px; padding:5px 9px; line-height:1.35;">
-                    🎯 Etapa oficial focada em outra modalidade — aqui só dá para treinar.
-                </div>`
-                : "";
-
-            const linhaCls = bloqueada ? " modalidade-bloqueada" : "";
-            const linhaStyle = bloqueada ? 'style="opacity:.72;"' : '';
-
-            linhas += `<div class="home-modalidade-linha ${zonaCls}${linhaCls}" ${linhaStyle}>
-                <div class="home-mod-l1">
-                    <span class="home-mod-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
-                    <span class="home-mod-pos">${posTxt}</span>
-                </div>
-                <div class="home-mod-l2">
-                    <span class="home-mod-status">${escaparHtml(statusTxt)}</span>
-                    <span class="home-mod-pts">${ptsTxt}</span>
-                </div>
-                <div class="home-mod-barra-bloco">${barraHtml}</div>
-                ${avisoBloqueio}
-                <div class="home-mod-acoes">
-                    <button type="button" class="home-mod-btn ${jogarCls}${conviteCls}" onclick="jogarModalidadeHome('${mod}')" ${jogavelNestaMod ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
-                    <button type="button" class="home-mod-btn treinar" onclick="treinarModalidadeHome('${mod}')">🎯 Treinar</button>
-                </div>
-            </div>`;
-        });
-
-        const placeholderAtalho = (nome && turma)
-            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
-            : "";
-
+        
         const bannerModUnica = modUnicaAtiva
             ? `<div class="home-modalidades-banner-unica" style="background: linear-gradient(135deg, rgba(14,165,233,.14) 0%, rgba(124,58,237,.10) 100%); border:1px solid rgba(34,211,238,.45); border-left:4px solid var(--neon-cyan); border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:12.5px; line-height:1.5; color:#a5f3fc;">
                 🎯 <strong>Modo Classificatória Única</strong><br>
@@ -23274,30 +23141,123 @@ function abrirBuscarAlunoComMeusDados() {
             </div>`
             : "";
 
+        const placeholderAtalho = (nome && turma)
+            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
+            : "";
+
+        // 1. RENDERIZA O ESQUELETO BASE IMEDIATAMENTE (LCP)
+        let linhasBase = "";
+        ["2-5", "6-9", "0-10"].forEach(mod => {
+            const ehModAtiva = !modUnicaAtiva || mod === modUnicaAtiva;
+            const bloqueada = !ehModAtiva;
+            const jogavelNestaMod = etapaAtiva && ehModAtiva;
+            const jogarCls = jogavelNestaMod ? "jogar" : "jogar desabilitado";
+            
+            const avisoBloqueio = bloqueada
+                ? `<div class="home-mod-aviso-bloqueio" style="margin-top:6px; font-size:11px; font-weight:700; color:#fde68a; background:rgba(251,191,36,.08); border-left:3px solid #fbbf24; border-radius:6px; padding:5px 9px; line-height:1.35;">🎯 Etapa oficial focada em outra modalidade — aqui só dá para treinar.</div>`
+                : "";
+
+            linhasBase += `<div class="home-modalidade-linha sem-dados ${bloqueada ? "modalidade-bloqueada" : ""}" ${bloqueada ? 'style="opacity:.72;"' : ''}>
+                <div class="home-mod-l1">
+                    <span class="home-mod-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
+                    <span class="home-mod-pos" id="home-pos-${mod}">—</span>
+                </div>
+                <div class="home-mod-l2">
+                    <span class="home-mod-status" id="home-status-${mod}">Sem partida ainda</span>
+                    <span class="home-mod-pts" id="home-pts-${mod}">—</span>
+                </div>
+                <div class="home-mod-barra-bloco" id="home-barra-${mod}">
+                    <div class="home-mod-barra"><div class="home-mod-barra-vazia"></div></div>
+                    <div class="home-mod-barra-legenda"><span class="legenda-vazia">Nenhuma partida registrada nesta modalidade</span></div>
+                </div>
+                ${avisoBloqueio}
+                <div class="home-mod-acoes">
+                    <button type="button" class="home-mod-btn ${jogarCls}" onclick="jogarModalidadeHome('${mod}')" ${jogavelNestaMod ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
+                    <button type="button" class="home-mod-btn treinar" onclick="treinarModalidadeHome('${mod}')">🎯 Treinar</button>
+                </div>
+            </div>`;
+        });
+
         ctn.innerHTML = `<div class="home-modalidades-card">
             <div class="home-modalidades-titulo">
                 <span>🏆 ${escaparHtml(tituloAcao)}</span>
-                <button type="button" 
-                        id="btn-como-funciona-minhas-pos" 
-                        class="btn-como-funciona-inline" 
-                        onclick="abrirModalComoFuncionaMinhasPos()"
-                        aria-haspopup="dialog"
-                        aria-controls="modal-explicacao-minhas-pos"
-                        aria-label="Como funciona o card Minhas Posições"
-                        title="Como funciona?">?</button>
+                <button type="button" id="btn-como-funciona-minhas-pos" class="btn-como-funciona-inline" onclick="abrirModalComoFuncionaMinhasPos()" aria-haspopup="dialog" aria-controls="modal-explicacao-minhas-pos" aria-label="Como funciona o card Minhas Posições" title="Como funciona?">?</button>
             </div>
             ${bannerModUnica}
             <div class="home-modalidades-sub">${subtitulo}</div>
-            <div class="home-modalidades-lista">${linhas}</div>
+            <div class="home-modalidades-lista">${linhasBase}</div>
             <div class="home-modalidades-rodape">⚠️ Classificação provisória · Top 4 de cada modalidade avança para a Final</div>
             <div id="home-modalidades-atalho-slot">${placeholderAtalho}</div>
         </div>`;
 
-        if (nome && turma) _carregarAtalhoModalidadesAsync(nome, turma, rotulos, modUnicaAtiva);
+        // 2. BUSCA OS DADOS EM BACKGROUND E ATUALIZA OS NÚMEROS
+        if (nome && turma) {
+            const meuToken = ++_homeModalidadesToken;
+            
+            Promise.all([
+                obterRankingPorPontos("2-5", turma).catch(() => []),
+                obterRankingPorPontos("6-9", turma).catch(() => []),
+                obterRankingPorPontos("0-10", turma).catch(() => []),
+                obterHistoricoAluno(nome, turma).catch(() => []),
+                database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
+            ]).then(([r25, r69, r010, partidas, snapTreinos]) => {
+                if (meuToken !== _homeModalidadesToken) return; // Evita race condition
+                const treinosPorMod = (snapTreinos && snapTreinos.val()) || {};
+
+                ["2-5", "6-9", "0-10"].forEach(mod => {
+                    const ranking = mod === "2-5" ? r25 : mod === "6-9" ? r69 : r010;
+                    const idx = ranking.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+                    const posicao = idx === -1 ? null : idx + 1;
+                    const minhas = partidas.filter(p => p.modalidade === mod);
+                    const melhor = minhas.length ? minhas.reduce((a, b) => (Number(b.pontos) || 0) > (Number(a.pontos) || 0) ? b : a) : null;
+                    const pontos = melhor ? (Number(melhor.pontos) || 0) : 0;
+                    const oficiais = minhas.length;
+                    const treinos = Number(treinosPorMod[mod]) || 0;
+                    const jogou = !!melhor;
+                    const totalJogos = oficiais + treinos;
+
+                    // Atualiza os elementos no DOM
+                    const elLinha = document.getElementById(`home-pos-${mod}`)?.closest('.home-modalidade-linha');
+                    const elPos = document.getElementById(`home-pos-${mod}`);
+                    const elStatus = document.getElementById(`home-status-${mod}`);
+                    const elPts = document.getElementById(`home-pts-${mod}`);
+                    const elBarra = document.getElementById(`home-barra-${mod}`);
+
+                    if (jogou) {
+                        if (posicao <= 4) { elLinha.classList.add("zona-top4"); elStatus.textContent = "Zona de classificação"; }
+                        else if (posicao <= 6) { elLinha.classList.add("zona-reserva"); elStatus.textContent = "Zona de reserva"; }
+                        else { elStatus.textContent = "Em disputa"; }
+                        elPos.innerHTML = `${posicao}º <small>de ${ranking.length}</small>`;
+                        elPts.textContent = `${pontos.toLocaleString("pt-BR")} pts`;
+                    } else if (treinos > 0) {
+                        elStatus.textContent = "Sem partida oficial";
+                    }
+
+                    if (totalJogos > 0) {
+                        const pctOfi = (oficiais / totalJogos) * 100;
+                        const pctTre = (treinos / totalJogos) * 100;
+                        elBarra.innerHTML = `
+                            <div class="home-mod-barra">
+                                ${oficiais > 0 ? `<div class="home-mod-barra-fill oficiais" style="width:${pctOfi.toFixed(1)}%"></div>` : ""}
+                                ${treinos  > 0 ? `<div class="home-mod-barra-fill treinos"  style="width:${pctTre.toFixed(1)}%"></div>` : ""}
+                            </div>
+                            <div class="home-mod-barra-legenda">
+                                <span>Ritmo da modalidade</span>
+                                <span class="numeros">
+                                    <span class="num-of">${oficiais} oficial${oficiais === 1 ? "" : "is"}</span>
+                                    <span class="num-tr">${treinos} treino${treinos === 1 ? "" : "s"}</span>
+                                </span>
+                            </div>`;
+                    }
+                });
+
+                _carregarAtalhoModalidadesAsync(nome, turma, rotulos, modUnicaAtiva);
+            });
+        }
     }
 
     async function _carregarAtalhoModalidadesAsync(nome, turma, rotulos, modUnicaAtiva) {
-        const meuToken = ++_homeModalidadesToken;
+        const meuToken = _homeModalidadesToken;
         try {
             let c25, c69, c010;
             if (modUnicaAtiva) {
@@ -23326,66 +23286,12 @@ function abrirBuscarAlunoComMeusDados() {
                 const pendentesDaMais = pend[modComMaisPend];
                 const plural = pendentesDaMais === 1 ? "operação" : "operações";
                 const rotuloMod = rotulos[modComMaisPend] || modComMaisPend;
-                slot.innerHTML = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">
-                    🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →
-                </button>`;
+                slot.innerHTML = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →</button>`;
             } else {
                 slot.innerHTML = "";
             }
-        } catch(e) {
-            console.warn("[Home/Modalidades] Falha ao carregar pendências:", e);
-            if (meuToken !== _homeModalidadesToken) return;
-            const slot = document.getElementById("home-modalidades-atalho-slot");
-            if (slot) slot.innerHTML = "";
-        }
+        } catch(e) { console.warn(e); }
     }
-
-    async function jogarModalidadeHome(mod) {
-        if (!MODALIDADES[mod]) return;
-
-        if (!modalidadePermitidaParaOficial(mod)) {
-            const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
-                ? modalidadeClassificatoriaUnicaAtiva() : null;
-            const nomeMod = modUnica && MODALIDADES[modUnica] ? MODALIDADES[modUnica].nome : "outra modalidade";
-            notificar(`🎯 A etapa oficial está focada em ${nomeMod}. Use o botão Treinar para praticar aqui.`, "aviso", 6000);
-            return;
-        }
-
-        const selMod = document.getElementById("modalidade-tabuada");
-        if (selMod) selMod.value = mod;
-        const nome  = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-        if (!nome || !turma) { mostrarTela("tela-single"); return; }
-        const fase = await resolverFaseAtual();
-        
-        // ⚠️ v10.13.13 — Inclui a fase etapa_aberta
-        const etapaAtiva = (
-            fase.tipo === ETAPA_FASES.etapa_aberta || 
-            fase.tipo === ETAPA_FASES.etapa_votacao || 
-            fase.tipo === ETAPA_FASES.etapa_definida
-        );
-        
-        if (!etapaAtiva) {
-            notificar("⏸️ A etapa classificatória não está aberta agora. Use o botão Treinar para aquecer!", "aviso", 5000);
-            return;
-        }
-        const inNome = document.getElementById("nome-aluno");
-        const selTurma = document.getElementById("turma-aluno");
-        if (inNome)   inNome.value   = nome;
-        if (selTurma) selTurma.value = turma;
-        await registrarAluno(false);
-    }
-
-    async function treinarModalidadeHome(mod) {
-        if (!MODALIDADES[mod]) return;
-        const selMod = document.getElementById("modalidade-tabuada");
-        if (selMod) selMod.value = mod;
-        const nome  = obterNomeSalvoAluno();
-        const turma = obterTurmaSalvaAluno();
-        if (!nome || !turma) { mostrarTela("tela-single"); return; }
-        abrirMenuTreino(mod);
-    }
-    // ▲▲▲ FIM [18.07]
 
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
     // v10.13.7 · SIMPLIFICAÇÃO: Removido o modo "Ambos" do prompt.
@@ -25310,9 +25216,10 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [19.02]
 
     // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
-    // v10.13.8 · O boot agora aguarda a leitura das flags de modo e
-    // atualiza o título da aba e o cabeçalho da Home antes de renderizar
-    // o restante da interface.
+    // v10.13.17 · OTIMIZAÇÃO CRÍTICA:
+    // 1. Service Worker movido para window.load.
+    // 2. Requisições do Firebase adiadas com requestIdleCallback.
+    // 3. Renderização instantânea do esqueleto do LCP no DOMContentLoaded.
     async function registrarServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
         const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -25325,17 +25232,15 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
 
-    window.addEventListener("DOMContentLoaded", async () => {
+    // Adia o Service Worker para não competir por rede com o carregamento do app
+    window.addEventListener('load', () => {
         registrarServiceWorker();
-        iniciarListenerAtualizacaoForcada();
+    });
 
+    window.addEventListener("DOMContentLoaded", () => {
+        // 1. Primeiro Paint (Instantâneo)
         mostrarTela("tela-inicial");
-        atualizarBotaoMinhaTurma();
-        mudarTipoRanking("turma");
-        configurarToqueSecreto();
-        inicializarAudio();
-        atualizarAcessoSeConhecido();
-
+        
         const elVHeader = document.getElementById("header-versao-atual");
         if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
         const elV = document.getElementById("changelog-versao-atual");
@@ -25343,69 +25248,86 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const elVMenu = document.getElementById("mais-versao-atual");
         if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
 
-        verificarVersaoPublicada().catch(() => {});
-        try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
-        iniciarListenerMsgAluno();
-
-        // ⚠️ v10.13.8 · Aguarda AMBOS os modos antes de renderizar a Home.
-        // Isso evita que o título e os cards pisquem ou mostrem dados errados.
-        try {
-            await Promise.all([
-                obterModoEvento(),
-                obterModoClassificatoria()
-            ]);
-            // Atualiza o título da aba e o cabeçalho da Home imediatamente
-            if (typeof atualizarHeaderModoEvento === "function") {
-                atualizarHeaderModoEvento();
-            }
-        } catch (e) {
-            console.warn("[Boot] Falha ao carregar configurações de modo:", e);
+        // Renderiza o LCP imediatamente com dados vazios
+        if (typeof renderizarModalidadesHome === "function") {
+            renderizarModalidadesHome({ tipo: ETAPA_FASES.sem_agendamento, dados: {} });
         }
 
-        const pHomeEsports = preencherHomeEsports().catch(e => console.warn("Falha home:", e));
-        const pMapaHome = renderizarMapaHome().catch(e => console.warn("Falha mapa:", e));
-        
-        await Promise.all([pHomeEsports, pMapaHome]);
-        
-        try { ativarObserverAlertaFoco(); } catch(e) {}
-        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
+        // 2. Adia o Firebase para quando o navegador estiver ocioso
+        const iniciarFirebase = async () => {
+            iniciarListenerAtualizacaoForcada();
+            atualizarBotaoMinhaTurma();
+            mudarTipoRanking("turma");
+            configurarToqueSecreto();
+            inicializarAudio();
+            atualizarAcessoSeConhecido();
 
-        const pTelaInicial = atualizarTelaInicialComEtapa().catch(e => console.warn("Falha tela inicial:", e));
-        const pTreinoInt = renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
+            verificarVersaoPublicada().catch(() => {});
+            try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
+            iniciarListenerMsgAluno();
 
-        const pCicloEtapa = (async () => {
             try {
-                await verificarEIniciarEtapaSeNecessario();
-                await verificarEFecharVotacaoSeNecessario();
-                await verificarEEncerrarEtapaSeNecessario();
-            } catch(e) { console.warn("Falha ciclo:", e); }
-            try { await atualizarTelaInicialComEtapa(); } catch(e) {}
-            try { await renderizarCardVotacao(); } catch(e) {}
-        })();
+                await Promise.all([
+                    obterModoEvento(),
+                    obterModoClassificatoria()
+                ]);
+                if (typeof atualizarHeaderModoEvento === "function") atualizarHeaderModoEvento();
+            } catch (e) {
+                console.warn("[Boot] Falha ao carregar configurações de modo:", e);
+            }
 
-        await Promise.all([pTelaInicial, pTreinoInt, pCicloEtapa]);
+            // O preencherHomeEsports e renderizarMapaHome agora são assíncronos e não bloqueiam
+            preencherHomeEsports().catch(e => console.warn("Falha home:", e));
+            renderizarMapaHome().catch(e => console.warn("Falha mapa:", e));
+            
+            try { ativarObserverAlertaFoco(); } catch(e) {}
+            try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
 
-        if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
-        
-        // ⚠️ OTIMIZAÇÃO: Timer leve (não baixa rankings a cada minuto)
-        votacaoTimerInterval = setInterval(async () => {
-            try {
-                const etapaAntes = await resolverFaseAtual();
-                
-                await verificarEFecharVotacaoSeNecessario();
-                await verificarEEncerrarEtapaSeNecessario();
-                
-                const card = document.getElementById("card-votacao");
-                if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
-                
-                const etapaDepois = await resolverFaseAtual();
-                if (etapaAntes.tipo !== etapaDepois.tipo) {
-                    await atualizarTelaInicialComEtapa();
-                }
-            } catch(e) { console.warn("Timer votação/etapa:", e); }
-        }, 60000);
+            const pTelaInicial = atualizarTelaInicialComEtapa().catch(e => console.warn("Falha tela inicial:", e));
+            const pTreinoInt = renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
 
-        setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
+            const pCicloEtapa = (async () => {
+                try {
+                    await verificarEIniciarEtapaSeNecessario();
+                    await verificarEAbrirVotacaoSeNecessario(); // ⚠️ NOVO: Checa abertura agendada
+                    await verificarEFecharVotacaoSeNecessario();
+                    await verificarEEncerrarEtapaSeNecessario();
+                } catch(e) { console.warn("Falha ciclo:", e); }
+                try { await atualizarTelaInicialComEtapa(); } catch(e) {}
+                try { await renderizarCardVotacao(); } catch(e) {}
+            })();
+
+            await Promise.all([pTelaInicial, pTreinoInt, pCicloEtapa]);
+
+            if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
+            
+            // Timer leve
+            votacaoTimerInterval = setInterval(async () => {
+                try {
+                    const etapaAntes = await resolverFaseAtual();
+                    await verificarEAbrirVotacaoSeNecessario(); // ⚠️ NOVO: Checa abertura agendada no timer
+                    await verificarEFecharVotacaoSeNecessario();
+                    await verificarEEncerrarEtapaSeNecessario();
+                    
+                    const card = document.getElementById("card-votacao");
+                    if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
+                    
+                    const etapaDepois = await resolverFaseAtual();
+                    if (etapaAntes.tipo !== etapaDepois.tipo) {
+                        await atualizarTelaInicialComEtapa();
+                    }
+                } catch(e) { console.warn("Timer votação/etapa:", e); }
+            }, 60000);
+
+            setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
+        };
+
+        // Usa requestIdleCallback se disponível, senão setTimeout
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(iniciarFirebase, { timeout: 2000 });
+        } else {
+            setTimeout(iniciarFirebase, 50);
+        }
     });
     // ▲▲▲ FIM [19.03]
 
