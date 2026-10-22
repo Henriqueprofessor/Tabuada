@@ -3717,6 +3717,77 @@
         }
         /* ▲▲▲ FIM [02.45] */
 
+        /* ▼▼▼ [02.45.bis] Home — Layout do Modo Classificatória Única ─── INÍCIO ─── */
+        .home-modalidades-lista.modo-unico {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .home-modalidades-lista.modo-unico .home-modalidade-linha {
+            padding: 20px;
+            border-width: 2px;
+            border-color: var(--neon-cyan);
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.95) 0%, rgba(15, 35, 64, 0.95) 100%);
+            box-shadow: 0 8px 24px rgba(34, 211, 238, 0.15);
+        }
+        
+        .home-modalidades-lista.modo-unico .home-mod-nome {
+            font-size: 18px;
+            color: #fff;
+        }
+        
+        .home-modalidades-lista.modo-unico .home-mod-acoes {
+            margin-top: 8px;
+            gap: 12px;
+        }
+        
+        .home-modalidades-lista.modo-unico .home-mod-btn {
+            padding: 14px;
+            font-size: 15px;
+        }
+        
+        .home-outras-modalidades {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(148, 163, 184, 0.25);
+            margin-top: 4px;
+        }
+        
+        .home-outras-rotulo {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-right: 4px;
+        }
+        
+        .home-outras-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            border-radius: 8px;
+            color: #d8b4fe;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s ease;
+            margin: 0;
+        }
+        
+        .home-outras-btn:hover {
+            background: rgba(124, 58, 237, 0.24);
+            border-color: #a855f7;
+            color: #fff;
+        }
+        /* ▲▲▲ FIM [02.45.bis] */
+
         /* ▼▼▼ [02.46] Home em telas largas (desktop ≥ 900px) ─────────── INÍCIO ─── */
         /* Aplica-se apenas a telas largas. Celulares e tablets pequenos       */
         /* permanecem exatamente como estavam antes desta regra.               */
@@ -23076,8 +23147,8 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [18.06.bis]
 
     // ▼▼▼ [18.07] Home — Card de modalidades + ação de jogar/treinar ─
-    // v10.13.17 · OTIMIZAÇÃO LCP: Renderiza o HTML base instantaneamente 
-    // (com dados zerados) e preenche os números do Firebase em background.
+    // v10.13.18 · OTIMIZAÇÃO VISUAL E DE REDE: No Modo Único, esconde as 
+    // modalidades bloqueadas e busca APENAS o ranking da modalidade ativa.
     let _homeModalidadesToken = 0;
 
     function modalidadePermitidaParaOficial(mod) {
@@ -23121,10 +23192,11 @@ function abrirBuscarAlunoComMeusDados() {
         ));
         
         const tituloAcao = "Minhas Posições";
-        let subtitulo;
+        let subtitulo = "";
+        
         if (etapaAtiva) {
             subtitulo = modUnicaAtiva
-                ? `A etapa oficial está focada em <strong>${escaparHtml(MODALIDADES[modUnicaAtiva].nome)}</strong>. Use o botão Treinar para praticar as outras modalidades.`
+                ? `A etapa oficial está focada em <strong>${escaparHtml(MODALIDADES[modUnicaAtiva].nome)}</strong>.`
                 : "Escolha uma modalidade para jogar a classificatória ou para treinar. Só o seu melhor resultado oficial conta.";
         } else {
             subtitulo = "A etapa classificatória não está aberta agora. Você pode treinar à vontade — o treino alimenta seu mapa e certificados.";
@@ -23133,31 +23205,16 @@ function abrirBuscarAlunoComMeusDados() {
         const icones  = { "2-5": "📚", "6-9": "🎯", "0-10": "⭐" };
         const rotulos = { "2-5": "Tabuadas 2-5", "6-9": "Tabuadas 6-9", "0-10": "Tabuadas 1-10" };
         
-        const bannerModUnica = modUnicaAtiva
-            ? `<div class="home-modalidades-banner-unica" style="background: linear-gradient(135deg, rgba(14,165,233,.14) 0%, rgba(124,58,237,.10) 100%); border:1px solid rgba(34,211,238,.45); border-left:4px solid var(--neon-cyan); border-radius:10px; padding:10px 14px; margin-bottom:10px; font-size:12.5px; line-height:1.5; color:#a5f3fc;">
-                🎯 <strong>Modo Classificatória Única</strong><br>
-                A etapa oficial está focada em <strong>${escaparHtml(MODALIDADES[modUnicaAtiva].nome)}</strong>.
-                Você pode treinar nas outras modalidades, mas só esta conta para o ranking.
-            </div>`
-            : "";
+        const modsParaRenderizar = modUnicaAtiva ? [modUnicaAtiva] : ["2-5", "6-9", "0-10"];
+        const modsBloqueadas = modUnicaAtiva ? ["2-5", "6-9", "0-10"].filter(m => m !== modUnicaAtiva) : [];
 
-        const placeholderAtalho = (nome && turma)
-            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
-            : "";
-
-        // 1. RENDERIZA O ESQUELETO BASE IMEDIATAMENTE (LCP)
+        // 1. RENDERIZA O ESQUELETO BASE IMEDIATAMENTE
         let linhasBase = "";
-        ["2-5", "6-9", "0-10"].forEach(mod => {
-            const ehModAtiva = !modUnicaAtiva || mod === modUnicaAtiva;
-            const bloqueada = !ehModAtiva;
-            const jogavelNestaMod = etapaAtiva && ehModAtiva;
+        modsParaRenderizar.forEach(mod => {
+            const jogavelNestaMod = etapaAtiva;
             const jogarCls = jogavelNestaMod ? "jogar" : "jogar desabilitado";
             
-            const avisoBloqueio = bloqueada
-                ? `<div class="home-mod-aviso-bloqueio" style="margin-top:6px; font-size:11px; font-weight:700; color:#fde68a; background:rgba(251,191,36,.08); border-left:3px solid #fbbf24; border-radius:6px; padding:5px 9px; line-height:1.35;">🎯 Etapa oficial focada em outra modalidade — aqui só dá para treinar.</div>`
-                : "";
-
-            linhasBase += `<div class="home-modalidade-linha sem-dados ${bloqueada ? "modalidade-bloqueada" : ""}" ${bloqueada ? 'style="opacity:.72;"' : ''}>
+            linhasBase += `<div class="home-modalidade-linha sem-dados">
                 <div class="home-mod-l1">
                     <span class="home-mod-nome">${icones[mod]} ${escaparHtml(rotulos[mod])}</span>
                     <span class="home-mod-pos" id="home-pos-${mod}">—</span>
@@ -23170,7 +23227,6 @@ function abrirBuscarAlunoComMeusDados() {
                     <div class="home-mod-barra"><div class="home-mod-barra-vazia"></div></div>
                     <div class="home-mod-barra-legenda"><span class="legenda-vazia">Nenhuma partida registrada nesta modalidade</span></div>
                 </div>
-                ${avisoBloqueio}
                 <div class="home-mod-acoes">
                     <button type="button" class="home-mod-btn ${jogarCls}" onclick="jogarModalidadeHome('${mod}')" ${jogavelNestaMod ? "" : ' aria-disabled="true"'}>▶ Jogar</button>
                     <button type="button" class="home-mod-btn treinar" onclick="treinarModalidadeHome('${mod}')">🎯 Treinar</button>
@@ -23178,34 +23234,56 @@ function abrirBuscarAlunoComMeusDados() {
             </div>`;
         });
 
+        // 2. MONTA O RODAPÉ COM AS OUTRAS MODALIDADES (Apenas no Modo Único)
+        let rodapeOutrasMods = "";
+        if (modUnicaAtiva && modsBloqueadas.length > 0) {
+            const botoesExtras = modsBloqueadas.map(mod => 
+                `<button class="home-outras-btn" onclick="treinarModalidadeHome('${mod}')">${icones[mod]} Treinar ${rotulos[mod]}</button>`
+            ).join("");
+            
+            rodapeOutrasMods = `<div class="home-outras-modalidades">
+                <span class="home-outras-rotulo">Quer treinar as outras?</span>
+                ${botoesExtras}
+            </div>`;
+        }
+
+        const placeholderAtalho = (nome && turma)
+            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
+            : "";
+
         ctn.innerHTML = `<div class="home-modalidades-card">
             <div class="home-modalidades-titulo">
-                <span>🏆 ${escaparHtml(tituloAcao)}</span>
+                <span>🏆 ${escaparHtml(tituloAcao)} ${modUnicaAtiva ? '<span style="font-size:10px; background:var(--neon-cyan); color:#000; padding:2px 6px; border-radius:10px; vertical-align:middle; margin-left:4px;">MODO ÚNICO</span>' : ''}</span>
                 <button type="button" id="btn-como-funciona-minhas-pos" class="btn-como-funciona-inline" onclick="abrirModalComoFuncionaMinhasPos()" aria-haspopup="dialog" aria-controls="modal-explicacao-minhas-pos" aria-label="Como funciona o card Minhas Posições" title="Como funciona?">?</button>
             </div>
-            ${bannerModUnica}
-            <div class="home-modalidades-sub">${subtitulo}</div>
-            <div class="home-modalidades-lista">${linhasBase}</div>
-            <div class="home-modalidades-rodape">⚠️ Classificação provisória · Top 4 de cada modalidade avança para a Final</div>
+            <div class="home-modalidades-sub" style="margin-top:-4px;">${subtitulo}</div>
+            <div class="home-modalidades-lista ${modUnicaAtiva ? 'modo-unico' : ''}">${linhasBase}</div>
+            ${rodapeOutrasMods}
+            <div class="home-modalidades-rodape" style="margin-top:12px;">⚠️ Classificação provisória · Top 4 avança para a Final</div>
             <div id="home-modalidades-atalho-slot">${placeholderAtalho}</div>
         </div>`;
 
-        // 2. BUSCA OS DADOS EM BACKGROUND E ATUALIZA OS NÚMEROS
+        // 3. BUSCA OS DADOS EM BACKGROUND E ATUALIZA OS NÚMEROS
         if (nome && turma) {
             const meuToken = ++_homeModalidadesToken;
             
+            // ⚠️ OTIMIZAÇÃO: Busca apenas o ranking da modalidade ativa (ou as 3 no modo normal)
+            const fetchRankings = modsParaRenderizar.map(m => obterRankingPorPontos(m, turma).catch(() => []));
+            
             Promise.all([
-                obterRankingPorPontos("2-5", turma).catch(() => []),
-                obterRankingPorPontos("6-9", turma).catch(() => []),
-                obterRankingPorPontos("0-10", turma).catch(() => []),
+                ...fetchRankings,
                 obterHistoricoAluno(nome, turma).catch(() => []),
                 database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chaveAlbum(nome, turma)}`).once("value").catch(() => null)
-            ]).then(([r25, r69, r010, partidas, snapTreinos]) => {
-                if (meuToken !== _homeModalidadesToken) return; // Evita race condition
+            ]).then((results) => {
+                if (meuToken !== _homeModalidadesToken) return;
+                
+                // Separa os resultados
+                const partidas = results[results.length - 2];
+                const snapTreinos = results[results.length - 1];
                 const treinosPorMod = (snapTreinos && snapTreinos.val()) || {};
 
-                ["2-5", "6-9", "0-10"].forEach(mod => {
-                    const ranking = mod === "2-5" ? r25 : mod === "6-9" ? r69 : r010;
+                modsParaRenderizar.forEach((mod, index) => {
+                    const ranking = results[index];
                     const idx = ranking.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
                     const posicao = idx === -1 ? null : idx + 1;
                     const minhas = partidas.filter(p => p.modalidade === mod);
@@ -23216,7 +23294,6 @@ function abrirBuscarAlunoComMeusDados() {
                     const jogou = !!melhor;
                     const totalJogos = oficiais + treinos;
 
-                    // Atualiza os elementos no DOM
                     const elLinha = document.getElementById(`home-pos-${mod}`)?.closest('.home-modalidade-linha');
                     const elPos = document.getElementById(`home-pos-${mod}`);
                     const elStatus = document.getElementById(`home-status-${mod}`);
