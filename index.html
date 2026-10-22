@@ -10853,8 +10853,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 <!-- ▲▲▲ FIM [04.30] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
     <script>
     // ═══════════════════════════════════════════════════════════════════════
     // [05] JS-CFG · Constantes e configuração global
@@ -10887,8 +10887,9 @@ verificarVersao();
         messagingSenderId: "563498510333",
         appId: "1:563498510333:web:288bd4d26b59be475ddb94"
     };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    
+    // ⚠️ v10.13.17 — A inicialização real foi movida para o Boot (DOMContentLoaded)
+    let database; 
 
     const CAMINHO_RANKING = "resultados";
     const CAMINHO_PARTIDAS = "partidas";
@@ -10912,7 +10913,7 @@ verificarVersao();
     const CAMINHO_RANKING_RESUMO     = "ranking_resumo";
     const CAMINHO_PARTIDAS_POR_ALUNO = "partidas_por_aluno";
     const CAMINHO_OTIMIZACAO_V109    = "config/otimizacao_v109";
-    const CAMINHO_HALL_RESUMO        = "copa_hall_resumo"; // ⚠️ NOVO: O "Boletim de Ouro"
+    const CAMINHO_HALL_RESUMO        = "copa_hall_resumo";
     
     const PREFIXO_LOCAL_MAPA = "copaV2_mapa_";
     const PREFIXO_LOCAL_CORES = "copaV2_cores_";
@@ -25215,10 +25216,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [19.02]
 
     // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
-    // v10.13.17 · OTIMIZAÇÃO CRÍTICA:
-    // 1. Service Worker movido para window.load.
-    // 2. Requisições do Firebase adiadas com requestIdleCallback.
-    // 3. Renderização instantânea do esqueleto do LCP no DOMContentLoaded.
     async function registrarServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
         const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -25231,15 +25228,19 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
 
-    // Adia o Service Worker para não competir por rede com o carregamento do app
-    window.addEventListener('load', () => {
-        registrarServiceWorker();
-    });
+    window.addEventListener("DOMContentLoaded", async () => {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
 
-    window.addEventListener("DOMContentLoaded", () => {
-        // 1. Primeiro Paint (Instantâneo)
-        mostrarTela("tela-inicial");
-        
+        registrarServiceWorker();
+        iniciarListenerAtualizacaoForcada();
+
+        atualizarBotaoMinhaTurma();
+        mudarTipoRanking("turma");
+        configurarToqueSecreto();
+        inicializarAudio();
+        atualizarAcessoSeConhecido();
+
         const elVHeader = document.getElementById("header-versao-atual");
         if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
         const elV = document.getElementById("changelog-versao-atual");
@@ -25247,86 +25248,59 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const elVMenu = document.getElementById("mais-versao-atual");
         if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
 
-        // Renderiza o LCP imediatamente com dados vazios
-        if (typeof renderizarModalidadesHome === "function") {
-            renderizarModalidadesHome({ tipo: ETAPA_FASES.sem_agendamento, dados: {} });
-        }
+        verificarVersaoPublicada().catch(() => {});
+        try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
+        iniciarListenerMsgAluno();
 
-        // 2. Adia o Firebase para quando o navegador estiver ocioso
-        const iniciarFirebase = async () => {
-            iniciarListenerAtualizacaoForcada();
-            atualizarBotaoMinhaTurma();
-            mudarTipoRanking("turma");
-            configurarToqueSecreto();
-            inicializarAudio();
-            atualizarAcessoSeConhecido();
-
-            verificarVersaoPublicada().catch(() => {});
-            try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
-            iniciarListenerMsgAluno();
-
-            try {
-                await Promise.all([
-                    obterModoEvento(),
-                    obterModoClassificatoria()
-                ]);
-                if (typeof atualizarHeaderModoEvento === "function") atualizarHeaderModoEvento();
-            } catch (e) {
-                console.warn("[Boot] Falha ao carregar configurações de modo:", e);
+        try {
+            await Promise.all([
+                obterModoEvento(),
+                obterModoClassificatoria()
+            ]);
+            if (typeof atualizarHeaderModoEvento === "function") {
+                atualizarHeaderModoEvento();
             }
-
-            // O preencherHomeEsports e renderizarMapaHome agora são assíncronos e não bloqueiam
-            preencherHomeEsports().catch(e => console.warn("Falha home:", e));
-            renderizarMapaHome().catch(e => console.warn("Falha mapa:", e));
-            
-            try { ativarObserverAlertaFoco(); } catch(e) {}
-            try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
-
-            const pTelaInicial = atualizarTelaInicialComEtapa().catch(e => console.warn("Falha tela inicial:", e));
-            const pTreinoInt = renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
-
-            const pCicloEtapa = (async () => {
-                try {
-                    await verificarEIniciarEtapaSeNecessario();
-                    await verificarEAbrirVotacaoSeNecessario(); // ⚠️ NOVO: Checa abertura agendada
-                    await verificarEFecharVotacaoSeNecessario();
-                    await verificarEEncerrarEtapaSeNecessario();
-                } catch(e) { console.warn("Falha ciclo:", e); }
-                try { await atualizarTelaInicialComEtapa(); } catch(e) {}
-                try { await renderizarCardVotacao(); } catch(e) {}
-            })();
-
-            await Promise.all([pTelaInicial, pTreinoInt, pCicloEtapa]);
-
-            if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
-            
-            // Timer leve
-            votacaoTimerInterval = setInterval(async () => {
-                try {
-                    const etapaAntes = await resolverFaseAtual();
-                    await verificarEAbrirVotacaoSeNecessario(); // ⚠️ NOVO: Checa abertura agendada no timer
-                    await verificarEFecharVotacaoSeNecessario();
-                    await verificarEEncerrarEtapaSeNecessario();
-                    
-                    const card = document.getElementById("card-votacao");
-                    if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
-                    
-                    const etapaDepois = await resolverFaseAtual();
-                    if (etapaAntes.tipo !== etapaDepois.tipo) {
-                        await atualizarTelaInicialComEtapa();
-                    }
-                } catch(e) { console.warn("Timer votação/etapa:", e); }
-            }, 60000);
-
-            setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
-        };
-
-        // Usa requestIdleCallback se disponível, senão setTimeout
-        if ('requestIdleCallback' in window) {
-            requestIdleCallback(iniciarFirebase, { timeout: 2000 });
-        } else {
-            setTimeout(iniciarFirebase, 50);
+        } catch (e) {
+            console.warn("[Boot] Falha ao carregar configurações de modo:", e);
         }
+
+        mostrarTela("tela-inicial");
+
+        (async () => {
+            try {
+                await verificarEIniciarEtapaSeNecessario();
+                await verificarEFecharVotacaoSeNecessario();
+                await verificarEEncerrarEtapaSeNecessario();
+            } catch(e) { console.warn("Falha ciclo de vida da etapa:", e); }
+            
+            try { await renderizarCardVotacao(); } catch(e) {}
+        })();
+
+        try { ativarObserverAlertaFoco(); } catch(e) {}
+        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
+
+        renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
+
+        if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
+        
+        votacaoTimerInterval = setInterval(async () => {
+            try {
+                const etapaAntes = await resolverFaseAtual();
+                
+                await verificarEFecharVotacaoSeNecessario();
+                await verificarEEncerrarEtapaSeNecessario();
+                
+                const card = document.getElementById("card-votacao");
+                if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
+                
+                const etapaDepois = await resolverFaseAtual();
+                if (etapaAntes.tipo !== etapaDepois.tipo) {
+                    await atualizarTelaInicialComEtapa();
+                }
+            } catch(e) { console.warn("Timer votação/etapa:", e); }
+        }, 60000);
+
+        setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
     });
     // ▲▲▲ FIM [19.03]
 
