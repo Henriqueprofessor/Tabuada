@@ -20355,6 +20355,9 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [17.02]
 
     // ▼▼▼ [17.03] Configuração de elegibilidade ───────────────────────
+    // v10.13.16 · BUGFIX: Alterado de .set() para .update() para evitar
+    // que o salvamento dos critérios apague as outras configurações (como
+    // modo_evento e modo_classificatoria).
     async function obterConfiguracao() {
         try {
             const snap = await database.ref(CAMINHO_CONFIG).once("value");
@@ -20365,8 +20368,19 @@ function abrirBuscarAlunoComMeusDados() {
             };
         } catch(e) { return { ...CONFIG_DEFAULT }; }
     }
-    async function salvarConfiguracao(cfg) { await database.ref(CAMINHO_CONFIG).set({ percentualMapa: cfg.percentualMapa, minPartidas: cfg.minPartidas }); }
-    function calcularMinVerdes(percentualMapa) { return Math.max(1, Math.ceil((percentualMapa / 100) * TOTAL_OPERACOES_MAPA)); }
+    
+    async function salvarConfiguracao(cfg) { 
+        // ⚠️ v10.13.16 — Usa update() em vez de set() para não apagar as outras chaves (modo_evento, etc.)
+        await database.ref(CAMINHO_CONFIG).update({ 
+            percentualMapa: cfg.percentualMapa, 
+            minPartidas: cfg.minPartidas 
+        }); 
+    }
+    
+    function calcularMinVerdes(percentualMapa) { 
+        return Math.max(1, Math.ceil((percentualMapa / 100) * TOTAL_OPERACOES_MAPA)); 
+    }
+    
     async function renderizarPainelConfig() {
         const inp1 = document.getElementById("config-percentual-mapa");
         const inp2 = document.getElementById("config-min-partidas");
@@ -20375,6 +20389,7 @@ function abrirBuscarAlunoComMeusDados() {
         inp1.value = cfg.percentualMapa;
         inp2.value = cfg.minPartidas;
     }
+    
     async function salvarConfiguracaoPainel() {
         if (!exigirProfessorAutenticado()) return;
         const pct = Number(document.getElementById("config-percentual-mapa").value);
