@@ -1,10 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════════
 //  sw.js — Service Worker da Copa da Tabuada CEIB 2026
-//  Coloque este arquivo na MESMA pasta do index.html
 //  Estratégia: cache-first para assets estáticos + network-only para Firebase
 // ═══════════════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'copa-v10.4.0';
+const CACHE_VERSION = 'copa-v10.13.17'; // <-- Versão atualizada para limpar cache antigo
 const CACHE_ESTATICOS = [
   './',
   './index.html',
@@ -13,7 +12,6 @@ const CACHE_ESTATICOS = [
   'https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js'
 ];
 
-// ─── install: pré-cacheia os assets estáticos ───
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION).then((cache) => {
@@ -26,7 +24,6 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// ─── activate: limpa caches antigos ───
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((chaves) => {
@@ -37,19 +34,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ─── fetch: estratégia por tipo de requisição ───
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
 
-  // Firebase (Realtime Database) — sempre rede, nunca cache
   if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebase.com')) {
-    return; // deixa passar direto
+    return;
   }
 
-  // Navegação (abrir o app) — network-first, fallback cache
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -63,7 +57,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Demais assets — cache-first, com atualização em background
   event.respondWith(
     caches.match(req).then((cacheado) => {
       const fetchPromise = fetch(req).then((resp) => {
