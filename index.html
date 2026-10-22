@@ -23293,6 +23293,52 @@ function abrirBuscarAlunoComMeusDados() {
         } catch(e) { console.warn(e); }
     }
 
+    async function jogarModalidadeHome(mod) {
+        if (!MODALIDADES[mod]) return;
+
+        if (!modalidadePermitidaParaOficial(mod)) {
+            const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                ? modalidadeClassificatoriaUnicaAtiva() : null;
+            const nomeMod = modUnica && MODALIDADES[modUnica] ? MODALIDADES[modUnica].nome : "outra modalidade";
+            notificar(`🎯 A etapa oficial está focada em ${nomeMod}. Use o botão Treinar para praticar aqui.`, "aviso", 6000);
+            return;
+        }
+
+        const selMod = document.getElementById("modalidade-tabuada");
+        if (selMod) selMod.value = mod;
+        const nome  = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { mostrarTela("tela-single"); return; }
+        const fase = await resolverFaseAtual();
+        
+        const etapaAtiva = (
+            fase.tipo === ETAPA_FASES.etapa_aberta || 
+            fase.tipo === ETAPA_FASES.etapa_votacao || 
+            fase.tipo === ETAPA_FASES.etapa_definida
+        );
+        
+        if (!etapaAtiva) {
+            notificar("⏸️ A etapa classificatória não está aberta agora. Use o botão Treinar para aquecer!", "aviso", 5000);
+            return;
+        }
+        const inNome = document.getElementById("nome-aluno");
+        const selTurma = document.getElementById("turma-aluno");
+        if (inNome)   inNome.value   = nome;
+        if (selTurma) selTurma.value = turma;
+        await registrarAluno(false);
+    }
+
+    async function treinarModalidadeHome(mod) {
+        if (!MODALIDADES[mod]) return;
+        const selMod = document.getElementById("modalidade-tabuada");
+        if (selMod) selMod.value = mod;
+        const nome  = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        if (!nome || !turma) { mostrarTela("tela-single"); return; }
+        abrirMenuTreino(mod);
+    }
+    // ▲▲▲ FIM [18.07]
+
     // ▼▼▼ [18.08] Coach da Copa + FAB ────────────────────── INÍCIO ───
     // v10.13.7 · SIMPLIFICAÇÃO: Removido o modo "Ambos" do prompt.
     // O app agora foca exclusivamente em "Classificatória" ou "Olimpíadas".
