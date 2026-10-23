@@ -13063,6 +13063,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (!alunoAtual || !turmaAtual || !modalidadeAtual) { notificar("Dados não encontrados.", "aviso"); return; }
         const lista = montarListaComVariacoes(operacoesBase, modalidadeAtual);
         if (!lista.length) { notificar("Nenhuma variação disponível.", "aviso"); return; }
+        
+        // ⚠️ FIX: Fecha o modal de detalhes da operação antes de iniciar o treino
+        fecharModalOperacao();
+        fecharMapaCompleto();
+
         treinoFocoOperacoes = lista;
         modoTreino = true;
         iniciarPartidaTreino();
