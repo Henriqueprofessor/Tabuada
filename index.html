@@ -10632,6 +10632,35 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
     <!-- ▲▲▲ FIM [04.17] -->
 
+    <!-- ▼▼▼ [04.15.bis] MODAL GERENCIAR ALUNOS (Restaurado) ─── INÍCIO ─── -->
+    <div id="painel-alunos" class="modal-overlay hidden" onclick="if(event.target === this) fecharGerenciarAlunos()">
+        <div class="modal-card info-modal-card" style="max-width: 950px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>👥 Gerenciar Alunos</h3>
+                <button class="modal-close" onclick="fecharGerenciarAlunos()" aria-label="Fechar">✕</button>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <input type="text" id="filtro-alunos" placeholder="Buscar por nome..." oninput="filtrarAlunos()" style="flex: 1; min-width: 200px; margin: 0; padding: 10px 14px; background: rgba(10, 22, 40, 0.55); color: #f8fafc; border: 1px solid rgba(148, 163, 184, 0.28); border-radius: 8px;">
+                <select id="filtro-turma-alunos" onchange="filtrarAlunos()" style="width: 150px; margin: 0; padding: 10px 14px; background: rgba(10, 22, 40, 0.55); color: #f8fafc; border: 1px solid rgba(148, 163, 184, 0.28); border-radius: 8px;">
+                    <option value="">Todas as turmas</option>
+                    <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                    <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                    <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                </select>
+            </div>
+
+            <div id="lista-alunos-container" class="status-box scroll-list" style="max-height: 60vh; overflow-y: auto; background: rgba(10, 22, 40, 0.4); padding: 10px; border-radius: 10px;">
+                <div class="desempenho-loading">⏳ Carregando alunos...</div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button class="botao-secundario" onclick="fecharGerenciarAlunos()" style="width: auto; margin: 0;">Fechar</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.15.bis] -->
+
     <!-- ▼▼▼ [04.16] MODAL COACH DA COPA + FAB ─────────────────── INÍCIO ─── -->
     <div id="modal-ajuda-ia" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ia-modal-titulo" onclick="fecharAjudaIA(event)">
         <div class="modal-card ia-modal-card" onclick="event.stopPropagation()">
