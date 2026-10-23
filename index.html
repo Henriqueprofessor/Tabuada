@@ -9858,6 +9858,22 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <div id="destaques-painel-conteudo" style="margin-top:12px;"><div class="desempenho-loading">⏳ Carregando destaques…</div></div>
                 </div>
 
+                <!-- NOVO: Ranking de Percentual do Mapa -->
+                <div class="senha-container">
+                    <h4 style="margin-top:0;">🗺️ Ranking de Domínio do Mapa</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Mostra o percentual do mapa completo (operações verdes) de cada aluno, ordenado do maior para o menor.</p>
+                    <label for="ranking-mapa-filtro-turma" style="display:block;font-weight:600;font-size:12.5px;margin-bottom:4px;">Turma</label>
+                    <select id="ranking-mapa-filtro-turma" onchange="renderizarRankingMapaPercentual()">
+                        <option value="">Selecione uma turma</option>
+                        <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
+                        <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
+                        <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                    </select>
+                    <div id="ranking-mapa-conteudo" style="margin-top:12px;">
+                        <div class="heatmap-vazio">🎯 Selecione uma turma acima para ver o ranking.</div>
+                    </div>
+                </div>
+
                 <div class="senha-container">
                     <h4 style="margin-top:0;">🗺️ Mapa da Turma</h4>
                     <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Raio-X visual de quem domina o quê. Cada célula é uma operação (ex: 7×8). Clique numa célula do panorama para pular para a tabuada correspondente. Clique no nome do aluno para abrir o perfil completo dele.</p>
@@ -21456,7 +21472,76 @@ function abrirBuscarAlunoComMeusDados() {
         if (selTurma) selTurma.value = turma;
         if (typeof carregarPerfil === "function") carregarPerfil();
     }
+
+    // ▼▼▼ Adicionado: Ranking de Percentual do Mapa
+    async function renderizarRankingMapaPercentual() {
+        const sel = document.getElementById("ranking-mapa-filtro-turma");
+        const container = document.getElementById("ranking-mapa-conteudo");
+        if (!sel || !container) return;
+
+        const turma = sel.value;
+        if (!turma) {
+            container.innerHTML = `<div class="heatmap-vazio">🎯 Selecione uma turma acima para ver o ranking.</div>`;
+            return;
+        }
+
+        container.innerHTML = `<div class="heatmap-loading">⏳ Calculando percentuais…</div>`;
+
+        try {
+            let dados = {};
+            // Se o heatmap da mesma turma já foi carregado, reaproveita para economizar rede
+            if (heatmapEstado.turma === turma && Object.keys(heatmapEstado.dados).length > 0) {
+                dados = heatmapEstado.dados;
+            } else {
+                dados = await carregarDadosHeatmap(turma);
+            }
+
+            const alunos = Object.values(dados);
+            if (alunos.length === 0) {
+                container.innerHTML = `<div class="heatmap-vazio">Nenhum aluno com dados nesta turma.</div>`;
+                return;
+            }
+
+            const lista = alunos.map(al => {
+                let dominadas = 0;
+                Object.values(al.operacoes || {}).forEach(cor => {
+                    if (cor === "verde") dominadas++;
+                });
+                return { nome: al.nome, dominadas, pct: Math.round((dominadas / 100) * 100) };
+            });
+
+            // Ordena do maior percentual para o menor
+            lista.sort((a, b) => b.dominadas - a.dominadas || a.nome.localeCompare(b.nome));
+
+            let html = `<div style="display: flex; flex-direction: column; gap: 6px;">`;
+            
+            lista.forEach((item, i) => {
+                const pos = i + 1;
+                const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `${pos}º`;
+                const corBarra = item.pct >= 90 ? "#10b981" : item.pct >= 50 ? "#fbbf24" : "#ef4444";
+                
+                html += `<div style="display: grid; grid-template-columns: 35px 1fr 80px 50px; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(10,22,40,0.6); border-radius: 8px; border: 1px solid rgba(56,189,248,0.15);">
+                    <span style="font-size: 14px; font-weight: 900; color: var(--text-secondary); text-align: center;">${medal}</span>
+                    <span style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escaparHtml(item.nome)}</span>
+                    <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden;">
+                        <div style="height: 100%; width: ${item.pct}%; background: ${corBarra}; border-radius: 4px;"></div>
+                    </div>
+                    <span style="font-size: 15px; font-weight: 900; color: ${corBarra}; text-align: right;">${item.pct}%</span>
+                </div>`;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html;
+
+        } catch(e) {
+            console.warn("[Painel] Falha ao renderizar ranking do mapa:", e);
+            container.innerHTML = `<div class="heatmap-vazio">Não foi possível carregar os dados agora.</div>`;
+        }
+    }
+    // ▲▲▲ FIM Adicionado
+
     // ▲▲▲ FIM [17.08]
+
     // ▼▼▼ [17.09] Painel — Sugestões de Intervenção (P20) ───────────────
 
     function renderizarSugestoesIntervencao() {
