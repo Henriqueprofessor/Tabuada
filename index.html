@@ -19551,31 +19551,53 @@ function abrirBuscarAlunoComMeusDados() {
         comparativoTurmaCache = { turma, modalidade: modal, dados };
         renderizarComparativoComDados(dados, nome, turma);
     }
+
     async function calcularMetricasTurma(turma, modalFiltro) {
-        const todasPartidas = await obterPartidas();
-        const partidasTurma = todasPartidas.filter(p => p.turma === turma && (modalFiltro === "todas" || p.modalidade === modalFiltro));
-        const porAluno = new Map();
-        partidasTurma.forEach(p => {
-            const k = normalizarNome(p.nome);
-            if (!porAluno.has(k)) porAluno.set(k, { nome: p.nome, partidas: [] });
-            porAluno.get(k).partidas.push(p);
-        });
+        // ⚠️ OTIMIZAÇÃO: Lê apenas o histórico do aluno e os melhores da turma (não baixa a escola inteira)
+        const [partidasAluno, ...rankingsMods] = await Promise.all([
+            obterHistoricoAluno(obterNomeSalvoAluno(), turma).catch(() => []),
+            ...(modalFiltro === "todas" ? Object.keys(MODALIDADES).map(m => obterMelhoresDaTurma(m, turma).catch(() => [])) : [obterMelhoresDaTurma(modalFiltro, turma).catch(() => [])])
+        ]);
+
         const metricas = { pontos: [], precisao: [], velocidade: [], partidas: [] };
-        porAluno.forEach(({ nome, partidas }) => {
-            const pontos = partidas.map(p => Number(p.pontos) || 0);
-            const melhorPonto = Math.max(...pontos, 0);
-            const acertos = partidas.map(p => Number(p.acertos) || 0);
-            const melhorAcertos = Math.max(...acertos, 0);
-            const precisao = (melhorAcertos / 20) * 100;
-            const tempos = partidas.map(p => Number(p.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
-            const vel = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : 999;
-            metricas.pontos.push({ nome, valor: melhorPonto });
-            metricas.precisao.push({ nome, valor: precisao });
-            metricas.velocidade.push({ nome, valor: vel });
-            metricas.partidas.push({ nome, valor: partidas.length });
+        const alunosMapeados = new Map();
+
+        // 1. Adiciona os dados do aluno logado
+        const nomeAluno = obterNomeSalvoAluno();
+        const partidasFiltradasAluno = (modalFiltro === "todas" ? partidasAluno : partidasAluno.filter(p => p.modalidade === modalFiltro));
+        const pontosAluno = partidasFiltradasAluno.map(p => Number(p.pontos) || 0);
+        const melhorPontoAluno = Math.max(...pontosAluno, 0);
+        const acertosAluno = partidasFiltradasAluno.map(p => Number(p.acertos) || 0);
+        const melhorAcertosAluno = Math.max(...acertosAluno, 0);
+        const temposAluno = partidasFiltradasAluno.map(p => Number(p.tempoMedio)).filter(t => Number.isFinite(t) && t > 0);
+        const velAluno = temposAluno.length ? temposAluno.reduce((a, b) => a + b, 0) / temposAluno.length : 999;
+
+        alunosMapeados.set(normalizarNome(nomeAluno), { nome: nomeAluno, melhorPonto: melhorPontoAluno, melhorAcertos: melhorAcertosAluno, vel: velAluno, totalPartidas: partidasFiltradasAluno.length });
+
+        // 2. Adiciona os dados dos colegas (via ranking otimizado)
+        rankingsMods.flat().forEach(r => {
+            const k = normalizarNome(r.nome);
+            if (!alunosMapeados.has(k)) {
+                alunosMapeados.set(k, { 
+                    nome: r.nome, 
+                    melhorPonto: Number(r.pontos) || 0, 
+                    melhorAcertos: Number(r.acertos) || 0, 
+                    vel: Number(r.tempoMedio) || 999,
+                    totalPartidas: Number(r.totalPartidas) || 1
+                });
+            }
         });
+
+        alunosMapeados.forEach(al => {
+            metricas.pontos.push({ nome: al.nome, valor: al.melhorPonto });
+            metricas.precisao.push({ nome: al.nome, valor: (al.melhorAcertos / 20) * 100 });
+            metricas.velocidade.push({ nome: al.nome, valor: al.vel });
+            metricas.partidas.push({ nome: al.nome, valor: al.totalPartidas });
+        });
+
         return metricas;
     }
+
     function calcularPosicaoMetrica(lista, nomeAluno, ordem = "desc") {
         const nomeNorm = normalizarNome(nomeAluno);
         const alunoItem = lista.find(i => normalizarNome(i.nome) === nomeNorm);
@@ -19587,10 +19609,12 @@ function abrirBuscarAlunoComMeusDados() {
         for (let i = 0; i < idx; i++) { if (ordem === "desc" ? sorted[i].valor > valorAluno : sorted[i].valor < valorAluno) pos++; }
         return { pos, total: sorted.length, valor: valorAluno };
     }
+
     function calcularMediaMetrica(lista) {
         if (!lista.length) return 0;
         return lista.reduce((s, i) => s + i.valor, 0) / lista.length;
     }
+
     function renderizarComparativoComDados(dados, nomeAluno, turma) {
         const container = document.getElementById("desempenho-turma-container");
         if (!container) return;
@@ -19643,36 +19667,51 @@ function abrirBuscarAlunoComMeusDados() {
         const modal = desempenhoModalidadeAtual;
         const minhas = (modal === "todas") ? desempenhoPartidasCache : desempenhoPartidasCache.filter(p => p.modalidade === modal);
         if (!minhas.length) { container.innerHTML = `<div class="desempenho-empty-msg">Você ainda não tem partidas nesta modalidade.</div>`; return; }
+        
         const minhasOrdenadas = [...minhas].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
         const total = minhasOrdenadas.length;
         if (total < 2) { container.innerHTML = `<div class="desempenho-empty-msg">🎯 Jogue pelo menos <strong>2 partidas</strong> nesta modalidade para ver sua evolução no ranking da turma.</div>`; return; }
+        
         const cps = new Set([1]);
         [5, 10, 15, 20].forEach(k => { if (k < total) cps.add(k); });
         cps.add(total);
         const checkpoints = Array.from(cps).sort((a, b) => a - b);
-        const todas = await obterPartidas();
-        const daTurma = todas.filter(p => p.turma === turma && (modal === "todas" || p.modalidade === modal));
+        
+        // ⚠️ OTIMIZAÇÃO: Pega apenas o histórico do aluno e os melhores da turma, sem baixar tudo
+        const [partidasAluno, ...rankingsMods] = await Promise.all([
+            obterHistoricoAluno(nome, turma).catch(() => []),
+            ...(modal === "todas" ? Object.keys(MODALIDADES).map(m => obterMelhoresDaTurma(m, turma).catch(() => [])) : [obterMelhoresDaTurma(modal, turma).catch(() => [])])
+        ]);
+
+        const melhoresDaTurma = rankingsMods.flat();
         const minhaChave = normalizarNome(nome);
         const resultados = [];
+
         for (const cp of checkpoints) {
             const partidaRef = minhasOrdenadas[cp - 1];
             const tsLimite = new Date(partidaRef.data || 0).getTime();
-            const melhorPorAluno = new Map();
-            daTurma.forEach(p => {
-                const ts = new Date(p.data || 0).getTime();
-                if (ts > tsLimite) return;
-                const k = normalizarNome(p.nome);
-                const pts = Number(p.pontos) || 0;
-                if (!melhorPorAluno.has(k) || pts > melhorPorAluno.get(k)) melhorPorAluno.set(k, pts);
+            
+            // Filtra as partidas do próprio aluno até o checkpoint
+            const doAlunoAteCp = partidasAluno.filter(p => new Date(p.data || 0).getTime() <= tsLimite);
+            if (doAlunoAteCp.length === 0) continue;
+            
+            const melhorAlunoAteCp = Math.max(...doAlunoAteCp.map(p => Number(p.pontos) || 0));
+            
+            // Usa o melhor da turma atual como base para a simulação de ranking
+            let pos = 1;
+            melhoresDaTurma.forEach(r => {
+                if (normalizarNome(r.nome) !== minhaChave && (Number(r.pontos) || 0) > melhorAlunoAteCp) {
+                    pos++;
+                }
             });
-            if (!melhorPorAluno.has(minhaChave)) continue;
-            const lista = Array.from(melhorPorAluno.entries()).map(([k, v]) => ({ chave: k, pontos: v })).sort((a, b) => b.pontos - a.pontos);
-            const idx = lista.findIndex(i => i.chave === minhaChave);
-            if (idx === -1) continue;
-            resultados.push({ cp, pos: idx + 1, totalAlunos: lista.length });
+
+            resultados.push({ cp, pos, totalAlunos: melhoresDaTurma.length > 0 ? melhoresDaTurma.length : 1 });
         }
+
         if (resultados.length < 2) { container.innerHTML = `<div class="desempenho-empty-msg">Ainda não há colegas suficientes no ranking para comparar sua evolução. Continue jogando!</div>`; return; }
+        
         let html = `<div class="desempenho-evolucao-cabecalho"><span class="desempenho-evolucao-cabecalho-emoji">📉</span><span>Sua trajetória no ranking da turma <strong>${turma}</strong></span></div>`;
+        
         resultados.forEach((r, i) => {
             const anterior = i > 0 ? resultados[i - 1] : null;
             const delta = anterior ? anterior.pos - r.pos : 0;
@@ -19685,6 +19724,7 @@ function abrirBuscarAlunoComMeusDados() {
             const label = r.cp === 1 ? "Primeira partida" : (isAtual ? `Após ${r.cp} partidas <em style="opacity:.7;font-style:normal;">(agora)</em>` : `Após ${r.cp} partidas`);
             html += `<div class="evolucao-linha ${isAtual ? "atual" : ""}"><span class="evolucao-momento">${label}</span><span class="evolucao-posicao">${r.pos}º <small>de ${r.totalAlunos}</small></span>${badge}</div>`;
         });
+        
         const primeira = resultados[0].pos;
         const ultima = resultados[resultados.length - 1].pos;
         const ganho = primeira - ultima;
