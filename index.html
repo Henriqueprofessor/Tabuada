@@ -11248,32 +11248,33 @@ verificarVersao();
     // [06] JS-FB · Estado global da aplicação
     // ═══════════════════════════════════════════════════════════════════════
 
-// ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
-let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
-let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
-let treinoAnonimo = false;
-let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
-let chutesRapidos = 0; // ⚠️ NOVO: Contador para o Rei do Chute
-let desempenhoOperacoes = {};
-let mapaFonteUltima = {};
-let mapaFonteAgregada = {};
-let modoVisualizacaoMapa = "agregado";
-let treinoFocoOperacoes = null;
-let treinoListaInteligente = null;
-let treinoFocoAbsoluto = null;
-let aguardandoFeedbackErro = false;
-let promocoesRecentes = [];
-let pilhaDetalhes = [];
-let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
-let alunosData=[], alunosFiltrados=[];
-let melhorMediaAluno = null, mediaTurma = null;
-let somAtivo = true, jaToCouSomSuperacao = false;
-let ultimoMelhorOficial = null, ultimaTentativa = null;
-let votacaoInicioCache = null;
-let votacaoTimerInterval = null;
-let countdownTimerInterval = null;
-let etapaEstadoCache = null;
-// ▲▲▲ FIM [06.01]
+    // ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
+    let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
+    let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
+    let treinoAnonimo = false;
+    let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
+    let chutesRapidos = 0;
+    let desempenhoOperacoes = {};
+    let mapaFonteUltima = {};
+    let mapaFonteAgregada = {};
+    let modoVisualizacaoMapa = "agregado";
+    let treinoFocoOperacoes = null;
+    let treinoListaInteligente = null;
+    let treinoFocoAbsoluto = null;
+    let aguardandoFeedbackErro = false;
+    let promocoesRecentes = [];
+    let pilhaDetalhes = [];
+    let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
+    let alunosData=[], alunosFiltrados=[];
+    let melhorMediaAluno = null, mediaTurma = null;
+    let somAtivo = true, jaToCouSomSuperacao = false;
+    let ultimoMelhorOficial = null, ultimaTentativa = null;
+    let votacaoInicioCache = null;
+    let votacaoTimerInterval = null;
+    let countdownTimerInterval = null;
+    let etapaEstadoCache = null;
+    let tentativasCancelar = 0; // ⚠️ NOVO: Contador anti-exploit
+    // ▲▲▲ FIM [06.01]
 
     // ▼▼▼ [06.02] Estado do desempenho ─────────────────────────────────────
     let desempenhoPartidasCache = [];
@@ -18090,11 +18091,6 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [14.04]
 
     // ▼▼▼ [14.05] Início de partida ────────────────────────────────────
-    // v10.13.0 · P-B4 (Pacote 2) — Defesa em profundidade
-    //   iniciarPartidaClassificatoria valida a modalidade novamente mesmo
-    //   que o caminho normal (registrarAluno) já a tenha validado — para
-    //   cobrir chamadas vindas de jogarNovamente ou de qualquer caminho
-    //   futuro que esqueça a barreira.
     function iniciarPartidaTreino() {
         modoTreino = true;
         reiniciarVariaveisJogo();
@@ -18147,6 +18143,7 @@ function abrirBuscarAlunoComMeusDados() {
         perguntasGeradas = []; tabuadaAtualPergunta = null;
         acertouPrimeira = false; temposRapidos = 0;
         chutesRapidos = 0;
+        tentativasCancelar = 0; // ⚠️ Zera o contador anti-exploit a cada nova partida
         jogoAtivo = true; finalizando = false;
         if (timerInterval) clearInterval(timerInterval);
         if (timerTimeout) clearTimeout(timerTimeout);
@@ -18334,9 +18331,6 @@ function abrirBuscarAlunoComMeusDados() {
     function alternarBotoes(d) { document.querySelectorAll(".btn-opcao").forEach(b => b.disabled = d); }
 
     // ⚙️ [13] — NOVO: decide se o botão "✕ Encerrar tentativa" pode aparecer.
-    //   · Treino (anônimo, identificado, inteligente, foco, variações) → SEMPRE pode
-    //   · Oficial → SÓ a partir da 2ª partida oficial daquela modalidade
-    //     (ou seja: precisa ter pelo menos uma partida COMPLETA anterior)
     async function podeCancelarPartidaAtual() {
         if (treinoAnonimo) return true;
         if (modoTreino) return true;
@@ -18345,12 +18339,10 @@ function abrirBuscarAlunoComMeusDados() {
             return (partidas || []).some(ehPartidaCompleta);
         } catch(e) {
             console.warn("Falha ao verificar permissão de cancelamento:", e);
-            return false; // em erro, mantém oculto (mais seguro)
+            return false;
         }
     }
 
-    // ⚙️ [13] — NOVO: aplica a visibilidade do botão. Fire-and-forget:
-    // chamada por iniciarPartidaTreino / iniciarPartidaClassificatoria.
     async function atualizarVisibilidadeBotaoCancelar() {
         const btn = document.getElementById("btn-encerrar-tentativa");
         if (!btn) return;
@@ -18358,8 +18350,22 @@ function abrirBuscarAlunoComMeusDados() {
         btn.classList.toggle("hidden", !pode);
     }
 
+    // ⚠️ ANTI-EXPLOIT: Ação na surdina após 5 tentativas
     function forcarFinalizacao() {
-        if (jogoAtivo && confirm(
+        if (!jogoAtivo) return;
+
+        tentativasCancelar++;
+
+        // Se já tentou 5 vezes, a 6ª é a punição (encerra direto sem perguntar)
+        if (tentativasCancelar > 5) {
+            clearInterval(timerInterval); 
+            clearTimeout(timerTimeout); 
+            notificar("Sua tentativa foi encerrada.", "aviso", 3000);
+            finalizarCircuito();
+            return;
+        }
+
+        if (confirm(
             "Encerrar agora?\n\n" +
             "✅ Completando as 20 perguntas, a partida vale para medalhas, Hall da Fama e Álbum.\n\n" +
             "⚠️ Encerrando antes, ela conta só no seu histórico, mapa e média."
