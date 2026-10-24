@@ -16834,38 +16834,58 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // Adicionado: Cálculo do Ranking de Precisão (Média de Acertos)
     async function obterRankingMediaAcertos(turma = null) {
-        let partidas = [];
+        const stats = {};
+        
+        // ⚠️ OTIMIZAÇÃO: Se ativa, lê do resumo (rápido e leve) em vez de baixar todas as partidas
         if (await otimizacaoV109Ativa()) {
-            const alunoKeys = [];
-            // Se tem turma, precisamos filtrar (mas o nó partidas_por_aluno não tem índice por turma, então teríamos que baixar tudo).
-            // Por segurança e para manter compatibilidade, vamos usar a função legada que já resolve isso.
-            partidas = await obterPartidas();
-        } else {
-            partidas = await obterPartidas();
+            try {
+                const snapBest = await database.ref(`${CAMINHO_RANKING_RESUMO}/media`).once("value");
+                const dadosMedia = snapBest.val() || {};
+                const mods = ["2-5", "6-9", "0-10"];
+                
+                for (const mod of mods) {
+                    const alunosMod = dadosMedia[mod] || {};
+                    Object.values(alunosMod).forEach(m => {
+                        if (!m || !m.nome) return;
+                        if (turma && m.turma !== turma) return;
+                        
+                        const k = `${normalizarNome(m.nome)}|${m.turma}`;
+                        if (!stats[k]) {
+                            stats[k] = { nome: m.nome, turma: m.turma, mods: { "2-5": { acertos: 0, partidas: 0 }, "6-9": { acertos: 0, partidas: 0 }, "0-10": { acertos: 0, partidas: 0 } }, totalAcertos: 0, totalPartidas: 0 };
+                        }
+                        
+                        const acertos = Number(m.somaAcertos) || 0; // Lê o campo novo
+                        const qtd = Number(m.partidasOficiais) || 0;
+                        
+                        stats[k].mods[mod].acertos += acertos;
+                        stats[k].mods[mod].partidas += qtd;
+                        stats[k].totalAcertos += acertos;
+                        stats[k].totalPartidas += qtd;
+                    });
+                }
+            } catch(e) {
+                console.warn("[Ranking Precisão] Falha ao ler resumo, usando fallback:", e);
+            }
         }
 
-        const stats = {};
-        partidas.forEach(p => {
-            if (turma && p.turma !== turma) return;
-            if (!p.modalidade || !MODALIDADES[p.modalidade]) return;
-            
-            const k = `${normalizarNome(p.nome)}|${p.turma}`;
-            if (!stats[k]) {
-                stats[k] = { 
-                    nome: p.nome, 
-                    turma: p.turma, 
-                    mods: { "2-5": { acertos: 0, partidas: 0 }, "6-9": { acertos: 0, partidas: 0 }, "0-10": { acertos: 0, partidas: 0 } }, 
-                    totalAcertos: 0, 
-                    totalPartidas: 0 
-                };
-            }
-            
-            const acertos = Number(p.acertos) || 0;
-            stats[k].mods[p.modalidade].acertos += acertos;
-            stats[k].mods[p.modalidade].partidas += 1;
-            stats[k].totalAcertos += acertos;
-            stats[k].totalPartidas += 1;
-        });
+        // Fallback (se otimização falhar ou estiver inativa)
+        if (Object.keys(stats).length === 0) {
+            const partidas = await obterPartidas();
+            partidas.forEach(p => {
+                if (turma && p.turma !== turma) return;
+                if (!p.modalidade || !MODALIDADES[p.modalidade]) return;
+                
+                const k = `${normalizarNome(p.nome)}|${p.turma}`;
+                if (!stats[k]) {
+                    stats[k] = { nome: p.nome, turma: p.turma, mods: { "2-5": { acertos: 0, partidas: 0 }, "6-9": { acertos: 0, partidas: 0 }, "0-10": { acertos: 0, partidas: 0 } }, totalAcertos: 0, totalPartidas: 0 };
+                }
+                const acertos = Number(p.acertos) || 0;
+                stats[k].mods[p.modalidade].acertos += acertos;
+                stats[k].mods[p.modalidade].partidas += 1;
+                stats[k].totalAcertos += acertos;
+                stats[k].totalPartidas += 1;
+            });
+        }
 
         const modUnicaAtiva = (typeof modalidadeClassificatoriaUnicaAtiva === "function") ? modalidadeClassificatoriaUnicaAtiva() : null;
         const lista = [];
@@ -16880,8 +16900,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             if (elegivel) {
                 lista.push({
-                    nome: s.nome,
-                    turma: s.turma,
+                    nome: s.nome, turma: s.turma,
                     media25: s.mods["2-5"].partidas > 0 ? s.mods["2-5"].acertos / s.mods["2-5"].partidas : 0,
                     media69: s.mods["6-9"].partidas > 0 ? s.mods["6-9"].acertos / s.mods["6-9"].partidas : 0,
                     media010: s.mods["0-10"].partidas > 0 ? s.mods["0-10"].acertos / s.mods["0-10"].partidas : 0,
@@ -17317,18 +17336,8 @@ function abrirBuscarAlunoComMeusDados() {
 // ▲▲▲ FIM [13.08]
 
     // ▼▼▼ [13.12] Otimização v10.9.0 — Gravação desnormalizada + backfill ─── INÍCIO ───
-    // Coração da otimização. Aqui ficam:
-    //   • atualizarRankingResumoPosPartida() — idempotente, chamada por salvarResultado()
-    //   • recalcularResumosCompleto() — backfill manual (botão no Painel)
-    //   • setOtimizacaoAtiva() / desativarOtimizacao() — controle da flag
-
+    
     // ─── Gravação de UM aluno (chamada em salvarResultado) ───
-    // Fluxo (sequencial, cada etapa é atômica no seu caminho):
-    //   1. Marca partidas_contabilizadas/{mod}/{alunoKey}/{idPartida} = true
-    //      via transaction. Se já existir, aborta e retorna.
-    //   2. Atualiza best (se completa e melhor) via transaction.
-    //   3. Atualiza best_turma (mesma regra, espelho) via transaction.
-    //   4. Atualiza media (soma e contagem) via transaction.
     async function atualizarRankingResumoPosPartida(res) {
         if (!res || !res.nome || !res.turma || !res.modalidade) return;
         const alunoKey = chaveAlbum(res.nome, res.turma);
@@ -17345,13 +17354,10 @@ function abrirBuscarAlunoComMeusDados() {
                 if (atual === true) return; // aborta (já contabilizada)
                 return true;
             });
-            if (!resultado.committed) {
-                // Já contabilizada — nada a fazer
-                return;
-            }
+            if (!resultado.committed) return; // Já contabilizada
         } catch(e) {
             console.warn("[Otimização] Falha na flag de contabilização:", e);
-            return; // não prossegue (evita duplicação)
+            return;
         }
 
         // ─── Etapa 2: best (só partidas completas) ───
@@ -17361,37 +17367,29 @@ function abrirBuscarAlunoComMeusDados() {
                 await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}/${alunoKey}`).transaction(atual => {
                     if (!atual) return best;
                     if (ehMelhorResultado(best, atual)) return best;
-                    return; // mantém o atual
+                    return;
                 });
-            } catch(e) {
-                console.warn("[Otimização] Falha ao atualizar best:", e);
-            }
+            } catch(e) {}
             try {
                 await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/${mod}/${alunoKey}`).transaction(atual => {
                     if (!atual) return best;
                     if (ehMelhorResultado(best, atual)) return best;
                     return;
                 });
-            } catch(e) {
-                console.warn("[Otimização] Falha ao atualizar best_turma:", e);
-            }
+            } catch(e) {}
         }
 
-        // ─── Etapa 3: media (todas as partidas oficiais, completas ou parciais) ───
-        // O resumo/media conta a "soma dos pontos" e o "número de partidas".
-        // A média é derivada na leitura.
+        // ─── Etapa 3: media (todas as partidas oficiais) ───
         const pontos = Number(res.pontos) || 0;
+        const acertos = Number(res.acertos) || 0;
         try {
             await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}/${alunoKey}`).transaction(atual => {
                 const base = atual || {
-                    nome: res.nome,
-                    turma: res.turma,
-                    somaPontos: 0,
-                    partidasOficiais: 0,
-                    partidasCompletas: 0,
-                    ts: Date.now()
+                    nome: res.nome, turma: res.turma,
+                    somaPontos: 0, somaAcertos: 0, partidasOficiais: 0, partidasCompletas: 0, ts: Date.now()
                 };
                 base.somaPontos       = (Number(base.somaPontos) || 0) + pontos;
+                base.somaAcertos      = (Number(base.somaAcertos) || 0) + acertos; // ⚠️ NOVO: Soma acertos para o Ranking de Precisão
                 base.partidasOficiais = (Number(base.partidasOficiais) || 0) + 1;
                 if (completa) base.partidasCompletas = (Number(base.partidasCompletas) || 0) + 1;
                 base.ts = Date.now();
@@ -17402,72 +17400,35 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    // ─── Controle da flag ───
     async function setOtimizacaoAtiva(ativo) {
         try {
-            await database.ref(CAMINHO_OTIMIZACAO_V109).update({
-                ativo: !!ativo,
-                atualizadoEm: Date.now()
-            });
+            await database.ref(CAMINHO_OTIMIZACAO_V109).update({ ativo: !!ativo, atualizadoEm: Date.now() });
             invalidarCacheOtimizacaoV109();
             return true;
-        } catch(e) {
-            console.warn("[Otimização] Falha ao gravar flag:", e);
-            return false;
-        }
+        } catch(e) { return false; }
     }
 
     async function ativarOtimizacaoV109() {
         if (!exigirProfessorAutenticado()) return;
-        const ok = confirm(
-            "✅ ATIVAR OTIMIZAÇÃO v10.9.0\n\n" +
-            "A partir de agora, as leituras usarão os nós novos (partidas_por_aluno e ranking_resumo).\n\n" +
-            "⚠️ ANTES de ativar, rode 'Recalcular resumos' para backfill dos dados históricos.\n\n" +
-            "Se algo der errado, você pode desativar a qualquer momento pelo Painel.\n\n" +
-            "Ativar agora?"
-        );
+        const ok = confirm("✅ ATIVAR OTIMIZAÇÃO\n\n⚠️ ANTES de ativar, rode 'Recalcular resumos' para backfill dos dados.\n\nAtivar agora?");
         if (!ok) return;
         if (await setOtimizacaoAtiva(true)) {
-            notificar("✅ Otimização ATIVADA. Leituras usarão os nós novos.", "sucesso", 5000);
-            try { somNovoRecorde(); } catch(e) {}
+            notificar("✅ Otimização ATIVADA.", "sucesso", 5000);
             renderizarPainelOtimizacao();
-        } else {
-            notificar("❌ Não foi possível ativar.", "erro", 5000);
         }
     }
 
     async function desativarOtimizacaoV109() {
         if (!exigirProfessorAutenticado()) return;
-        const ok = confirm(
-            "🚫 DESATIVAR OTIMIZAÇÃO v10.9.0\n\n" +
-            "As leituras voltam para o formato antigo (download completo de `resultados` e `partidas`).\n\n" +
-            "⚠️ Nada é apagado. As gravações continuam nos dois formatos (dual-write).\n\n" +
-            "Desativar agora?"
-        );
-        if (!ok) return;
         if (await setOtimizacaoAtiva(false)) {
-            notificar("🚫 Otimização desativada. Voltando ao formato legacy.", "info", 5000);
+            notificar("🚫 Otimização desativada.", "info", 5000);
             renderizarPainelOtimizacao();
-        } else {
-            notificar("❌ Não foi possível desativar.", "erro", 5000);
         }
     }
 
-    // ─── Backfill manual ───
-    // Lê TODO o `resultados` e `partidas` (uma única vez) e popula
-    // ranking_resumo e partidas_por_aluno. Rodar quantas vezes quiser —
-    // é idempotente (transactions + sobrescrita).
     async function recalcularResumosCompleto() {
         if (!exigirProfessorAutenticado()) return;
-        const ok = confirm(
-            "🔄 RECALCULAR RESUMOS\n\n" +
-            "Esta operação:\n" +
-            "• Baixa TODO o `resultados` e `partidas` (uma vez)\n" +
-            "• Popula `ranking_resumo` e `partidas_por_aluno`\n" +
-            "• É IDEMPOTENTE (pode rodar várias vezes)\n\n" +
-            "⚠️ Pode demorar 1-3 minutos. Não feche a aba.\n\n" +
-            "Continuar?"
-        );
+        const ok = confirm("🔄 RECALCULAR RESUMOS\n\nIsso vai baixar TODO o `resultados` e `partidas` e preencher o resumo (incluindo a soma de acertos).\n\nPode demorar 1-3 minutos. Continuar?");
         if (!ok) return;
 
         const container = document.getElementById("painel-otimizacao-resultado");
@@ -17491,12 +17452,6 @@ function abrirBuscarAlunoComMeusDados() {
             const partidas = Object.values(snapP.val() || {});
             logar(`✓ Baixados: ${resultados.length} resultados, ${partidas.length} partidas.`, "ok");
 
-            if (resultados.length === 0 && partidas.length === 0) {
-                logar("⚠️ Não há dados para backfill. O resumo permanecerá vazio.", "erro");
-                return;
-            }
-
-            // ─── 1) Backfill partidas_por_aluno ───
             logar("⏳ Populando partidas_por_aluno…", "info");
             const porAlunoPartidas = {};
             for (const p of partidas) {
@@ -17508,68 +17463,47 @@ function abrirBuscarAlunoComMeusDados() {
             }
             let countPPA = 0;
             for (const [alunoKey, mapa] of Object.entries(porAlunoPartidas)) {
-                try {
-                    await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).set(mapa);
-                    countPPA += Object.keys(mapa).length;
-                } catch(e) {
-                    logar(`❌ Falha em ${alunoKey}: ${e.message}`, "erro");
-                }
+                await database.ref(`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`).set(mapa);
+                countPPA += Object.keys(mapa).length;
             }
-            logar(`✓ partidas_por_aluno: ${countPPA} partidas em ${Object.keys(porAlunoPartidas).length} alunos.`, "ok");
+            logar(`✓ partidas_por_aluno: ${countPPA} partidas indexadas.`, "ok");
 
-            // ─── 2) Backfill ranking_resumo ───
             logar("⏳ Populando ranking_resumo (best + media)…", "info");
-
-            // best: melhor resultado por aluno por modalidade
             const bestPorMod = { "2-5": {}, "6-9": {}, "0-10": {} };
             for (const r of resultados) {
-                if (!r || !r.nome || !r.turma || !r.modalidade) continue;
-                if (!ehPartidaCompleta(r)) continue;
+                if (!r || !r.nome || !r.turma || !r.modalidade || !ehPartidaCompleta(r)) continue;
                 const mod = r.modalidade;
-                if (!bestPorMod[mod]) continue;
                 const alunoKey = chaveAlbum(r.nome, r.turma);
                 if (!alunoKey) continue;
                 const atual = bestPorMod[mod][alunoKey];
-                if (!atual || ehMelhorResultado(r, atual)) {
-                    bestPorMod[mod][alunoKey] = montarObjetoBestDaPartida(r);
-                }
+                if (!atual || ehMelhorResultado(r, atual)) bestPorMod[mod][alunoKey] = montarObjetoBestDaPartida(r);
             }
 
-            // media: soma + contagem por aluno por modalidade
             const mediaPorMod = { "2-5": {}, "6-9": {}, "0-10": {} };
             for (const p of partidas) {
                 if (!p || !p.nome || !p.turma || !p.modalidade) continue;
                 const mod = p.modalidade;
-                if (!mediaPorMod[mod]) continue;
                 const alunoKey = chaveAlbum(p.nome, p.turma);
                 if (!alunoKey) continue;
-                const base = mediaPorMod[mod][alunoKey] || {
-                    nome: p.nome, turma: p.turma,
-                    somaPontos: 0, partidasOficiais: 0, partidasCompletas: 0, ts: Date.now()
-                };
-                base.somaPontos       += Number(p.pontos) || 0;
+                const base = mediaPorMod[mod][alunoKey] || { nome: p.nome, turma: p.turma, somaPontos: 0, somaAcertos: 0, partidasOficiais: 0, partidasCompletas: 0, ts: Date.now() };
+                base.somaPontos += Number(p.pontos) || 0;
+                base.somaAcertos += Number(p.acertos) || 0; // ⚠️ NOVO: Soma acertos
                 base.partidasOficiais += 1;
                 if (ehPartidaCompleta(p)) base.partidasCompletas += 1;
                 base.ts = Date.now();
                 mediaPorMod[mod][alunoKey] = base;
             }
 
-            // Grava por modalidade (um `set` por nó)
             let countBest = 0, countMedia = 0;
             for (const mod of ["2-5", "6-9", "0-10"]) {
-                try {
-                    await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}`).set(bestPorMod[mod]);
-                    countBest += Object.keys(bestPorMod[mod]).length;
-                } catch(e) { logar(`❌ best/${mod}: ${e.message}`, "erro"); }
-                try {
-                    await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}`).set(mediaPorMod[mod]);
-                    countMedia += Object.keys(mediaPorMod[mod]).length;
-                } catch(e) { logar(`❌ media/${mod}: ${e.message}`, "erro"); }
+                await database.ref(`${CAMINHO_RANKING_RESUMO}/best/${mod}`).set(bestPorMod[mod]);
+                countBest += Object.keys(bestPorMod[mod]).length;
+                await database.ref(`${CAMINHO_RANKING_RESUMO}/media/${mod}`).set(mediaPorMod[mod]);
+                countMedia += Object.keys(mediaPorMod[mod]).length;
             }
-            logar(`✓ best: ${countBest} alunos (3 modalidades).`, "ok");
-            logar(`✓ media: ${countMedia} alunos (3 modalidades).`, "ok");
+            logar(`✓ best: ${countBest} alunos.`, "ok");
+            logar(`✓ media: ${countMedia} alunos.`, "ok");
 
-            // ─── 3) best_turma (espelho de best, chaveado por turma) ───
             logar("⏳ Populando best_turma…", "info");
             const bestPorTurmaMod = {};
             for (const mod of ["2-5", "6-9", "0-10"]) {
@@ -17580,19 +17514,11 @@ function abrirBuscarAlunoComMeusDados() {
                     bestPorTurmaMod[turma][mod][alunoKey] = best;
                 }
             }
-            let countBT = 0;
             for (const [turma, porMod] of Object.entries(bestPorTurmaMod)) {
-                try {
-                    await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}`).set(porMod);
-                    for (const mod of Object.keys(porMod)) countBT += Object.keys(porMod[mod]).length;
-                } catch(e) { logar(`❌ best_turma/${turma}: ${e.message}`, "erro"); }
+                await database.ref(`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}`).set(porMod);
             }
-            logar(`✓ best_turma: ${countBT} entradas em ${Object.keys(bestPorTurmaMod).length} turmas.`, "ok");
+            logar(`✓ best_turma atualizado.`, "ok");
 
-            // ─── 4) partidas_contabilizadas (marca tudo como já contabilizado) ───
-            // Como estamos REESCREVENDO best e media do zero, a marcação de
-            // partidas_contabilizadas também é refeita. Sem isso, uma partida
-            // antiga salva depois da otimização seria contada em dobro.
             logar("⏳ Atualizando flags de idempotência…", "info");
             const flags = { "2-5": {}, "6-9": {}, "0-10": {} };
             for (const p of partidas) {
@@ -17604,27 +17530,21 @@ function abrirBuscarAlunoComMeusDados() {
                 flags[p.modalidade][alunoKey][p.idPartida] = true;
             }
             for (const mod of ["2-5", "6-9", "0-10"]) {
-                try {
-                    await database.ref(`${CAMINHO_RANKING_RESUMO}/partidas_contabilizadas/${mod}`).set(flags[mod]);
-                } catch(e) { logar(`❌ partidas_contabilizadas/${mod}: ${e.message}`, "erro"); }
+                await database.ref(`${CAMINHO_RANKING_RESUMO}/partidas_contabilizadas/${mod}`).set(flags[mod]);
             }
-            logar("✓ partidas_contabilizadas: flags atualizadas.", "ok");
+            logar("✓ partidas_contabilizadas atualizadas.", "ok");
 
             logar("🎉 Backfill concluído! Você já pode ativar a otimização.", "ok");
-            notificar("🎉 Backfill concluído! Ative a otimização no Painel.", "sucesso", 8000);
-            try { somSecaoCompleta(); dispararConfetes(); } catch(e) {}
+            notificar("🎉 Backfill concluído!", "sucesso", 6000);
         } catch(e) {
-            console.error("[Backfill] Falha geral:", e);
             logar(`❌ Falha geral: ${e.message}`, "erro");
-            notificar("❌ Backfill falhou. Veja o log no painel.", "erro", 6000);
         }
     }
 
-    // ─── Painel de controle (renderizado em [03.16]) ───
     async function renderizarPainelOtimizacao() {
         const container = document.getElementById("painel-otimizacao-conteudo");
         if (!container) return;
-        container.innerHTML = `<div class="desempenho-loading">⏳ Carregando estado da otimização…</div>`;
+        container.innerHTML = `<div class="desempenho-loading">⏳ Carregando estado…</div>`;
 
         try {
             const ativo = await otimizacaoV109Ativa(true);
@@ -17648,35 +17568,18 @@ function abrirBuscarAlunoComMeusDados() {
             const precisoBackfill = (totalBest === 0 && totalAlunosPartidas === 0);
 
             container.innerHTML = `
-                <div class="painel-etapa-linha">
-                    <span class="painel-etapa-rotulo">Status</span>
-                    <span class="painel-etapa-valor">${statusBadge}</span>
-                </div>
-                <div class="painel-etapa-linha">
-                    <span class="painel-etapa-rotulo">Última alteração da flag</span>
-                    <span class="painel-etapa-valor">${dataAtualizacao}</span>
-                </div>
-                <div class="painel-etapa-linha">
-                    <span class="painel-etapa-rotulo">Cobertura do backfill</span>
-                    <span class="painel-etapa-valor">${totalBest} registros em best · ${totalAlunosPartidas} alunos em partidas_por_aluno · ${totalPartidasIndex} partidas indexadas</span>
-                </div>
-                ${precisoBackfill ? `
-                    <div style="margin-top:12px;padding:10px 14px;background:rgba(251,191,36,.12);border-left:4px solid #fbbf24;border-radius:8px;font-size:12.5px;color:#fde68a;line-height:1.5;">
-                        ⚠️ <strong>Backfill ainda não foi executado.</strong> Rode "Recalcular resumos" antes de ativar.
-                    </div>
-                ` : ""}
+                <div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Status</span><span class="painel-etapa-valor">${statusBadge}</span></div>
+                <div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Última alteração</span><span class="painel-etapa-valor">${dataAtualizacao}</span></div>
+                <div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Cobertura</span><span class="painel-etapa-valor">${totalBest} regs. em best · ${totalAlunosPartidas} alunos · ${totalPartidasIndex} partidas</span></div>
+                ${precisoBackfill ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(251,191,36,.12);border-left:4px solid #fbbf24;border-radius:8px;font-size:12.5px;color:#fde68a;line-height:1.5;">⚠️ <strong>Backfill ainda não foi executado.</strong> Rode "Recalcular resumos" antes de ativar.</div>` : ""}
                 <div class="painel-etapa-acoes" style="margin-top:14px;">
                     <button class="botao-secundario" onclick="recalcularResumosCompleto()" style="font-weight:800;">🔄 Recalcular resumos</button>
-                    ${ativo
-                        ? `<button class="botao-forcar" onclick="desativarOtimizacaoV109()" style="font-weight:800;">🚫 Desativar otimização</button>`
-                        : `<button class="botao-verde" onclick="ativarOtimizacaoV109()" style="font-weight:800;">✅ Ativar otimização</button>`
-                    }
+                    ${ativo ? `<button class="botao-forcar" onclick="desativarOtimizacaoV109()" style="font-weight:800;">🚫 Desativar otimização</button>` : `<button class="botao-verde" onclick="ativarOtimizacaoV109()" style="font-weight:800;">✅ Ativar otimização</button>`}
                 </div>
                 <div id="painel-otimizacao-resultado" style="max-height:220px;overflow-y:auto;margin-top:10px;padding:4px;background:rgba(10,22,40,.4);border-radius:8px;"></div>
             `;
         } catch(e) {
-            console.warn("[Otimização] Falha ao renderizar painel:", e);
-            container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o estado da otimização.<br>Verifique a conexão.</div>`;
+            container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar.</div>`;
         }
     }
     // ▲▲▲ FIM [13.12]
