@@ -9176,6 +9176,89 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.87] */
 
+        /* ▼▼▼ [02.88] Revelação de Medalha Pós-Partida ─── INÍCIO ─── */
+        .revelacao-medalha-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 11, 22, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 8500; /* Abaixo do voo da medalha (9000) */
+            padding: 20px;
+            text-align: center;
+            transition: background 0.5s ease, backdrop-filter 0.5s ease;
+        }
+        .revelacao-medalha-overlay.fade-out {
+            background: transparent;
+            backdrop-filter: none;
+        }
+        .revelacao-medalha-overlay.hidden { display: none !important; }
+        
+        .revelacao-medalha-conteudo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            animation: revelacaoFadeIn 0.8s ease;
+        }
+        
+        .revelacao-medalha-titulo {
+            font-size: clamp(24px, 5vw, 32px);
+            font-weight: 900;
+            color: var(--neon-gold);
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+            line-height: 1.2;
+        }
+        
+        .revelacao-medalha-sub {
+            font-size: 15px;
+            color: var(--text-secondary);
+            max-width: 400px;
+            line-height: 1.5;
+        }
+        
+        .revelacao-btn-revelar {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            color: #422006;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #92400e, 0 10px 24px rgba(251, 191, 36, 0.4);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            animation: revelacaoPulse 2s infinite;
+        }
+        .revelacao-btn-revelar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #92400e, 0 14px 30px rgba(251, 191, 36, 0.5);
+        }
+        .revelacao-btn-revelar:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #92400e, 0 4px 10px rgba(251, 191, 36, 0.4);
+        }
+        
+        @keyframes revelacaoFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes revelacaoPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .revelacao-medalha-conteudo { animation: none; }
+            .revelacao-btn-revelar { animation: none; transition: none; }
+            .revelacao-medalha-overlay { transition: none; }
+        }
+        /* ▲▲▲ FIM [02.88] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -9507,7 +9590,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
         <div id="feedback-ranking-container" class="feedback-ranking"></div>
         <div id="ranking-turmas-resultado-container"></div>
-        <div id="album-cta-resultado" class="hidden" aria-live="polite"></div>
         <div id="mapa-tabuadas-container"></div>
                 <div id="acoes-resultado-container" class="acoes-resultado duas-colunas">
             <button id="btn-jogar-novamente" class="botao-verde hidden" onclick="jogarNovamente()">🎮 Jogar novamente</button>
@@ -10972,6 +11054,16 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
 </div>
 <!-- ▲▲▲ FIM [04.30] -->
+
+    <!-- ▼▼▼ [04.31] MODAL DE REVELAÇÃO DE MEDALHA ─────────────── -->
+    <div id="modal-revelacao-medalha" class="revelacao-medalha-overlay hidden" role="dialog" aria-modal="true">
+        <div class="revelacao-medalha-conteudo">
+            <div class="revelacao-medalha-titulo">Você teve um ótimo desempenho!</div>
+            <p class="revelacao-medalha-sub">Suas conquistas nesta partida foram registradas. Clique abaixo para revelar.</p>
+            <button id="btn-revelar-medalha" class="revelacao-btn-revelar">🎁 Toque para revelar</button>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.31] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -14466,10 +14558,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.06]
 
     // ▼▼▼ [11.07] Badge + CTA pós-partida ─────────────────────────────
-    // v10.5.1 · Voo C: ao ganhar medalha nova, a medalha aparece no centro
-    // da tela, brilha e voa até o card .album-cta-resultado. Ao chegar, o
-    // card pulsa e os chips entram em cascata.
-    // Respeita prefers-reduced-motion (pula o voo e revela direto).
     async function verificarBadgeAlbum() {
         const badge = document.getElementById("album-badge");
         if (!badge) return;
@@ -14489,109 +14577,58 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.getElementById("album-badge")?.classList.add("hidden");
     }
 
-    // Verifica se há medalhas novas após uma partida. Se houver, injeta
-    // o CTA na tela de resultado e dispara a animação do voo.
+    // Retorna a lista de IDs de medalhas novas.
     async function verificarAlbumPosPartida(nome, turma) {
-        if (!nome || !turma) return;
+        if (!nome || !turma) return [];
         try {
             const r = await sincronizarMedalhas(nome, turma);
             const novasIds = r.novas || [];
             await verificarBadgeAlbum();
-            if (novasIds.length > 0) injetarCTAAlbumResultado(novasIds);
-            else document.getElementById("album-cta-resultado")?.classList.add("hidden");
-        } catch(e) { console.warn("Falha ao verificar álbum pós-partida:", e); }
+            return novasIds;
+        } catch(e) { 
+            console.warn("Falha ao verificar álbum pós-partida:", e); 
+            return [];
+        }
     }
 
-    // Renderiza o card CTA e dispara a animação do voo.
-    async function injetarCTAAlbumResultado(idsNovas) {
-        const container = document.getElementById("album-cta-resultado");
-        if (!container) return;
-        if (!idsNovas || idsNovas.length === 0) {
-            container.classList.add("hidden");
-            return;
-        }
-        const medalhas = idsNovas.map(id => MEDALS_POR_ID[id]).filter(Boolean);
-        if (medalhas.length === 0) {
-            container.classList.add("hidden");
-            return;
-        }
+    // Controla a tela de revelação e a promessa que aguarda o clique
+    function iniciarFluxoRevelacao(idsNovas) {
+        return new Promise((resolve) => {
+            const medalhas = idsNovas.map(id => MEDALS_POR_ID[id]).filter(Boolean);
+            if (medalhas.length === 0) return resolve();
 
-        const total = medalhas.length;
-        const plural = total === 1 ? "medalha" : "medalhas";
-
-        // Escolhe a medalha mais rara para o voo (maior impacto visual)
-        const ordemRar = { lendario: 0, epico: 1, raro: 2, incomum: 3, comum: 4 };
-        const medalhaVoo = [...medalhas].sort((a, b) =>
-            (ordemRar[a.raridade] ?? 9) - (ordemRar[b.raridade] ?? 9)
-        )[0];
-
-        // Renderiza o card com título preenchido mas lista VAZIA.
-        // Os chips entram quando a medalha chegar.
-        container.innerHTML = `
-            <div class="album-cta-resultado" id="album-cta-card">
-                <div class="album-cta-resultado-topo">
-                    <span class="album-cta-resultado-icone" id="album-cta-icone-destino">🏆</span>
-                    <div class="album-cta-resultado-titulo">🎉 Você descolou <strong>${total} ${plural}</strong> no Álbum!</div>
-                </div>
-                <div class="album-cta-resultado-lista" id="album-cta-lista"></div>
-                <button class="album-cta-resultado-botao" onclick="abrirAlbum()" aria-label="Abrir o Álbum de Conquistas">📖 Ver no Álbum →</button>
-                <div class="album-cta-resultado-rodape">Colecione medalhas e complete seções para ganhar estrelas ⭐</div>
-            </div>
-        `;
-        container.classList.remove("hidden");
-
-        // Verifica preferência de movimento reduzido
-        const reduzirMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-        if (reduzirMovimento) {
-            // Pula animação — revela direto e mantém o feedback sonoro leve
-            revelarChipsDoCard(medalhas, 0);
-            setTimeout(() => { try { somColarFigurinha(); dispararConfetes(); } catch(e) {} }, 200);
-            return;
-        }
-
-        // Aguarda 2 frames para o navegador calcular a posição do card
-        await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
-
-        // Delay curto para o aluno VER o card aparecer antes do voo
-        setTimeout(() => {
-            dispararVooMedalhaP4(medalhaVoo, medalhas);
-        }, 350);
-    }
-
-    // Revela os chips de medalha dentro do card, em cascata
-    function revelarChipsDoCard(medalhas, delayInicial) {
-        const lista = document.getElementById("album-cta-lista");
-        if (!lista) return;
-        lista.innerHTML = "";
-        const delayBase = delayInicial || 0;
-
-        medalhas.slice(0, 6).forEach((m, i) => {
-            const chip = document.createElement("span");
-            const rar = RARIDADES[m.raridade];
-            chip.className = "nome-medalha album-cta-chip-nova";
-            chip.style.animationDelay = `${delayBase + i * 120}ms`;
-            chip.title = rar ? rar.nome : "";
-            chip.textContent = `${m.icone} ${m.nome}`;
-            lista.appendChild(chip);
+            const modal = document.getElementById("modal-revelacao-medalha");
+            const btn = document.getElementById("btn-revelar-medalha");
+            if (!modal || !btn) return resolve();
+            
+            modal.classList.remove("hidden");
+            modal.classList.remove("fade-out");
+            
+            btn.onclick = () => {
+                btn.disabled = true;
+                btn.style.display = 'none';
+                
+                // Esmaece o fundo escuro para a medalha voar e ser vista
+                modal.classList.add("fade-out");
+                
+                setTimeout(() => {
+                    dispararVooMedalhaP4(medalhas[0], medalhas);
+                    
+                    // Tempo total da animação: 750 (aparece) + 900 (brilha) + 900 (voo) = 2550ms
+                    // Damos 2700ms para garantir que tudo termine
+                    setTimeout(() => {
+                        modal.classList.add("hidden");
+                        btn.style.display = 'block';
+                        btn.disabled = false;
+                        resolve(); // Libera o fluxo para mostrar a tela de resultado
+                    }, 2700);
+                }, 100);
+            };
         });
-
-        if (medalhas.length > 6) {
-            const extra = document.createElement("span");
-            extra.className = "nome-medalha album-cta-chip-nova";
-            extra.style.animationDelay = `${delayBase + 6 * 120}ms`;
-            extra.textContent = `+${medalhas.length - 6}…`;
-            lista.appendChild(extra);
-        }
     }
 
-    // Dispara a animação completa do voo:
-    // 1) Título flutuante "Nova medalha!" + flash central
-    // 2) Medalha aparece no centro e brilha
-    // 3) Voa em direção ao ícone do card .album-cta-resultado
-    // 4) Ao chegar, card pulsa e chips entram em cascata
+    // Dispara a animação completa do voo
     function dispararVooMedalhaP4(medalhaVoo, todasMedalhas) {
-        // ─── 1) Título flutuante ───
         const titulo = document.createElement("div");
         titulo.className = "p4-titulo-nova-medalha";
         titulo.innerHTML = `
@@ -14601,13 +14638,11 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.body.appendChild(titulo);
         setTimeout(() => titulo.remove(), 2200);
 
-        // ─── 2) Flash central ───
         const flash = document.createElement("div");
         flash.className = "p4-flash-central";
         document.body.appendChild(flash);
         setTimeout(() => flash.remove(), 1000);
 
-        // ─── 3) Medalha voadora ───
         const el = document.createElement("div");
         el.className = "medalha-voadora-p4";
         el.textContent = medalhaVoo.icone;
@@ -14616,12 +14651,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         requestAnimationFrame(() => {
             el.classList.add("visivel", "fase-aparece");
 
-            // Após 0,75s: para o aparecimento, começa o brilho
             setTimeout(() => {
                 el.classList.remove("fase-aparece");
                 el.classList.add("fase-brilha");
 
-                // Após 0,9s: termina o brilho, começa o voo
                 setTimeout(() => {
                     el.classList.remove("fase-brilha");
                     executarVooP4(el, todasMedalhas);
@@ -14630,18 +14663,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         });
     }
 
-    // Executa o voo propriamente dito: calcula o destino (ícone do card)
-    // e move a medalha até lá com rastro dourado.
+    // Executa o voo até o ícone do Álbum no Bottom Nav
     function executarVooP4(el, todasMedalhas) {
-        // Posição atual (centro)
         const rect = el.getBoundingClientRect();
         const startX = rect.left + rect.width / 2;
         const startY = rect.top + rect.height / 2;
 
-        // Destino: ícone 🏆 dentro do card CTA
-        const iconeDestino = document.getElementById("album-cta-icone-destino");
-        if (!iconeDestino) { el.remove(); return; }
-        const destRect = iconeDestino.getBoundingClientRect();
+        // NOVO DESTINO: Ícone do Álbum no menu inferior
+        const btnAlbum = document.querySelector('#bottom-nav-global .bottom-nav-btn[data-tela="album"]');
+        if (!btnAlbum) { el.remove(); return; }
+        
+        const destRect = btnAlbum.getBoundingClientRect();
         const endX = destRect.left + destRect.width / 2;
         const endY = destRect.top + destRect.height / 2;
 
@@ -14649,20 +14681,17 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const dy = endY - startY;
         const duracao = 900;
 
-        // Rastro dourado no caminho
         iniciarRastroVooP4(startX, startY, dx, dy, duracao);
 
-        // Move a medalha via transition
         el.style.transition = `transform ${duracao}ms cubic-bezier(.5,.05,.35,1), opacity ${duracao}ms cubic-bezier(.5,.05,.35,1)`;
         el.style.transform = `translate(${dx}px, ${dy}px) scale(0.14) rotate(280deg)`;
         el.style.opacity = "0";
         el.style.filter = "drop-shadow(0 0 24px rgba(251,191,36,1))";
 
-        // Ao chegar no destino
         setTimeout(() => {
             el.remove();
 
-            // Flash dourado no ícone do card
+            // Flash dourado no ícone do menu inferior
             const flashDestino = document.createElement("div");
             flashDestino.className = "p4-destino-flash";
             flashDestino.style.left = (endX - 60) + "px";
@@ -14672,26 +14701,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             document.body.appendChild(flashDestino);
             setTimeout(() => flashDestino.remove(), 800);
 
-            // Card pulsa
-            const card = document.getElementById("album-cta-card");
-            if (card) card.classList.add("recebendo-medalha");
+            // Efeito de "pulinho" no ícone do Álbum
+            btnAlbum.style.transition = "transform 0.3s ease";
+            btnAlbum.style.transform = "scale(1.2)";
+            setTimeout(() => { btnAlbum.style.transform = ""; }, 400);
 
-            // Chips entram em cascata
-            revelarChipsDoCard(todasMedalhas, 150);
-
-            // Som + confetes
             setTimeout(() => {
                 try { somColarFigurinha(); dispararConfetes(); } catch(e) {}
             }, 350);
 
-            // Remove a classe do pulso após a animação
-            setTimeout(() => {
-                if (card) card.classList.remove("recebendo-medalha");
-            }, 1400);
         }, duracao);
     }
 
-    // Emite partículas douradas ao longo do trajeto da medalha
     function iniciarRastroVooP4(startX, startY, dx, dy, duracao) {
         const inicioTs = performance.now();
         let ultimoRastro = 0;
@@ -14707,7 +14728,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         function tick(agora) {
             const t = Math.min((agora - inicioTs) / duracao, 1);
-            // ease in-out quadrática para acompanhar o movimento
             const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
             const px = startX + dx * eased;
             const py = startY + dy * eased;
@@ -18318,7 +18338,6 @@ function abrirBuscarAlunoComMeusDados() {
             document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Treino Livre</span>`;
             document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>💡 Treino Livre</strong><br>Nenhuma informação foi salva. Quando a etapa oficial começar, suas partidas valerão para a classificação!</div>`;
             document.getElementById("mapa-tabuadas-container").innerHTML = "";
-            document.getElementById("album-cta-resultado")?.classList.add("hidden");
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
             somConclusao();
@@ -18335,7 +18354,7 @@ function abrirBuscarAlunoComMeusDados() {
             pontos: pontosAcumulados, acertos, erros, tempoMedio, maiorSequencia,
             desempenhoTabuadas, desempenhoOperacoes,
             data: new Date().toISOString(), idPartida: criarChavePartida({ nome: alunoAtual }),
-            temposRapidos, chutesRapidos, acertouPrimeira, // ⚠️ SALVA AQUI
+            temposRapidos, chutesRapidos, acertouPrimeira,
             completa: partidaCompleta,
             treinoFocado: treinoFocoOperacoes ? treinoFocoOperacoes.map(o => ({ fA: o.fA, fB: o.fB })) : null,
             treinoInteligente: treinoListaInteligente ? treinoListaInteligente.length : 0
@@ -18383,8 +18402,15 @@ function abrirBuscarAlunoComMeusDados() {
             document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
             document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
             somConclusao();
+            
             verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
-            verificarAlbumPosPartida(alunoAtual, turmaAtual);
+            
+            // ⚠️ NOVO FLUXO DE MEDALHA
+            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+            if (novasMedalhas.length > 0) {
+                await iniciarFluxoRevelacao(novasMedalhas);
+            }
+            
             treinoFocoOperacoes = null; treinoListaInteligente = null; treinoFocoAbsoluto = null;
             mostrarTela("tela-resultado");
             return;
@@ -18413,6 +18439,12 @@ function abrirBuscarAlunoComMeusDados() {
                 notificar("⏱️ O prazo da etapa encerrou durante sua partida. O resultado ficou no histórico, mas não conta para a classificação oficial.", "aviso", 9000);
                 await preencherResultadoForaDoPrazo(resultado);
                 somConclusao();
+                
+                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+                if (novasMedalhas.length > 0) {
+                    await iniciarFluxoRevelacao(novasMedalhas);
+                }
+                
                 mostrarTela("tela-resultado");
                 return;
             }
@@ -18423,6 +18455,12 @@ function abrirBuscarAlunoComMeusDados() {
                 await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                 await preencherResultadoParcial(resultado);
                 somConclusao();
+                
+                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+                if (novasMedalhas.length > 0) {
+                    await iniciarFluxoRevelacao(novasMedalhas);
+                }
+                
                 mostrarTela("tela-resultado");
                 return;
             }
@@ -18431,6 +18469,13 @@ function abrirBuscarAlunoComMeusDados() {
             const novo = melhor.data === resultado.data;
             if (novo && posicaoAntes !== null) somNovoRecorde(); else somConclusao();
             await preencherResultado(melhor, resultado, posicaoAntes);
+            
+            // ⚠️ NOVO FLUXO DE MEDALHA
+            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+            if (novasMedalhas.length > 0) {
+                await iniciarFluxoRevelacao(novasMedalhas);
+            }
+            
             mostrarTela("tela-resultado");
         } catch(e) {
             notificar("Erro ao salvar. Tentando fallback local.", "aviso", 5000);
@@ -18449,16 +18494,18 @@ function abrirBuscarAlunoComMeusDados() {
                 await preencherResultado(resultado, resultado, posicaoAntes);
             }
             somConclusao();
+            
+            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+            if (novasMedalhas.length > 0) {
+                await iniciarFluxoRevelacao(novasMedalhas);
+            }
+            
             mostrarTela("tela-resultado");
         }
     }
     // ▲▲▲ FIM [14.08]
 
     // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
-    // v10.13.0 · P-B4 (Pacote 3) — Modo Classificatória Única:
-    //   • renderizarCardClassificacao mostra só a modalidade ativa (quando setada)
-    //   • renderizarRankingTurmasResultado se esconde quando a partida foi em
-    //     modalidade ≠ ativa (proteção contra troca de flag durante o jogo)
     function gerarCardsComparacao(melhor, tent) {
         const novo = ehMelhorResultado(tent, melhor) && tent.data === melhor.data;
         return `<div class="cards-comparacao"><div class="card-compcard"><div class="card-comp-rotulo">Esta tentativa</div><div class="card-comp-valor">${tent.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div><div class="card-compcard card-recorde"><div class="card-comp-rotulo">${novo ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div><div class="card-comp-valor">${melhor.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div></div>`;
@@ -18639,7 +18686,6 @@ function abrirBuscarAlunoComMeusDados() {
         if (btnTM) btnTM.classList.remove("hidden");
         await gerarFeedbackRanking(melhor, pT, posAntes);
         try { await renderizarRankingTurmasResultado(tent.turma, tent.modalidade); } catch(e) { console.warn(e); }
-        verificarAlbumPosPartida(tent.nome, tent.turma);
         verificarMaestriaAbsoluta(tent.nome, tent.turma);
         verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade);
         await renderizarCardVotacao();
@@ -18668,12 +18714,10 @@ function abrirBuscarAlunoComMeusDados() {
         document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>⏱️ Partida fora do prazo</strong><br>Não contou para a classificação oficial. Ficou no seu histórico para acompanhamento.</div>`;
         document.getElementById("mapa-tabuadas-container").innerHTML = "";
         document.getElementById("ranking-turmas-resultado-container").innerHTML = "";
-        document.getElementById("album-cta-resultado")?.classList.add("hidden");
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
         document.getElementById("btn-compartilhar")?.classList.add("hidden");
         document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
         document.getElementById("btn-trocar-modalidade")?.classList.remove("hidden");
-        try { verificarAlbumPosPartida(tent.nome, tent.turma); } catch(e) {}
         try { verificarMaestriaAbsoluta(tent.nome, tent.turma); } catch(e) {}
         try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
     }
@@ -18716,7 +18760,6 @@ function abrirBuscarAlunoComMeusDados() {
             </div>`;
 
         document.getElementById("ranking-turmas-resultado-container").innerHTML = "";
-        document.getElementById("album-cta-resultado")?.classList.add("hidden");
         document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
         document.getElementById("btn-compartilhar")?.classList.add("hidden");
         document.getElementById("btn-jogar-novamente")?.classList.remove("hidden");
@@ -18735,7 +18778,6 @@ function abrirBuscarAlunoComMeusDados() {
         }
 
         try { verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade); } catch(e) {}
-        document.getElementById("album-cta-resultado")?.classList.add("hidden");
     }
     // ▲▲▲ FIM [14.09]
 
