@@ -11213,51 +11213,64 @@ verificarVersao();
         { id: "sorte_principiante", nome: "Sorte de Principiante",icone: "🍀", secao: "primeiros_passos", raridade: "comum",   recompensaEstrelas: 1, requisito: "Acerte a 1ª pergunta de uma partida.", descricao: "Bom começo!", dica: "A primeira é sempre a mais importante!", condicao: d => d.acertouPrimeiraAlguma },
         { id: "volta_amanha",       nome: "Volta Amanhã",         icone: "🌅", secao: "primeiros_passos", raridade: "incomum", recompensaEstrelas: 2, requisito: "Jogar em 2 dias diferentes.", descricao: "Constância é o segredo.", dica: "Jogue hoje e volte amanhã para ganhar.", condicao: d => d.diasDistintosJogados >= 2 },
         
-        // ⚠️ MEDALHA CORRIGIDA
+        // ⚡ VELOCIDADE (Cadeia de Pré-requisitos)
         { id: "rei_chute",           nome: "Rei do Chute",         icone: "🎲", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Acerte 3+ questões em até 0,5s com precisão menor que 80% na partida.", descricao: "Chutou rápido e acertou algumas!", dica: "Responda rápido e não se preocupe em acertar tudo — o foco é a velocidade no chute.", condicao: d => d.temReiChute === true },
-        
         { id: "raio",                nome: "Raio",                 icone: "⚡", secao: "velocidade", raridade: "incomum", recompensaEstrelas: 2, requisito: "Ter tempo médio abaixo de 2,0s em uma partida.", descricao: "Você é veloz!", dica: "Responda rápido e mantenha o ritmo.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 2.0 },
         { id: "velocidade_relampago",nome: "Velocidade Relâmpago", icone: "🚀", secao: "velocidade", raridade: "raro",    recompensaEstrelas: 3, requisito: "Acerte 20/20 com tempo médio abaixo de 1,2s.", descricao: "Perfeição e velocidade juntas.", dica: "Perfeição e velocidade juntas — o desafio máximo.", condicao: d => d.partidasCom20Acertos >= 1 && d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito < 1.2 },
-        { id: "ventania",            nome: "Ventania",             icone: "💨", secao: "velocidade", raridade: "raro",    recompensaEstrelas: 3, requisito: "Ter tempo médio abaixo de 1,5s em uma partida.", descricao: "Rápido como o vento!", dica: "Você precisa ser mais rápido que a média.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 1.5 },
-        { id: "sem_hesitar",         nome: "Sem Hesitar",          icone: "🎯", secao: "velocidade", raridade: "epico",   recompensaEstrelas: 5, requisito: "Tempo médio < 1,0s com 5 acertos seguidos.", descricao: "Você não hesita!", dica: "Sequência rápida e perfeita.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 1.0 && d.maiorSequenciaMax >= 5 },
-        { id: "rei_pontuacao",       nome: "Rei da Pontuação",     icone: "💎", secao: "velocidade", raridade: "epico",   recompensaEstrelas: 8, requisito: "Atingir 17.000+ pontos em uma partida.", descricao: "Você reina na pontuação!", dica: "Some o máximo de pontos — rapidez e precisão juntas.", condicao: d => d.melhorPontuacao >= 17000 },
+        { id: "ventania",            nome: "Ventania",             icone: "💨", secao: "velocidade", raridade: "raro",    recompensaEstrelas: 3, requisito: "Ter tempo médio abaixo de 1,5s em uma partida.", descricao: "Rápido como o vento!", dica: "Você precisa ser mais rápido que a média.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 1.5 && d._medalhasPersistidas["raio"] },
+        { id: "sem_hesitar",         nome: "Sem Hesitar",          icone: "🎯", secao: "velocidade", raridade: "epico",   recompensaEstrelas: 5, requisito: "Tempo médio < 1,0s com 5 acertos seguidos.", descricao: "Você não hesita!", dica: "Sequência rápida e perfeita.", condicao: d => d.melhorTempoMedio !== null && d.melhorTempoMedio < 1.0 && d.maiorSequenciaMax >= 5 && d._medalhasPersistidas["ventania"] },
+        { id: "rei_pontuacao",       nome: "Rei da Pontuação",     icone: "💎", secao: "velocidade", raridade: "epico",   recompensaEstrelas: 8, requisito: "Atingir 17.000+ pontos em 2 partidas diferentes.", descricao: "Você reina na pontuação!", dica: "Some o máximo de pontos — rapidez e precisão juntas.", condicao: d => d.partidasCom17k >= 2 },
+        
+        // 🎯 PRECISÃO (Cadeia de Pré-requisitos)
         { id: "boa_sequencia",      nome: "Boa Sequência",      icone: "📈", secao: "precisao", raridade: "comum",    recompensaEstrelas: 1, requisito: "Acerte 10 questões consecutivas.", descricao: "Sequência sólida!", dica: "Concentre-se e não erre!", condicao: d => d.maiorSequenciaMax >= 10 },
         { id: "dominio_total",      nome: "Domínio Total",      icone: "📚", secao: "precisao", raridade: "incomum",  recompensaEstrelas: 2, requisito: "Acerte 20/20 em uma partida.", descricao: "Partida perfeita!", dica: "Acerte tudo, sem errar nenhuma.", condicao: d => d.partidasCom20Acertos >= 1 },
-        { id: "em_chamas",          nome: "Em Chamas",          icone: "🔥", secao: "precisao", raridade: "incomum",  recompensaEstrelas: 2, requisito: "Acerte 15 questões consecutivas.", descricao: "Você está em chamas!", dica: "Mantenha a sequência acesa!", condicao: d => d.maiorSequenciaMax >= 15 },
-        { id: "sequencia_perfeita", nome: "Sequência Perfeita", icone: "⚡", secao: "precisao", raridade: "epico",    recompensaEstrelas: 5, requisito: "Acerte 20 questões seguidas em uma partida perfeita.", descricao: "Impecável!", dica: "Só quem acerta tudo sem errar chega aqui.", condicao: d => d.maiorSequenciaMax >= 20 },
+        { id: "em_chamas",          nome: "Em Chamas",          icone: "🔥", secao: "precisao", raridade: "incomum",  recompensaEstrelas: 2, requisito: "Acerte 15 questões consecutivas.", descricao: "Você está em chamas!", dica: "Mantenha a sequência acesa!", condicao: d => d.maiorSequenciaMax >= 15 && d._medalhasPersistidas["boa_sequencia"] },
+        { id: "sequencia_perfeita", nome: "Sequência Perfeita", icone: "⚡", secao: "precisao", raridade: "epico",    recompensaEstrelas: 5, requisito: "Acerte 20 questões seguidas em uma partida perfeita.", descricao: "Impecável!", dica: "Só quem acerta tudo sem errar chega aqui.", condicao: d => d.maiorSequenciaMax >= 20 && d._medalhasPersistidas["em_chamas"] },
+        
+        // 💪 DEDICAÇÃO
         { id: "segunda_chance",  nome: "Segunda Chance",    icone: "🎯", secao: "dedicacao", raridade: "comum",   recompensaEstrelas: 1, requisito: "Melhore seu recorde na 2ª tentativa da mesma modalidade.", descricao: "Sempre dá pra melhorar!", dica: "Tente de novo — sempre dá pra melhorar!", condicao: d => d.melhorouNaSegundaTentativa },
         { id: "veterano",        nome: "Veterano",          icone: "🎓", secao: "dedicacao", raridade: "incomum", recompensaEstrelas: 2, requisito: "Jogar 10 partidas completas.", descricao: "Você já é veterano!", dica: "A prática leva à perfeição.", condicao: d => d.totalPartidas >= 10 },
         { id: "coruja",          nome: "Coruja da Tabuada", icone: "🕰️",secao: "dedicacao", raridade: "incomum", recompensaEstrelas: 2, requisito: "Jogar entre 22h e 6h.", descricao: "Você estuda quando todos dormem.", dica: "Alguns estudam quando todos dormem.", condicao: d => d.temJogoNoturno },
         { id: "lenda_tabuada",   nome: "Lenda da Tabuada",  icone: "👑", secao: "dedicacao", raridade: "raro",    recompensaEstrelas: 3, requisito: "Jogar 20 partidas completas.", descricao: "Você virou uma lenda!", dica: "Você já vai virar lenda da tabuada.", condicao: d => d.totalPartidas >= 20 },
         { id: "semana_copa",     nome: "Semana na Copa",    icone: "📅", secao: "dedicacao", raridade: "raro",    recompensaEstrelas: 3, requisito: "Jogar em 5 dias diferentes.", descricao: "Constância de campeão.", dica: "Volte todos os dias — constância é o segredo.", condicao: d => d.diasDistintosJogados >= 5 },
         { id: "volta_por_cima",  nome: "Volta por Cima",    icone: "🌱", secao: "dedicacao", raridade: "raro",    recompensaEstrelas: 3, requisito: "Após partida com ≤5 acertos, faça ≥15 na próxima.", descricao: "Errar é humano, voltar por cima é campeão.", dica: "Errar é humano. Voltar por cima é campeão.", condicao: d => d.temVoltaPorCima },
+        
+        // 🧭 EXPLORADOR
         { id: "colecionador",    nome: "Colecionador",       icone: "🏅", secao: "explorador", raridade: "comum",   recompensaEstrelas: 1, requisito: "Desbloquear 10 medalhas no álbum.", descricao: "Colecionador nato!", dica: "Colecione medalhas e chegue às 10.", condicao: d => d.conquistasCount >= 10 },
         { id: "maratonista",     nome: "Maratonista",        icone: "🏃", secao: "explorador", raridade: "comum",   recompensaEstrelas: 1, requisito: "Jogar 3 partidas no mesmo dia.", descricao: "Maratona concluída!", dica: "Sente e jogue 3 partidas no mesmo dia.", condicao: d => d.maxPartidasEmUmDia >= 3 },
         { id: "cartografo",      nome: "Cartógrafo",         icone: "🗺️",secao: "explorador", raridade: "incomum", recompensaEstrelas: 2, requisito: "Praticar 30 operações diferentes do mapa.", descricao: "Explorador do mapa!", dica: "Explore o mapa e pratique novas operações.", condicao: d => d.operacoesExploradas >= 30 },
         { id: "poliglota",       nome: "Poliglota",          icone: "🌐", secao: "explorador", raridade: "incomum", recompensaEstrelas: 2, requisito: "Jogar nas 3 modalidades (2-5, 6-9 e 1-10).", descricao: "Você é versátil!", dica: "Jogue ao menos 1 partida em cada modalidade.", condicao: d => d.modalidadesJogadas >= 3 },
         { id: "treinador_elite", nome: "Treinador de Elite", icone: "💪", secao: "explorador", raridade: "raro",    recompensaEstrelas: 3, requisito: "Completar 5 treinos focados.", descricao: "Treinador dedicado.", dica: "Use o treino focado 5 vezes.", condicao: d => d.treinosFocados >= 5 },
+        
+        // 🗺️ MAESTRIA DO MAPA
         { id: "base_solida",       nome: "Base Sólida",            icone: "🧱", secao: "maestria_mapa", raridade: "incomum",  recompensaEstrelas: 8,  requisito: "Dominar 100% das tabuadas de 2 a 5 (40 operações ≥90%).", descricao: "Base sólida garantida!", dica: "Jogue o modo 2-5 até todas as células ficarem verdes.", condicao: d => d.baseSolida === true },
         { id: "mestre_desafios",   nome: "Mestre dos Desafios",    icone: "⚔️", secao: "maestria_mapa", raridade: "raro",     recompensaEstrelas: 10, requisito: "Dominar 100% das tabuadas de 6 a 9 (40 operações ≥90%).", descricao: "Mestre dos desafios!", dica: "Jogue o modo 6-9 até todas as células ficarem verdes.", condicao: d => d.mestreDesafios === true },
         { id: "mestre_mapa",       nome: "Mestre do Mapa",         icone: "🗺️", secao: "maestria_mapa", raridade: "lendario", recompensaEstrelas: 15, requisito: "Dominar 100% do mapa (100 operações ≥90%).", descricao: "Maestria total!", dica: "Domine todas as 100 operações com ≥90% de acerto.", condicao: d => d.mapaCompleto === true },
         { id: "guarda_precisao",   nome: "Guardião da Precisão",   icone: "🔬", secao: "maestria_mapa", raridade: "epico",    recompensaEstrelas: 10, requisito: "100% do mapa com precisão ≥95% em cada operação.", descricao: "Precisão sobre-humana.", dica: "Não basta dominar — é preciso dominar com folga.", condicao: d => d.guardaPrecisao === true },
         { id: "lenda_mapa",        nome: "Lenda do Mapa",          icone: "👑", secao: "maestria_mapa", raridade: "lendario", recompensaEstrelas: 20, requisito: "Manter 100% do mapa por 3 dias diferentes.", descricao: "Lenda viva!", dica: "Depois de dominar tudo, continue jogando por 3 dias para provar constância.", condicao: d => d.lendaMapa === true },
+        
+        // 🏁 CORRIDA AO MESTRE (Cadeia de Pré-requisitos)
         { id: "marcha_ligeira",    nome: "Marcha Ligeira",         icone: "🚶", secao: "corrida_mestre", raridade: "incomum", recompensaEstrelas: 3,  requisito: "Fazer 19/20 em tempo médio ≤ 2,0s.", descricao: "O primeiro passo da velocidade.", dica: "Acerte quase tudo em ritmo ligeiro.", condicao: d => d.melhorTempoMedio19Ou20 !== null && d.melhorTempoMedio19Ou20 <= 2.0 },
-        { id: "corredor",          nome: "Corredor",               icone: "🏃", secao: "corrida_mestre", raridade: "incomum", recompensaEstrelas: 4,  requisito: "Fazer 19/20 em tempo médio ≤ 1,8s.", descricao: "Em ritmo de corrida!", dica: "Você está correndo com a tabuada.", condicao: d => d.melhorTempoMedio19Ou20 !== null && d.melhorTempoMedio19Ou20 <= 1.8 },
-        { id: "velocista",         nome: "Velocista",              icone: "⚡", secao: "corrida_mestre", raridade: "raro",    recompensaEstrelas: 5,  requisito: "Fazer 19/20 em tempo médio ≤ 1,6s.", descricao: "Velocidade de atleta!", dica: "Velocidade de atleta — continue assim!", condicao: d => d.melhorTempoMedio19Ou20 !== null && d.melhorTempoMedio19Ou20 <= 1.6 },
-        { id: "trovao",            nome: "Trovão",                 icone: "🌩️",secao: "corrida_mestre", raridade: "raro",    recompensaEstrelas: 6,  requisito: "Fazer 20/20 em tempo médio ≤ 1,4s.", descricao: "Rápido como um trovão!", dica: "Precisão total + velocidade. Você está no topo.", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.4 },
-        { id: "furacao",           nome: "Furacão",                icone: "🌀", secao: "corrida_mestre", raridade: "epico",   recompensaEstrelas: 8,  requisito: "Fazer 20/20 em tempo médio ≤ 1,2s.", descricao: "Imparável!", dica: "Ninguém te segura — você é um furacão!", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.2 },
-        { id: "meteoro",           nome: "Meteoro",                icone: "☄️", secao: "corrida_mestre", raridade: "epico",   recompensaEstrelas: 10, requisito: "Fazer 20/20 em tempo médio ≤ 1,1s.", descricao: "Quase no topo absoluto!", dica: "Você está a um passo do topo absoluto.", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.1 },
-        { id: "mestre_tabuada",    nome: "Mestre da Tabuada",      icone: "🏆", secao: "corrida_mestre", raridade: "lendario",recompensaEstrelas: 15, requisito: "Fazer 20/20 em tempo médio ≤ 1,0s.", descricao: "O auge absoluto!", dica: "Precisão perfeita em velocidade sobre-humana. Você é o Mestre.", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.0 },
+        { id: "corredor",          nome: "Corredor",               icone: "🏃", secao: "corrida_mestre", raridade: "incomum", recompensaEstrelas: 4,  requisito: "Fazer 19/20 em tempo médio ≤ 1,8s.", descricao: "Em ritmo de corrida!", dica: "Você está correndo com a tabuada.", condicao: d => d.melhorTempoMedio19Ou20 !== null && d.melhorTempoMedio19Ou20 <= 1.8 && d._medalhasPersistidas["marcha_ligeira"] },
+        { id: "velocista",         nome: "Velocista",              icone: "⚡", secao: "corrida_mestre", raridade: "raro",    recompensaEstrelas: 5,  requisito: "Fazer 19/20 em tempo médio ≤ 1,6s.", descricao: "Velocidade de atleta!", dica: "Velocidade de atleta — continue assim!", condicao: d => d.melhorTempoMedio19Ou20 !== null && d.melhorTempoMedio19Ou20 <= 1.6 && d._medalhasPersistidas["corredor"] },
+        { id: "trovao",            nome: "Trovão",                 icone: "🌩️",secao: "corrida_mestre", raridade: "raro",    recompensaEstrelas: 6,  requisito: "Fazer 20/20 em tempo médio ≤ 1,4s.", descricao: "Rápido como um trovão!", dica: "Precisão total + velocidade. Você está no topo.", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.4 && d._medalhasPersistidas["velocista"] },
+        { id: "furacao",           nome: "Furacão",                icone: "🌀", secao: "corrida_mestre", raridade: "epico",   recompensaEstrelas: 8,  requisito: "Fazer 20/20 em tempo médio ≤ 1,2s.", descricao: "Imparável!", dica: "Ninguém te segura — você é um furacão!", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.2 && d._medalhasPersistidas["trovao"] },
+        { id: "meteoro",           nome: "Meteoro",                icone: "☄️", secao: "corrida_mestre", raridade: "epico",   recompensaEstrelas: 10, requisito: "Fazer 20/20 em tempo médio ≤ 1,1s.", descricao: "Quase no topo absoluto!", dica: "Você está a um passo do topo absoluto.", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.1 && d._medalhasPersistidas["furacao"] },
+        { id: "mestre_tabuada",    nome: "Mestre da Tabuada",      icone: "🏆", secao: "corrida_mestre", raridade: "lendario",recompensaEstrelas: 15, requisito: "Fazer 20/20 em tempo médio ≤ 1,0s.", descricao: "O auge absoluto!", dica: "Precisão perfeita em velocidade sobre-humana. Você é o Mestre.", condicao: d => d.melhorTempoMedioPerfeito !== null && d.melhorTempoMedioPerfeito <= 1.0 && d._medalhasPersistidas["meteoro"] },
+        
+        // 🏁 RUMO À FINAL
         { id: "na_disputa",         nome: "Na Disputa",         icone: "🎯", secao: "rumo_final", raridade: "incomum", recompensaEstrelas: 2, requisito: "Entrar no Top 6 da turma em qualquer modalidade.", descricao: "Você está na disputa!", dica: "Suba no ranking da sua turma.", condicao: d => d.melhorPosicao !== null && d.melhorPosicao <= 6 },
         { id: "subiu_ranking",      nome: "Subiu no Ranking",   icone: "📊", secao: "rumo_final", raridade: "incomum", recompensaEstrelas: 2, requisito: "Subir 3+ posições desde sua primeira partida.", descricao: "Subindo na tabela!", dica: "Continue treinando para subir no ranking.", condicao: d => d.subiuRanking },
         { id: "vaga_garantida",     nome: "Vaga Garantida",     icone: "🎟️",secao: "rumo_final", raridade: "raro",    recompensaEstrelas: 3, requisito: "Entrar no Top 4 da sua turma em qualquer modalidade.", descricao: "Vaga garantida!", dica: "Fique entre os 4 melhores da sua turma.", condicao: d => d.melhorPosicao !== null && d.melhorPosicao <= 4 },
         { id: "consistente",        nome: "Consistente",        icone: "🛡️",secao: "rumo_final", raridade: "epico",   recompensaEstrelas: 5, requisito: "Ficar no Top 4 por 3 dias diferentes.", descricao: "Consistência é tudo!", dica: "Mantenha sua posição por vários dias.", condicao: d => d.diasNoTop4 >= 3 },
         { id: "classificado_triplo",nome: "Classificado Triplo",icone: "🏆", secao: "rumo_final", raridade: "epico",   recompensaEstrelas: 5, requisito: "Ficar no Top 4 em 2 ou mais modalidades.", descricao: "Polivalente!", dica: "Domine múltiplas modalidades.", condicao: d => d.modalidadesTop4 >= 2 },
-        { id: "primeira_media",  nome: "Primeira Média",   icone: "🏅", secao: "consistencia", raridade: "comum",    recompensaEstrelas: 2,  requisito: "Ter média ≥ 8.000 pts em qualquer modalidade.", descricao: "Sua média começou a brilhar.", dica: "Jogue mais partidas oficiais e mantenha um bom ritmo.", condicao: d => d.mediaMaxima >= 8000 },
-        { id: "consistente_media", nome: "Consistente",    icone: "🎖️", secao: "consistencia", raridade: "incomum",  recompensaEstrelas: 4,  requisito: "Ter média ≥ 12.000 pts em qualquer modalidade.", descricao: "Você está cada vez mais regular.", dica: "Mantenha o ritmo — a média reflete o conjunto das partidas.", condicao: d => d.mediaMaxima >= 12000 },
-        { id: "regular_media",   nome: "Regular",          icone: "🏆", secao: "consistencia", raridade: "raro",     recompensaEstrelas: 8,  requisito: "Ter média ≥ 15.000 pts em qualquer modalidade.", descricao: "Poucos chegam aqui com consistência.", dica: "Acerte rápido e sem erros, partida após partida.", condicao: d => d.mediaMaxima >= 15000 },
-        { id: "elite_media",     nome: "Elite",            icone: "💎", secao: "consistencia", raridade: "epico",    recompensaEstrelas: 15, requisito: "Ter média ≥ 17.000 pts em qualquer modalidade.", descricao: "Você é a elite da Copa.", dica: "Sustente 17.000 de média em qualquer modalidade.", condicao: d => d.mediaMaxima >= 17000 },
-        { id: "lenda_media",     nome: "Lenda da Média",   icone: "👑", secao: "consistencia", raridade: "lendario", recompensaEstrelas: 25, requisito: "Ter média ≥ 17.000 pts nas 3 modalidades ao mesmo tempo.", descricao: "Um feito raríssimo: mestre absoluto em todas as modalidades.", dica: "Só é possível com consistência total nas três frentes — mantenha 17.000 nas 3 simultaneamente.", condicao: d => d.todasMedias17k === true }
+        
+        // 🏅 CONSISTÊNCIA (Média com Mínimo de Partidas)
+        { id: "primeira_media",  nome: "Primeira Média",   icone: "🏅", secao: "consistencia", raridade: "comum",    recompensaEstrelas: 2,  requisito: "Ter média ≥ 8.000 pts em qualquer modalidade (mín. 2 partidas).", descricao: "Sua média começou a brilhar.", dica: "Jogue mais partidas oficiais e mantenha um bom ritmo.", condicao: d => d.mediaMaxima >= 8000 && d.partidasNaModComMaiorMedia >= 2 },
+        { id: "consistente_media", nome: "Consistente",    icone: "🎖️", secao: "consistencia", raridade: "incomum",  recompensaEstrelas: 4,  requisito: "Ter média ≥ 12.000 pts em qualquer modalidade (mín. 3 partidas).", descricao: "Você está cada vez mais regular.", dica: "Mantenha o ritmo — a média reflete o conjunto das partidas.", condicao: d => d.mediaMaxima >= 12000 && d.partidasNaModComMaiorMedia >= 3 },
+        { id: "regular_media",   nome: "Regular",          icone: "🏆", secao: "consistencia", raridade: "raro",     recompensaEstrelas: 8,  requisito: "Ter média ≥ 15.000 pts em qualquer modalidade (mín. 4 partidas).", descricao: "Poucos chegam aqui com consistência.", dica: "Acerte rápido e sem erros, partida após partida.", condicao: d => d.mediaMaxima >= 15000 && d.partidasNaModComMaiorMedia >= 4 },
+        { id: "elite_media",     nome: "Elite",            icone: "💎", secao: "consistencia", raridade: "epico",    recompensaEstrelas: 15, requisito: "Ter média ≥ 17.000 pts em qualquer modalidade (mín. 5 partidas).", descricao: "Você é a elite da Copa.", dica: "Sustente 17.000 de média em qualquer modalidade.", condicao: d => d.mediaMaxima >= 17000 && d.partidasNaModComMaiorMedia >= 5 },
+        { id: "lenda_media",     nome: "Lenda da Média",   icone: "👑", secao: "consistencia", raridade: "lendario", recompensaEstrelas: 25, requisito: "Ter média ≥ 17.000 pts nas 3 modalidades ao mesmo tempo (mín. 5 partidas em cada).", descricao: "Um feito raríssimo: mestre absoluto em todas as modalidades.", dica: "Só é possível com consistência total nas três frentes — mantenha 17.000 nas 3 simultaneamente.", condicao: d => d.todasMedias17k === true && d.qtd25 >= 5 && d.qtd69 >= 5 && d.qtd010 >= 5 }
     ];
     const MEDALS_POR_ID = Object.fromEntries(MEDALS.map(m => [m.id, m]));
     // ▲▲▲ FIM [05.09]
@@ -14041,10 +14054,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.01]
 
     // ▼▼▼ [11.02] Compilação dos dados do aluno ─────────────────────────
-    // v10.13.1 · BUGFIX performance:
-    //   • Paraleliza os 3 baselines de ranking (era loop sequencial = 3 roundtrips)
-    //   • Paraleliza leitura de snapshot diário + baselines
-    //   • Economiza 2-5s em redes fracas
     async function compilarDadosAluno(nome, turma) {
         const todasPartidas = await obterHistoricoAluno(nome, turma);
         const partidas = todasPartidas.filter(ehPartidaCompleta);
@@ -14153,7 +14162,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const melhorPosicao = posicoesValidas.length ? Math.min(...posicoesValidas) : null;
         const modalidadesTop4 = Object.values(posicoes).filter(p => p !== null && p <= 4).length;
         
-        // ⚠️ v10.13.1 — Paraleliza os 3 baselines (era loop sequencial: 3 roundtrips)
         if (modoEventoAtual !== "olimpiadas" && totalPartidas >= 5) {
             await Promise.all(
                 Object.keys(MODALIDADES)
@@ -14165,8 +14173,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         let subiuRanking = false;
         let diasNoTop4 = 0;
         if (modoEventoAtual !== "olimpiadas") {
-            // ⚠️ v10.13.1 — Paraleliza os 3 reads de baseline + snapshot em paralelo
-            // (era 3 loops sequenciais: 3 reads + 1 write + 1 read = 5 roundtrips)
             const [baselines] = await Promise.all([
                 Promise.all(
                     Object.keys(MODALIDADES).map(mod => obterBaselinePosicao(nome, turma, mod).catch(() => null))
@@ -14176,7 +14182,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             subiuRanking = Object.keys(MODALIDADES).some((mod, i) =>
                 baselines[i] !== null && posicoes[mod] !== null && posicoes[mod] < baselines[i] - 2
             );
-            // Depois do snapshot registrado, conta os dias
             diasNoTop4 = await contarDiasNoTop4(nome, turma).catch(() => 0);
         }
         
@@ -14225,6 +14230,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
         const lendaMapa = dias100.length >= 3;
 
+        // NOVO: Conta quantas partidas o aluno fez com 17.000+ pontos
+        let partidasCom17k = 0;
+        todasPartidas.forEach(p => {
+            if ((Number(p.pontos) || 0) >= 17000) partidasCom17k++;
+        });
+
         const somaPorMod = { "2-5": { total: 0, soma: 0 }, "6-9": { total: 0, soma: 0 }, "0-10": { total: 0, soma: 0 } };
         todasPartidas.forEach(p => {
             const m = p.modalidade;
@@ -14236,6 +14247,26 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const media69  = somaPorMod["6-9"].total  > 0 ? somaPorMod["6-9"].soma  / somaPorMod["6-9"].total  : 0;
         const media010 = somaPorMod["0-10"].total > 0 ? somaPorMod["0-10"].soma / somaPorMod["0-10"].total : 0;
         const mediaMaxima = Math.max(media25, media69, media010);
+        
+        // NOVO: Descobre quantas partidas tem a modalidade que deu a maior média
+        let partidasNaModComMaiorMedia = 0;
+        if (mediaMaxima > 0) {
+            if (mediaMaxima === media25) partidasNaModComMaiorMedia = somaPorMod["2-5"].total;
+            else if (mediaMaxima === media69) partidasNaModComMaiorMedia = somaPorMod["6-9"].total;
+            else if (mediaMaxima === media010) partidasNaModComMaiorMedia = somaPorMod["0-10"].total;
+
+            // Se houver empate na média, pega a modalidade com MAIS partidas (mais segura)
+            const modsEmpatadas = [];
+            if (Math.abs(media25 - mediaMaxima) < 0.01) modsEmpatadas.push("2-5");
+            if (Math.abs(media69 - mediaMaxima) < 0.01) modsEmpatadas.push("6-9");
+            if (Math.abs(media010 - mediaMaxima) < 0.01) modsEmpatadas.push("0-10");
+            let maxPartidas = 0;
+            modsEmpatadas.forEach(m => {
+                if (somaPorMod[m].total > maxPartidas) maxPartidas = somaPorMod[m].total;
+            });
+            partidasNaModComMaiorMedia = maxPartidas;
+        }
+
         const modalidadesCom17k = [media25, media69, media010].filter(v => v >= MEDIA_META_TODAS).length;
         const todasMedias17k = modalidadesCom17k === 3;
 
@@ -14252,6 +14283,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             operacoesDominadas, operacoesDominadas25, operacoesDominadas69, operacoesPrecisao95,
             baseSolida, mestreDesafios, mapaCompleto, guardaPrecisao, lendaMapa, diasMapa100: dias100.length,
             media25, media69, media010, mediaMaxima, modalidadesCom17K: modalidadesCom17k, modalidadesCom17k, todasMedias17k,
+            partidasNaModComMaiorMedia, partidasCom17k,
+            qtd25: somaPorMod["2-5"].total,
+            qtd69: somaPorMod["6-9"].total,
+            qtd010: somaPorMod["0-10"].total,
             _medalhasPersistidas: medalhasPersistidas
         };
     }
