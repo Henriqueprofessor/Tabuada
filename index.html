@@ -14294,18 +14294,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // ▼▼▼ [11.03] Cálculo de conquistas + progresso ────────────────────
     // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
-    //   medalhaVisivelNoModoAtual(m) centraliza a decisão de quais medalhas
-    //   podem aparecer/desbloquear no modo atual. É usada pelo cálculo, pela
-    //   próxima conquista e pela renderização do Álbum ([11.08] e [11.10]).
+    // v10.13.19 · Limite de 1 medalha por seção por partida (sem fila)
 
-    // ⚠️ v10.13.0 · P-B4 (Pacote 4)
     const MEDALHAS_OCULTAS_MODO_UNICO = new Set(["poliglota", "classificado_triplo", "lenda_media"]);
 
     function medalhaVisivelNoModoAtual(m) {
         if (!m) return false;
-        // Olimpíadas: categorias de ranking oficial ficam ocultas (regra antiga)
         if (modoEventoAtual === "olimpiadas" && m.secao === "rumo_final") return false;
-        // Modo Classificatória Única: esconde medalhas que dependem das 3 modalidades
         const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
             ? modalidadeClassificatoriaUnicaAtiva()
             : null;
@@ -14314,27 +14309,58 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     function calcularMedalhasDesbloqueadas(dados) {
-        const desbloqueadas = [];
+        const desbloqueadasTodas = [];
         const bloqueadas = [];
+        const persistidas = dados._medalhasPersistidas || {};
         
-        // Filtra as medalhas que fazem sentido no modo atual
         const medalhasPermitidas = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
 
+        // 1. Verifica quais medalhas bateram o requisito NESTA partida
         medalhasPermitidas.forEach(m => {
             if (m.id === "colecionador") return;
-            try { (m.condicao(dados) ? desbloqueadas : bloqueadas).push(m); }
+            try { (m.condicao(dados) ? desbloqueadasTodas : bloqueadas).push(m); }
             catch(e) { bloqueadas.push(m); }
         });
         
+        // O Colecionador é um caso à parte (depende de quantas já foram ganhas)
         const col = MEDALS_POR_ID.colecionador;
+        let colecionadorDesbloqueado = false;
         if (col) {
-            const dadosCol = { ...dados, conquistasCount: desbloqueadas.length };
-            if (col.condicao(dadosCol)) desbloqueadas.push(col);
+            const dadosCol = { ...dados, conquistasCount: desbloqueadasTodas.length };
+            if (col.condicao(dadosCol)) colecionadorDesbloqueado = true;
             else bloqueadas.push(col);
         }
-        return { desbloqueadas, bloqueadas };
-    }
 
+        // 2. APLICA A REGRA: Máximo 1 medalha por seção, sempre a mais fácil.
+        const desbloqueadasFiltradas = [];
+        const secoesComMedalhaNestaPartida = new Set();
+
+        // Itera sobre o array original MEDALS (que já está ordenado da mais fácil para a mais difícil)
+        MEDALS.forEach(m => {
+            // A medalha está na lista de quem bateu o requisito?
+            if (desbloqueadasTodas.some(desb => desb.id === m.id)) {
+                
+                // Se já foi persistida em outra partida, ignora.
+                if (persistidas[m.id]) return;
+
+                // Se a seção dela já ganhou uma medalha NESTA partida, ignora (as outras são descartadas).
+                if (secoesComMedalhaNestaPartida.has(m.secao)) return;
+
+                // Se passou por tudo, é a vez dela! (é a mais fácil que ele ainda não tem)
+                desbloqueadasFiltradas.push(m);
+                secoesComMedalhaNestaPartida.add(m.secao);
+            }
+        });
+
+        // Adiciona o colecionador se for o caso e se ele já não foi persistido
+        if (colecionadorDesbloqueado && !persistidas[col.id]) {
+            desbloqueadasFiltradas.push(col);
+        }
+
+        return { desbloqueadas: desbloqueadasFiltradas, bloqueadas };
+    }
+    
+    // O restante do bloco [11.03] (METAS_MEDAL, etc) permanece igual...
     const METAS_MEDAL = {
         primeira_vitoria:    { campo: "totalPartidas",            alvo: 1,     unidade: "partidas" },
         iniciante:           { campo: "melhorPontuacao",          alvo: 500,   unidade: "pontos" },
@@ -14399,12 +14425,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
         return { atual, alvo, pct, unidade: meta.unidade, casa: meta.casa, invertido: !!meta.invertido };
     }
+    
     function encontrarProximaConquista(dados, persistidas) {
         let melhor = null;
-
-        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — usa o helper que já cobre olimpíadas e modo único
         const medalhasPermitidas = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
-
         medalhasPermitidas.forEach(m => {
             if (persistidas[m.id]) return;
             const prog = calcularProgressoMedalha(m, dados);
@@ -14414,6 +14438,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         });
         return melhor;
     }
+    
     function formatarValorMeta(valor, casa) {
         if (casa !== undefined && casa !== null) return Number(valor).toFixed(casa);
         if (Math.abs(valor) >= 1000) return Math.round(valor).toLocaleString("pt-BR");
