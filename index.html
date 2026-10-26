@@ -20977,6 +20977,135 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [17.05]
 
     // ▼▼▼ [17.06] Reset + exportação + gerenciar alunos ─────────────
+    
+    function abrirResetTurma() {
+        if (!exigirProfessorAutenticado()) return;
+        const el = document.getElementById("painel-reset");
+        if (el) el.classList.toggle("hidden");
+    }
+
+    async function confirmarReset() {
+        if (!exigirProfessorAutenticado()) return;
+        
+        const turma = document.getElementById("reset-turma").value;
+        const modalidade = document.getElementById("reset-modalidade").value;
+        const limparVinculos = document.getElementById("reset-limpar-vinculos").checked;
+
+        const msgTurma = turma === "todas" ? "TODAS AS TURMAS" : `TURMA ${turma}`;
+        const msgMod = modalidade === "todas" ? "TODAS AS MODALIDADES" : `MODALIDADE ${modalidade}`;
+
+        if (!confirm(`⚠️ ATENÇÃO — RESET DE RANKING\n\nTurma: ${msgTurma}\nModalidade: ${msgMod}\nLimpar Vínculos: ${limparVinculos ? 'SIM' : 'NÃO'}\n\nIsso apagará os dados de partidas, ranking, medalhas, mapas e certificados dos alunos afetados.\n\nDeseja continuar?`)) return;
+
+        const btn = document.querySelector('button[onclick="confirmarReset()"]');
+        if (btn) { btn.disabled = true; btn.textContent = "⏳ Apagando... (aguarde)"; }
+        
+        try {
+            notificar("⏳ Iniciando reset. Não feche a página...", "info", 4000);
+            
+            // 1. Baixar partidas e ranking para descobrir quais alunos serão afetados
+            const [snapPartidas, snapRank] = await Promise.all([
+                database.ref(CAMINHO_PARTIDAS).once("value"),
+                database.ref(CAMINHO_RANKING).once("value")
+            ]);
+            
+            const todasPartidas = snapPartidas.val() || {};
+            const todosResultados = snapRank.val() || {};
+            
+            const alunosAfetados = new Set();
+            const partidasParaApagar = [];
+            const resultadosParaApagar = [];
+
+            // Filtrar partidas
+            for (const [id, p] of Object.entries(todasPartidas)) {
+                if (turma !== "todas" && p.turma !== turma) continue;
+                if (modalidade !== "todas" && p.modalidade !== modalidade) continue;
+                
+                partidasParaApagar.push(id);
+                alunosAfetados.add(chaveAlbum(p.nome, p.turma));
+            }
+
+            // Filtrar resultados
+            for (const [chave, r] of Object.entries(todosResultados)) {
+                if (turma !== "todas" && r.turma !== turma) continue;
+                if (modalidade !== "todas" && r.modalidade !== modalidade) continue;
+                resultadosParaApagar.push(chave);
+                alunosAfetados.add(chaveAlbum(r.nome, r.turma));
+            }
+
+            // 2. Preparar pacote de atualizações (Update em lote é mais rápido e seguro)
+            const updates = {};
+            
+            partidasParaApagar.forEach(id => { updates[`${CAMINHO_PARTIDAS}/${id}`] = null; });
+            resultadosParaApagar.forEach(id => { updates[`${CAMINHO_RANKING}/${id}`] = null; });
+            
+            // 3. Limpar perfil completo dos alunos afetados
+            alunosAfetados.forEach(alunoKey => {
+                updates[`${CAMINHO_MEDALS}/${alunoKey}`] = null;
+                updates[`${CAMINHO_MEDALS_VISTAS}/${alunoKey}`] = null;
+                updates[`${CAMINHO_ESTRELAS}/${alunoKey}`] = null;
+                updates[`${CAMINHO_SECOES_COMPLETAS}/${alunoKey}`] = null;
+                updates[`${CAMINHO_CERTIFICADOS}/${alunoKey}`] = null;
+                updates[`${CAMINHO_TREINOS_FOCADOS}/${alunoKey}`] = null;
+                updates[`${CAMINHO_TREINOS_POR_MOD}/${alunoKey}`] = null;
+                updates[`${CAMINHO_POSICAO_BASELINE}/${alunoKey}`] = null;
+                updates[`${CAMINHO_SNAPSHOT_DIARIO}/${alunoKey}`] = null;
+                updates[`${CAMINHO_HALL_RESUMO}/${alunoKey}`] = null;
+                updates[`${CAMINHO_PARTIDAS_POR_ALUNO}/${alunoKey}`] = null;
+                updates[`${CAMINHO_MAPA_TABUADAS}/${alunoKey}`] = null;
+                
+                if (limparVinculos) {
+                    updates[`${CAMINHO_VINCULOS}/${alunoKey}`] = null;
+                }
+            });
+
+            // 4. Limpar ranking_resumo
+            const snapResumo = await database.ref(CAMINHO_RANKING_RESUMO).once("value");
+            const resumo = snapResumo.val() || {};
+            
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                if (modalidade !== "todas" && modalidade !== mod) continue;
+                if (resumo.best && resumo.best[mod]) {
+                    alunosAfetados.forEach(alunoKey => {
+                        updates[`${CAMINHO_RANKING_RESUMO}/best/${mod}/${alunoKey}`] = null;
+                    });
+                }
+                if (resumo.media && resumo.media[mod]) {
+                    alunosAfetados.forEach(alunoKey => {
+                        updates[`${CAMINHO_RANKING_RESUMO}/media/${mod}/${alunoKey}`] = null;
+                    });
+                }
+            }
+            
+            if (resumo.best_turma) {
+                for (const t of Object.keys(resumo.best_turma)) {
+                    if (turma !== "todas" && turma !== t) continue;
+                    for (const mod of Object.keys(resumo.best_turma[t])) {
+                        if (modalidade !== "todas" && modalidade !== mod) continue;
+                        alunosAfetados.forEach(alunoKey => {
+                            updates[`${CAMINHO_RANKING_RESUMO}/best_turma/${t}/${mod}/${alunoKey}`] = null;
+                        });
+                    }
+                }
+            }
+
+            // 5. Executar o Update Global
+            await database.ref().update(updates);
+            
+            notificar("✅ Reset concluído com sucesso!", "sucesso", 6000);
+            try { somConclusao(); } catch(e) {}
+            
+            document.getElementById("painel-reset").classList.add("hidden");
+            
+            setTimeout(() => { location.reload(); }, 2000);
+
+        } catch(e) {
+            console.error("Erro no reset:", e);
+            notificar("❌ Erro ao resetar. Verifique o console.", "erro", 6000);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = "⚠️ CONFIRMAR RESET"; }
+        }
+    }
+
     async function confirmarResetDefinitivo() {
         if (!exigirProfessorAutenticado()) return;
         
@@ -21042,7 +21171,7 @@ function abrirBuscarAlunoComMeusDados() {
             perfilSyncCache = { chave: null, ts: 0 };
         } catch(e) {}
 
-        // ⚠️ NOVO: Dispara os comandos de limpeza remota para os alunos
+        // ⚠️ Dispara os comandos de limpeza remota para os alunos
         try {
             await database.ref("config/comando_limpar_storage").set(Date.now());
             await database.ref("config/comando_reload").set(Date.now());
@@ -21067,7 +21196,6 @@ function abrirBuscarAlunoComMeusDados() {
 
         setTimeout(() => { location.reload(); }, 3000);
     }
-    // ... (o restante do bloco continua igual: limparAlbumPorFiltro, confirmarReset, etc) ...
     // ▲▲▲ FIM [17.06]
 
     // ▼▼▼ [17.07] Modais auxiliares ───────────────────────────────────
