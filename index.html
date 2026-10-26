@@ -12328,8 +12328,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.08.quater]
 
     // ▼▼▼ [07.09] Auto-início, fechamento e encerramento da etapa ─────────
-    // v10.13.15 · Adicionado agendamento de abertura de votação e 
-    // diferenciação entre votação de duração de etapa e pesquisa livre.
     async function verificarEIniciarEtapaSeNecessario() {
         const d = await obterDadosEtapa(true);
         if (!d.inicioEm) return;
@@ -12353,11 +12351,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (vot.inicio && Date.now() >= vot.inicio) {
             try {
                 await database.ref(CAMINHO_VOTACAO).update({ aberta: true });
-                // Se for duração de etapa, garante que a etapa saiba que a votação abriu
                 if (vot.tipo === "duracao_etapa") {
                     await salvarDadosEtapa({ votacaoAberta: true });
                 }
-                // Atualiza a tela do aluno se ela estiver aberta
                 atualizarTelaInicialComEtapa();
                 renderizarCardVotacao();
             } catch(e) { console.warn("Falha ao abrir votação agendada:", e); }
@@ -12378,6 +12374,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             try {
                 await database.ref(CAMINHO_VOTACAO).update({ aberta: false, fechadaEm: Date.now() });
                 
+                // ⚠️ AQUI: Só altera a data se a votação for do tipo "duracao_etapa"
                 if (vot.tipo === "duracao_etapa") {
                     const votos = vot.votos ? Object.values(vot.votos) : [];
                     const v7  = votos.filter(v => String(v.opcao) === "op1").length; // op1 = 7 dias
@@ -12390,6 +12387,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         duracaoEscolhida: dur,
                         fimPrevistoEm: fimEtapa
                     });
+                } else {
+                    // Se for apenas pesquisa (tipo === "livre"), apenas fecha a votação
+                    await salvarDadosEtapa({ votacaoFechadaEm: Date.now() });
                 }
             } catch(e) { console.warn("Falha ao fechar votação:", e); }
         }
@@ -20505,11 +20505,10 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [17.03]
 
     // ▼▼▼ [17.04] Votação (aluno + painel) ────────────────────────────
-    // v10.13.15 · Permite votações customizadas (pesquisas) e agendamento.
     function calcularFechamentoVotacao(inicioTs, fimEtapaTs = null) {
         const d = new Date(inicioTs);
         d.setHours(23, 59, 59, 999);
-        d.setDate(d.getDate() + 3);
+        d.setDate(d.getDate() + 3); // 3 dias de votação
         const fechamentoVotacao = d.getTime();
         if (fimEtapaTs && fimEtapaTs < fechamentoVotacao) return fimEtapaTs;
         return fechamentoVotacao;
@@ -20576,8 +20575,9 @@ function abrirBuscarAlunoComMeusDados() {
         const v2 = votos.filter(v => String(v.opcao) === "op2").length;
         const pct1 = Math.round((v1 / totalVotos) * 100);
         const pct2 = Math.round((v2 / totalVotos) * 100);
-        const label1 = dadosVot.tipo === "duracao_etapa" ? "🗓️ 7 dias (encerrar na 1ª semana)" : escaparHtml(dadosVot.opcao1 || "Opção 1");
-        const label2 = dadosVot.tipo === "duracao_etapa" ? "📆 14 dias (estender +1 semana)" : escaparHtml(dadosVot.opcao2 || "Opção 2");
+        const isDese = dadosVot.tipo === "duracao_etapa";
+        const label1 = isDese ? "🗓️ 7 dias" : escaparHtml(dadosVot.opcao1 || "Opção 1");
+        const label2 = isDese ? "📆 14 dias" : escaparHtml(dadosVot.opcao2 || "Opção 2");
 
         return `<div class="votacao-grafico"><div style="font-size:12px;font-weight:800;color:#ddd6fe;letter-spacing:.08em;margin-bottom:10px;">RESULTADO PARCIAL</div>
             <div class="barra-voto"><div class="rotulo-barra"><span>${label1}</span><span class="num">${pct1}% · ${v1} ${v1 === 1 ? "voto" : "votos"}</span></div><div class="trilha"><div class="preenchimento set" style="width:${pct1}%"></div></div></div>
@@ -20622,19 +20622,44 @@ function abrirBuscarAlunoComMeusDados() {
             else badgeMenu.classList.add("hidden");
         }
         
-        const titulo = escaparHtml(dados.titulo || "Votação da Etapa");
+        const isDese = dados.tipo === "duracao_etapa";
+        const titulo = escaparHtml(dados.titulo || (isDese ? "Quanto tempo deve durar a etapa classificatória?" : "Pesquisa de Opinião"));
+        
+        // Altera o texto de descrição dependendo do tipo de votação
+        let descricaoHtml = "";
+        if (isDese) {
+            descricaoHtml = `<p class="votacao-descricao">A duração da etapa será <strong>decidida pelos alunos</strong> que atingiram o critério de participação. A votação fecha automaticamente e a maioria define o prazo oficial.</p>
+                             <p class="votacao-descricao" style="background:rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;border:1px solid rgba(255,255,255,.22);font-size:12.5px;">📌 <strong>Todas as partidas realizadas desde o início da etapa continuarão válidas</strong>, independentemente do resultado da votação.</p>`;
+        } else {
+            descricaoHtml = `<p class="votacao-descricao">Esta é uma <strong>pesquisa de opinião</strong>. Sua resposta é muito importante para planejarmos as próximas edições da Copa.</p>
+                             <p class="votacao-descricao" style="background:rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;border:1px solid rgba(255,255,255,.22);font-size:12.5px;">📌 <strong>Atenção:</strong> Esta pesquisa <strong>não altera a data de encerramento</strong> da etapa atual. O prazo continua o mesmo!</p>`;
+        }
         
         if (encerrada) {
             const v1 = votos.filter(v => String(v.opcao) === "op1").length;
             const v2 = votos.filter(v => String(v.opcao) === "op2").length;
             const ganhador = v2 > v1 ? (dados.opcao2 || "Opção 2") : (dados.opcao1 || "Opção 1");
+            const msgGanhador = isDese ? `A etapa foi estendida para <strong>${ganhador}</strong>` : `A opção mais votada foi <strong>${ganhador}</strong>`;
             
             timerContainer.innerHTML = `<span class="votacao-status-timer">🔒 Votação encerrada</span>`;
-            corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador"><strong>Vencedor: ${ganhador}</strong></div><div class="detalhe-final">${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGraficoVotacao(dados, votos, totalVotos)}`;
+            corpo.innerHTML = `<div class="votacao-resultado-final"><div class="ganhador">${msgGanhador}</div><div class="detalhe-final">${totalVotos} ${totalVotos === 1 ? "voto" : "votos"} no total</div></div>${renderizarGraficoVotacao(dados, votos, totalVotos)}`;
             return;
         }
         
         timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)}</span>`;
+        
+        // Atualiza o HTML do modal dinamicamente
+        const tituloEl = document.getElementById("votacao-titulo");
+        if (tituloEl) tituloEl.innerHTML = titulo;
+        
+        // Encontra os parágrafos de descrição e substitui
+        const descContainers = card.querySelectorAll(".votacao-descricao");
+        if (descContainers.length > 0) {
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = descricaoHtml;
+            const novosP = Array.from(tempDiv.children);
+            descContainers.forEach((el, i) => { if (novosP[i]) el.replaceWith(novosP[i]); });
+        }
         
         if (!eleg.elegivel) {
             const faltaPartidas = Math.max(0, eleg.minPartidas - eleg.totalPartidas);
@@ -20649,8 +20674,8 @@ function abrirBuscarAlunoComMeusDados() {
             return;
         }
         
-        const label1 = dados.tipo === "duracao_etapa" ? "7 dias" : escaparHtml(dados.opcao1 || "Opção 1");
-        const label2 = dados.tipo === "duracao_etapa" ? "14 dias" : escaparHtml(dados.opcao2 || "Opção 2");
+        const label1 = isDese ? "7 dias" : escaparHtml(dados.opcao1 || "Opção 1");
+        const label2 = isDese ? "14 dias" : escaparHtml(dados.opcao2 || "Opção 2");
         
         corpo.innerHTML = `<div class="votacao-botoes">
             <button class="btn-voto" onclick="registrarVoto('op1')"><strong>${label1}</strong></button>
@@ -20692,7 +20717,7 @@ function abrirBuscarAlunoComMeusDados() {
                 <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Tipo de Votação</label>
                 <select id="vot-tipo" class="extensao-etapa-input">
                     <option value="duracao_etapa" ${dados.tipo === 'duracao_etapa' ? 'selected' : ''}>Duração da Etapa (afeta o prazo da Copa)</option>
-                    <option value="livre" ${dados.tipo === 'livre' ? 'selected' : ''}>Pesquisa Livre (não afeta o prazo)</option>
+                    <option value="livre" ${dados.tipo === 'livre' ? 'selected' : ''}>Pesquisa Livre (NÃO afeta o prazo)</option>
                 </select></div>
                 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
@@ -20711,7 +20736,6 @@ function abrirBuscarAlunoComMeusDados() {
             return;
         }
 
-        // Painel de Status da Votação Atual
         const agora = Date.now();
         const encerrada = !dados.aberta || (dados.fim && agora > dados.fim) || !!dados.fechadaEm;
         const abertura = dados.inicio && agora < dados.inicio;
@@ -20721,12 +20745,14 @@ function abrirBuscarAlunoComMeusDados() {
         if (!encerrada && !abertura) statusTxt = "🟢 Em andamento";
         else if (!encerrada && abertura) statusTxt = "⏳ Agendada";
 
+        const tipoTxt = dados.tipo === "duracao_etapa" ? "Muda a data final" : "Apenas pesquisa";
+        
         html += `<div style="margin-top:20px; border-top:1px dashed #334155; padding-top:14px;">
             <h5 style="margin:0 0 10px 0; font-size:13px; color:var(--text-primary);">Status da Votação Atual</h5>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; font-size:13px;">
                 <div><strong>Estado:</strong><br>${statusTxt}</div>
+                <div><strong>Tipo:</strong><br>${tipoTxt}</div>
                 <div><strong>Total de Votos:</strong><br>${votos.length}</div>
-                <div><strong>Abre em:</strong><br>${formatarDataHoraCurta(dados.inicio)}</div>
                 <div><strong>Fecha em:</strong><br>${formatarDataHoraCurta(dados.fim)}</div>
             </div>
             <button onclick="limparVotacao()" class="botao-forcar" style="margin:0; width:100%;">🗑️ Limpar Votação</button>
@@ -20771,7 +20797,7 @@ function abrirBuscarAlunoComMeusDados() {
         if (!confirm("⚠️ Apagar esta votação e todos os votos?")) return;
         try {
             await database.ref(CAMINHO_VOTACAO).remove();
-            await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, fimPrevistoEm: null, votacaoAberta: false });
+            await salvarDadosEtapa({ votacaoFechadaEm: null, duracaoEscolhida: null, votacaoAberta: false });
             notificar("Votação apagada.", "sucesso");
             await renderizarPainelVotacao();
             await renderizarCardVotacao();
@@ -23448,12 +23474,9 @@ function abrirBuscarAlunoComMeusDados() {
         await Promise.all(mods.map(async (mod) => {
             const listaT = await obterMelhoresDaTurma(mod, turma);
             const idxT = listaT.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome));
-
             const listaG = await obterRankingPorPontos(mod, null);
             const idxG = listaG.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
-
             const gap = calcularGapTop4(listaT, nome, turma);
-
             posicoes[mod] = {
                 turma: idxT === -1 ? null : { posicao: idxT + 1, total: listaT.length },
                 geral: idxG === -1 ? null : { posicao: idxG + 1, total: listaG.length },
@@ -23465,12 +23488,17 @@ function abrirBuscarAlunoComMeusDados() {
         const operacoesProblematicas = identificarOperacoesProblematicas(mapaGlobal, 8);
         const usosTreino = carregarUsosMenuTreino();
         
-        // Novo: busca a posição no ranking de precisão
         const rankingPrecisao = await obterRankingMediaAcertos(turma);
         const idxPrecisao = rankingPrecisao.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome));
         const posicaoPrecisao = idxPrecisao === -1 ? null : { posicao: idxPrecisao + 1, total: rankingPrecisao.length };
 
-        return { perfil, posicoes, certificados, porTabuada, operacoesProblematicas, usosTreino, posicaoPrecisao };
+        let votacaoInfo = null;
+        try {
+            const vot = await obterDadosVotacao();
+            if (vot && vot.configurada) votacaoInfo = { tipo: vot.tipo, aberta: vot.aberta, titulo: vot.titulo };
+        } catch(e) {}
+
+        return { perfil, posicoes, certificados, porTabuada, operacoesProblematicas, usosTreino, posicaoPrecisao, votacaoInfo };
     }
 
     function montarBlocoPerfil(dados) {
@@ -23497,11 +23525,7 @@ function abrirBuscarAlunoComMeusDados() {
                 if (gap) { if (gap.naZonaTop4) status = " 🎟️ TOP 4"; else if (gap.naZonaReserva) status = " 🔄 reserva"; else if (gap.gapTop4 > 0) status = ` · faltam ${gap.gapTop4.toLocaleString("pt-BR")} pts pro Top 4`; }
                 L.push(`  ${icones[mod]} ${rotulos[mod]}: ${ptTxt} · ${pgTxt}${status}`);
             }
-            
-            if (posPrecisao) {
-                L.push(`  🎯 Precisão: ${posPrecisao.posicao}º de ${posPrecisao.total} (ranking de média de acertos)`);
-            }
-            
+            if (posPrecisao) L.push(`  🎯 Precisão: ${posPrecisao.posicao}º de ${posPrecisao.total} (ranking de média de acertos)`);
             L.push("");
         }
 
@@ -23720,6 +23744,15 @@ function abrirBuscarAlunoComMeusDados() {
             modoUnicoBloco = `\n🎯 MODO CLASSIFICATÓRIA ÚNICA ATIVO 🎯\nA etapa oficial está focada em APENAS UMA modalidade: ${MODALIDADES[modUnicaAtiva].nome}.\nAs outras duas modalidades estão disponíveis APENAS PARA TREINO — não contam para o ranking oficial, para as medalhas da etapa nem para a Final.\n\nCOMO REAGIR:\n• Se o aluno perguntar "por que não posso jogar X?", explique que é uma decisão pedagógica do professor e que ele pode treinar X livremente pelo botão Treinar, sem pressão de ranking.\n• Se perguntar sobre ranking oficial, foque SEMPRE na modalidade ativa (${MODALIDADES[modUnicaAtiva].nome}).\n• Se perguntar sobre as medalhas "Poliglota", "Classificado Triplo" ou "Lenda da Média", explique que elas dependem de jogar as 3 modalidades e ficam SUSPENSAS durante este modo — voltarão quando o professor mudar para "Normal".\n• Se o aluno quiser treinar nas outras modalidades para evoluir no MAPA (o mapa continua valendo nas 3!), incentive — o mapa é global.\n\n`;
         }
 
+        let blocoVotacao = "";
+        if (dadosPerfil && dadosPerfil.votacaoInfo && dadosPerfil.votacaoInfo.aberta) {
+            if (dadosPerfil.votacaoInfo.tipo === "duracao_etapa") {
+                blocoVotacao = `\n🗳️ VOTAÇÃO ATIVA (DECISIVA): A votação aberta DEFINIRÁ A DURAÇÃO DA ETAPA (7 ou 14 dias). Se o aluno for elegível (10 partidas + 30% do mapa), incentive-o a votar e explique que o voto dele importa para o prazo final.\n`;
+            } else {
+                blocoVotacao = `\n🗳️ PESQUISA ATIVA (NÃO DECISIVA): Há uma pesquisa de opinião aberta. Ela serve apenas para coleta de dados e NÃO ALTERA a data de encerramento do evento. Explique isso caso o aluno pergunte.\n`;
+            }
+        }
+
         return `Você é o COACH PESSOAL da "Copa da Tabuada CEIB 2026" — uma competição de tabuada entre alunos do Colégio Estadual Ismael Branco.
 
 Sua função NÃO é só tirar dúvidas. Você atua como um TREINADOR de atleta:
@@ -23727,7 +23760,7 @@ diagnostica pontos fortes e fracos, prescreve treinos específicos, define metas
 curtas e motiva o aluno a evoluir. Fale com energia de treinador e clareza de médico.
 
 ${identificacao}
-${modoEventoBloco}${modoUnicoBloco}
+${modoEventoBloco}${modoUnicoBloco}${blocoVotacao}
 ${blocoPerfil}${blocoProxAlvo}
 ═══ SUA MISSÃO — FLUXO OBRIGATÓRIO ═══
 
@@ -23761,30 +23794,21 @@ O MENU DEVE SER SEMPRE ESTE:
 1️⃣ ANÁLISE COMPLETA:
    Apresente um "relatório de atleta": posições nas 3 modalidades (se for classificatória),
    % do mapa, tabuadas fortes/fracas, velocidade, sequência, MÉDIA GERAL por modalidade.
-   Termine com UMA RECOMENDAÇÃO específica ("seu foco agora é dominar a tabuada do 7").
 
 2️⃣ PLANO DE TREINO:
-   Prescreva um plano de 3 passos concretos:
-   • Passo 1: o que treinar hoje (modalidade + operações específicas)
-   • Passo 2: meta de curto prazo
-   • Passo 3: como medir sucesso
-   Cite o botão real do app: "🎯 Focar agora" ou "Treino Inteligente".
+   Prescreva um plano de 3 passos concretos. Cite o botão real do app: "🎯 Focar agora" ou "Treino Inteligente".
 
 3️⃣ DÚVIDA ESPECÍFICA:
-   - Se for cálculo → explique passo a passo, dê um truque e 3 exercícios.
-   - Se for regra → responda direto, curto e claro, usando o CONTEXTO abaixo.
+   Responda direto, curto e claro, usando o CONTEXTO abaixo. Se for sobre a votação, use o bloco de votação informado.
 
 4️⃣ OPERAÇÕES FRACAS:
    Liste as 5 piores operações do bloco "Operações mais problemáticas" do perfil.
-   Para CADA uma, dê um truque rápido de memorização.
 
 5️⃣ TOP 4:
    Use os gaps do bloco COMPETITIVO. Diga a posição atual, quanto falta de pontos.
-   Se já está no Top 4, celebre e diga para MANTER.
 
 6️⃣ VELOCIDADE:
-   Compare o melhor tempo médio do aluno com as metas dos certificados.
-   Sugira também a **Corrida de Tabuada** (Tempo ou Distância) como forma de treinar a fluência.
+   Compare o melhor tempo médio do aluno com as metas dos certificados. Sugira a Corrida de Tabuada.
 
 7️⃣ PRÓXIMO CERTIFICADO:
    Use o bloco "PRÓXIMOS ALVOS" no topo. Diga o nome do certificado, o que falta e o caminho mais rápido.
@@ -23793,20 +23817,16 @@ O MENU DEVE SER SEMPRE ESTE:
    Responda como coach — sempre conectando com o perfil do aluno.
 
 9️⃣ MÉDIA GERAL:
-   Use a seção "📊 MÉDIA GERAL" do perfil. Explique que partidas canceladas (✕) DERRUBAM a média
-   e que só partidas oficiais contam. Mostre as 5 medalhas de Consistência.
+   Use a seção "📊 MÉDIA GERAL" do perfil. Explique que partidas canceladas (✕) DERRUBAM a média.
 
 🔟 QUAL TREINO DEVO FAZER AGORA:
-   Use o bloco "🏋️ TREINO RECOMENDADO AGORA" do perfil. Diga o modo, o porquê, onde encontrar e uma dica prática.
+   Use o bloco "🏋️ TREINO RECOMENDADO AGORA" do perfil. Diga o modo, o porquê e onde encontrar.
 
 1️⃣1️⃣ PARA QUE SERVE A CORRIDA DE TABUADA:
    Explique com entusiasmo que a corrida é um modo focado em FLUÊNCIA.
-   Detalhe os 5 benefícios: Mapa (pinta as operações), Certificados (Ouro/Lendária exigem velocidade), Fluência (automaticidade), Ranking Próprio (Tempo ou Distância) e Álbum (medalhas).
 
 1️⃣2️⃣ COMO MELHORAR MINHA PRECISÃO:
-   Explique que o app tem um Ranking de Precisão (Média de Acertos).
-   Para subir nele, o aluno precisa de constância: **10 partidas oficiais em CADA UMA das 3 modalidades**.
-   Diga a média atual de acertos do aluno (se ele tiver as 10 partidas) e qual é a média do Top 3 para ele tentar alcançar. Explique que a velocidade não importa aqui, só o acerto.
+   Explique que o app tem um Ranking de Precisão (Média de Acertos). Para subir nele, o aluno precisa de constância: 10 partidas oficiais em CADA UMA das 3 modalidades. Diga a média atual de acertos do aluno (se ele tiver as 10 partidas) e qual é a média do Top 3 para ele tentar alcançar. Explique que a velocidade não importa aqui, só o acerto.
 
 ═══ TOM E ESTILO ═══
 • Fale como um treinador motivador, MAS com clareza de médico.
@@ -23857,6 +23877,9 @@ O MENU DEVE SER SEMPRE ESTE:
 
 ▸ CORRIDAS DE TABUADA
 • Modo focado em fluência (Tempo ou Distância). Tem ranking próprio (mínimo 80% de precisão). Alimenta o mapa e certificados, mas NÃO conta para o ranking das 20 perguntas.
+
+▸ VOTAÇÃO
+• Pode ser DECISIVA (duração de 7 ou 14 dias) ou apenas uma PESQUISA (não muda a data). Verifique o bloco "VOTAÇÃO ATIVA" no topo do prompt para saber qual é o caso atual e orientar o aluno.
 
 ═══ REGRAS INVIOLÁVEIS ═══
 1. Sua PRIMEIRA resposta é SEMPRE: saudação + diagnóstico curto + menu de 12 opções + "Digite o número".
