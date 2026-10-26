@@ -17341,8 +17341,11 @@ function abrirBuscarAlunoComMeusDados() {
 // ▲▲▲ FIM [13.08]
 
     // ▼▼▼ [13.12] Otimização v10.9.0 — Gravação desnormalizada + backfill ─── INÍCIO ───
-    
-    // ─── Gravação de UM aluno (chamada em salvarResultado) ───
+    // Coração da otimização. Aqui ficam:
+    //   • atualizarRankingResumoPosPartida() — idempotente, chamada por salvarResultado()
+    //   • recalcularResumosCompleto() — backfill manual (botão no Painel)
+    //   • setOtimizacaoAtiva() / desativarOtimizacao() — controle da flag
+
     async function atualizarRankingResumoPosPartida(res) {
         if (!res || !res.nome || !res.turma || !res.modalidade) return;
         const alunoKey = chaveAlbum(res.nome, res.turma);
@@ -17352,20 +17355,18 @@ function abrirBuscarAlunoComMeusDados() {
         const partidaId = res.idPartida || criarChavePartida(res);
         const completa = ehPartidaCompleta(res);
 
-        // ─── Etapa 1: flag de idempotência ───
         try {
             const flagRef = database.ref(`${CAMINHO_RANKING_RESUMO}/partidas_contabilizadas/${mod}/${alunoKey}/${partidaId}`);
             const resultado = await flagRef.transaction(atual => {
-                if (atual === true) return; // aborta (já contabilizada)
+                if (atual === true) return;
                 return true;
             });
-            if (!resultado.committed) return; // Já contabilizada
+            if (!resultado.committed) return;
         } catch(e) {
             console.warn("[Otimização] Falha na flag de contabilização:", e);
             return;
         }
 
-        // ─── Etapa 2: best (só partidas completas) ───
         if (completa) {
             const best = montarObjetoBestDaPartida(res);
             try {
@@ -17384,7 +17385,6 @@ function abrirBuscarAlunoComMeusDados() {
             } catch(e) {}
         }
 
-        // ─── Etapa 3: media (todas as partidas oficiais) ───
         const pontos = Number(res.pontos) || 0;
         const acertos = Number(res.acertos) || 0;
         try {
@@ -17394,7 +17394,7 @@ function abrirBuscarAlunoComMeusDados() {
                     somaPontos: 0, somaAcertos: 0, partidasOficiais: 0, partidasCompletas: 0, ts: Date.now()
                 };
                 base.somaPontos       = (Number(base.somaPontos) || 0) + pontos;
-                base.somaAcertos      = (Number(base.somaAcertos) || 0) + acertos; // ⚠️ NOVO: Soma acertos para o Ranking de Precisão
+                base.somaAcertos      = (Number(base.somaAcertos) || 0) + acertos;
                 base.partidasOficiais = (Number(base.partidasOficiais) || 0) + 1;
                 if (completa) base.partidasCompletas = (Number(base.partidasCompletas) || 0) + 1;
                 base.ts = Date.now();
@@ -17492,7 +17492,7 @@ function abrirBuscarAlunoComMeusDados() {
                 if (!alunoKey) continue;
                 const base = mediaPorMod[mod][alunoKey] || { nome: p.nome, turma: p.turma, somaPontos: 0, somaAcertos: 0, partidasOficiais: 0, partidasCompletas: 0, ts: Date.now() };
                 base.somaPontos += Number(p.pontos) || 0;
-                base.somaAcertos += Number(p.acertos) || 0; // ⚠️ NOVO: Soma acertos
+                base.somaAcertos += Number(p.acertos) || 0;
                 base.partidasOficiais += 1;
                 if (ehPartidaCompleta(p)) base.partidasCompletas += 1;
                 base.ts = Date.now();
@@ -17570,13 +17570,19 @@ function abrirBuscarAlunoComMeusDados() {
                 : `<span style="display:inline-block;background:#78350f;color:#fde68a;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:.4px;">⚠️ INATIVA (legacy)</span>`;
 
             const dataAtualizacao = flag.atualizadoEm ? formatarDataHoraCurta(flag.atualizadoEm) : "—";
-            const precisoBackfill = (totalBest === 0 && totalAlunosPartidas === 0);
+            
+            let avisoBackfill = "";
+            if (ativo && totalBest === 0 && totalPartidasIndex === 0) {
+                avisoBackfill = `<div style="margin-top:12px;padding:10px 14px;background:rgba(34,211,238,.12);border-left:4px solid #22d3ee;border-radius:8px;font-size:12.5px;color:#a5f3fc;line-height:1.5;">ℹ️ <strong>Banco zerado.</strong> A otimização está ativa e pronta. O resumo será preenchido automaticamente assim que os alunos começarem a jogar.</div>`;
+            } else if (!ativo && totalBest === 0 && totalPartidasIndex > 0) {
+                avisoBackfill = `<div style="margin-top:12px;padding:10px 14px;background:rgba(251,191,36,.12);border-left:4px solid #fbbf24;border-radius:8px;font-size:12.5px;color:#fde68a;line-height:1.5;">⚠️ <strong>Atenção:</strong> Existem partidas antigas no sistema. Rode "Recalcular resumos" para preencher o otimizador antes de ativar.</div>`;
+            }
 
             container.innerHTML = `
                 <div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Status</span><span class="painel-etapa-valor">${statusBadge}</span></div>
                 <div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Última alteração</span><span class="painel-etapa-valor">${dataAtualizacao}</span></div>
-                <div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Cobertura</span><span class="painel-etapa-valor">${totalBest} regs. em best · ${totalAlunosPartidas} alunos · ${totalPartidasIndex} partidas</span></div>
-                ${precisoBackfill ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(251,191,36,.12);border-left:4px solid #fbbf24;border-radius:8px;font-size:12.5px;color:#fde68a;line-height:1.5;">⚠️ <strong>Backfill ainda não foi executado.</strong> Rode "Recalcular resumos" antes de ativar.</div>` : ""}
+                <div class="painel-etapa-linha"><span class="painel-etapa-rotulo">Cobertura atual</span><span class="painel-etapa-valor">${totalBest} regs. em best · ${totalAlunosPartidas} alunos · ${totalPartidasIndex} partidas</span></div>
+                ${avisoBackfill}
                 <div class="painel-etapa-acoes" style="margin-top:14px;">
                     <button class="botao-secundario" onclick="recalcularResumosCompleto()" style="font-weight:800;">🔄 Recalcular resumos</button>
                     ${ativo ? `<button class="botao-forcar" onclick="desativarOtimizacaoV109()" style="font-weight:800;">🚫 Desativar otimização</button>` : `<button class="botao-verde" onclick="ativarOtimizacaoV109()" style="font-weight:800;">✅ Ativar otimização</button>`}
