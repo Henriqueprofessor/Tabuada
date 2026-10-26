@@ -14572,6 +14572,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             else badge.classList.add("hidden");
         } catch(e) { badge.classList.add("hidden"); }
     }
+
     function marcarAlbumVisto(quantidade) {
         try { localStorage.setItem(STORAGE_ALBUM_VISTAS, String(quantidade || 0)); } catch(e) {}
         document.getElementById("album-badge")?.classList.add("hidden");
@@ -14593,7 +14594,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     // Controla a tela de revelação e a promessa que aguarda o clique
     function iniciarFluxoRevelacao(idsNovas) {
-        return new Promise((resolve) => {
+        return new Promise(async (resolve) => {
             const medalhas = idsNovas.map(id => MEDALS_POR_ID[id]).filter(Boolean);
             if (medalhas.length === 0) return resolve();
 
@@ -14604,113 +14605,131 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             modal.classList.remove("hidden");
             modal.classList.remove("fade-out");
             
-            btn.onclick = () => {
+            btn.onclick = async () => {
                 btn.disabled = true;
                 btn.style.display = 'none';
                 
                 // Esmaece o fundo escuro para a medalha voar e ser vista
                 modal.classList.add("fade-out");
                 
-                setTimeout(() => {
-                    dispararVooMedalhaP4(medalhas[0], medalhas);
+                // Aguarda um instante para o fade-out começar
+                await new Promise(r => setTimeout(r, 100));
+
+                // ⚠️ LOOP: Anima cada medalha, uma de cada vez
+                for (let i = 0; i < medalhas.length; i++) {
+                    await dispararVooMedalhaP4(medalhas[i], i + 1, medalhas.length);
                     
-                    // Tempo total da animação: 750 (aparece) + 900 (brilha) + 900 (voo) = 2550ms
-                    // Damos 2700ms para garantir que tudo termine
-                    setTimeout(() => {
-                        modal.classList.add("hidden");
-                        btn.style.display = 'block';
-                        btn.disabled = false;
-                        resolve(); // Libera o fluxo para mostrar a tela de resultado
-                    }, 2700);
-                }, 100);
+                    // Pequena pausa entre as medalhas para dar respiro visual
+                    if (i < medalhas.length - 1) {
+                        await new Promise(r => setTimeout(r, 300));
+                    }
+                }
+                
+                // Finaliza o fluxo
+                modal.classList.add("hidden");
+                btn.style.display = 'block';
+                btn.disabled = false;
+                resolve(); // Libera o fluxo para mostrar a tela de resultado
             };
         });
     }
 
-    // Dispara a animação completa do voo
-    function dispararVooMedalhaP4(medalhaVoo, todasMedalhas) {
-        const titulo = document.createElement("div");
-        titulo.className = "p4-titulo-nova-medalha";
-        titulo.innerHTML = `
-            <div class="kicker">🎉 Nova medalha!</div>
-            <div class="nome">${escaparHtml(medalhaVoo.nome)}</div>
-        `;
-        document.body.appendChild(titulo);
-        setTimeout(() => titulo.remove(), 2200);
+    // Dispara a animação completa do voo (retorna uma Promise)
+    function dispararVooMedalhaP4(medalhaVoo, indice, total) {
+        return new Promise((resolve) => {
+            const contador = total > 1 ? ` (${indice}/${total})` : "";
+            
+            const titulo = document.createElement("div");
+            titulo.className = "p4-titulo-nova-medalha";
+            titulo.innerHTML = `
+                <div class="kicker">🎉 Nova medalha${contador}!</div>
+                <div class="nome">${escaparHtml(medalhaVoo.nome)}</div>
+            `;
+            document.body.appendChild(titulo);
+            setTimeout(() => titulo.remove(), 2200);
 
-        const flash = document.createElement("div");
-        flash.className = "p4-flash-central";
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 1000);
+            const flash = document.createElement("div");
+            flash.className = "p4-flash-central";
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 1000);
 
-        const el = document.createElement("div");
-        el.className = "medalha-voadora-p4";
-        el.textContent = medalhaVoo.icone;
-        document.body.appendChild(el);
+            const el = document.createElement("div");
+            el.className = "medalha-voadora-p4";
+            el.textContent = medalhaVoo.icone;
+            document.body.appendChild(el);
 
-        requestAnimationFrame(() => {
-            el.classList.add("visivel", "fase-aparece");
-
-            setTimeout(() => {
-                el.classList.remove("fase-aparece");
-                el.classList.add("fase-brilha");
+            requestAnimationFrame(() => {
+                el.classList.add("visivel", "fase-aparece");
 
                 setTimeout(() => {
-                    el.classList.remove("fase-brilha");
-                    executarVooP4(el, todasMedalhas);
-                }, 900);
-            }, 750);
+                    el.classList.remove("fase-aparece");
+                    el.classList.add("fase-brilha");
+
+                    setTimeout(() => {
+                        el.classList.remove("fase-brilha");
+                        // ⚠️ Aguarda o voo terminar antes de resolver a Promise
+                        executarVooP4(el).then(resolve);
+                    }, 900);
+                }, 750);
+            });
         });
     }
 
-    // Executa o voo até o ícone do Álbum no Bottom Nav
-    function executarVooP4(el, todasMedalhas) {
-        const rect = el.getBoundingClientRect();
-        const startX = rect.left + rect.width / 2;
-        const startY = rect.top + rect.height / 2;
+    // Executa o voo até o ícone do Álbum no Bottom Nav (retorna uma Promise)
+    function executarVooP4(el) {
+        return new Promise((resolve) => {
+            const rect = el.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2;
+            const startY = rect.top + rect.height / 2;
 
-        // NOVO DESTINO: Ícone do Álbum no menu inferior
-        const btnAlbum = document.querySelector('#bottom-nav-global .bottom-nav-btn[data-tela="album"]');
-        if (!btnAlbum) { el.remove(); return; }
-        
-        const destRect = btnAlbum.getBoundingClientRect();
-        const endX = destRect.left + destRect.width / 2;
-        const endY = destRect.top + destRect.height / 2;
+            // NOVO DESTINO: Ícone do Álbum no menu inferior
+            const btnAlbum = document.querySelector('#bottom-nav-global .bottom-nav-btn[data-tela="album"]');
+            if (!btnAlbum) { el.remove(); return resolve(); }
+            
+            const destRect = btnAlbum.getBoundingClientRect();
+            const endX = destRect.left + destRect.width / 2;
+            const endY = destRect.top + destRect.height / 2;
 
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const duracao = 900;
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const duracao = 900;
 
-        iniciarRastroVooP4(startX, startY, dx, dy, duracao);
+            iniciarRastroVooP4(startX, startY, dx, dy, duracao);
 
-        el.style.transition = `transform ${duracao}ms cubic-bezier(.5,.05,.35,1), opacity ${duracao}ms cubic-bezier(.5,.05,.35,1)`;
-        el.style.transform = `translate(${dx}px, ${dy}px) scale(0.14) rotate(280deg)`;
-        el.style.opacity = "0";
-        el.style.filter = "drop-shadow(0 0 24px rgba(251,191,36,1))";
-
-        setTimeout(() => {
-            el.remove();
-
-            // Flash dourado no ícone do menu inferior
-            const flashDestino = document.createElement("div");
-            flashDestino.className = "p4-destino-flash";
-            flashDestino.style.left = (endX - 60) + "px";
-            flashDestino.style.top  = (endY - 60) + "px";
-            flashDestino.style.width = "120px";
-            flashDestino.style.height = "120px";
-            document.body.appendChild(flashDestino);
-            setTimeout(() => flashDestino.remove(), 800);
-
-            // Efeito de "pulinho" no ícone do Álbum
-            btnAlbum.style.transition = "transform 0.3s ease";
-            btnAlbum.style.transform = "scale(1.2)";
-            setTimeout(() => { btnAlbum.style.transform = ""; }, 400);
+            el.style.transition = `transform ${duracao}ms cubic-bezier(.5,.05,.35,1), opacity ${duracao}ms cubic-bezier(.5,.05,.35,1)`;
+            el.style.transform = `translate(${dx}px, ${dy}px) scale(0.14) rotate(280deg)`;
+            el.style.opacity = "0";
+            el.style.filter = "drop-shadow(0 0 24px rgba(251,191,36,1))";
 
             setTimeout(() => {
-                try { somColarFigurinha(); dispararConfetes(); } catch(e) {}
-            }, 350);
+                el.remove();
 
-        }, duracao);
+                // Flash dourado no ícone do menu inferior
+                const flashDestino = document.createElement("div");
+                flashDestino.className = "p4-destino-flash";
+                flashDestino.style.left = (endX - 60) + "px";
+                flashDestino.style.top  = (endY - 60) + "px";
+                flashDestino.style.width = "120px";
+                flashDestino.style.height = "120px";
+                document.body.appendChild(flashDestino);
+                setTimeout(() => flashDestino.remove(), 800);
+
+                // Efeito de "pulinho" no ícone do Álbum
+                btnAlbum.style.transition = "transform 0.3s ease";
+                btnAlbum.style.transform = "scale(1.2)";
+                setTimeout(() => { btnAlbum.style.transform = ""; }, 400);
+
+                setTimeout(() => {
+                    try { somColarFigurinha(); dispararConfetes(); } catch(e) {}
+                }, 350);
+
+                // Dá um pequeno tempo extra para o pulinho do botão terminar antes de ir para a próxima
+                setTimeout(() => {
+                    resolve();
+                }, 400);
+
+            }, duracao);
+        });
     }
 
     function iniciarRastroVooP4(startX, startY, dx, dy, duracao) {
