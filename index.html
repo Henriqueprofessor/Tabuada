@@ -14230,7 +14230,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
         const lendaMapa = dias100.length >= 3;
 
-        // NOVO: Conta quantas partidas o aluno fez com 17.000+ pontos
+        // Conta quantas partidas o aluno fez com 17.000+ pontos
         let partidasCom17k = 0;
         todasPartidas.forEach(p => {
             if ((Number(p.pontos) || 0) >= 17000) partidasCom17k++;
@@ -14248,7 +14248,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const media010 = somaPorMod["0-10"].total > 0 ? somaPorMod["0-10"].soma / somaPorMod["0-10"].total : 0;
         const mediaMaxima = Math.max(media25, media69, media010);
         
-        // NOVO: Descobre quantas partidas tem a modalidade que deu a maior média
+        // Descobre quantas partidas tem a modalidade que deu a maior média
         let partidasNaModComMaiorMedia = 0;
         if (mediaMaxima > 0) {
             if (mediaMaxima === media25) partidasNaModComMaiorMedia = somaPorMod["2-5"].total;
@@ -14293,7 +14293,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.02]
 
     // ▼▼▼ [11.03] Cálculo de conquistas + progresso ────────────────────
-    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
     // v10.13.19 · Limite de 1 medalha por seção por partida (sem fila)
 
     const MEDALHAS_OCULTAS_MODO_UNICO = new Set(["poliglota", "classificado_triplo", "lenda_media"]);
@@ -14360,7 +14359,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return { desbloqueadas: desbloqueadasFiltradas, bloqueadas };
     }
     
-    // O restante do bloco [11.03] (METAS_MEDAL, etc) permanece igual...
     const METAS_MEDAL = {
         primeira_vitoria:    { campo: "totalPartidas",            alvo: 1,     unidade: "partidas" },
         iniciante:           { campo: "melhorPontuacao",          alvo: 500,   unidade: "pontos" },
@@ -14452,10 +14450,37 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const { desbloqueadas } = calcularMedalhasDesbloqueadas(dados);
         const persistidas = dados._medalhasPersistidas || {};
         const agora = new Date().toISOString();
+        
         const novas = [];
-        desbloqueadas.forEach(m => {
-            if (!persistidas[m.id]) { persistidas[m.id] = { data: agora }; novas.push(m.id); }
+        const secoesDesbloqueadasNestaPartida = new Set();
+
+        // ⚠️ TRAVA DE SEGURANÇA: Máximo 1 medalha por seção, sempre a mais fácil.
+        // Itera sobre o array MEDALS original (que está ordenado da mais fácil para a mais difícil)
+        // Isso garante que, mesmo que o bloco [11.03] falhe, o [11.04] barra o excesso.
+        const desbloqueadasFiltradas = [];
+        
+        MEDALS.forEach(mOriginal => {
+            // 1. Essa medalha está na lista de quem ele bateu o requisito?
+            const medalhaBatida = desbloqueadas.find(m => m.id === mOriginal.id);
+            if (!medalhaBatida) return;
+
+            // 2. Se já foi persistida em outra partida, ignora.
+            if (persistidas[mOriginal.id]) return;
+
+            // 3. Se a seção dela já ganhou uma medalha NESTA partida, ignora (as outras são descartadas).
+            if (secoesDesbloqueadasNestaPartida.has(mOriginal.secao)) return;
+
+            // 4. Se passou por tudo, é a vez dela! (é a mais fácil que ele ainda não tem)
+            desbloqueadasFiltradas.push(mOriginal);
+            secoesDesbloqueadasNestaPartida.add(mOriginal.secao);
         });
+
+        // Agora salva apenas as medalhas que passaram pelo filtro
+        desbloqueadasFiltradas.forEach(m => {
+            persistidas[m.id] = { data: agora }; 
+            novas.push(m.id);
+        });
+
         if (novas.length > 0) await salvarMedalsFirebase(nome, turma, persistidas);
         
         const secoes = await verificarSecoesCompletas(nome, turma, persistidas);
@@ -14465,6 +14490,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return { persistidas, novas, dados, novasSecoes: secoes.novasSecoes, estrelas: secoes.estrelas, secoesCompletas: secoes.reg };
     }
 
+    // O restante do bloco (salvarResumoHall, verificarSecoesCompletas) permanece exatamente igual ao original...
     async function salvarResumoHall(nome, turma, dados, persistidas, secoesCompletas, estrelas) {
         try {
             const chave = chaveAlbum(nome, turma);
