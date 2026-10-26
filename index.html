@@ -9860,7 +9860,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <div id="destaques-painel-conteudo" style="margin-top:12px;"><div class="desempenho-loading">⏳ Carregando destaques…</div></div>
                 </div>
 
-                <!-- NOVO: Ranking de Percentual do Mapa -->
+                <!-- Ranking de Percentual do Mapa -->
                 <div class="senha-container">
                     <h4 style="margin-top:0;">🗺️ Ranking de Domínio do Mapa</h4>
                     <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Mostra o percentual do mapa completo (operações verdes) de cada aluno, ordenado do maior para o menor.</p>
@@ -9945,13 +9945,18 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <div id="painel-versao-conteudo"><div class="desempenho-loading">⏳ Carregando…</div></div>
                 </div>
 
-                <!-- NOVO: Forçar Atualização -->
+                <!-- Forçar Atualização -->
                 <div class="senha-container" style="border-left: 4px solid #f59e0b;">
                     <h4 style="margin-top:0; color: #fde68a;">🚀 Forçar Atualização Global</h4>
                     <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">
                         Se você alterou o encerramento do evento ou publicou um HTML novo, clique aqui. Isso enviará um comando para <strong>recarregar a página</strong> de todos os alunos que estiverem com o app aberto neste exato momento.
                     </p>
-                    <button onclick="forcarAtualizacaoGlobal()" class="botao-forcar" style="width:100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; font-weight: 800;">⚡ Forçar Recarregamento em Todos os Alunos</button>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="forcarAtualizacaoGlobal()" class="botao-forcar" style="width:100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; font-weight: 800;">⚡ Forçar Recarregamento em Todos os Alunos</button>
+                        
+                        <!-- NOVO BOTÃO DE LIMPEZA -->
+                        <button onclick="forcarLimpezaStorage()" class="botao-verde" style="width:100%; font-weight: 800; padding: 12px;">🧹 Limpar Dados Locais (Aluno)</button>
+                    </div>
                 </div>
 
                 <div class="senha-container">
@@ -21988,7 +21993,6 @@ function abrirBuscarAlunoComMeusDados() {
         const ok = confirm(
             "🚀 FORÇAR ATUALIZAÇÃO\n\n" +
             "Todos os alunos que estiverem com o aplicativo aberto neste momento terão a tela recarregada automaticamente.\n\n" +
-            "Use isso após publicar um HTML novo no GitHub ou alterar regras no painel.\n\n" +
             "Deseja enviar o comando?"
         );
         if (!ok) return;
@@ -21999,6 +22003,28 @@ function abrirBuscarAlunoComMeusDados() {
             try { somNovoRecorde(); } catch(e) {}
         } catch(e) {
             console.warn("[Sistema] Falha ao enviar comando:", e);
+            notificar("❌ Não foi possível enviar o comando.", "erro");
+        }
+    }
+
+    // ⚠️ NOVO: Forçar limpeza de localStorage dos alunos
+    async function forcarLimpezaStorage() {
+        if (!exigirProfessorAutenticado()) return;
+        
+        const ok = confirm(
+            "🧹 LIMPAR DADOS LOCAIS DOS ALUNOS\n\n" +
+            "Isso apagará o nome, a turma e os caches salvos no celular de TODOS os alunos conectados.\n" +
+            "O app deles será recarregado e voltará para a tela de cadastro.\n\n" +
+            "Use isso APÓS um Reset Definitivo. Deseja continuar?"
+        );
+        if (!ok) return;
+
+        try {
+            await database.ref("config/comando_limpar_storage").set(Date.now());
+            notificar("✅ Comando de limpeza enviado!", "sucesso", 4000);
+            try { somNovoRecorde(); } catch(e) {}
+        } catch(e) {
+            console.warn("[Sistema] Falha ao enviar comando de limpeza:", e);
             notificar("❌ Não foi possível enviar o comando.", "erro");
         }
     }
@@ -25676,22 +25702,50 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 const ts = snap.val();
                 if (!ts) return;
                 
-                // Verifica se este comando é mais novo que o último recarregamento
                 const ultimo = Number(localStorage.getItem('ultimo_reload_forcado') || 0);
                 if (ts > ultimo) {
-                    // Salva o timestamp para não entrar em loop infinito
                     localStorage.setItem('ultimo_reload_forcado', ts);
-                    
                     console.info("[Sistema] O professor solicitou uma atualização. Recarregando...");
                     
-                    // Faz um "cache-bust" na URL para garantir que baixe o HTML novo
                     const url = new URL(window.location.href);
                     url.searchParams.set("v", Date.now().toString(36));
                     window.location.replace(url.toString());
                 }
             });
+
+            // ⚠️ NOVO LISTENER: Limpeza Remota de Storage
+            database.ref("config/comando_limpar_storage").on("value", (snap) => {
+                const ts = snap.val();
+                if (!ts) return;
+                
+                const ultimo = Number(localStorage.getItem('ultimo_clear_storage') || 0);
+                if (ts > ultimo) {
+                    // Marca o timestamp para não entrar em loop, mas em sessionStorage para não ser apagado na limpeza
+                    sessionStorage.setItem('ultimo_clear_storage', ts);
+                    localStorage.setItem('ultimo_clear_storage', ts);
+
+                    // 1. Limpa chaves específicas do aluno
+                    localStorage.removeItem("nomeAlunoAtual");
+                    localStorage.removeItem("turmaAlunoAtual");
+                    localStorage.removeItem("dispositivoId");
+
+                    // 2. Limpa todos os caches relacionados à copa
+                    const chavesParaLimpar = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.startsWith('copa') || key.startsWith('turmaAluno') || key.startsWith('nomeAluno') || key === 'rankingCEIB' || key === 'partidasCEIB')) {
+                            chavesParaLimpar.push(key);
+                        }
+                    }
+                    chavesParaLimpar.forEach(k => localStorage.removeItem(k));
+
+                    // 3. Avisa o aluno e recarrega
+                    alert("⚠️ O professor reiniciou a competição. O aplicativo será reiniciado para você fazer um novo cadastro.");
+                    window.location.reload(true);
+                }
+            });
         } catch(e) {
-            console.info("[Sistema] Listener de atualização indisponível.");
+            console.info("[Sistema] Listeners de sistema indisponíveis.");
         }
     }
     // ▲▲▲ FIM [19.04.bis]
