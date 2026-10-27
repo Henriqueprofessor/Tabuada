@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'copa-v10.13.18';
+const CACHE_VERSION = 'copa-v10.13.20'; // ⚠️ Mantenha SEMPRE igual ao APP_VERSION do index.html
 const CACHE_ESTATICOS = [
   './',
   './index.html',
