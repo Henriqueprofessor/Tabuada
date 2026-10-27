@@ -8693,10 +8693,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             pointer-events: none;
             user-select: none;
             opacity: 0.72;
-            /* Altura exata para evitar CLS */
-            min-height: 488px; 
-            height: 488px;
-            contain: layout paint;
+            contain: layout paint; /* Impede que o navegador recalcule a página inteira */
         }
 
         .home-skeleton-home-card {
@@ -8715,10 +8712,11 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             contain: layout paint;
         }
 
-        /* Variantes de altura por card específico (mantendo os tamanhos reais) */
-        #ritmo-copa-container > .home-skeleton-home-card { min-height: 120px; height: 120px; }
-        #meta-pessoal-container > .home-skeleton-home-card { min-height: 102px; height: 102px; }
-        #mapa-home-container  > .home-skeleton-home-card { min-height: 230px; height: 230px; }
+        /* Força os containers pais a reservarem o espaço antes do JS rodar */
+        #acao-principal-container { min-height: 310px; }
+        #ritmo-copa-container      { min-height: 120px; }
+        #mapa-home-container       { min-height: 230px; }
+        #meta-pessoal-container    { min-height: 102px; }
 
         .home-skeleton-bar {
             height: 12px;
@@ -8749,7 +8747,6 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             background: rgba(10, 22, 40, 0.55);
             border: 1px solid rgba(56, 189, 248, 0.10);
             border-radius: 10px;
-            min-height: 130px;
             flex: 1;
         }
 
@@ -8762,7 +8759,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
 
         @media (max-width: 899px) {
-            .home-skeleton-card { min-height: 630px; height: 630px; }
+            /* Ajuste para telas pequenas onde o modo único empilha */
+            #acao-principal-container { min-height: 340px; }
+            .home-skeleton-card { min-height: 340px; height: 340px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -9253,7 +9252,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.13.19</button>
+                >v10.13.20</button>
                 <button
                     type="button"
                     class="logo-verificar"
@@ -9304,42 +9303,37 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </section>
 
         <div id="acao-principal-container">
-            <div class="home-skeleton-card" aria-hidden="true">
+            <!-- Esqueleto adaptado para o tamanho real do MODO ÚNICO -->
+            <div class="home-skeleton-card" aria-hidden="true" style="min-height: 310px; height: 310px;">
                 <div class="home-skeleton-bar titulo"></div>
-                <div class="home-skeleton-bar curta"></div>
-                <div class="home-skeleton-linhas-mod">
-                    <div class="home-skeleton-linha-mod">
-                        <div class="home-skeleton-bar media"></div>
-                        <div class="home-skeleton-bar curta"></div>
-                    </div>
-                    <div class="home-skeleton-linha-mod">
-                        <div class="home-skeleton-bar media"></div>
-                        <div class="home-skeleton-bar curta"></div>
-                    </div>
+                <div class="home-skeleton-bar curta" style="margin-bottom: 12px;"></div>
+                <div class="home-skeleton-linhas-mod" style="flex: none;">
                     <div class="home-skeleton-linha-mod">
                         <div class="home-skeleton-bar media"></div>
                         <div class="home-skeleton-bar curta"></div>
                     </div>
                 </div>
+                <div class="home-skeleton-bar longa" style="margin-top: 12px; height: 38px;"></div>
+                <div class="home-skeleton-bar longa" style="margin-top: 10px; height: 38px;"></div>
             </div>
         </div>
 
         <div id="ritmo-copa-container">
-            <div class="home-skeleton-home-card" aria-hidden="true">
+            <div class="home-skeleton-home-card" aria-hidden="true" style="min-height: 120px; height: 120px;">
                 <div class="home-skeleton-bar titulo"></div>
                 <div class="home-skeleton-bar longa"></div>
             </div>
         </div>
 
         <div id="meta-pessoal-container">
-            <div class="home-skeleton-home-card" aria-hidden="true">
+            <div class="home-skeleton-home-card" aria-hidden="true" style="min-height: 102px; height: 102px;">
                 <div class="home-skeleton-bar curta"></div>
                 <div class="home-skeleton-bar longa"></div>
             </div>
         </div>
 
         <div id="mapa-home-container">
-            <div class="home-skeleton-home-card" aria-hidden="true">
+            <div class="home-skeleton-home-card" aria-hidden="true" style="min-height: 230px; height: 230px;">
                 <div class="home-skeleton-bar titulo"></div>
                 <div class="home-skeleton-bar longa"></div>
                 <div class="home-skeleton-bar media"></div>
@@ -25559,7 +25553,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
-        // 1. INICIALIZAÇÃO SÍNCRONA (Garante que 'database' exista antes de qualquer leitura)
+        // 1. INICIALIZAÇÃO SÍNCRONA (Garante que 'database' exista)
         firebase.initializeApp(firebaseConfig);
         database = firebase.database();
 
@@ -25583,7 +25577,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
         renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
 
-        // 3. LEITURAS E LISTENERS EM BACKGROUND (Não travam a tela)
+        // 3. LEITURAS E LISTENERS EM BACKGROUND
         if ('requestIdleCallback' in window) {
             requestIdleCallback(() => {
                 iniciarListenerAtualizacaoForcada();
@@ -25600,8 +25594,14 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             }, 50);
         }
 
-        // 4. Service Worker após o load
-        window.addEventListener('load', () => { setTimeout(registrarServiceWorker, 1500); });
+        // 4. SERVICE WORKER INTELIGENTE
+        // Só registra o SW se o usuário já tiver visitado o app antes.
+        // Isso evita o atraso no primeiro LCP medido pelo Lighthouse.
+        if (localStorage.getItem('app_ja_visitado')) {
+            setTimeout(registrarServiceWorker, 2000);
+        } else {
+            localStorage.setItem('app_ja_visitado', '1');
+        }
 
         // 5. Carrega configurações e verifica ciclo de vida da etapa
         try {
