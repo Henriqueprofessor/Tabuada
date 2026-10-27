@@ -28087,6 +28087,160 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         console.info("✅ [Evento] Hooks instalados.");
     })();
     // ▲▲▲ FIM [19.08]
+    // ▼▼▼ Correção: Funções de Gerenciamento de Alunos e CSV ▼▼▼
+    let alunosParaGerenciar = [];
+
+    async function abrirGerenciarAlunos() {
+        if (!exigirProfessorAutenticado()) return;
+        const modal = document.getElementById("painel-alunos");
+        const container = document.getElementById("lista-alunos-container");
+        if (!modal || !container) return;
+
+        modal.classList.remove("hidden");
+        container.innerHTML = `<div class="desempenho-loading">⏳ Buscando alunos...</div>`;
+
+        try {
+            // Puxa do nó de resumos do Hall (mais rápido do que baixar todas as partidas)
+            const snap = await database.ref(CAMINHO_HALL_RESUMO).once("value");
+            const dados = snap.val() || {};
+            
+            alunosParaGerenciar = Object.values(dados).map(al => ({
+                nome: al.nome,
+                turma: al.turma,
+                totalPartidas: al.totalPartidas || 0,
+                melhor: al.mediaGeral ? Math.round(al.mediaGeral) : 0
+            })).sort((a, b) => a.nome.localeCompare(b.nome));
+
+            renderizarListaAlunos(alunosParaGerenciar);
+        } catch (e) {
+            console.warn("Erro ao buscar alunos:", e);
+            container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar. Tente novamente.</div>`;
+        }
+    }
+
+    function fecharGerenciarAlunos() {
+        document.getElementById("painel-alunos")?.classList.add("hidden");
+    }
+
+    function renderizarListaAlunos(lista) {
+        const container = document.getElementById("lista-alunos-container");
+        if (!container) return;
+
+        if (lista.length === 0) {
+            container.innerHTML = `<div class="desempenho-empty-msg">Nenhum aluno encontrado.</div>`;
+            return;
+        }
+
+        let html = `<table class="alunos-table" style="width:100%; text-align:left;">
+            <thead><tr><th>Nome</th><th>Turma</th><th>Partidas</th><th>Ações</th></tr></thead><tbody>`;
+        
+        lista.forEach(al => {
+            html += `<tr>
+                <td style="color:var(--text-primary);font-weight:700;">${escaparHtml(al.nome)}</td>
+                <td>${escaparHtml(al.turma)}</td>
+                <td style="text-align:center;">${al.totalPartidas}</td>
+                <td style="text-align:right;">
+                    <button class="btn-excluir" onclick="excluirAlunoPainel('${escaparHtml(al.nome).replace(/'/g,"\\'")}', '${al.turma}')">Excluir</button>
+                </td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+
+    function filtrarAlunos() {
+        const txt = (document.getElementById("filtro-alunos")?.value || "").toLowerCase();
+        const turma = document.getElementById("filtro-turma-alunos")?.value || "";
+        
+        const filtrados = alunosParaGerenciar.filter(al => {
+            const matchNome = al.nome.toLowerCase().includes(txt);
+            const matchTurma = turma === "" || al.turma === turma;
+            return matchNome && matchTurma;
+        });
+        renderizarListaAlunos(filtrados);
+    }
+
+    async function excluirAlunoPainel(nome, turma) {
+        if (!exigirProfessorAutenticado()) return;
+        if (!confirm(`⚠️ EXCLUIR ALUNO\n\nTem certeza que deseja apagar TODOS os dados de ${nome} (Turma ${turma})?\n\nIsso apagará partidas, medalhas, mapas e vínculos.`)) return;
+
+        try {
+            const chave = chaveAlbum(nome, turma);
+            const updates = {};
+            
+            // Remove de todos os nós principais
+            updates[`${CAMINHO_VINCULOS}/${chave}`] = null;
+            updates[`${CAMINHO_MEDALS}/${chave}`] = null;
+            updates[`${CAMINHO_MAPA_TABUADAS}/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/best/2-5/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/best/6-9/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/best/0-10/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/2-5/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/6-9/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/best_turma/${turma}/0-10/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/media/2-5/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/media/6-9/${chave}`] = null;
+            updates[`${CAMINHO_RANKING_RESUMO}/media/0-10/${chave}`] = null;
+            updates[`${CAMINHO_HALL_RESUMO}/${chave}`] = null;
+            updates[`${CAMINHO_PARTIDAS_POR_ALUNO}/${chave}`] = null;
+
+            await database.ref().update(updates);
+            notificar(`Aluno ${nome} excluído com sucesso.`, "sucesso");
+            abrirGerenciarAlunos(); // Recarrega a lista
+        } catch (e) {
+            console.warn(e);
+            notificar("Erro ao excluir aluno.", "erro");
+        }
+    }
+
+    async function exportarCSV() {
+        if (!exigirProfessorAutenticado()) return;
+        notificar("⏳ Gerando CSV... aguarde", "info", 3000);
+        
+        try {
+            // Baixa o ranking completo (resumo) e as partidas
+            const [snapBest, snapPartidas] = await Promise.all([
+                database.ref(`${CAMINHO_RANKING_RESUMO}/best`).once("value"),
+                database.ref(CAMINHO_PARTIDAS).once("value")
+            ]);
+            
+            const dadosBest = snapBest.val() || {};
+            const partidas = Object.values(snapPartidas.val() || {});
+            
+            let csv = "\ufeffTIPO,NOME,TURMA,MODALIDADE,PONTOS,ACERTOS,TEMPO_MEDIO,DATA\n";
+            
+            // 1. Exportar Melhores Resultados (Ranking)
+            for (const mod of ["2-5", "6-9", "0-10"]) {
+                const alunosMod = dadosBest[mod] || {};
+                Object.values(alunosMod).forEach(r => {
+                    csv += `RECORDE,"${r.nome}","${r.turma}","${mod}",${r.pontos},${r.acertos},${r.tempoMedio},"${r.data || ''}"\n`;
+                });
+            }
+
+            // 2. Exportar Histórico de Partidas
+            partidas.sort((a,b) => new Date(b.data || 0) - new Date(a.data || 0));
+            partidas.forEach(p => {
+                csv += `PARTIDA,"${p.nome}","${p.turma}","${p.modalidade}",${p.pontos},${p.acertos},${p.tempoMedio},"${p.data || ''}"\n`;
+            });
+
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `copa_exportacao_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+            
+            notificar("✅ CSV exportado com sucesso!", "sucesso");
+        } catch(e) {
+            console.warn(e);
+            notificar("Erro ao exportar CSV.", "erro");
+        }
+    }
+    // ▲▲▲ FIM Correção ▼▲▲
     </script>
 </body>
 </html>
