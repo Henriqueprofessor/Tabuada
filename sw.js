@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'copa-v10.13.21'; // ⚠️ Subi a versão para forçar a atualização
+const CACHE_VERSION = 'copa-v10.13.22'; // ⚠️ Força a limpeza do cache antigo
 const CACHE_ESTATICOS = [
   './',
   './index.html',
@@ -35,12 +35,12 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // Ignora requisições do Firebase (o banco de dados precisa ser sempre online)
+  // Ignora Firebase
   if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebase.com')) {
     return;
   }
 
-  // Se for navegação (carregar a página HTML)
+  // Estratégia Network-First para o HTML (sempre tenta a rede primeiro)
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -50,37 +50,25 @@ self.addEventListener('fetch', (event) => {
           return resp;
         })
         .catch(async () => {
-          // Se a rede falhar, busca no cache
           const cached = await caches.match('./index.html') || await caches.match('./');
           if (cached) return cached;
-          
-          // Se não tiver no cache, devolve uma página de erro VÁLIDA (evita o crash)
-          return new Response('<h1>Você está offline</h1><p>O aplicativo não pôde ser carregado. Verifique sua internet.</p>', {
-            status: 503,
-            headers: new Headers({ 'Content-Type': 'text/html; charset=utf-8' })
-          });
+          return new Response('<h1>Você está offline</h1>', { status: 503, headers: { 'Content-Type': 'text/html' } });
         })
     );
     return;
   }
 
-  // Para outros arquivos (CSS, JS, imagens)
+  // Para outros arquivos (Cache-First)
   event.respondWith(
     caches.match(req).then((cacheado) => {
-      // Se achou no cache, retorna
       if (cacheado) return cacheado;
-
-      // Se não achou, tenta na rede
       return fetch(req).then((resp) => {
         if (resp && resp.status === 200) {
           const copia = resp.clone();
           caches.open(CACHE_VERSION).then((c) => c.put(req, copia)).catch(() => {});
         }
         return resp;
-      }).catch(() => {
-        // Se a rede falhar e não tiver cache, devolve uma resposta vazia (evita o crash)
-        return new Response('', { status: 404, statusText: 'Not Found' });
-      });
+      }).catch(() => new Response('', { status: 404 }));
     })
   );
 });
