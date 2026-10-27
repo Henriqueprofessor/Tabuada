@@ -18391,7 +18391,79 @@ function abrirBuscarAlunoComMeusDados() {
     }
     // ▲▲▲ FIM [14.07]
 
-    // ▼▼▼ [14.08] Finalização ──────────────────────────────────────────
+    // ▼▼▼ [14.08] Finalização + Splash de Posição ──────────────────────
+    
+    // --- Funções do Splash ---
+    function mostrarSplashPosicao() {
+        const modal = document.getElementById("modal-revelacao-posicao");
+        if (!modal) return;
+        const card = modal.querySelector('.posicao-card');
+        
+        modal.classList.remove("hidden");
+        modal.style.display = "flex";
+        void modal.offsetWidth;
+        modal.style.opacity = "1";
+        if (card) card.style.transform = "translateY(0) scale(1)";
+        
+        const loader = document.getElementById("posicao-loader");
+        const titulo = document.getElementById("posicao-titulo");
+        const conteudo = document.getElementById("posicao-conteudo");
+        const btn = document.getElementById("btn-ver-resultado");
+        
+        if (loader) loader.style.display = "block";
+        if (titulo) {
+            titulo.textContent = "Calculando sua posição...";
+            titulo.style.color = "#fff";
+        }
+        if (conteudo) conteudo.style.display = "none";
+        if (btn) btn.style.display = "none";
+    }
+
+    function atualizarSplashPosicao(posicao) {
+        const loader = document.getElementById("posicao-loader");
+        const titulo = document.getElementById("posicao-titulo");
+        const conteudo = document.getElementById("posicao-conteudo");
+        const numero = document.getElementById("posicao-numero");
+        const btn = document.getElementById("btn-ver-resultado");
+
+        if (loader) loader.style.display = "none";
+        if (titulo) {
+            titulo.textContent = "Sua posição na turma!";
+            titulo.style.color = "var(--neon-gold)";
+        }
+        
+        if (conteudo) conteudo.style.display = "block";
+        if (numero) {
+            numero.textContent = `${posicao}º`;
+            if (posicao <= 4) {
+                numero.style.color = "#6ee7b7";
+                if (typeof dispararConfetes === 'function') dispararConfetes();
+                try { somNovoRecorde(); } catch(e) {}
+            } else if (posicao <= 6) {
+                numero.style.color = "var(--neon-cyan)";
+                try { somAcerto(); } catch(e) {}
+            } else {
+                numero.style.color = "#cbd5e1";
+                try { somConclusao(); } catch(e) {}
+            }
+        }
+
+        if (btn) btn.style.display = "block";
+    }
+
+    function fecharRevelacaoPosicao() {
+        const modal = document.getElementById("modal-revelacao-posicao");
+        if (!modal) return;
+        modal.style.opacity = "0";
+        const card = modal.querySelector('.posicao-card');
+        if (card) card.style.transform = "translateY(20px) scale(0.95)";
+        setTimeout(() => { 
+            modal.classList.add("hidden"); 
+            modal.style.display = "none";
+        }, 300);
+    }
+
+    // --- Finalização da Partida ---
     async function finalizarCircuito() {
         if (finalizando) return;
         finalizando = true; jogoAtivo = false;
@@ -18499,7 +18571,7 @@ function abrirBuscarAlunoComMeusDados() {
             if (etapaAtual.fimPrevistoEm && Date.now() > etapaAtual.fimPrevistoEm) foraDoPrazo = true;
         } catch(e) { console.warn("Falha ao validar prazo da etapa:", e); }
 
-        // ⚠️ AQUI CHAMAMOS O SPLASH DE POSIÇÃO IMEDIATAMENTE
+        // Chama a tela de splash
         mostrarSplashPosicao();
 
         let posicaoFinal = null;
@@ -18545,16 +18617,13 @@ function abrirBuscarAlunoComMeusDados() {
             const novo = melhor.data === resultado.data;
             if (novo && posicaoAntes !== null) somNovoRecorde(); else somConclusao();
             
-            // O preencherResultado agora nos devolve a posição!
             posicaoFinal = await preencherResultado(melhor, resultado, posicaoAntes);
             
-            // Atualiza o splash com a posição calculada
+            // Atualiza a tela de splash com a posição
             atualizarSplashPosicao(posicaoFinal || "—");
 
-            // Prepara a tela de resultado escondida (por baixo do splash)
             mostrarTela("tela-resultado");
             
-            // Dispara as medalhas em background
             verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                 if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
             });
