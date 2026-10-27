@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'copa-v10.13.20'; // ⚠️ Mantenha SEMPRE igual ao APP_VERSION do index.html
+const CACHE_VERSION = 'copa-v10.13.21'; // ⚠️ Subi a versão para forçar a atualização
 const CACHE_ESTATICOS = [
   './',
   './index.html',
@@ -35,10 +35,12 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
+  // Ignora requisições do Firebase (o banco de dados precisa ser sempre online)
   if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebase.com')) {
     return;
   }
 
+  // Se for navegação (carregar a página HTML)
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -47,22 +49,38 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_VERSION).then((c) => c.put(req, copia)).catch(() => {});
           return resp;
         })
-        .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
+        .catch(async () => {
+          // Se a rede falhar, busca no cache
+          const cached = await caches.match('./index.html') || await caches.match('./');
+          if (cached) return cached;
+          
+          // Se não tiver no cache, devolve uma página de erro VÁLIDA (evita o crash)
+          return new Response('<h1>Você está offline</h1><p>O aplicativo não pôde ser carregado. Verifique sua internet.</p>', {
+            status: 503,
+            headers: new Headers({ 'Content-Type': 'text/html; charset=utf-8' })
+          });
+        })
     );
     return;
   }
 
+  // Para outros arquivos (CSS, JS, imagens)
   event.respondWith(
     caches.match(req).then((cacheado) => {
-      const fetchPromise = fetch(req).then((resp) => {
+      // Se achou no cache, retorna
+      if (cacheado) return cacheado;
+
+      // Se não achou, tenta na rede
+      return fetch(req).then((resp) => {
         if (resp && resp.status === 200) {
           const copia = resp.clone();
           caches.open(CACHE_VERSION).then((c) => c.put(req, copia)).catch(() => {});
         }
         return resp;
-      }).catch(() => null);
-
-      return cacheado || fetchPromise;
+      }).catch(() => {
+        // Se a rede falhar e não tiver cache, devolve uma resposta vazia (evita o crash)
+        return new Response('', { status: 404, statusText: 'Not Found' });
+      });
     })
   );
 });
