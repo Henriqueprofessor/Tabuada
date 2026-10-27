@@ -5298,10 +5298,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         /* ▼▼▼ [02.54] Otimização de performance — CLS do Hero (P35) ─── INÍCIO ─── */
         /* Fix do Cumulative Layout Shift (CLS) medido no Lighthouse.
-           Reserva espaço com min-height para evitar que os cards empurrem o layout. */
+           O hero da Home é preenchido por JS DEPOIS do primeiro paint.
+           Reserva espaço com min-height para evitar que o texto maior
+           empurre o #acao-principal-container para baixo. */
 
         .hero-esports {
-            min-height: 150px; /* Aumentado para aguentar 2 linhas de texto no mobile */
+            min-height: 180px; /* ⚠️ Aumentado para aguentar 4 linhas de texto no mobile */
             contain: layout paint;
         }
 
@@ -5315,15 +5317,15 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         #alerta-foco-absoluto-container { min-height: 0; transition: min-height 0.3s ease; }
         #alerta-foco-absoluto-container:not(:empty) { min-height: 100px; }
 
-        /* Reserva altura dos containers (valores calibrados com o card real renderizado) */
-        #acao-principal-container { min-height: 640px; } /* Card com 3 modalidades no mobile tem ~640px */
+        /* Reserva altura dos containers (valores calibrados com o card real) */
+        #acao-principal-container { min-height: 640px; } /* Card com 3 modalidades no mobile */
         #ritmo-copa-container      { min-height: 134px; }
         #mapa-home-container       { min-height: 260px; }
         #meta-pessoal-container    { min-height: 100px; }
 
         @media (min-width: 900px) {
-            .hero-esports             { min-height: 130px; }
-            #acao-principal-container { min-height: 360px; } /* No desktop fica lado a lado, é mais baixo */
+            .hero-esports             { min-height: 150px; }
+            #acao-principal-container { min-height: 360px; } /* No desktop fica lado a lado */
             #ritmo-copa-container     { min-height: 134px; }
         }
 
