@@ -8677,32 +8677,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▲▲▲ FIM [02.82] */
 
         /* ▼▼▼ [02.83] Esqueleto da Home — FCP/LCP imediato ─────── INÍCIO ─── */
-        /* v10.7.3b · Exibido no HTML antes do JS rodar. Reduz o FCP E o LCP
-           em conexões lentas.
-
-           LIÇÃO APRENDIDA NA MEDIÇÃO DE 16/10/2026:
-           A v10.7.3 original tinha o esqueleto MENOR que o card real. Resultado:
-           o FCP melhorava, mas o LCP continuava sendo o card real (que chega
-           depois, via Firebase) — porque o navegador reelege o LCP quando um
-           elemento maior aparece.
-
-           Correção: o esqueleto agora reserva a MESMA altura aproximada do
-           card real que ele representa, para que, quando o JS substituir, o
-           LCP já tenha sido pintado e NÃO seja reelegido.
-
-           Alturas-alvo (bate com .home-modalidades-card em [02.45] e
-           .home-ritmo-card em [02.47], .meta-compacta em [02.27],
-           .mapa-home-card em [02.36]):
-
-             · Card "Minhas Posições"  → ~500px desktop / ~700px mobile
-             · Card "Ritmo na Copa"    → ~120px
-             · Card "Meta Pessoal"     → ~100px
-             · Card "Mapa de Tabuadas" → ~200px
-
-           O JS substitui via innerHTML quando os dados chegam — nenhuma
-           interação é necessária. O esqueleto NUNCA inventa números falsos:
-           só mostra placeholders neutros com a mesma silhueta dos cards
-           finais, mantendo CLS baixo e evitando "flash de conteúdo". */
+        /* v10.13.20 · Otimização de CLS: Alturas travadas e contain: layout */
 
         .home-skeleton-card {
             background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
@@ -8718,8 +8693,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             pointer-events: none;
             user-select: none;
             opacity: 0.72;
-            /* Reserva a altura do .home-modalidades-card real */
-            min-height: 500px;
+            /* Altura exata para evitar CLS */
+            min-height: 488px; 
+            height: 488px;
+            contain: layout paint;
         }
 
         .home-skeleton-home-card {
@@ -8735,12 +8712,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             pointer-events: none;
             user-select: none;
             opacity: 0.72;
+            contain: layout paint;
         }
 
-        /* Variantes de altura por card específico */
-        #ritmo-copa-container > .home-skeleton-home-card { min-height: 120px; }
-        #meta-pessoal-container > .home-skeleton-home-card { min-height: 100px; }
-        #mapa-home-container  > .home-skeleton-home-card { min-height: 200px; }
+        /* Variantes de altura por card específico (mantendo os tamanhos reais) */
+        #ritmo-copa-container > .home-skeleton-home-card { min-height: 120px; height: 120px; }
+        #meta-pessoal-container > .home-skeleton-home-card { min-height: 102px; height: 102px; }
+        #mapa-home-container  > .home-skeleton-home-card { min-height: 230px; height: 230px; }
 
         .home-skeleton-bar {
             height: 12px;
@@ -8757,13 +8735,11 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         .home-skeleton-bar.media  { width: 65%; }
         .home-skeleton-bar.longa  { width: 100%; }
 
-        /* Container das 3 linhas de modalidade dentro do card Minhas Posições.
-           Em telas largas (≥900px) casa com o grid 3 colunas real de [02.46];
-           no celular, empilha como o layout real também faz. */
         .home-skeleton-linhas-mod {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            flex: 1;
         }
         .home-skeleton-linha-mod {
             display: grid;
@@ -8773,9 +8749,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             background: rgba(10, 22, 40, 0.55);
             border: 1px solid rgba(56, 189, 248, 0.10);
             border-radius: 10px;
-            /* Reserva a altura da linha real de modalidade (com botões
-               Jogar/Treinar, barra, legenda) */
             min-height: 130px;
+            flex: 1;
         }
 
         @media (min-width: 900px) {
@@ -8786,10 +8761,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             }
         }
 
-        /* Em telas pequenas, o card real fica mais alto (empilha), então
-           o esqueleto também precisa crescer para manter a paridade. */
         @media (max-width: 899px) {
-            .home-skeleton-card { min-height: 720px; }
+            .home-skeleton-card { min-height: 630px; height: 630px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -11096,7 +11069,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
     // v10.13.19 · Bugfix: splash de posição consolidado em [14.08] + sincronização de versão
-    const APP_VERSION = "10.13.19";
+    // v10.13.20 · Otimização: Fim do carregamento duplo no boot
+    const APP_VERSION = "10.13.20";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -11104,8 +11078,12 @@ function verificarVersao() {
     const versaoLocal = localStorage.getItem('appVersao');
     if (versaoLocal !== APP_VERSION) {
         localStorage.setItem('appVersao', APP_VERSION);
-        if (window.location.search.includes('v=')) { location.reload(true); }
-        else { const sep = window.location.search ? '&' : '?'; window.location.href = window.location.href + sep + 'v=' + APP_VERSION; }
+        // Se a URL atual já não tem a versão nova, força o reload com cache-bust
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('v') !== APP_VERSION) {
+            url.searchParams.set('v', APP_VERSION);
+            window.location.replace(url.toString());
+        }
     }
 }
 verificarVersao();
@@ -25580,13 +25558,37 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
 
+    // Adia a inicialização pesada do Firebase para depois do primeiro paint
+    function iniciarFirebase() {
+        return new Promise((resolve) => {
+            const init = () => {
+                try {
+                    firebase.initializeApp(firebaseConfig);
+                    database = firebase.database();
+                    
+                    // Configura listeners básicos do sistema
+                    iniciarListenerAtualizacaoForcada();
+                    verificarVersaoPublicada().catch(() => {});
+                    try { iniciarListenerVersao(); } catch(e) {}
+                    iniciarListenerMsgAluno();
+                    
+                    resolve();
+                } catch (e) {
+                    console.error("Falha ao inicializar Firebase:", e);
+                    resolve();
+                }
+            };
+
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(init, { timeout: 2000 });
+            } else {
+                setTimeout(init, 50);
+            }
+        });
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
-        firebase.initializeApp(firebaseConfig);
-        database = firebase.database();
-
-        registrarServiceWorker();
-        iniciarListenerAtualizacaoForcada();
-
+        // 1. Atualiza a interface visualmente INSTANTANEAMENTE (LCP baixo)
         atualizarBotaoMinhaTurma();
         mudarTipoRanking("turma");
         configurarToqueSecreto();
@@ -25600,23 +25602,24 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         const elVMenu = document.getElementById("mais-versao-atual");
         if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
 
-        verificarVersaoPublicada().catch(() => {});
-        try { iniciarListenerVersao(); } catch(e) { console.warn("[Versão] Listener indisponível:", e); }
-        iniciarListenerMsgAluno();
+        mostrarTela("tela-inicial");
+
+        try { ativarObserverAlertaFoco(); } catch(e) {}
+        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
+        renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
+
+        // 2. Só agora inicializa o Firebase (em background) e busca os dados reais
+        await iniciarFirebase();
+
+        // 3. Registra o Service Worker após o app já estar na tela
+        window.addEventListener('load', () => { setTimeout(registrarServiceWorker, 1500); });
 
         try {
-            await Promise.all([
-                obterModoEvento(),
-                obterModoClassificatoria()
-            ]);
-            if (typeof atualizarHeaderModoEvento === "function") {
-                atualizarHeaderModoEvento();
-            }
+            await Promise.all([ obterModoEvento(), obterModoClassificatoria() ]);
+            if (typeof atualizarHeaderModoEvento === "function") atualizarHeaderModoEvento();
         } catch (e) {
             console.warn("[Boot] Falha ao carregar configurações de modo:", e);
         }
-
-        mostrarTela("tela-inicial");
 
         (async () => {
             try {
@@ -25624,31 +25627,19 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 await verificarEFecharVotacaoSeNecessario();
                 await verificarEEncerrarEtapaSeNecessario();
             } catch(e) { console.warn("Falha ciclo de vida da etapa:", e); }
-            
             try { await renderizarCardVotacao(); } catch(e) {}
         })();
 
-        try { ativarObserverAlertaFoco(); } catch(e) {}
-        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
-
-        renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
-
         if (votacaoTimerInterval) clearInterval(votacaoTimerInterval);
-        
         votacaoTimerInterval = setInterval(async () => {
             try {
                 const etapaAntes = await resolverFaseAtual();
-                
                 await verificarEFecharVotacaoSeNecessario();
                 await verificarEEncerrarEtapaSeNecessario();
-                
                 const card = document.getElementById("card-votacao");
                 if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
-                
                 const etapaDepois = await resolverFaseAtual();
-                if (etapaAntes.tipo !== etapaDepois.tipo) {
-                    await atualizarTelaInicialComEtapa();
-                }
+                if (etapaAntes.tipo !== etapaDepois.tipo) await atualizarTelaInicialComEtapa();
             } catch(e) { console.warn("Timer votação/etapa:", e); }
         }, 60000);
 
