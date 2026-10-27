@@ -1,7 +1,7 @@
-const CACHE_VERSION = 'copa-v10.13.18';
+const CACHE_VERSION = 'copa-v10.13.20';
 const CACHE_ESTATICOS = [
-  './',
-  './index.html',
+  // Removemos o './' e './index.html' daqui para evitar download duplo!
+  // O HTML será cacheado automaticamente na primeira visita pela função 'fetch'.
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js',
   'https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js'
@@ -35,10 +35,12 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
+  // Ignora requisições do Firebase (RTDB)
   if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebase.com')) {
     return;
   }
 
+  // Estratégia Network First para o HTML
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -52,6 +54,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Estratégia Cache First para o resto (CSS, JS, Imagens)
   event.respondWith(
     caches.match(req).then((cacheado) => {
       const fetchPromise = fetch(req).then((resp) => {
