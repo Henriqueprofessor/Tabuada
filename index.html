@@ -25558,37 +25558,12 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
 
-    // Adia a inicialização pesada do Firebase para depois do primeiro paint
-    function iniciarFirebase() {
-        return new Promise((resolve) => {
-            const init = () => {
-                try {
-                    firebase.initializeApp(firebaseConfig);
-                    database = firebase.database();
-                    
-                    // Configura listeners básicos do sistema
-                    iniciarListenerAtualizacaoForcada();
-                    verificarVersaoPublicada().catch(() => {});
-                    try { iniciarListenerVersao(); } catch(e) {}
-                    iniciarListenerMsgAluno();
-                    
-                    resolve();
-                } catch (e) {
-                    console.error("Falha ao inicializar Firebase:", e);
-                    resolve();
-                }
-            };
-
-            if ('requestIdleCallback' in window) {
-                requestIdleCallback(init, { timeout: 2000 });
-            } else {
-                setTimeout(init, 50);
-            }
-        });
-    }
-
     window.addEventListener("DOMContentLoaded", async () => {
-        // 1. Atualiza a interface visualmente INSTANTANEAMENTE (LCP baixo)
+        // 1. INICIALIZAÇÃO SÍNCRONA (Garante que 'database' exista antes de qualquer leitura)
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+
+        // 2. RENDERIZAÇÃO VISUAL IMEDIATA (LCP instantâneo)
         atualizarBotaoMinhaTurma();
         mudarTipoRanking("turma");
         configurarToqueSecreto();
@@ -25608,12 +25583,27 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
         renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
 
-        // 2. Só agora inicializa o Firebase (em background) e busca os dados reais
-        await iniciarFirebase();
+        // 3. LEITURAS E LISTENERS EM BACKGROUND (Não travam a tela)
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+                iniciarListenerAtualizacaoForcada();
+                verificarVersaoPublicada().catch(() => {});
+                try { iniciarListenerVersao(); } catch(e) {}
+                iniciarListenerMsgAluno();
+            }, { timeout: 2000 });
+        } else {
+            setTimeout(() => {
+                iniciarListenerAtualizacaoForcada();
+                verificarVersaoPublicada().catch(() => {});
+                try { iniciarListenerVersao(); } catch(e) {}
+                iniciarListenerMsgAluno();
+            }, 50);
+        }
 
-        // 3. Registra o Service Worker após o app já estar na tela
+        // 4. Service Worker após o load
         window.addEventListener('load', () => { setTimeout(registrarServiceWorker, 1500); });
 
+        // 5. Carrega configurações e verifica ciclo de vida da etapa
         try {
             await Promise.all([ obterModoEvento(), obterModoClassificatoria() ]);
             if (typeof atualizarHeaderModoEvento === "function") atualizarHeaderModoEvento();
