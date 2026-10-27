@@ -11053,7 +11053,21 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div id="modal-explicacao-ranking-corrida-corpo" class="ranking-descricao"></div>
     </div>
 </div>
-<!-- ▲▲▲ FIM [04.30] -->
+    <!-- ▲▲▲ FIM [04.30] -->
+
+    <!-- ▼▼▼ [04.32] SPLASH DE POSIÇÃO PÓS-PARTIDA ────────────── -->
+    <div id="modal-revelacao-posicao" class="hidden" style="position: fixed; inset: 0; background: rgba(10, 22, 40, 0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9000; opacity: 0; transition: opacity 0.3s ease;">
+        <div class="posicao-card" style="text-align: center; padding: 40px 20px; max-width: 400px; width: 90%; background: linear-gradient(135deg, rgba(19, 42, 71, 0.95) 0%, rgba(15, 35, 64, 0.95) 100%); border: 2px solid var(--border-neon); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 40px rgba(34,211,238,0.1); transform: translateY(20px) scale(0.95); transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);">
+            <div id="posicao-loader" style="font-size: 48px; margin-bottom: 20px; animation: pulse-bloco 1.5s infinite;">⏳</div>
+            <h2 id="posicao-titulo" style="color: #fff; font-size: 20px; margin-bottom: 10px; font-weight: 800;">Calculando sua posição...</h2>
+            <div id="posicao-conteudo" style="display: none;">
+                <div style="font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Sua posição na turma</div>
+                <div id="posicao-numero" style="font-size: 90px; font-weight: 900; color: var(--neon-gold); line-height: 1; text-shadow: 0 0 30px rgba(251,191,36,0.5);">1º</div>
+            </div>
+            <button id="btn-ver-resultado" class="botao-verde" style="display: none; margin-top: 30px; width: 100%; padding: 15px; font-size: 16px; border-radius: 12px;" onclick="fecharRevelacaoPosicao()">Ver meu resultado →</button>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.32] -->
 
     <!-- ▼▼▼ [04.31] MODAL DE REVELAÇÃO DE MEDALHA ─────────────── -->
     <div id="modal-revelacao-medalha" class="revelacao-medalha-overlay hidden" role="dialog" aria-modal="true">
@@ -18437,11 +18451,9 @@ function abrirBuscarAlunoComMeusDados() {
             document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual].nome;
             document.getElementById("resumo-status").innerHTML = "Modo Treino";
 
-            // ⚠️ MOSTRA A TELA IMEDIATAMENTE (Sem esperar o Firebase)
             mostrarTela("tela-resultado");
             somConclusao();
 
-            // Roda o resto em background
             (async () => {
                 try {
                     await incrementarMapaAluno(alunoAtual, turmaAtual, modalidadeAtual, resultado.desempenhoOperacoes);
@@ -18477,32 +18489,20 @@ function abrirBuscarAlunoComMeusDados() {
             if (etapaAtual.fimPrevistoEm && Date.now() > etapaAtual.fimPrevistoEm) foraDoPrazo = true;
         } catch(e) { console.warn("Falha ao validar prazo da etapa:", e); }
 
-        // ⚠️ MOSTRA A TELA IMEDIATAMENTE (ANTES DE QUALQUER LEITURA DO FIREBASE)
-        mostrarTela("tela-resultado");
-        
-        // Preenche o básico enquanto as leituras rodam
-        document.getElementById("resultado-titulo").innerHTML = foraDoPrazo ? "⏱️ Partida fora do prazo" : "🏁 Partida concluída!";
-        document.getElementById("feedback-pontos").innerHTML = `<strong>${escaparHtml(alunoAtual)}</strong>, estamos calculando sua posição...`;
-        document.getElementById("cards-comparacao-resultado").innerHTML = "";
-        document.getElementById("card-classificacao-container").innerHTML = `<div class="desempenho-loading" style="padding:20px;">⏳ Carregando sua classificação...</div>`;
-        document.getElementById("resumo-turma").innerText = turmaAtual;
-        document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual].nome;
-        document.getElementById("resumo-acertos").innerText = `${acertos}/20`;
-        document.getElementById("resumo-erros").innerText = erros;
-        document.getElementById("resumo-tempo").innerText = `${tempoMedio.toFixed(2)}s`;
-        document.getElementById("resumo-sequencia").innerText = maiorSequencia;
-        document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Salvando...</span>`;
-        document.getElementById("feedback-ranking-container").innerHTML = "";
-        document.getElementById("mapa-tabuadas-container").innerHTML = "";
+        // ⚠️ AQUI CHAMAMOS A TELA DE REVELAÇÃO IMEDIATAMENTE
+        mostrarSplashPosicao();
+
+        let posicaoFinal = null;
 
         try {
-            // Agora sim, faz as leituras e gravações pesadas em background
             await salvarPartida(resultado);
 
             if (foraDoPrazo) {
                 await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                 notificar("⏱️ O prazo da etapa encerrou durante sua partida. O resultado ficou no histórico, mas não conta para a classificação oficial.", "aviso", 9000);
                 await preencherResultadoForaDoPrazo(resultado);
+                fecharRevelacaoPosicao();
+                mostrarTela("tela-resultado");
                 somConclusao();
                 verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                     if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
@@ -18522,6 +18522,8 @@ function abrirBuscarAlunoComMeusDados() {
             if (melhor === null) {
                 await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                 await preencherResultadoParcial(resultado);
+                fecharRevelacaoPosicao();
+                mostrarTela("tela-resultado");
                 somConclusao();
                 verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                     if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
@@ -18533,8 +18535,14 @@ function abrirBuscarAlunoComMeusDados() {
             const novo = melhor.data === resultado.data;
             if (novo && posicaoAntes !== null) somNovoRecorde(); else somConclusao();
             
-            // Aqui preenche o restante da tela que já está visível
-            await preencherResultado(melhor, resultado, posicaoAntes);
+            // O preencherResultado agora nos devolve a posição!
+            posicaoFinal = await preencherResultado(melhor, resultado, posicaoAntes);
+            
+            // Atualiza a tela de revelação com a posição calculada
+            atualizarSplashPosicao(posicaoFinal || "—");
+
+            // Prepara a tela de resultado escondida (por baixo do splash)
+            mostrarTela("tela-resultado");
             
             verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                 if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
@@ -18544,18 +18552,15 @@ function abrirBuscarAlunoComMeusDados() {
             notificar("Erro ao salvar. Tentando fallback local.", "aviso", 5000);
             try {
                 await salvarPartida(resultado);
-                if (foraDoPrazo) {
-                    await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
-                    await preencherResultadoForaDoPrazo(resultado);
-                } else {
-                    const melhor = await salvarResultado(resultado);
-                    await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
-                    if (melhor === null) await preencherResultadoParcial(resultado);
-                    else await preencherResultado(melhor, resultado, posicaoAntes || null);
-                }
+                const melhor = await salvarResultado(resultado);
+                await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
+                if (melhor === null) await preencherResultadoParcial(resultado);
+                else await preencherResultado(melhor, resultado, null);
             } catch(e2) {
                 await preencherResultado(resultado, resultado, null);
             }
+            fecharRevelacaoPosicao();
+            mostrarTela("tela-resultado");
             somConclusao();
             verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                 if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
@@ -18748,6 +18753,8 @@ function abrirBuscarAlunoComMeusDados() {
         verificarMaestriaAbsoluta(tent.nome, tent.turma);
         verificarCertificadosPosPartida(tent.nome, tent.turma, tent.modalidade);
         await renderizarCardVotacao();
+
+        return pT; // <--- ESSENCIAL PARA A TELA DE REVELAÇÃO DE POSIÇÃO
     }
 
     async function preencherResultadoForaDoPrazo(tent) {
