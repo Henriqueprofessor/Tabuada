@@ -7239,6 +7239,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             outline: 3px solid var(--neon-cyan);
             outline-offset: 2px;
         }
+        
+        /* Slot reservado do atalho (evita CLS quando o botão aparece/some) */
+        #home-modalidades-atalho-slot {
+            min-height: 54px;
+        }
+
         @media (max-width: 520px) {
             .home-modalidades-atalho { font-size: 12px; padding: 10px 12px; }
         }
@@ -8677,7 +8683,13 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▲▲▲ FIM [02.82] */
 
         /* ▼▼▼ [02.83] Esqueleto da Home — FCP/LCP imediato ─────── INÍCIO ─── */
-        /* v10.13.20 · Otimização de CLS: Alturas travadas e contain: layout */
+        /* v10.13.21 · Otimização de CLS:
+           · min-height do skeleton agora bate com #acao-principal-container
+             (antes era 488px/630px fixo e transbordava o container de 260/340px
+             → CLS 0.122 na troca pelo card real).
+           · Linhas internas compactas (40–90px) em vez de 130px.
+           · No desktop o skeleton replica o grid 3×1 do card real.
+           · Sem `height` fixo — só `min-height`, para o conteúdo poder crescer. */
 
         .home-skeleton-card {
             background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
@@ -8693,9 +8705,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             pointer-events: none;
             user-select: none;
             opacity: 0.72;
-            /* Altura exata para evitar CLS */
-            min-height: 488px; 
-            height: 488px;
+            min-height: 260px;
             contain: layout paint;
         }
 
@@ -8715,10 +8725,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             contain: layout paint;
         }
 
-        /* Variantes de altura por card específico (mantendo os tamanhos reais) */
-        #ritmo-copa-container > .home-skeleton-home-card { min-height: 120px; height: 120px; }
-        #meta-pessoal-container > .home-skeleton-home-card { min-height: 102px; height: 102px; }
-        #mapa-home-container  > .home-skeleton-home-card { min-height: 230px; height: 230px; }
+        /* Alturas dos skeletons específicos (mantidas — já estavam certas) */
+        #ritmo-copa-container > .home-skeleton-home-card { min-height: 120px; }
+        #meta-pessoal-container > .home-skeleton-home-card { min-height: 102px; }
+        #mapa-home-container  > .home-skeleton-home-card { min-height: 230px; }
 
         .home-skeleton-bar {
             height: 12px;
@@ -8749,20 +8759,23 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             background: rgba(10, 22, 40, 0.55);
             border: 1px solid rgba(56, 189, 248, 0.10);
             border-radius: 10px;
-            min-height: 130px;
-            flex: 1;
+            min-height: 40px;
+            flex: 0 0 auto;
         }
 
+        /* No desktop, replica o grid 3×1 do card real */
         @media (min-width: 900px) {
             .home-skeleton-linhas-mod {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 12px;
             }
+            .home-skeleton-linha-mod { min-height: 90px; }
         }
 
+        /* No mobile, o container reserva 340px — skeleton acompanha */
         @media (max-width: 899px) {
-            .home-skeleton-card { min-height: 630px; height: 630px; }
+            .home-skeleton-card { min-height: 340px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -23482,9 +23495,8 @@ function abrirBuscarAlunoComMeusDados() {
             </div>`;
         }
 
-        const placeholderAtalho = (nome && turma)
-            ? `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height: 44px; margin: 10px 0 0; background: linear-gradient(90deg, rgba(148,163,184,.06) 25%, rgba(148,163,184,.12) 50%, rgba(148,163,184,.06) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 10px; border: 1px dashed rgba(148,163,184,.18);"></div>`
-            : "";
+        // ⚠️ O SLOT DO ATALHO AGORA É SEMPRE RENDERIZADO. O CSS reserva o min-height de 54px.
+        const slotAtalho = `<div id="home-modalidades-atalho-slot"></div>`;
 
         ctn.innerHTML = `<div class="home-modalidades-card">
             <div class="home-modalidades-titulo">
@@ -23495,14 +23507,13 @@ function abrirBuscarAlunoComMeusDados() {
             <div class="home-modalidades-lista ${modUnicaAtiva ? 'modo-unico' : ''}">${linhasBase}</div>
             ${rodapeOutrasMods}
             <div class="home-modalidades-rodape" style="margin-top:12px;">⚠️ Classificação provisória · Top 4 avança para a Final</div>
-            <div id="home-modalidades-atalho-slot">${placeholderAtalho}</div>
+            ${slotAtalho}
         </div>`;
 
         // 3. BUSCA OS DADOS EM BACKGROUND E ATUALIZA OS NÚMEROS
         if (nome && turma) {
             const meuToken = ++_homeModalidadesToken;
             
-            // ⚠️ OTIMIZAÇÃO: Busca apenas o ranking da modalidade ativa (ou as 3 no modo normal)
             const fetchRankings = modsParaRenderizar.map(m => obterRankingPorPontos(m, turma).catch(() => []));
             
             Promise.all([
@@ -23512,7 +23523,6 @@ function abrirBuscarAlunoComMeusDados() {
             ]).then((results) => {
                 if (meuToken !== _homeModalidadesToken) return;
                 
-                // Separa os resultados
                 const partidas = results[results.length - 2];
                 const snapTreinos = results[results.length - 1];
                 const treinosPorMod = (snapTreinos && snapTreinos.val()) || {};
@@ -23600,7 +23610,8 @@ function abrirBuscarAlunoComMeusDados() {
                 const rotuloMod = rotulos[modComMaisPend] || modComMaisPend;
                 slot.innerHTML = `<button type="button" class="home-modalidades-atalho" onclick="iniciarTreinoInteligenteParaMod('${modComMaisPend}')" aria-label="Treinar as pendências em ${escaparHtml(rotuloMod)}">🧠 Treinar as ${pendentesDaMais} ${plural} pendentes em ${escaparHtml(rotuloMod)} →</button>`;
             } else {
-                slot.innerHTML = "";
+                // Placeholder neutro de 44px para manter o layout estável quando não há pendências.
+                slot.innerHTML = `<div class="home-modalidades-atalho-placeholder" aria-hidden="true" style="height:44px;margin:10px 0 0;"></div>`;
             }
         } catch(e) { console.warn(e); }
     }
