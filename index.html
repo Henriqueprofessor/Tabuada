@@ -25,7 +25,6 @@
      Versão: 10.5.3 — P38 (descrições dos rankings) + Home reformulada
      ═══════════════════════════════════════════════════════════════════════ -->
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Copa da Tabuada CEIB 2026 · Etapa Classificatória</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏆%3C/text%3E%3C/svg%3E">
@@ -43,133 +42,11 @@
     <meta name="creator" content="Prof. Henrique Angelo da Silva">
     <meta name="publisher" content="Colégio Estadual Ismael Branco (CEIB)">
     <!-- ▲▲▲ FIM [01.02] -->
-<!-- ▼▼▼ [01.03] Manifest PWA inline (com PNG gerado em runtime) ─── INÍCIO ─── -->
-<script>
-(function() {
-  try {
-    // ─── Ícone SVG (trofêu dourado + × sobre taça, fundo escuro) ───
-    var ICONE_SVG =
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
-        '<defs>' +
-          '<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">' +
-            '<stop offset="0" stop-color="#fde68a"/>' +
-            '<stop offset="0.5" stop-color="#fbbf24"/>' +
-            '<stop offset="1" stop-color="#b45309"/>' +
-          '</linearGradient>' +
-          '<radialGradient id="h" cx="50%" cy="45%" r="60%">' +
-            '<stop offset="0" stop-color="#fbbf24" stop-opacity="0.22"/>' +
-            '<stop offset="1" stop-color="#fbbf24" stop-opacity="0"/>' +
-          '</radialGradient>' +
-        '</defs>' +
-        '<rect width="512" height="512" rx="96" fill="#0a1628"/>' +
-        '<rect width="512" height="512" rx="96" fill="url(#h)"/>' +
-        '<g transform="translate(0,8)">' +
-          '<path d="M164 118 H348 V230 C348 296 305 340 256 340 C207 340 164 296 164 230 Z" fill="url(#g)"/>' +
-          '<path d="M164 148 H126 C100 148 88 168 88 194 C88 240 118 268 166 274 L166 250 C132 244 112 226 112 196 C112 178 124 170 142 170 H164 Z" fill="url(#g)"/>' +
-          '<path d="M348 148 H386 C412 148 424 168 424 194 C424 240 394 268 346 274 L346 250 C380 244 400 226 400 196 C400 178 388 170 370 170 H348 Z" fill="url(#g)"/>' +
-          '<g stroke="#0a1628" stroke-width="22" stroke-linecap="round">' +
-            '<path d="M226 190 L286 250"/>' +
-            '<path d="M286 190 L226 250"/>' +
-          '</g>' +
-          '<rect x="236" y="340" width="40" height="52" fill="url(#g)"/>' +
-          '<rect x="200" y="392" width="112" height="16" rx="4" fill="url(#g)"/>' +
-          '<rect x="170" y="408" width="172" height="26" rx="8" fill="url(#g)"/>' +
-        '</g>' +
-      '</svg>';
 
-    var iconeSvgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICONE_SVG);
-
-    // ─── Base absoluta (para start_url/scope) ───
-    var baseUrl;
-    try {
-      baseUrl = new URL('.', location.href).href;
-    } catch (e) {
-      baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
-    }
-
-    // ─── Injeta <link rel="apple-touch-icon"> (iOS aceita SVG, mantemos) ───
-    var linkApple = document.createElement("link");
-    linkApple.rel = "apple-touch-icon";
-    linkApple.href = iconeSvgUrl;
-    document.head.appendChild(linkApple);
-
-    // ─── Gera PNG em runtime a partir do SVG (Chrome exige PNG para instalar) ───
-    function gerarPng(tamanho) {
-      return new Promise(function(resolve) {
-        var img = new Image();
-        img.onload = function() {
-          try {
-            var canvas = document.createElement('canvas');
-            canvas.width = tamanho;
-            canvas.height = tamanho;
-            var ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, tamanho, tamanho);
-            ctx.drawImage(img, 0, 0, tamanho, tamanho);
-            resolve(canvas.toDataURL('image/png'));
-          } catch (e) {
-            console.info('PWA: falha ao gerar PNG ' + tamanho + 'px —', e && e.message);
-            resolve(null);
-          }
-        };
-        img.onerror = function() {
-          console.info('PWA: falha ao carregar SVG para PNG ' + tamanho + 'px');
-          resolve(null);
-        };
-        img.src = iconeSvgUrl;
-      });
-    }
-
-    // ─── Monta e injeta o manifest (assíncrono) ───
-    Promise.all([gerarPng(192), gerarPng(512), gerarPng(512)]).then(function(pngs) {
-      var png192 = pngs[0];
-      var png512 = pngs[1];
-      var png512Mask = pngs[2];
-
-      var icons = [];
-      if (png192) icons.push({ src: png192, sizes: "192x192", type: "image/png", purpose: "any" });
-      if (png512) icons.push({ src: png512, sizes: "512x512", type: "image/png", purpose: "any" });
-      if (png512Mask) icons.push({ src: png512Mask, sizes: "512x512", type: "image/png", purpose: "maskable" });
-      // Fallback SVG (não ajuda no install do Chrome, mas não atrapalha)
-      icons.push({ src: iconeSvgUrl, sizes: "any", type: "image/svg+xml", purpose: "any" });
-
-      var manifest = {
-        name: "Copa da Tabuada CEIB 2026",
-        short_name: "Copa Tabuada",
-        description: "Competição de tabuada — Colégio Estadual Ismael Branco",
-        lang: "pt-BR",
-        start_url: baseUrl,
-        scope: baseUrl,
-        id: baseUrl,
-        display: "standalone",
-        orientation: "portrait",
-        background_color: "#0a1628",
-        theme_color: "#0a1628",
-        categories: ["education", "games"],
-        author: "Prof. Henrique Angelo da Silva · Colégio Estadual Ismael Branco (CEIB)",
-        icons: icons
-      };
-
-      var manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
-      var manifestUrl  = URL.createObjectURL(manifestBlob);
-
-      var linkManifest = document.createElement("link");
-      linkManifest.rel = "manifest";
-      linkManifest.href = manifestUrl;
-      document.head.appendChild(linkManifest);
-
-      window.__PWA_ICONE_URL__ = iconeSvgUrl;
-      window.__PWA_MANIFEST_URL__ = manifestUrl;
-      window.__PWA_BASE_URL__ = baseUrl;
-      console.info('✅ PWA: manifest injetado —', (icons.length - 1) + ' PNG(s) + 1 SVG');
-    }).catch(function(e) {
-      console.info('PWA: erro ao montar manifest —', e && e.message);
-    });
-  } catch (e) {
-    console.info("PWA: manifest inline indisponível neste contexto.", e && e.message);
-  }
-})();
-</script>
-<!-- ▲▲▲ FIM [01.03] -->
+    <!-- ▼▼▼ [01.03] Manifest PWA e Ícones Estáticos ─────────────── INÍCIO ─── -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- ▲▲▲ FIM [01.03] -->
 
     <!-- ▼ [P35] Preconnect: resolve DNS + TLS dos CDNs antes de precisar baixar -->
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
@@ -9245,7 +9122,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.13.19</button>
+                >v10.13.24</button>
                 <button
                     type="button"
                     class="logo-verificar"
@@ -9428,7 +9305,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.13.19</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.13.24</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -10357,7 +10234,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.13.19 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.13.24 · atual</span>
                 <h4 class="changelog-titulo">🎬 Splash de Posição + Sincronização de Versão</h4>
                 <p class="changelog-descricao">Ao final de cada partida oficial, agora você vê uma <strong>tela animada revelando sua posição na turma</strong> — com confetes para o Top 4. Corrigimos um bug em que a função de exibição não era encontrada, garantindo que a tela de posição funcione sempre. Também sincronizamos a versão exibida no menu "Mais" com a versão real do app.</p>
             </div>
@@ -11062,7 +10939,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
     // v10.13.19 · Bugfix: splash de posição consolidado em [14.08] + sincronização de versão
     // v10.13.20 · Otimização: Fim do carregamento duplo no boot
-    const APP_VERSION = "10.13.20";
+    const APP_VERSION = "10.13.24";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
