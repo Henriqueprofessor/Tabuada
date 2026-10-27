@@ -1,7 +1,10 @@
-const CACHE_VERSION = 'copa-v10.13.22'; // ⚠️ Força a limpeza do cache antigo
+const CACHE_VERSION = 'copa-v10.13.24';
 const CACHE_ESTATICOS = [
   './',
   './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js',
   'https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js'
@@ -35,12 +38,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // Ignora Firebase
   if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebase.com')) {
     return;
   }
 
-  // Estratégia Network-First para o HTML (sempre tenta a rede primeiro)
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -58,7 +59,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Para outros arquivos (Cache-First)
   event.respondWith(
     caches.match(req).then((cacheado) => {
       if (cacheado) return cacheado;
