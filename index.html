@@ -14293,8 +14293,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.02]
 
     // ▼▼▼ [11.03] Cálculo de conquistas + progresso ────────────────────
-    // v10.13.19 · Limite de 1 medalha por seção por partida (sem fila)
-
     const MEDALHAS_OCULTAS_MODO_UNICO = new Set(["poliglota", "classificado_triplo", "lenda_media"]);
 
     function medalhaVisivelNoModoAtual(m) {
@@ -14310,37 +14308,34 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function calcularMedalhasDesbloqueadas(dados) {
         const persistidas = dados._medalhasPersistidas || {};
         const medalhasPermitidas = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
-
-        // 1. Verifica quais medalhas bateram o requisito NESTA partida
-        const desbloqueadasTodas = [];
-        medalhasPermitidas.forEach(m => {
-            if (m.id === "colecionador") return; // O Colecionador é tratado à parte
-            try { 
-                if (m.condicao(dados)) desbloqueadasTodas.push(m); 
-            } catch(e) { }
-        });
-        
-        // O Colecionador depende de quantas foram ganhas AGORA
-        const col = MEDALS_POR_ID.colecionador;
-        if (col && medalhaVisivelNoModoAtual(col)) {
-            const dadosCol = { ...dados, conquistasCount: desbloqueadasTodas.length };
-            if (col.condicao(dadosCol)) desbloqueadasTodas.push(col);
-        }
-
-        // 2. APLICA A REGRA ESTRITA: Máximo 1 medalha por seção, sempre a de menor 'ordem'
         const desbloqueadasFiltradas = [];
-        const secoesProcessadas = new Set();
+        const secoesTrancadas = new Set();
 
-        // Ordena TODAS as medalhas ganhas pela ordem de dificuldade
-        const ordenadasPorDificuldade = [...desbloqueadasTodas].sort((a, b) => (a.ordem || 99) - (b.ordem || 99));
+        // Ordena TODAS as medalhas pela 'ordem' (facilidade).
+        // Isso garante que a "Primeira Vitória" (ordem 1) venha antes de "Iniciante" (ordem 2).
+        const medalhasOrdenadas = [...medalhasPermitidas].sort((a, b) => (a.ordem || 99) - (b.ordem || 99));
 
-        for (const m of ordenadasPorDificuldade) {
-            if (persistidas[m.id]) continue; // Se ele já tem, ignora.
-            if (secoesProcessadas.has(m.secao)) continue; // Se já pegou uma da seção nesta rodada, ignora.
-            
-            // Se passou pelos filtros, é a medalha mais fácil da seção que ele ainda não tem.
-            desbloqueadasFiltradas.push(m);
-            secoesProcessadas.add(m.secao);
+        for (const m of medalhasOrdenadas) {
+            // Se já tem, pula.
+            if (persistidas[m.id]) continue;
+            // Se a seção já foi trancada nesta rodada, pula (só permite 1 por seção).
+            if (secoesTrancadas.has(m.secao)) continue;
+
+            let bateuRequisito = false;
+            try {
+                // O Colecionador precisa de um tratamento especial
+                if (m.id === "colecionador") {
+                    const dadosCol = { ...dados, conquistasCount: Object.keys(persistidas).length + desbloqueadasFiltradas.length + 1 };
+                    bateuRequisito = m.condicao(dadosCol);
+                } else {
+                    bateuRequisito = m.condicao(dados);
+                }
+            } catch(e) { }
+
+            if (bateuRequisito) {
+                desbloqueadasFiltradas.push(m);
+                secoesTrancadas.add(m.secao); // TRANCA A SEÇÃO!
+            }
         }
 
         return { desbloqueadas: desbloqueadasFiltradas, bloqueadas: [] }; 
@@ -18474,18 +18469,18 @@ function abrirBuscarAlunoComMeusDados() {
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
             document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
             document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
+            
+            // MOSTRA A TELA IMEDIATAMENTE
+            mostrarTela("tela-resultado");
             somConclusao();
             
+            // MEDALHAS RODAM EM BACKGROUND
             verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
-            
-            // ⚠️ Passa 'true' para indicar que é uma nova partida
-            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
-            if (novasMedalhas.length > 0) {
-                await iniciarFluxoRevelacao(novasMedalhas);
-            }
+            verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
+                if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
+            }).catch(e => console.warn("[Fim de jogo] Falha no álbum em background:", e));
             
             treinoFocoOperacoes = null; treinoListaInteligente = null; treinoFocoAbsoluto = null;
-            mostrarTela("tela-resultado");
             return;
         }
 
@@ -18511,14 +18506,12 @@ function abrirBuscarAlunoComMeusDados() {
                 await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                 notificar("⏱️ O prazo da etapa encerrou durante sua partida. O resultado ficou no histórico, mas não conta para a classificação oficial.", "aviso", 9000);
                 await preencherResultadoForaDoPrazo(resultado);
+                mostrarTela("tela-resultado");
                 somConclusao();
                 
-                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
-                if (novasMedalhas.length > 0) {
-                    await iniciarFluxoRevelacao(novasMedalhas);
-                }
-                
-                mostrarTela("tela-resultado");
+                verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
+                    if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
+                }).catch(e => console.warn("[Fim de jogo] Falha no álbum:", e));
                 return;
             }
 
@@ -18527,14 +18520,12 @@ function abrirBuscarAlunoComMeusDados() {
             if (melhor === null) {
                 await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                 await preencherResultadoParcial(resultado);
+                mostrarTela("tela-resultado");
                 somConclusao();
                 
-                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
-                if (novasMedalhas.length > 0) {
-                    await iniciarFluxoRevelacao(novasMedalhas);
-                }
-                
-                mostrarTela("tela-resultado");
+                verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
+                    if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
+                }).catch(e => console.warn("[Fim de jogo] Falha no álbum:", e));
                 return;
             }
 
@@ -18543,12 +18534,14 @@ function abrirBuscarAlunoComMeusDados() {
             if (novo && posicaoAntes !== null) somNovoRecorde(); else somConclusao();
             await preencherResultado(melhor, resultado, posicaoAntes);
             
-            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
-            if (novasMedalhas.length > 0) {
-                await iniciarFluxoRevelacao(novasMedalhas);
-            }
-            
+            // MOSTRA A TELA IMEDIATAMENTE ANTES DE PROCESSAR MEDALHAS
             mostrarTela("tela-resultado");
+            
+            // MEDALHAS RODAM EM BACKGROUND
+            verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
+                if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
+            }).catch(e => console.warn("[Fim de jogo] Falha no álbum em background:", e));
+
         } catch(e) {
             notificar("Erro ao salvar. Tentando fallback local.", "aviso", 5000);
             try {
@@ -18565,14 +18558,13 @@ function abrirBuscarAlunoComMeusDados() {
             } catch(e2) {
                 await preencherResultado(resultado, resultado, posicaoAntes);
             }
-            somConclusao();
-            
-            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
-            if (novasMedalhas.length > 0) {
-                await iniciarFluxoRevelacao(novasMedalhas);
-            }
             
             mostrarTela("tela-resultado");
+            somConclusao();
+            
+            verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
+                if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
+            }).catch(e => console.warn("[Fim de jogo] Falha no álbum:", e));
         }
     }
     // ▲▲▲ FIM [14.08]
