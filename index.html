@@ -18392,19 +18392,9 @@ function abrirBuscarAlunoComMeusDados() {
 
         if (treinoAnonimo) {
             document.getElementById("resultado-titulo").innerHTML = "🎯 Treino Livre concluído!";
-            document.getElementById("feedback-pontos").innerHTML = `Você acertou <strong>${acertos}/20</strong>.<br><small style="color:#6c757d;">Tempo médio dos acertos: <strong>${tempoMedio.toFixed(2)}s</strong>.</small>`;
+            document.getElementById("feedback-pontos").innerHTML = `Você acertou <strong>${acertos}/20</strong>.`;
             document.getElementById("cards-comparacao-resultado").innerHTML = "";
             document.getElementById("card-classificacao-container").innerHTML = "";
-            document.getElementById("resumo-turma").innerText = "—";
-            document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual]?.nome || modalidadeAtual;
-            document.getElementById("resumo-acertos").innerText = `${acertos}/20`;
-            document.getElementById("resumo-erros").innerText = erros;
-            document.getElementById("resumo-tempo").innerText = `${tempoMedio.toFixed(2)}s`;
-            document.getElementById("resumo-sequencia").innerText = maiorSequencia;
-            document.getElementById("resumo-melhor-media").innerText = "--";
-            document.getElementById("resumo-media-turma").innerText = "--";
-            document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Treino Livre</span>`;
-            document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>💡 Treino Livre</strong><br>Nenhuma informação foi salva. Quando a etapa oficial começar, suas partidas valerão para a classificação!</div>`;
             document.getElementById("mapa-tabuadas-container").innerHTML = "";
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -18430,10 +18420,11 @@ function abrirBuscarAlunoComMeusDados() {
 
         if (modoTreino) {
             let t = "🎯 Resultado do Treino";
-            if (treinoFocoAbsoluto && treinoFocoAbsoluto.length) t = `🎯 Foco absoluto — ${treinoFocoAbsoluto.length} ${treinoFocoAbsoluto.length === 1 ? "operação" : "operações"}`;
+            if (treinoFocoAbsoluto && treinoFocoAbsoluto.length) t = `🎯 Foco absoluto — ${treinoFocoAbsoluto.length} operações`;
             else if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 Treino focado — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
             else if (treinoFocoOperacoes && treinoFocoOperacoes.length > 1) t = `🎯 Treino focado — ${treinoFocoOperacoes.length} operações`;
             else if (treinoListaInteligente && treinoListaInteligente.length) t = `🎯 Treino inteligente — ${treinoListaInteligente.length} operações`;
+            
             document.getElementById("resultado-titulo").innerHTML = t;
             document.getElementById("feedback-pontos").innerHTML = `${escaparHtml(alunoAtual)}, treino concluído!`;
             document.getElementById("cards-comparacao-resultado").innerHTML = "";
@@ -18442,43 +18433,39 @@ function abrirBuscarAlunoComMeusDados() {
             document.getElementById("resumo-erros").innerText = erros;
             document.getElementById("resumo-tempo").innerText = `${tempoMedio.toFixed(2)}s`;
             document.getElementById("resumo-sequencia").innerText = maiorSequencia;
-            document.getElementById("resumo-melhor-media").innerText = "--";
-            document.getElementById("resumo-media-turma").innerText = "--";
             document.getElementById("resumo-turma").innerText = turmaAtual;
             document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual].nome;
-            document.getElementById("resumo-status").innerHTML = treinoFocoAbsoluto ? "Foco Absoluto" : (treinoFocoOperacoes ? "Treino Focado" : (treinoListaInteligente ? "Treino Inteligente" : "Modo Treino"));
+            document.getElementById("resumo-status").innerHTML = "Modo Treino";
 
-            try { await incrementarMapaAluno(alunoAtual, turmaAtual, modalidadeAtual, resultado.desempenhoOperacoes); } catch(e) {}
-
-            const treinoCompleto = (acertos + erros) === TOTAL_PERGUNTAS;
-            if (treinoCompleto) {
-                const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
-                try { await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1); } catch(e) {}
-                try { await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chaveTreino}/${modalidadeAtual}`).transaction(n => (n || 0) + 1); } catch(e) {}
-                if (typeof albumSessaoCache !== "undefined") { albumSessaoCache = { chave: null, ts: 0, resultado: null }; }
-            }
-
-            mapaFonteUltima = resultado.desempenhoOperacoes;
-            mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(alunoAtual, turmaAtual);
-            if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
-            promocoesRecentes = await verificarPromocoes(alunoAtual, turmaAtual, modalidadeAtual, mapaFonteAgregada);
-            document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
-            if (promocoesRecentes.length > 0) { mostrarBannerPromocao(promocoesRecentes); dispararConfetes(); setTimeout(() => { promocoesRecentes = []; }, 6000); }
-            document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
-            document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
-            document.getElementById("btn-compartilhar")?.classList.add("hidden");
-            document.getElementById("btn-jogar-novamente")?.classList.add("hidden");
-            document.getElementById("btn-trocar-modalidade")?.classList.add("hidden");
-            
-            // MOSTRA A TELA IMEDIATAMENTE
+            // ⚠️ MOSTRA A TELA IMEDIATAMENTE (Sem esperar o Firebase)
             mostrarTela("tela-resultado");
             somConclusao();
-            
-            // MEDALHAS RODAM EM BACKGROUND
-            verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
-            verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
-                if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
-            }).catch(e => console.warn("[Fim de jogo] Falha no álbum em background:", e));
+
+            // Roda o resto em background
+            (async () => {
+                try {
+                    await incrementarMapaAluno(alunoAtual, turmaAtual, modalidadeAtual, resultado.desempenhoOperacoes);
+                    const treinoCompleto = (acertos + erros) === TOTAL_PERGUNTAS;
+                    if (treinoCompleto) {
+                        const chaveTreino = chaveAlbum(alunoAtual, turmaAtual);
+                        await database.ref(`${CAMINHO_TREINOS_FOCADOS}/${chaveTreino}`).transaction(n => (n || 0) + 1).catch(()=>{});
+                        await database.ref(`${CAMINHO_TREINOS_POR_MOD}/${chaveTreino}/${modalidadeAtual}`).transaction(n => (n || 0) + 1).catch(()=>{});
+                        if (typeof albumSessaoCache !== "undefined") { albumSessaoCache = { chave: null, ts: 0, resultado: null }; }
+                    }
+
+                    mapaFonteUltima = resultado.desempenhoOperacoes;
+                    mapaFonteAgregada = await obterDesempenhoOperacoesGlobal(alunoAtual, turmaAtual);
+                    if (!Object.keys(mapaFonteAgregada).length) mapaFonteAgregada = mapaFonteUltima;
+                    promocoesRecentes = await verificarPromocoes(alunoAtual, turmaAtual, modalidadeAtual, mapaFonteAgregada);
+                    document.getElementById("mapa-tabuadas-container").innerHTML = renderizarMapa();
+                    if (promocoesRecentes.length > 0) { mostrarBannerPromocao(promocoesRecentes); dispararConfetes(); setTimeout(() => { promocoesRecentes = []; }, 6000); }
+                    document.getElementById("feedback-ranking-container").innerHTML = gerarPlanoTreinoResultado();
+                    
+                    verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
+                    const novas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
+                    if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
+                } catch(e) { console.warn("Falha no processamento do treino:", e); }
+            })();
             
             treinoFocoOperacoes = null; treinoListaInteligente = null; treinoFocoAbsoluto = null;
             return;
@@ -18490,57 +18477,68 @@ function abrirBuscarAlunoComMeusDados() {
             if (etapaAtual.fimPrevistoEm && Date.now() > etapaAtual.fimPrevistoEm) foraDoPrazo = true;
         } catch(e) { console.warn("Falha ao validar prazo da etapa:", e); }
 
-        let posicaoAntes = null;
-        if (!foraDoPrazo) {
-            try {
-                const ra = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
-                const i = ra.findIndex(x => normalizarNome(x.nome) === normalizarNome(resultado.nome) && x.turma === resultado.turma);
-                posicaoAntes = i === -1 ? null : i + 1;
-            } catch(e) {}
-        }
+        // ⚠️ MOSTRA A TELA IMEDIATAMENTE (ANTES DE QUALQUER LEITURA DO FIREBASE)
+        mostrarTela("tela-resultado");
+        
+        // Preenche o básico enquanto as leituras rodam
+        document.getElementById("resultado-titulo").innerHTML = foraDoPrazo ? "⏱️ Partida fora do prazo" : "🏁 Partida concluída!";
+        document.getElementById("feedback-pontos").innerHTML = `<strong>${escaparHtml(alunoAtual)}</strong>, estamos calculando sua posição...`;
+        document.getElementById("cards-comparacao-resultado").innerHTML = "";
+        document.getElementById("card-classificacao-container").innerHTML = `<div class="desempenho-loading" style="padding:20px;">⏳ Carregando sua classificação...</div>`;
+        document.getElementById("resumo-turma").innerText = turmaAtual;
+        document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual].nome;
+        document.getElementById("resumo-acertos").innerText = `${acertos}/20`;
+        document.getElementById("resumo-erros").innerText = erros;
+        document.getElementById("resumo-tempo").innerText = `${tempoMedio.toFixed(2)}s`;
+        document.getElementById("resumo-sequencia").innerText = maiorSequencia;
+        document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Salvando...</span>`;
+        document.getElementById("feedback-ranking-container").innerHTML = "";
+        document.getElementById("mapa-tabuadas-container").innerHTML = "";
 
         try {
+            // Agora sim, faz as leituras e gravações pesadas em background
             await salvarPartida(resultado);
 
             if (foraDoPrazo) {
                 await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                 notificar("⏱️ O prazo da etapa encerrou durante sua partida. O resultado ficou no histórico, mas não conta para a classificação oficial.", "aviso", 9000);
                 await preencherResultadoForaDoPrazo(resultado);
-                mostrarTela("tela-resultado");
                 somConclusao();
-                
                 verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                     if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
-                }).catch(e => console.warn("[Fim de jogo] Falha no álbum:", e));
+                });
                 return;
             }
+
+            let posicaoAntes = null;
+            try {
+                const ra = await obterRankingPorPontos(resultado.modalidade, resultado.turma);
+                const i = ra.findIndex(x => normalizarNome(x.nome) === normalizarNome(resultado.nome) && x.turma === resultado.turma);
+                posicaoAntes = i === -1 ? null : i + 1;
+            } catch(e) {}
 
             const melhor = await salvarResultado(resultado);
 
             if (melhor === null) {
                 await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                 await preencherResultadoParcial(resultado);
-                mostrarTela("tela-resultado");
                 somConclusao();
-                
                 verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                     if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
-                }).catch(e => console.warn("[Fim de jogo] Falha no álbum:", e));
+                });
                 return;
             }
 
             await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
             const novo = melhor.data === resultado.data;
             if (novo && posicaoAntes !== null) somNovoRecorde(); else somConclusao();
+            
+            // Aqui preenche o restante da tela que já está visível
             await preencherResultado(melhor, resultado, posicaoAntes);
             
-            // MOSTRA A TELA IMEDIATAMENTE ANTES DE PROCESSAR MEDALHAS
-            mostrarTela("tela-resultado");
-            
-            // MEDALHAS RODAM EM BACKGROUND
             verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                 if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
-            }).catch(e => console.warn("[Fim de jogo] Falha no álbum em background:", e));
+            });
 
         } catch(e) {
             notificar("Erro ao salvar. Tentando fallback local.", "aviso", 5000);
@@ -18553,18 +18551,15 @@ function abrirBuscarAlunoComMeusDados() {
                     const melhor = await salvarResultado(resultado);
                     await incrementarMapaAluno(resultado.nome, resultado.turma, resultado.modalidade, resultado.desempenhoOperacoes);
                     if (melhor === null) await preencherResultadoParcial(resultado);
-                    else await preencherResultado(melhor, resultado, posicaoAntes);
+                    else await preencherResultado(melhor, resultado, posicaoAntes || null);
                 }
             } catch(e2) {
-                await preencherResultado(resultado, resultado, posicaoAntes);
+                await preencherResultado(resultado, resultado, null);
             }
-            
-            mostrarTela("tela-resultado");
             somConclusao();
-            
             verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                 if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
-            }).catch(e => console.warn("[Fim de jogo] Falha no álbum:", e));
+            });
         }
     }
     // ▲▲▲ FIM [14.08]
