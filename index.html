@@ -14327,29 +14327,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (col.condicao(dadosCol)) desbloqueadasTodas.push(col);
         }
 
-        // 2. APLICA A REGRA: Máximo 1 medalha por seção, sempre a de menor 'ordem'
+        // 2. APLICA A REGRA ESTRITA: Máximo 1 medalha por seção, sempre a de menor 'ordem'
         const desbloqueadasFiltradas = [];
+        const secoesProcessadas = new Set();
 
-        // Agrupa por seção
-        const porSecao = {};
-        desbloqueadasTodas.forEach(m => {
-            if (!porSecao[m.secao]) porSecao[m.secao] = [];
-            porSecao[m.secao].push(m);
-        });
+        // Ordena TODAS as medalhas ganhas pela ordem de dificuldade
+        const ordenadasPorDificuldade = [...desbloqueadasTodas].sort((a, b) => (a.ordem || 99) - (b.ordem || 99));
 
-        // Para cada seção, ordena pela propriedade 'ordem' e pega a primeira que o aluno ainda não tem
-        Object.keys(porSecao).forEach(secao => {
-            const medalhasSecao = porSecao[secao];
-            // Garante a ordenação crescente pela dificuldade definida
-            medalhasSecao.sort((a, b) => (a.ordem || 99) - (b.ordem || 99));
+        for (const m of ordenadasPorDificuldade) {
+            if (persistidas[m.id]) continue; // Se ele já tem, ignora.
+            if (secoesProcessadas.has(m.secao)) continue; // Se já pegou uma da seção nesta rodada, ignora.
             
-            for (const m of medalhasSecao) {
-                if (!persistidas[m.id]) {
-                    desbloqueadasFiltradas.push(m);
-                    break; // Só libera UMA por seção nesta partida
-                }
-            }
-        });
+            // Se passou pelos filtros, é a medalha mais fácil da seção que ele ainda não tem.
+            desbloqueadasFiltradas.push(m);
+            secoesProcessadas.add(m.secao);
+        }
 
         return { desbloqueadas: desbloqueadasFiltradas, bloqueadas: [] }; 
     }
@@ -14440,25 +14432,25 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.03]
 
     // ▼▼▼ [11.04] Sincronização de medalhas + seções + estrelas ─────────
-    async function sincronizarMedalhas(nome, turma) {
+    async function sincronizarMedalhas(nome, turma, isNewGame = false) {
         const dados = await compilarDadosAluno(nome, turma);
-        const { desbloqueadas } = calcularMedalhasDesbloqueadas(dados);
         const persistidas = dados._medalhasPersistidas || {};
         const agora = new Date().toISOString();
         
         const novas = [];
         
-        // A função calcularMedalhasDesbloqueadas JÁ GARANTE que desbloqueadas
-        // tem no máximo 1 medalha por seção, e é sempre a de menor 'ordem'.
-        // Portanto, podemos confiar e salvar diretamente.
-        desbloqueadas.forEach(m => {
-            if (!persistidas[m.id]) {
-                persistidas[m.id] = { data: agora }; 
-                novas.push(m.id);
-            }
-        });
-
-        if (novas.length > 0) await salvarMedalsFirebase(nome, turma, persistidas);
+        // ⚠️ SÓ desbloqueia novas medalhas se for o fim de uma partida/treino.
+        // Se estiver apenas abrindo o álbum, não desbloqueia nada (mantém a regra de 1 por vez).
+        if (isNewGame) {
+            const { desbloqueadas } = calcularMedalhasDesbloqueadas(dados);
+            desbloqueadas.forEach(m => {
+                if (!persistidas[m.id]) {
+                    persistidas[m.id] = { data: agora }; 
+                    novas.push(m.id);
+                }
+            });
+            if (novas.length > 0) await salvarMedalsFirebase(nome, turma, persistidas);
+        }
         
         const secoes = await verificarSecoesCompletas(nome, turma, persistidas);
         
@@ -14641,10 +14633,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     // Retorna a lista de IDs de medalhas novas.
-    async function verificarAlbumPosPartida(nome, turma) {
+    async function verificarAlbumPosPartida(nome, turma, isNewGame = false) {
         if (!nome || !turma) return [];
         try {
-            const r = await sincronizarMedalhas(nome, turma);
+            const r = await sincronizarMedalhas(nome, turma, isNewGame);
             const novasIds = r.novas || [];
             await verificarBadgeAlbum();
             return novasIds;
@@ -18486,8 +18478,8 @@ function abrirBuscarAlunoComMeusDados() {
             
             verificarCertificadosPosPartida(alunoAtual, turmaAtual, modalidadeAtual);
             
-            // ⚠️ NOVO FLUXO DE MEDALHA
-            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+            // ⚠️ Passa 'true' para indicar que é uma nova partida
+            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
             if (novasMedalhas.length > 0) {
                 await iniciarFluxoRevelacao(novasMedalhas);
             }
@@ -18521,7 +18513,7 @@ function abrirBuscarAlunoComMeusDados() {
                 await preencherResultadoForaDoPrazo(resultado);
                 somConclusao();
                 
-                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
                 if (novasMedalhas.length > 0) {
                     await iniciarFluxoRevelacao(novasMedalhas);
                 }
@@ -18537,7 +18529,7 @@ function abrirBuscarAlunoComMeusDados() {
                 await preencherResultadoParcial(resultado);
                 somConclusao();
                 
-                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+                const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
                 if (novasMedalhas.length > 0) {
                     await iniciarFluxoRevelacao(novasMedalhas);
                 }
@@ -18551,8 +18543,7 @@ function abrirBuscarAlunoComMeusDados() {
             if (novo && posicaoAntes !== null) somNovoRecorde(); else somConclusao();
             await preencherResultado(melhor, resultado, posicaoAntes);
             
-            // ⚠️ NOVO FLUXO DE MEDALHA
-            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
             if (novasMedalhas.length > 0) {
                 await iniciarFluxoRevelacao(novasMedalhas);
             }
@@ -18576,7 +18567,7 @@ function abrirBuscarAlunoComMeusDados() {
             }
             somConclusao();
             
-            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual);
+            const novasMedalhas = await verificarAlbumPosPartida(alunoAtual, turmaAtual, true);
             if (novasMedalhas.length > 0) {
                 await iniciarFluxoRevelacao(novasMedalhas);
             }
@@ -25023,7 +25014,8 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 if (typeof verificarCertificadosPosPartida === "function") await verificarCertificadosPosPartida(_nome, _turma, _modalidade);
             } catch(e) {}
             try {
-                if (typeof verificarAlbumPosPartida === "function") await verificarAlbumPosPartida(_nome, _turma);
+                // ⚠️ Passa 'true' para indicar que é uma nova partida
+                if (typeof verificarAlbumPosPartida === "function") await verificarAlbumPosPartida(_nome, _turma, true);
             } catch(e) {}
         }, 900);
 
