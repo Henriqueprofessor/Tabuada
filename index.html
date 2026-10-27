@@ -5298,10 +5298,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         /* ▼▼▼ [02.54] Otimização de performance — CLS do Hero (P35) ─── INÍCIO ─── */
         /* Fix do Cumulative Layout Shift (CLS) medido no Lighthouse.
-           O hero da Home é preenchido por JS DEPOIS do primeiro paint
-           (nome do aluno, subtítulo dinâmico). Quando o conteúdo muda de
-           tamanho, empurra o layout abaixo → CLS alto.
-           Reservar espaço com min-height evita o salto visual. */
+           Reserva espaço com min-height para evitar que os cards empurrem o layout. */
 
         .hero-esports {
             min-height: 150px; /* Aumentado para aguentar 2 linhas de texto no mobile */
@@ -5313,23 +5310,20 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             display: inline-block;
         }
 
-        /* Reserva espaço para os banners que aparecem dinamicamente no topo.
-           Como eles começam vazios (display:none), quando aparecem empurram
-           o Hero e o resto da tela para baixo. A reserva evita isso. */
+        /* Reserva espaço para os banners que aparecem dinamicamente no topo. */
         #modo-teste-banner-container:empty, #alerta-foco-absoluto-container:empty { display: block; min-height: 0; }
-        
         #alerta-foco-absoluto-container { min-height: 0; transition: min-height 0.3s ease; }
-        #alerta-foco-absoluto-container:not(:empty) { min-height: 100px; } /* altura média do banner de foco */
+        #alerta-foco-absoluto-container:not(:empty) { min-height: 100px; }
 
-        /* Reserva altura dos containers de CTA, ritmo e meta (preenchidos por JS) */
-        #acao-principal-container { min-height: 520px; } /* Card com 3 modalidades no mobile tem ~500px */
+        /* Reserva altura dos containers (valores calibrados com o card real renderizado) */
+        #acao-principal-container { min-height: 640px; } /* Card com 3 modalidades no mobile tem ~640px */
         #ritmo-copa-container      { min-height: 134px; }
         #mapa-home-container       { min-height: 260px; }
         #meta-pessoal-container    { min-height: 100px; }
 
         @media (min-width: 900px) {
             .hero-esports             { min-height: 130px; }
-            #acao-principal-container { min-height: 280px; } /* No desktop fica lado a lado, é mais baixo */
+            #acao-principal-container { min-height: 360px; } /* No desktop fica lado a lado, é mais baixo */
             #ritmo-copa-container     { min-height: 134px; }
         }
 
@@ -8674,10 +8668,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▲▲▲ FIM [02.82] */
 
         /* ▼▼▼ [02.83] Esqueleto da Home — FCP/LCP imediato ─────── INÍCIO ─── */
-        /* v10.13.21 · Otimização de CLS:
-           · min-height do skeleton agora bate com as medidas reais dos cards.
-           · Linhas internas compactas (40–124px).
-           · Sem `height` fixo — só `min-height`, para o conteúdo poder crescer. */
+        /* v10.13.22 · Otimização de CLS:
+           · Alturas calibradas milimetricamente para não haver "salto" quando
+             o esqueleto é trocado pelo card real do Firebase. */
 
         .home-skeleton-card {
             background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
@@ -8693,7 +8686,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             pointer-events: none;
             user-select: none;
             opacity: 0.72;
-            min-height: 520px; /* Bate com o tamanho do card de 3 modalidades no mobile */
+            min-height: 640px; /* Bate com a altura do card real no mobile */
             contain: layout paint;
         }
 
@@ -8747,19 +8740,19 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             background: rgba(10, 22, 40, 0.55);
             border: 1px solid rgba(56, 189, 248, 0.10);
             border-radius: 10px;
-            min-height: 124px; /* Altura exata de cada linha no mobile */
+            min-height: 145px; /* Altura exata de cada linha no mobile */
             flex: 0 0 auto;
         }
 
         /* No desktop, o card real fica em 3 colunas e é mais baixo */
         @media (min-width: 900px) {
-            .home-skeleton-card { min-height: 280px; }
+            .home-skeleton-card { min-height: 360px; }
             .home-skeleton-linhas-mod {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 12px;
             }
-            .home-skeleton-linha-mod { min-height: 110px; }
+            .home-skeleton-linha-mod { min-height: 145px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
