@@ -11056,7 +11056,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <!-- ▲▲▲ FIM [04.30] -->
 
     <!-- ▼▼▼ [04.32] SPLASH DE POSIÇÃO PÓS-PARTIDA ────────────── -->
-    <div id="modal-revelacao-posicao" class="hidden" style="position: fixed; inset: 0; background: rgba(10, 22, 40, 0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9000; opacity: 0; transition: opacity 0.3s ease;">
+    <div id="modal-revelacao-posicao" class="hidden" style="position: fixed; inset: 0; background: rgba(10, 22, 40, 0.95); backdrop-filter: blur(10px); align-items: center; justify-content: center; z-index: 9000; opacity: 0; transition: opacity 0.3s ease;">
         <div class="posicao-card" style="text-align: center; padding: 40px 20px; max-width: 400px; width: 90%; background: linear-gradient(135deg, rgba(19, 42, 71, 0.95) 0%, rgba(15, 35, 64, 0.95) 100%); border: 2px solid var(--border-neon); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 40px rgba(34,211,238,0.1); transform: translateY(20px) scale(0.95); transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);">
             <div id="posicao-loader" style="font-size: 48px; margin-bottom: 20px; animation: pulse-bloco 1.5s infinite;">⏳</div>
             <h2 id="posicao-titulo" style="color: #fff; font-size: 20px; margin-bottom: 10px; font-weight: 800;">Calculando sua posição...</h2>
@@ -18406,9 +18406,19 @@ function abrirBuscarAlunoComMeusDados() {
 
         if (treinoAnonimo) {
             document.getElementById("resultado-titulo").innerHTML = "🎯 Treino Livre concluído!";
-            document.getElementById("feedback-pontos").innerHTML = `Você acertou <strong>${acertos}/20</strong>.`;
+            document.getElementById("feedback-pontos").innerHTML = `Você acertou <strong>${acertos}/20</strong>.<br><small style="color:#6c757d;">Tempo médio dos acertos: <strong>${tempoMedio.toFixed(2)}s</strong>.</small>`;
             document.getElementById("cards-comparacao-resultado").innerHTML = "";
             document.getElementById("card-classificacao-container").innerHTML = "";
+            document.getElementById("resumo-turma").innerText = "—";
+            document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual]?.nome || modalidadeAtual;
+            document.getElementById("resumo-acertos").innerText = `${acertos}/20`;
+            document.getElementById("resumo-erros").innerText = erros;
+            document.getElementById("resumo-tempo").innerText = `${tempoMedio.toFixed(2)}s`;
+            document.getElementById("resumo-sequencia").innerText = maiorSequencia;
+            document.getElementById("resumo-melhor-media").innerText = "--";
+            document.getElementById("resumo-media-turma").innerText = "--";
+            document.getElementById("resumo-status").innerHTML = `<span class="tag tag-participante">Treino Livre</span>`;
+            document.getElementById("feedback-ranking-container").innerHTML = `<div class="feedback-ranking"><strong>💡 Treino Livre</strong><br>Nenhuma informação foi salva. Quando a etapa oficial começar, suas partidas valerão para a classificação!</div>`;
             document.getElementById("mapa-tabuadas-container").innerHTML = "";
             document.getElementById("btn-treinar-novamente")?.classList.add("hidden");
             document.getElementById("btn-compartilhar")?.classList.add("hidden");
@@ -18434,7 +18444,7 @@ function abrirBuscarAlunoComMeusDados() {
 
         if (modoTreino) {
             let t = "🎯 Resultado do Treino";
-            if (treinoFocoAbsoluto && treinoFocoAbsoluto.length) t = `🎯 Foco absoluto — ${treinoFocoAbsoluto.length} operações`;
+            if (treinoFocoAbsoluto && treinoFocoAbsoluto.length) t = `🎯 Foco absoluto — ${treinoFocoAbsoluto.length} ${treinoFocoAbsoluto.length === 1 ? "operação" : "operações"}`;
             else if (treinoFocoOperacoes && treinoFocoOperacoes.length === 1) t = `🎯 Treino focado — ${treinoFocoOperacoes[0].fA}×${treinoFocoOperacoes[0].fB}`;
             else if (treinoFocoOperacoes && treinoFocoOperacoes.length > 1) t = `🎯 Treino focado — ${treinoFocoOperacoes.length} operações`;
             else if (treinoListaInteligente && treinoListaInteligente.length) t = `🎯 Treino inteligente — ${treinoListaInteligente.length} operações`;
@@ -18449,7 +18459,7 @@ function abrirBuscarAlunoComMeusDados() {
             document.getElementById("resumo-sequencia").innerText = maiorSequencia;
             document.getElementById("resumo-turma").innerText = turmaAtual;
             document.getElementById("resumo-modalidade").innerHTML = MODALIDADES[modalidadeAtual].nome;
-            document.getElementById("resumo-status").innerHTML = "Modo Treino";
+            document.getElementById("resumo-status").innerHTML = treinoFocoAbsoluto ? "Foco Absoluto" : (treinoFocoOperacoes ? "Treino Focado" : (treinoListaInteligente ? "Treino Inteligente" : "Modo Treino"));
 
             mostrarTela("tela-resultado");
             somConclusao();
@@ -18489,7 +18499,7 @@ function abrirBuscarAlunoComMeusDados() {
             if (etapaAtual.fimPrevistoEm && Date.now() > etapaAtual.fimPrevistoEm) foraDoPrazo = true;
         } catch(e) { console.warn("Falha ao validar prazo da etapa:", e); }
 
-        // ⚠️ AQUI CHAMAMOS A TELA DE REVELAÇÃO IMEDIATAMENTE
+        // ⚠️ AQUI CHAMAMOS O SPLASH DE POSIÇÃO IMEDIATAMENTE
         mostrarSplashPosicao();
 
         let posicaoFinal = null;
@@ -18538,12 +18548,13 @@ function abrirBuscarAlunoComMeusDados() {
             // O preencherResultado agora nos devolve a posição!
             posicaoFinal = await preencherResultado(melhor, resultado, posicaoAntes);
             
-            // Atualiza a tela de revelação com a posição calculada
+            // Atualiza o splash com a posição calculada
             atualizarSplashPosicao(posicaoFinal || "—");
 
             // Prepara a tela de resultado escondida (por baixo do splash)
             mostrarTela("tela-resultado");
             
+            // Dispara as medalhas em background
             verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
                 if (novas && novas.length > 0) iniciarFluxoRevelacao(novas);
             });
