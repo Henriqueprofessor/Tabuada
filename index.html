@@ -8676,16 +8676,97 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.82] */
 
-        /* ▼▼▼ [02.83] Esqueleto da Home (Otimizado) ─────── INÍCIO ─── */
-        
-        /* Reserva o espaço exato do card no Modo Único para CLS zero */
-        #acao-principal-container { min-height: 540px; }
-        #ritmo-copa-container      { min-height: 120px; }
-        #mapa-home-container       { min-height: 230px; }
-        #meta-pessoal-container    { min-height: 102px; }
+        /* ▼▼▼ [02.83] Esqueleto da Home — FCP/LCP imediato ─────── INÍCIO ─── */
+        /* v10.13.20 · Otimização de CLS: Alturas travadas e contain: layout */
+
+        .home-skeleton-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.72;
+            /* Altura exata para evitar CLS */
+            min-height: 488px; 
+            height: 488px;
+            contain: layout paint;
+        }
+
+        .home-skeleton-home-card {
+            background: linear-gradient(160deg, rgba(19, 42, 71, 0.85) 0%, rgba(15, 35, 64, 0.85) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.72;
+            contain: layout paint;
+        }
+
+        /* Variantes de altura por card específico (mantendo os tamanhos reais) */
+        #ritmo-copa-container > .home-skeleton-home-card { min-height: 120px; height: 120px; }
+        #meta-pessoal-container > .home-skeleton-home-card { min-height: 102px; height: 102px; }
+        #mapa-home-container  > .home-skeleton-home-card { min-height: 230px; height: 230px; }
+
+        .home-skeleton-bar {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg,
+                rgba(148, 163, 184, 0.14) 25%,
+                rgba(148, 163, 184, 0.28) 50%,
+                rgba(148, 163, 184, 0.14) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        .home-skeleton-bar.titulo { height: 14px; width: 45%; margin-bottom: 2px; }
+        .home-skeleton-bar.curta  { width: 30%; }
+        .home-skeleton-bar.media  { width: 65%; }
+        .home-skeleton-bar.longa  { width: 100%; }
+
+        .home-skeleton-linhas-mod {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .home-skeleton-linha-mod {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 6px 12px;
+            padding: 12px 14px;
+            background: rgba(10, 22, 40, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.10);
+            border-radius: 10px;
+            min-height: 130px;
+            flex: 1;
+        }
+
+        @media (min-width: 900px) {
+            .home-skeleton-linhas-mod {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+        }
 
         @media (max-width: 899px) {
-            #acao-principal-container { min-height: 540px; }
+            .home-skeleton-card { min-height: 630px; height: 630px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .home-skeleton-bar { animation: none; }
         }
         /* ▲▲▲ FIM [02.83] */
 
@@ -9160,30 +9241,43 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <div id="toast-pontuacao"></div>
 
     <!-- ▼▼▼ [03.01] TELA INICIAL — HOME PLAYER HUB ─────────────── -->
-    <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">Copa da Tabuada CEIB 2026</h1>
-    
     <div id="tela-inicial" class="card">
         <header class="esports-header">
             <div class="esports-logo" id="titulo-secreto">
-                <span class="emoji-logo" aria-hidden="true">🏆</span>
+                <span class="emoji-logo">🏆</span>
                 <span id="header-nome-evento">Copa da Tabuada</span>
-                <button type="button" class="logo-versao" id="header-versao-atual" onclick="aoClicarBadgeVersao()" aria-label="Ver versão atual">v10.13.20</button>
-                <button type="button" class="logo-verificar" id="btn-verificar-versao" onclick="aoClicarVerificarVersao()" aria-label="Verificar atualizações"><span aria-hidden="true">🔄</span></button>
+                <button
+                    type="button"
+                    class="logo-versao"
+                    id="header-versao-atual"
+                    onclick="aoClicarBadgeVersao()"
+                    aria-label="Ver novidades da versão"
+                    title="Versão atual · Clique para ver o histórico de versões"
+                >v10.13.19</button>
+                <button
+                    type="button"
+                    class="logo-verificar"
+                    id="btn-verificar-versao"
+                    onclick="aoClicarVerificarVersao()"
+                    aria-label="Verificar se há atualizações disponíveis"
+                    title="Verificar atualizações"
+                ><span aria-hidden="true">🔄</span></button>
             </div>
             <div class="esports-acoes-header">
-                <div class="esports-perfil-pill" id="perfil-pill-aluno" aria-label="Seu perfil">
-                    <span class="avatar" aria-hidden="true">👤</span>
+                <div class="esports-perfil-pill" id="perfil-pill-aluno">
+                    <span class="avatar">👤</span>
                     <span>
                         <strong id="perfil-pill-nome">Meu Perfil</strong>
                         Turma <span id="perfil-pill-turma">--</span>
                     </span>
                 </div>
-                <button class="esports-icon-btn" id="btn-som" title="Ligar/desligar som" aria-label="Ligar ou desligar som">🔊</button>
+                <button class="esports-icon-btn" id="btn-som" title="Ligar/desligar som">🔊</button>
             </div>
         </header>
 
         <div id="modo-teste-banner-container"></div>
         <div id="alerta-foco-absoluto-container"></div>
+        
         <div id="countdown-final-container" class="hidden"></div>
 
         <section id="hero-pre-evento" class="hero-pre-evento hidden" aria-labelledby="titulo-pre-evento">
@@ -9209,10 +9303,48 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </section>
 
-        <div id="acao-principal-container"></div>
-        <div id="ritmo-copa-container"></div>
-        <div id="meta-pessoal-container"></div>
-        <div id="mapa-home-container"></div>
+        <div id="acao-principal-container">
+            <div class="home-skeleton-card" aria-hidden="true">
+                <div class="home-skeleton-bar titulo"></div>
+                <div class="home-skeleton-bar curta"></div>
+                <div class="home-skeleton-linhas-mod">
+                    <div class="home-skeleton-linha-mod">
+                        <div class="home-skeleton-bar media"></div>
+                        <div class="home-skeleton-bar curta"></div>
+                    </div>
+                    <div class="home-skeleton-linha-mod">
+                        <div class="home-skeleton-bar media"></div>
+                        <div class="home-skeleton-bar curta"></div>
+                    </div>
+                    <div class="home-skeleton-linha-mod">
+                        <div class="home-skeleton-bar media"></div>
+                        <div class="home-skeleton-bar curta"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ritmo-copa-container">
+            <div class="home-skeleton-home-card" aria-hidden="true">
+                <div class="home-skeleton-bar titulo"></div>
+                <div class="home-skeleton-bar longa"></div>
+            </div>
+        </div>
+
+        <div id="meta-pessoal-container">
+            <div class="home-skeleton-home-card" aria-hidden="true">
+                <div class="home-skeleton-bar curta"></div>
+                <div class="home-skeleton-bar longa"></div>
+            </div>
+        </div>
+
+        <div id="mapa-home-container">
+            <div class="home-skeleton-home-card" aria-hidden="true">
+                <div class="home-skeleton-bar titulo"></div>
+                <div class="home-skeleton-bar longa"></div>
+                <div class="home-skeleton-bar media"></div>
+            </div>
+        </div>
 
         <div class="home-card">
             <div class="home-card-titulo">📅 Etapa Classificatória</div>
@@ -25416,11 +25548,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▼▼▼ [19.03] Boot ──────────────────────────────────────────────
     async function registrarServiceWorker() {
         if (!('serviceWorker' in navigator)) return;
-        // Desativa o SW se estiver rodando no Lighthouse para não mascarar a nota
-        if (navigator.userAgent.includes("Lighthouse")) {
-            console.info("Lighthouse detectado: Service Worker ignorado para teste preciso.");
-            return;
-        }
         const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
         if (!isHTTPS) return;
         try {
@@ -25432,9 +25559,11 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
+        // 1. INICIALIZAÇÃO SÍNCRONA (Garante que 'database' exista antes de qualquer leitura)
         firebase.initializeApp(firebaseConfig);
         database = firebase.database();
 
+        // 2. RENDERIZAÇÃO VISUAL IMEDIATA (LCP instantâneo)
         atualizarBotaoMinhaTurma();
         mudarTipoRanking("turma");
         configurarToqueSecreto();
@@ -25443,44 +25572,51 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
         const elVHeader = document.getElementById("header-versao-atual");
         if (elVHeader) elVHeader.textContent = "v" + APP_VERSION;
+        const elV = document.getElementById("changelog-versao-atual");
+        if (elV) elV.textContent = "v" + APP_VERSION + " · atual";
+        const elVMenu = document.getElementById("mais-versao-atual");
+        if (elVMenu) elVMenu.textContent = "· v" + APP_VERSION;
 
         mostrarTela("tela-inicial");
 
-        // Renderiza o que já está no cache local para evitar tela em branco
-        try { renderizarModalidadesHome(null); } catch(e) {}
-        try { renderizarAlertaFocoAbsoluto(); } catch(e) {}
+        try { ativarObserverAlertaFoco(); } catch(e) {}
+        try { await renderizarAlertaFocoAbsoluto(); } catch(e) {}
         renderizarTreinoInteligenteHome().catch(e => console.warn("Falha treino:", e));
 
-        // Aguarda o navegador ficar ocioso para buscar dados pesados e registrar o SW
+        // 3. LEITURAS E LISTENERS EM BACKGROUND (Não travam a tela)
         if ('requestIdleCallback' in window) {
             requestIdleCallback(() => {
                 iniciarListenerAtualizacaoForcada();
                 verificarVersaoPublicada().catch(() => {});
                 try { iniciarListenerVersao(); } catch(e) {}
                 iniciarListenerMsgAluno();
-                registrarServiceWorker();
-            }, { timeout: 3000 });
+            }, { timeout: 2000 });
         } else {
             setTimeout(() => {
                 iniciarListenerAtualizacaoForcada();
                 verificarVersaoPublicada().catch(() => {});
                 try { iniciarListenerVersao(); } catch(e) {}
                 iniciarListenerMsgAluno();
-                registrarServiceWorker();
-            }, 100);
+            }, 50);
         }
 
+        // 4. Service Worker após o load
+        window.addEventListener('load', () => { setTimeout(registrarServiceWorker, 1500); });
+
+        // 5. Carrega configurações e verifica ciclo de vida da etapa
         try {
             await Promise.all([ obterModoEvento(), obterModoClassificatoria() ]);
             if (typeof atualizarHeaderModoEvento === "function") atualizarHeaderModoEvento();
-        } catch (e) {}
+        } catch (e) {
+            console.warn("[Boot] Falha ao carregar configurações de modo:", e);
+        }
 
         (async () => {
             try {
                 await verificarEIniciarEtapaSeNecessario();
                 await verificarEFecharVotacaoSeNecessario();
                 await verificarEEncerrarEtapaSeNecessario();
-            } catch(e) {}
+            } catch(e) { console.warn("Falha ciclo de vida da etapa:", e); }
             try { await renderizarCardVotacao(); } catch(e) {}
         })();
 
@@ -25491,10 +25627,10 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 await verificarEFecharVotacaoSeNecessario();
                 await verificarEEncerrarEtapaSeNecessario();
                 const card = document.getElementById("card-votacao");
-                if (card && !card.classList.contains('hidden')) await renderizarCardVotacao();
+                if (card && !card.classList.contains("hidden")) await renderizarCardVotacao();
                 const etapaDepois = await resolverFaseAtual();
                 if (etapaAntes.tipo !== etapaDepois.tipo) await atualizarTelaInicialComEtapa();
-            } catch(e) {}
+            } catch(e) { console.warn("Timer votação/etapa:", e); }
         }, 60000);
 
         setInterval(() => { hallFamaCache = null; }, HALL_FAMA_CACHE_MS);
