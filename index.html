@@ -14178,21 +14178,21 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const persistidas = dados._medalhasPersistidas || {};
         const medalhasPermitidas = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
         const desbloqueadasFiltradas = [];
-        const secoesTrancadas = new Set();
 
         // Ordena TODAS as medalhas pela 'ordem' (facilidade).
-        // Isso garante que a "Primeira Vitória" (ordem 1) venha antes de "Iniciante" (ordem 2).
         const medalhasOrdenadas = [...medalhasPermitidas].sort((a, b) => (a.ordem || 99) - (b.ordem || 99));
 
         for (const m of medalhasOrdenadas) {
-            // Se já tem, pula.
             if (persistidas[m.id]) continue;
-            // Se a seção já foi trancada nesta rodada, pula (só permite 1 por seção).
-            if (secoesTrancadas.has(m.secao)) continue;
+
+            // ⚠️ A MÁGICA ACONTECE AQUI:
+            // A ordem da medalha dita quantas partidas o jogador precisa ter no histórico.
+            // Ex: Ordem 3 (Dedicado) só pode ser ganha a partir da 3ª partida (totalPartidas >= 3).
+            const partidasMinimas = m.ordem || 1;
+            if (dados.totalPartidas < partidasMinimas) continue; // Trava o desbloqueio
 
             let bateuRequisito = false;
             try {
-                // O Colecionador precisa de um tratamento especial
                 if (m.id === "colecionador") {
                     const dadosCol = { ...dados, conquistasCount: Object.keys(persistidas).length + desbloqueadasFiltradas.length + 1 };
                     bateuRequisito = m.condicao(dadosCol);
@@ -14203,7 +14203,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
             if (bateuRequisito) {
                 desbloqueadasFiltradas.push(m);
-                secoesTrancadas.add(m.secao); // TRANCA A SEÇÃO!
+                // (A trava de seções que causava o acúmulo foi removida)
             }
         }
 
