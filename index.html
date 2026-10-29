@@ -23963,10 +23963,11 @@ function abrirBuscarAlunoComMeusDados() {
         const nomeLimpo = temNome ? String(nome).trim() : "";
         const turmaLimpa = temTurma ? String(turma).trim() : "";
         const primeiroNome = temNome ? nomeLimpo.split(" ")[0] : "";
+        const nomePublico = temNome ? obterNomePublico(nomeLimpo) : "Anônimo"; // <--- PROTEÇÃO LGPD
 
         let identificacao = "";
-        if (temNome && temTurma) identificacao = `O atleta se chama ${nomeLimpo} (turma ${turmaLimpa}).`;
-        else if (temNome) identificacao = `O atleta se chama ${nomeLimpo}.`;
+        if (temNome && temTurma) identificacao = `O atleta se chama ${nomePublico} (turma ${turmaLimpa}).`; // <--- USA NOME PÚBLICO
+        else if (temNome) identificacao = `O atleta se chama ${nomePublico}.`; // <--- USA NOME PÚBLICO
         else identificacao = `O atleta ainda não se identificou. Use tratamento genérico.`;
 
         const saudacao = temNome ? `Olá, ${primeiroNome}! Sou seu Coach da Copa da Tabuada. 🏆` : `Olá! Sou seu Coach da Copa da Tabuada. 🏆`;
@@ -24199,7 +24200,8 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         if (badge) {
             if (temNome && temTurma) {
                 badge.classList.remove("vazio");
-                const partes = [`🎓 <strong>${escaparHtml(nome)}</strong>`];
+                const nomePublico = obterNomePublico(nome); // <--- PROTEÇÃO LGPD
+                const partes = [`🎓 <strong>${escaparHtml(nomePublico)}</strong>`];
                 partes.push(`<span class="sep">·</span> Turma <strong>${escaparHtml(turma)}</strong>`);
                 if (dadosPerfil && dadosPerfil.perfil) {
                     const dominadas = Number(dadosPerfil.perfil.operacoesDominadas) || 0;
@@ -24223,7 +24225,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 badge.innerHTML = partes.join(" ");
             } else if (temNome) {
                 badge.classList.remove("vazio");
-                badge.innerHTML = `🎓 Coach de <strong>${escaparHtml(nome)}</strong>`;
+                badge.innerHTML = `🎓 Coach de <strong>${escaparHtml(obterNomePublico(nome))}</strong>`; // <--- PROTEÇÃO LGPD
             } else {
                 badge.classList.add("vazio");
                 badge.innerHTML = `⚠️ Identifique-se para o coach personalizar`;
