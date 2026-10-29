@@ -15052,11 +15052,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.09]
 
     // ▼▼▼ [11.10] Corpo do álbum + figurinhas ────────────────────────
-    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
-    //   renderizarCorpoAlbum esconde as medalhas ocultas via
-    //   medalhaVisivelNoModoAtual. As contagens de "total" e "coladas"
-    //   também passam a considerar apenas as visíveis.
-
     function renderizarCorpoAlbum() {
         const c = document.getElementById("album-conteudo");
         if (!c) return;
@@ -15068,7 +15063,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             return passaFiltrosAlbum(m, persistidas[m.id]);
         };
 
-        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Conta só as medalhas visíveis
         const medalsVisiveis = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
         const totalGeral   = medalsVisiveis.length;
         const coladasGeral = medalsVisiveis.filter(m => persistidas[m.id]).length;
@@ -15149,22 +15143,37 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
         const icone = colada ? medalha.icone : "❓";
         const nome = medalha.nome;
-        const requisito = medalha.requisito || medalha.descricao;
+        const partidasMinimas = medalha.ordem || 1;
+        
+        // Verifica se está trancada apenas por falta de partidas
+        const totalPartidas = albumEstado.dados.totalPartidas || 0;
+        const precisaMaisPartidas = !colada && totalPartidas < partidasMinimas;
+        
+        let textoRequisito = medalha.requisito || medalha.descricao;
+        if (precisaMaisPartidas) {
+            textoRequisito += ` <span style="color:#fbbf24;font-weight:bold;">(🔒 Requer ${partidasMinimas}ª partida)</span>`;
+        }
 
         let progHTML = "";
         if (!colada) {
-            const prog = calcularProgressoMedalha(medalha, albumEstado.dados);
-            if (prog) {
-                const pct = Math.max(0, Math.min(100, prog.pct));
-                const cls = pct >= 90 ? "perto" : pct >= 60 ? "quase" : "";
-                const atualFmt = formatarValorMeta(prog.atual, prog.casa);
-                const alvoFmt = formatarValorMeta(prog.alvo, prog.casa);
-                const faltaValor = prog.invertido ? Math.max(0, prog.atual - prog.alvo) : Math.max(0, prog.alvo - prog.atual);
-                const faltaFmt = formatarValorMeta(faltaValor, prog.casa);
-                const faltaTxt = prog.invertido
-                    ? `Falta ${faltaFmt}${prog.unidade} para o alvo`
-                    : `Faltam ${faltaFmt} ${prog.unidade}`;
-                progHTML = `<div class="album-figurinha-prog ${cls}"><div class="album-figurinha-prog-trilha"><div class="album-figurinha-prog-fill" style="width:${pct}%"></div></div><div class="album-figurinha-prog-lbl"><span class="num-atual">${atualFmt}</span><span>${alvoFmt} ${prog.unidade}</span></div><div class="album-figurinha-prog-falta">${faltaTxt}</div></div>`;
+            if (precisaMaisPartidas) {
+                // Se está travada por falta de partidas, mostra a barra de partidas em vez do requisito normal
+                const pctP = Math.min(100, (totalPartidas / partidasMinimas) * 100);
+                progHTML = `<div class="album-figurinha-prog"><div class="album-figurinha-prog-trilha"><div class="album-figurinha-prog-fill" style="width:${pctP}%; background:#fbbf24;"></div></div><div class="album-figurinha-prog-lbl"><span class="num-atual" style="color:#fbbf24;">${totalPartidas}</span><span>${partidasMinimas} partidas</span></div><div class="album-figurinha-prog-falta">Jogue mais para liberar</div></div>`;
+            } else {
+                const prog = calcularProgressoMedalha(medalha, albumEstado.dados);
+                if (prog) {
+                    const pct = Math.max(0, Math.min(100, prog.pct));
+                    const cls = pct >= 90 ? "perto" : pct >= 60 ? "quase" : "";
+                    const atualFmt = formatarValorMeta(prog.atual, prog.casa);
+                    const alvoFmt = formatarValorMeta(prog.alvo, prog.casa);
+                    const faltaValor = prog.invertido ? Math.max(0, prog.atual - prog.alvo) : Math.max(0, prog.alvo - prog.atual);
+                    const faltaFmt = formatarValorMeta(faltaValor, prog.casa);
+                    const faltaTxt = prog.invertido
+                        ? `Falta ${faltaFmt}${prog.unidade} para o alvo`
+                        : `Faltam ${faltaFmt} ${prog.unidade}`;
+                    progHTML = `<div class="album-figurinha-prog ${cls}"><div class="album-figurinha-prog-trilha"><div class="album-figurinha-prog-fill" style="width:${pct}%"></div></div><div class="album-figurinha-prog-lbl"><span class="num-atual">${atualFmt}</span><span>${alvoFmt} ${prog.unidade}</span></div><div class="album-figurinha-prog-falta">${faltaTxt}</div></div>`;
+                }
             }
         }
 
@@ -15178,10 +15187,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const estrelasBadge = `<span class="album-figurinha-estrelas" title="Vale ${nEst} ${plural}" aria-label="Vale ${nEst} ${plural}">⭐ ${nEst}</span>`;
         const tooltipTitulo = colada
             ? `${medalha.descricao} · Vale ${nEst} ${plural}`
-            : `${medalha.nome} — ${requisito} · Vale ${nEst} ${plural}`;
+            : `${medalha.nome} — ${textoRequisito} · Vale ${nEst} ${plural}`;
         const ariaLabel = colada
             ? `${medalha.nome}, medalha colada em ${formatarDataCurta(persistida.data)}. ${medalha.descricao} Raridade: ${rar.nome}. Vale ${nEst} ${plural}.`
-            : `${medalha.nome}, ainda não conquistada. Como conseguir: ${requisito} Raridade: ${rar.nome}. Vale ${nEst} ${plural}. Toque para ver detalhes.`;
+            : `${medalha.nome}, ainda não conquistada. Como conseguir: ${textoRequisito} Raridade: ${rar.nome}. Vale ${nEst} ${plural}. Toque para ver detalhes.`;
 
         return `<article class="${classes.join(" ")}" data-medalha="${medalha.id}" title="${escaparHtml(tooltipTitulo)}" role="button" tabindex="0" aria-label="${escaparHtml(ariaLabel)}" onclick="abrirDetalheMedalha('${medalha.id}')">
             ${selo}
@@ -15189,7 +15198,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             <span class="album-figurinha-icone" aria-hidden="true">${icone}</span>
             ${estrelasBadge}
             <div class="album-figurinha-nome">${escaparHtml(nome)}</div>
-            <div class="album-figurinha-requisito">${escaparHtml(requisito)}</div>
+            <div class="album-figurinha-requisito">${textoRequisito}</div>
             ${progHTML}
             <div class="album-figurinha-rodape">${rodape}</div>
         </article>`;
@@ -15273,16 +15282,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.12]
 
     // ▼▼▼ [11.13] Modal "Como funciona o Álbum" ──────────────────────
-    // v10.6.x · Explicação pedagógica do Álbum. Explica o que é, como
-    // conseguir medalhas, o que são estrelas, patentes, raridades,
-    // certificados e filtros. Reutiliza as classes genéricas do
-    // modal do Ranking ([02.73] / [04.19]) — só muda a id e o corpo.
-    //
-    // v10.6.xb · Correção de linguagem: "para sempre" → "durante a
-    // competição atual". O app reseta medalhas e certificados ao
-    // iniciar uma nova competição, então a promessa anterior era
-    // imprecisa.
-
     function construirConteudoComoFuncionaAlbum() {
         return `
             <div class="album-desc-titulo"><span aria-hidden="true">🏅</span> Como funciona o Álbum</div>
@@ -15302,6 +15301,16 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 <li><strong>Rumo à Final</strong> — chegar ao Top 4 da sua turma</li>
                 <li><strong>Consistência</strong> — manter média alta em cada modalidade</li>
             </ul>
+
+            <div class="album-desc-subtitulo">🔒 Regra do Desbloqueio Sequencial</div>
+            <p>Para manter a emoção e evitar que você ganhe várias medalhas de uma vez só, o Álbum usa uma <strong>fila de desbloqueio</strong>.</p>
+            <ul>
+                <li>As medalhas de cada seção são liberadas <strong>uma de cada vez</strong>.</li>
+                <li>Para desbloquear a <strong>1ª medalha</strong>, você precisa ter jogado pelo menos <strong>1 partida</strong> (e cumprir o requisito).</li>
+                <li>Para desbloquear a <strong>2ª medalha</strong>, você precisa ter jogado pelo menos <strong>2 partidas</strong> (e cumprir o requisito).</li>
+                <li>A <strong>3ª medalha</strong> exige 3 partidas, e assim por diante.</li>
+            </ul>
+            <p>Ou seja: mesmo que você bata um recorde de 18.000 pontos na sua 1ª partida, a medalha "Iniciante" (que exige 500 pontos) só será liberada quando você jogar a 2ª partida. O próprio card da medalha vai te avisar quando estiver esperando apenas você jogar mais!</p>
 
             <div class="album-desc-subtitulo">⭐ Estrelas e Patentes</div>
             <p>Cada medalha vale um número de <strong>estrelas</strong> (quanto mais rara, mais vale). Completar uma <strong>seção inteira</strong> dá bônus extra de estrelas. Suas estrelas definem sua patente:</p>
@@ -15361,7 +15370,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         const modal = document.getElementById("modal-explicacao-album");
         const corpo = document.getElementById("modal-explicacao-album-corpo");
         if (!modal || !corpo) return;
-        // Só monta o conteúdo na primeira abertura (evita recomputar HTML)
         if (!corpo.innerHTML.trim()) corpo.innerHTML = construirConteudoComoFuncionaAlbum();
         modal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
@@ -15377,7 +15385,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         document.body.style.overflow = "";
     }
 
-    // Fechar com tecla ESC (instalado uma única vez)
     if (!window._modalExplicacaoAlbumEscInstalado) {
         window._modalExplicacaoAlbumEscInstalado = true;
         document.addEventListener("keydown", function (e) {
