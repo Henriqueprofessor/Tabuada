@@ -17929,20 +17929,50 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    async function registrarAluno(treino) {
-        const nomeBruto = document.getElementById("nome-aluno").value;
-        const turma = document.getElementById("turma-aluno").value;
-        const aceite = document.getElementById("aceite-lgpd")?.checked;
+    // NOVO: Função para verificar no banco se o aluno já aceitou os termos
+    async function verificarConsentimentoSalvo(nome, turma) {
+        try {
+            const snap = await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).once("value");
+            return snap.exists() && snap.val().aceito === true;
+        } catch(e) {
+            console.warn("[LGPD] Falha ao verificar consentimento:", e);
+            return false;
+        }
+    }
 
-        if (!aceite) {
-            notificar("Para participar, você precisa aceitar os Termos de Uso e Privacidade.", "aviso", 5000);
-            return;
+    async function registrarAluno(treino) {
+        const naTelaCadastro = !document.getElementById("tela-single").classList.contains("hidden");
+        
+        let nomeBruto, turma, aceite;
+
+        if (naTelaCadastro) {
+            nomeBruto = document.getElementById("nome-aluno").value;
+            turma = document.getElementById("turma-aluno").value;
+            aceite = document.getElementById("aceite-lgpd")?.checked;
+            if (!aceite) {
+                notificar("Para participar, você precisa aceitar os Termos de Uso e Privacidade.", "aviso", 5000);
+                return;
+            }
+        } else {
+            // Veio do botão Jogar/Treinar na Home
+            nomeBruto = obterNomeSalvoAluno();
+            turma = obterTurmaSalvaAluno();
+            if (!nomeBruto || !turma) {
+                mostrarTela("tela-single");
+                return;
+            }
+            // Verifica se o consentimento já está salvo no banco
+            const temConsentimento = await verificarConsentimentoSalvo(nomeBruto, turma);
+            if (!temConsentimento) {
+                document.getElementById("modal-consentimento-retroativo").classList.remove("hidden");
+                return;
+            }
         }
 
         const v = validarNomeCompleto(nomeBruto);
-        if (!v.ok) { notificar(v.motivo, "aviso", 5000); document.getElementById("nome-aluno").focus(); return; }
+        if (!v.ok) { notificar(v.motivo, "aviso", 5000); if(naTelaCadastro) document.getElementById("nome-aluno").focus(); return; }
         const nome = v.normalizado;
-        document.getElementById("nome-aluno").value = nome;
+        if (naTelaCadastro) document.getElementById("nome-aluno").value = nome;
         if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
 
         const modalidadeSelecionada = document.getElementById("modalidade-tabuada").value;
@@ -17980,12 +18010,16 @@ function abrirBuscarAlunoComMeusDados() {
                 return;
             }
             
+            // Salva o consentimento caso não exista (alunos novos ou retroativos)
             try {
-                await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).set({
-                    aceito: true,
-                    data: Date.now(),
-                    versao: "1.0"
-                });
+                const snapC = await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).once("value");
+                if (!snapC.exists()) {
+                    await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).set({
+                        aceito: true,
+                        data: Date.now(),
+                        versao: "1.0"
+                    });
+                }
             } catch(e) { console.warn("Falha ao salvar consentimento:", e); }
 
             if (r.status === "novo") notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
