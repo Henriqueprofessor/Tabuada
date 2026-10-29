@@ -9123,7 +9123,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     onclick="aoClicarBadgeVersao()"
                     aria-label="Ver novidades da versão"
                     title="Versão atual · Clique para ver o histórico de versões"
-                >v10.13.24</button>
+                >v10.14.0</button>
                 <button
                     type="button"
                     class="logo-verificar"
@@ -9306,7 +9306,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </button>
             <button onclick="abrirChangelog()" class="botao-secundario">
                 <span class="icone">📋</span>
-                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.13.24</span></span>
+                <span>Novidades <span id="mais-versao-atual" style="font-size:11px;opacity:.7;font-weight:600;">· v10.14.0</span></span>
             </button>
             <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="grid-column: 1 / -1;">
                 <span class="icone">🏠</span>
@@ -10247,7 +10247,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
         <div class="changelog-lista">
             <div class="changelog-item">
-                <span class="changelog-versao atual" id="changelog-versao-atual">v10.13.24 · atual</span>
+                <span class="changelog-versao atual" id="changelog-versao-atual">v10.14.0 · atual</span>
+                <h4 class="changelog-titulo">🛡️ Privacidade e Proteção de Dados (LGPD)</h4>
+                <p class="changelog-descricao">O aplicativo foi atualizado para garantir a segurança e a privacidade dos seus dados. Agora, é obrigatório aceitar o Termo de Uso no cadastro. Para proteger sua identidade, os rankings globais e o Hall da Fama passaram a exibir seu nome de forma abreviada (ex: "Maria S."). Além disso, implementamos travas de segurança para que nenhum aluno consiga visualizar o desempenho ou as mensagens de outro colega.</p>
+            </div>
+            <div class="changelog-item">
+                <span class="changelog-versao" id="changelog-versao-anterior-v1018">v10.13.24</span>
                 <h4 class="changelog-titulo">🎬 Splash de Posição + Sincronização de Versão</h4>
                 <p class="changelog-descricao">Ao final de cada partida oficial, agora você vê uma <strong>tela animada revelando sua posição na turma</strong> — com confetes para o Top 4. Corrigimos um bug em que a função de exibição não era encontrada, garantindo que a tela de posição funcione sempre. Também sincronizamos a versão exibida no menu "Mais" com a versão real do app.</p>
             </div>
@@ -10944,7 +10949,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <!-- ▼▼▼ [04.33] MODAL POLÍTICA DE PRIVACIDADE (LGPD) ───── -->
     <div id="modal-privacidade" class="modal-overlay hidden" onclick="fecharPoliticaPrivacidade(event)">
         <div class="modal-card info-modal-card" onclick="event.stopPropagation()">
-            <div class="modal-header"><h3>🛡️ Termo de Uso e Privacidade</h3><button class="modal-close" onclick="fecharPoliticaPrivacidade()" aria-label="Fechar">✕</button></div>
+            <div class="modal-header">
+                <h3>🛡️ Termo de Uso e Privacidade</h3>
+                <button class="modal-close" onclick="fecharPoliticaPrivacidade()" aria-label="Fechar">✕</button>
+            </div>
             <div class="info-lista-wrap">
                 <div class="info-secao">
                     <span class="info-icone">📊</span>
@@ -10977,6 +10985,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </div>
         </div>
     </div>
+    <!-- ▲▲▲ FIM [04.33] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -10987,9 +10996,8 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     // ═══════════════════════════════════════════════════════════════════════
 
     // ▼▼▼ [05.01] Versão e chaves de storage ───────────────────────────────
-    // v10.13.19 · Bugfix: splash de posição consolidado em [14.08] + sincronização de versão
-    // v10.13.20 · Otimização: Fim do carregamento duplo no boot
-    const APP_VERSION = "10.13.24";
+    // v10.14.0 · LGPD Compliance (Consentimento, pseudonimização, bloqueio de busca)
+    const APP_VERSION = "10.14.0";
 const STORAGE_TURMA_ALUNO = "turmaAlunoAtual";
 const STORAGE_NOME_ALUNO = "nomeAlunoAtual";
 
@@ -11452,7 +11460,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     function escaparHtml(t) { if(!t)return ""; let d=document.createElement("div"); d.innerText=t; return d.innerHTML; }
     function normalizarNome(n) { return n.trim().toLowerCase().replace(/\s+/g," "); }
 
-    // ▼ NOVO: Ofusca o nome completo para proteção de dados (LGPD)
+    // Ofusca o nome completo para proteção de dados (LGPD)
     function obterNomePublico(nomeCompleto) {
         if (!nomeCompleto) return "Anônimo";
         const partes = nomeCompleto.trim().split(/\s+/);
@@ -11462,7 +11470,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         return `${partes[0]} ${partes[partes.length - 1]}`;
     }
 
-    // ▼ NOVO: Funções do Modal de Privacidade
+    // Funções do Modal de Privacidade
     function abrirPoliticaPrivacidade() {
         document.getElementById("modal-privacidade")?.classList.remove("hidden");
     }
@@ -19921,7 +19929,6 @@ function abrirBuscarAlunoComMeusDados() {
         const isProfessor = professorAutenticado();
 
         if (nome && turma && !isProfessor) {
-            // Aluno logado: trava o campo de busca no próprio nome
             if (campo) {
                 campo.value = nome;
                 campo.disabled = true;
@@ -19933,7 +19940,6 @@ function abrirBuscarAlunoComMeusDados() {
             if (texto) texto.textContent = "Ver meu desempenho:";
             carregarMeuDesempenho(nome, turma);
         } else if (nome && turma && isProfessor) {
-            // Professor: libera a busca
             if (campo) { campo.value = nome; campo.disabled = false; }
             if (selTurma) { selTurma.value = turma; selTurma.disabled = false; }
             if (texto) texto.textContent = "Ver desempenho de:";
@@ -19959,7 +19965,6 @@ function abrirBuscarAlunoComMeusDados() {
             document.getElementById("desempenho-nome").value = nome;
         }
 
-        // ▼ NOVO: Restrição LGPD ▼
         const meuNome = obterNomeSalvoAluno();
         const minhaTurma = obterTurmaSalvaAluno();
         const isProfessor = professorAutenticado();
@@ -19968,7 +19973,6 @@ function abrirBuscarAlunoComMeusDados() {
             notificar("Acesso restrito: você só pode visualizar o seu próprio desempenho.", "erro", 6000);
             return;
         }
-        // ▲ FIM NOVO ▲
 
         document.getElementById("desempenho-vazio").classList.add("hidden");
         document.getElementById("desempenho-conteudo").classList.remove("hidden");
