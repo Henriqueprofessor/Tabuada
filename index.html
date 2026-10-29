@@ -11777,6 +11777,15 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             🏆 Os 4 melhores de cada turma/modalidade avançam para a Final.
         </div>`;
 
+        // ⚠️ Busca os dados da votação para saber se é de duração ou pesquisa livre
+        let votacaoCfg = {};
+        try {
+            const v = await obterDadosVotacao();
+            if (v && v.configurada) votacaoCfg = v;
+        } catch(e) {}
+        const isVotacaoDuracao = votacaoCfg.tipo === "duracao_etapa";
+        const textoVotacaoPre = isVotacaoDuracao ? "A votação para a duração da etapa" : "Uma votação especial";
+
         if (fase.tipo === ETAPA_FASES.sem_agendamento) {
             heroPre.classList.add("hidden");
             heroNorm.classList.remove("hidden");
@@ -11788,7 +11797,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <div><span class="badge-status aguardando">Aguardando início</span></div>
                     <div>📅 Início marcado para <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>.</div>
-                    <div style="font-size:12px; color:var(--text-muted);">Prepare-se! A votação para a duração da etapa abrirá no dia do início.</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Prepare-se! ${textoVotacaoPre} abrirá no dia do início.</div>
                     ${infoModUnica}
                     ${regraTop4}
                 </div>`;
@@ -11809,18 +11818,20 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             heroPre.classList.add("hidden");
             heroNorm.classList.remove("hidden");
             
-            const dadosVot = await obterDadosVotacao().catch(() => ({}));
-            const votos = dadosVot.votos ? Object.values(dadosVot.votos) : [];
-            const v7 = votos.filter(v => String(v.opcao) === "7").length;
-            const v14 = votos.filter(v => String(v.opcao) === "14").length;
-            const fechamento = dadosVot.inicio ? calcularFechamentoVotacao(dadosVot.inicio, fase.dados.fimPrevistoEm) : null;
+            const votos = votacaoCfg.votos ? Object.values(votacaoCfg.votos) : [];
+            const v1 = votos.filter(v => String(v.opcao) === "op1").length;
+            const v2 = votos.filter(v => String(v.opcao) === "op2").length;
+            const fechamento = votacaoCfg.inicio ? calcularFechamentoVotacao(votacaoCfg.inicio, fase.dados.fimPrevistoEm) : null;
             const resta = fechamento ? tempoRestanteHumano(fechamento - Date.now()) : "em breve";
+            
+            const label1 = isVotacaoDuracao ? "7 dias" : escaparHtml(votacaoCfg.opcao1 || "Opção 1");
+            const label2 = isVotacaoDuracao ? "14 dias" : escaparHtml(votacaoCfg.opcao2 || "Opção 2");
 
             if (statusCtn) statusCtn.innerHTML = `
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <div><span class="badge-status andamento">Em andamento · Votação aberta</span></div>
                     <div>📅 Iniciada em <strong>${formatarDataHoraCurta(fase.dados.inicioEm)}</strong>.</div>
-                    <div>🗳️ Votação fecha em <strong>${resta}</strong>. Placar parcial: <strong>7 dias</strong> (${v7}) vs <strong>14 dias</strong> (${v14}).</div>
+                    <div>🗳️ ${escaparHtml(votacaoCfg.titulo || "Votação")} fecha em <strong>${resta}</strong>. Placar: <strong>${label1}</strong> (${v1}) vs <strong>${label2}</strong> (${v2}).</div>
                     ${infoModUnica}
                     ${regraTop4}
                 </div>`;
@@ -20747,8 +20758,6 @@ function abrirBuscarAlunoComMeusDados() {
         const etapa = await obterDadosEtapa();
         const dados = await obterDadosVotacao();
         
-        const votacaoRelevante = (etapa.status !== "encerrada" && etapa.status !== "congelada" && dados.configurada);
-        
         if (btnMenu) btnMenu.style.display = (dados.aberta) ? "" : "none";
         
         if (!dados.aberta) {
@@ -20776,7 +20785,6 @@ function abrirBuscarAlunoComMeusDados() {
         const isDese = dados.tipo === "duracao_etapa";
         const titulo = escaparHtml(dados.titulo || (isDese ? "Quanto tempo deve durar a etapa classificatória?" : "Pesquisa de Opinião"));
         
-        // Altera o texto de descrição dependendo do tipo de votação
         let descricaoHtml = "";
         if (isDese) {
             descricaoHtml = `<p class="votacao-descricao">A duração da etapa será <strong>decidida pelos alunos</strong> que atingiram o critério de participação. A votação fecha automaticamente e a maioria define o prazo oficial.</p>
@@ -20799,11 +20807,9 @@ function abrirBuscarAlunoComMeusDados() {
         
         timerContainer.innerHTML = `<span class="votacao-status-timer">⏱️ Fecha em ${tempoRestanteHumano(restanteMs)}</span>`;
         
-        // Atualiza o HTML do modal dinamicamente
         const tituloEl = document.getElementById("votacao-titulo");
         if (tituloEl) tituloEl.innerHTML = titulo;
         
-        // Encontra os parágrafos de descrição e substitui
         const descContainers = card.querySelectorAll(".votacao-descricao");
         if (descContainers.length > 0) {
             const tempDiv = document.createElement("div");
@@ -20866,7 +20872,7 @@ function abrirBuscarAlunoComMeusDados() {
                 <input type="text" id="vot-op2" class="extensao-etapa-input" value="${escaparHtml(dados.opcao2 || '14 dias')}" placeholder="Ex: 14 dias"></div>
                 
                 <div><label style="font-size:12px; font-weight:bold; display:block; margin-bottom:4px;">Tipo de Votação</label>
-                <select id="vot-tipo" class="extensao-etapa-input">
+                <select id="vot-tipo" class="extensao-etapa-input" onchange="ajustarCamposVotacaoPorTipo()">
                     <option value="duracao_etapa" ${dados.tipo === 'duracao_etapa' ? 'selected' : ''}>Duração da Etapa (afeta o prazo da Copa)</option>
                     <option value="livre" ${dados.tipo === 'livre' ? 'selected' : ''}>Pesquisa Livre (NÃO afeta o prazo)</option>
                 </select></div>
@@ -20910,6 +20916,29 @@ function abrirBuscarAlunoComMeusDados() {
         </div>`;
 
         container.innerHTML = html;
+    }
+
+    // NOVO: Atualiza os placeholders e sugestões quando o tipo de votação muda
+    function ajustarCamposVotacaoPorTipo() {
+        const tipo = document.getElementById("vot-tipo").value;
+        const op1 = document.getElementById("vot-op1");
+        const op2 = document.getElementById("vot-op2");
+        const titulo = document.getElementById("vot-titulo");
+        
+        // Só altera se os campos ainda estiverem com os valores padrão do outro tipo, para não apagar o que o professor digitou
+        if (tipo === "livre") {
+            if (titulo.value === "Duração da Etapa") titulo.value = "Pesquisa de Opinião";
+            if (op1.value === "7 dias") op1.value = "Sim";
+            if (op2.value === "14 dias") op2.value = "Não";
+            op1.placeholder = "Ex: Sim, Excelente";
+            op2.placeholder = "Ex: Não, Ruim";
+        } else {
+            if (titulo.value === "Pesquisa de Opinião") titulo.value = "Duração da Etapa";
+            if (op1.value === "Sim") op1.value = "7 dias";
+            if (op2.value === "Não") op2.value = "14 dias";
+            op1.placeholder = "Ex: 7 dias";
+            op2.placeholder = "Ex: 14 dias";
+        }
     }
 
     async function salvarConfiguracaoVotacao() {
