@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'copa-v10.13.24';
+const CACHE_VERSION = 'copa-v10.14.0';
 const CACHE_ESTATICOS = [
   './',
   './index.html',
@@ -38,10 +38,12 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
+  // Ignora requisições do Firebase para não conflitar com dados dinâmicos
   if (url.hostname.endsWith('firebaseio.com') || url.hostname.endsWith('firebase.com')) {
     return;
   }
 
+  // Estratégia Network-First para navegação (HTML)
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
@@ -59,6 +61,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Estratégia Cache-First para recursos estáticos (CSS, JS, Imagens)
   event.respondWith(
     caches.match(req).then((cacheado) => {
       if (cacheado) return cacheado;
