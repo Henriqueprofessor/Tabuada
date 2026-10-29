@@ -20086,9 +20086,6 @@ function abrirBuscarAlunoComMeusDados() {
     }
     // ▲▲▲ FIM [16.07]
     // ▼▼▼ [16.08] Autocomplete de nomes — Meu Desempenho + Pesquisar Aluno ───
-    // v10.4.9 · Sugere nomes de alunos que já jogaram (extraídos do ranking).
-    // Ao escolher um nome, auto-preenche a turma se houver apenas uma.
-    // Cache de 60s para não bater no Firebase a cada tecla.
     const AUTOCOMPLETE_NOMES_CACHE_MS = 60 * 1000;
     let _autocompleteNomesCache = null;
     let _autocompleteNomesTs = 0;
@@ -20098,7 +20095,19 @@ function abrirBuscarAlunoComMeusDados() {
         if (!forcar && _autocompleteNomesCache && (agora - _autocompleteNomesTs) < AUTOCOMPLETE_NOMES_CACHE_MS) {
             return _autocompleteNomesCache;
         }
+        
         try {
+            // 🔒 PROTEÇÃO LGPD: Se não for o professor, não carrega a lista da escola inteira.
+            if (typeof professorAutenticado === "function" && !professorAutenticado()) {
+                const meuNome = obterNomeSalvoAluno();
+                const minhaTurma = obterTurmaSalvaAluno();
+                if (meuNome && minhaTurma) {
+                    return [{ nome: meuNome, turmas: [minhaTurma] }];
+                }
+                return []; // Se não estiver logado, não sugere ninguém
+            }
+
+            // Se for o professor, carrega todos (comportamento normal para gestão)
             const rank = await obterRanking();
             const mapa = new Map();
             (rank || []).forEach(r => {
@@ -20180,7 +20189,6 @@ function abrirBuscarAlunoComMeusDados() {
             if (input.value.trim().length >= 2) filtrar();
         });
         input.addEventListener("blur", () => {
-            // Pequeno atraso para permitir o clique no item antes de fechar
             setTimeout(fechar, 180);
         });
 
@@ -20208,8 +20216,6 @@ function abrirBuscarAlunoComMeusDados() {
         configurarAutocomplete("perfil-nome",    "perfil-autocomplete",    "perfil-turma");
     }
 
-    // O script roda no fim do <body>, então o DOM já está disponível.
-    // Ainda assim, protegemos contra execução antecipada.
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", inicializarAutocompletesNomes);
     } else {
