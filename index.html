@@ -16397,6 +16397,25 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [13.05]
 
     // ▼▼▼ [13.06] Renderização do ranking ─────────────────────────────
+    
+    // NOVO: Função que decide se mostra o nome completo ou abreviado
+    function obterNomeExibicaoRanking(r, tipoRanking, turmaAluno) {
+        // Se o professor estiver logado no dispositivo, ele pode ver tudo (para gestão)
+        if (typeof professorAutenticado === "function" && professorAutenticado()) {
+            return r.nome;
+        }
+        // Se for o ranking Global, é sempre abreviado
+        if (tipoRanking === "global") {
+            return obterNomePublico(r.nome);
+        }
+        // Se for o ranking de Turma, mas a turma visualizada NÃO é a do aluno, abrevia.
+        if (tipoRanking === "turma" && r.turma !== turmaAluno) {
+            return obterNomePublico(r.nome);
+        }
+        // Caso contrário (é a própria turma), mostra o nome completo.
+        return r.nome;
+    }
+
     async function renderizarBannerPosicaoGlobal(rc, mod) {
         const b = document.getElementById("banner-posicao-global"); if (!b) return;
         const n = obterNomeSalvoAluno(), t = obterTurmaSalvaAluno();
@@ -16709,7 +16728,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         ? `${(r.tempoTotalMs / 1000).toFixed(2)}s` 
                         : `${(r.tempoMedioMs / 1000).toFixed(2)}s`;
                     
-                    const nomeExibicao = obterNomePublico(r.nome);
+                    const nomeExibicao = obterNomeExibicaoRanking(r, "corridas", turmaAluno);
                     h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(nomeExibicao)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${r.acertos}</td><td style="text-align:center">${precPct}%</td><td style="text-align:center">${tempoCol}</td></tr>`;
                 }
                 tb.innerHTML = h;
@@ -16734,7 +16753,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : p === 4 ? "🎫" : "";
                     const vc = ehVoce(r);
                     const cv = vc ? " voce-linha" : "";
-                    h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(r.nome)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${j}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center"><span class="tag ${sc}">${st}</span></td></tr>`;
+                    
+                    const nomeExibicao = obterNomeExibicaoRanking(r, tipoRankingAtual, turmaAluno);
+                    h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(nomeExibicao)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.acertos}/20</td><td style="text-align:center">${(r.tempoMedio||0).toFixed(2)}s</td><td style="text-align:center">${j}</td><td style="text-align:center">${r.pontos}</td><td style="text-align:center"><span class="tag ${sc}">${st}</span></td></tr>`;
                 }
                 tb.innerHTML = h;
                 return;
@@ -16763,7 +16784,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         const pc = p <= 3 ? `podio-${p}` : "";
                         const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : "";
                         const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
-                        const nomeExibicao = (tipoRankingAtual === "global") ? obterNomePublico(r.nome) : r.nome;
+                        const nomeExibicao = obterNomeExibicaoRanking(r, tipoRankingAtual, turmaAluno);
                         h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(nomeExibicao)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${Math.round(r.mediaGeral).toLocaleString("pt-BR")}</td></tr>`;
                     }
                     tb.innerHTML = h; return;
@@ -16778,7 +16799,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     const pc = p <= 3 ? `podio-${p}` : "";
                     const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : "";
                     const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
-                    const nomeExibicao = (tipoRankingAtual === "global") ? obterNomePublico(r.nome) : r.nome;
+                    const nomeExibicao = obterNomeExibicaoRanking(r, tipoRankingAtual, turmaAluno);
                     h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(nomeExibicao)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${Math.round(r.media25).toLocaleString("pt-BR")}</td><td style="text-align:center">${Math.round(r.media69).toLocaleString("pt-BR")}</td><td style="text-align:center">${Math.round(r.media010).toLocaleString("pt-BR")}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${Math.round(r.mediaGeral).toLocaleString("pt-BR")}</td></tr>`;
                 }
                 tb.innerHTML = h; return;
@@ -16802,7 +16823,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                         const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
                         const mediaExibida = modUnicaAtiva === "2-5" ? r.media25 : modUnicaAtiva === "6-9" ? r.media69 : r.media010;
                         const qtdExibida = modUnicaAtiva === "2-5" ? r.qtd25 : modUnicaAtiva === "6-9" ? r.qtd69 : r.qtd010;
-                        const nomeExibicao = (tipoRankingAtual === "global") ? obterNomePublico(r.nome) : r.nome;
+                        const nomeExibicao = obterNomeExibicaoRanking(r, tipoRankingAtual, turmaAluno);
                         h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(nomeExibicao)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${qtdExibida}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${mediaExibida.toFixed(1)}</td></tr>`;
                     }
                     tb.innerHTML = h; return;
@@ -16818,7 +16839,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
                     const pc = p <= 3 ? `podio-${p}` : "";
                     const med = p === 1 ? "🥇" : p === 2 ? "🥈" : p === 3 ? "🥉" : "";
                     const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
-                    const nomeExibicao = (tipoRankingAtual === "global") ? obterNomePublico(r.nome) : r.nome;
+                    const nomeExibicao = obterNomeExibicaoRanking(r, tipoRankingAtual, turmaAluno);
                     h += `<tr class="${pc}${cv}"><td style="text-align:center">${p}º ${med}</td><td style="text-align:left">${escaparHtml(nomeExibicao)}${tagVoce(r)}</td><td style="text-align:center">${r.turma}</td><td style="text-align:center">${r.totalPartidas}</td><td style="text-align:center">${r.media25.toFixed(1)}</td><td style="text-align:center">${r.media69.toFixed(1)}</td><td style="text-align:center">${r.media010.toFixed(1)}</td><td style="text-align:center;font-weight:800;color:var(--neon-gold);">${r.mediaGeral.toFixed(1)}</td></tr>`;
                 }
                 tb.innerHTML = h; return;
@@ -16830,7 +16851,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             for (let i = 0; i < rank.length; i++) {
                 const r = rank[i], p = i + 1;
                 const vc = ehVoce(r); const cv = vc ? " voce-linha" : "";
-                const nomeExibicao = (tipoRankingAtual === "global") ? obterNomePublico(r.nome) : r.nome;
+                const nomeExibicao = obterNomeExibicaoRanking(r, tipoRankingAtual, turmaAluno);
                 h += `<tr class="${cv}"><td style="text-align:center">${p}º</td><td style="text-align:left">${escaparHtml(nomeExibicao)}${tagVoce(r)}</td>`;
                 if (mostrarTurmaNaLinha) h += `<td style="text-align:center">${r.turma}</td>`;
                 h += `<td style="text-align:center">${r.pontos}</td><td style="text-align:center">${r.acertos}/20</td>`;
