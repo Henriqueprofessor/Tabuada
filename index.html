@@ -9102,6 +9102,75 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         }
         /* ▲▲▲ FIM [02.88] */
 
+        /* ▼▼▼ [02.89] Painel — Gerenciador de Conexões ─────── INÍCIO ─── */
+        .lista-conexoes-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 45vh;
+            overflow-y: auto;
+            background: rgba(10, 22, 40, 0.5);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .conexao-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: rgba(15, 35, 64, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .conexao-item:hover {
+            background: rgba(34, 211, 238, 0.1);
+            border-color: rgba(34, 211, 238, 0.4);
+        }
+        .conexao-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--neon-cyan);
+        }
+        .conexao-nome {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        .conexao-turma {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            background: rgba(34, 211, 238, 0.15);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .conexao-topo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            font-weight: 800;
+            color: var(--neon-cyan);
+        }
+        .conexao-topo input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--neon-cyan);
+            cursor: pointer;
+        }
+        /* ▲▲▲ FIM [02.89] */
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -9806,7 +9875,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                         <option value="">Selecione uma turma</option>
                         <option value="901">901</option><option value="1001">1001</option><option value="1002">1002</option>
                         <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
-                        <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
+                        <option value="2002"></option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
                     </select>
                     <div id="ranking-mapa-conteudo" style="margin-top:12px;">
                         <div class="heatmap-vazio">🎯 Selecione uma turma acima para ver o ranking.</div>
@@ -9870,7 +9939,9 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                 <div class="senha-container" style="text-align:center;">
                     <h4 style="margin-top:0;">👥 Gerenciamento de Alunos</h4>
                     <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">Editar nomes, apagar registros individualmente ou desvincular aparelhos.</p>
-                    <button onclick="abrirGerenciarAlunos()" class="botao-verde" style="width:100%;">👥 Abrir Gerenciador de Alunos</button>
+                    <button onclick="abrirGerenciarAlunos()" class="botao-verde" style="width:100%; margin-bottom: 8px;">👥 Abrir Gerenciador de Alunos</button>
+                    
+                    <button onclick="abrirGerenciarConexoes()" class="botao-forcar" style="width:100%; background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #fff; margin: 0;">🔌 Gerenciar Conexões (Desconectar Aparelhos)</button>
                 </div>
             </div>
 
@@ -11001,6 +11072,37 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         </div>
     </div>
     <!-- ▲▲▲ FIM [04.33] -->
+
+    <!-- ▼▼▼ [04.35] MODAL GERENCIAR CONEXÕES ───────────────── -->
+    <div id="modal-gerenciar-conexoes" class="modal-overlay hidden" onclick="if(event.target === this) fecharGerenciarConexoes()">
+        <div class="modal-card info-modal-card" style="max-width: 600px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>🔌 Gerenciar Conexões</h3>
+                <button class="modal-close" onclick="fecharGerenciarConexoes()" aria-label="Fechar">✕</button>
+            </div>
+            
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin: 0 0 10px 0; text-align: left;">
+                Selecione os alunos que deseja desconectar. Ao desconectar, o app deles será reiniciado e eles precisarão digitar o nome novamente no próximo acesso. <strong>Nenhum histórico ou nota será apagado.</strong>
+            </p>
+
+            <div class="conexao-topo" onclick="toggleSelecionarTodosConexoes()">
+                <label style="display: flex; align-items: center; gap: 10px; width: 100%; cursor: pointer; margin: 0;">
+                    <input type="checkbox" id="chk-todos-conexoes">
+                    <span>Marcar / Desmarcar Todos</span>
+                </label>
+            </div>
+
+            <div id="lista-conexoes-container" class="lista-conexoes-wrap">
+                <div class="desempenho-loading">⏳ Carregando alunos…</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px;">
+                <button onclick="fecharGerenciarConexoes()" class="botao-secundario" style="margin: 0;">Cancelar</button>
+                <button onclick="confirmarDesconexaoSelecionados()" class="botao-forcar" style="margin: 0;">🔌 Desconectar Selecionados</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.35] -->
 
     <!-- ▼▼▼ [04.14] SCRIPTS FIREBASE + MAIN SCRIPT ───────────── -->
     <script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -22242,6 +22344,129 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
     // ▲▲▲ FIM [17.13]
+
+    // ▼▼▼ [17.14] Gerenciar Conexões (Forçar Logout) ───────── INÍCIO ───
+    let conexoesAlunosCache = [];
+
+    async function abrirGerenciarConexoes() {
+        if (!exigirProfessorAutenticado()) return;
+        
+        const modal = document.getElementById("modal-gerenciar-conexoes");
+        const container = document.getElementById("lista-conexoes-container");
+        const chkTodos = document.getElementById("chk-todos-conexoes");
+        if (!modal || !container) return;
+
+        modal.classList.remove("hidden");
+        if (chkTodos) chkTodos.checked = false;
+        container.innerHTML = `<div class="desempenho-loading">⏳ Buscando conexões ativas…</div>`;
+
+        try {
+            // Puxa todos os alunos que já jogaram (mais seguro para mostrar a lista completa)
+            const snapHall = await database.ref(CAMINHO_HALL_RESUMO).once("value");
+            const dadosHall = snapHall.val() || {};
+            
+            // Puxa os vínculos ativos
+            const snapVinc = await database.ref(CAMINHO_VINCULOS).once("value");
+            const dadosVinc = snapVinc.val() || {};
+
+            conexoesAlunosCache = Object.values(dadosHall).map(al => {
+                const chave = chaveAlbum(al.nome, al.turma);
+                const temVinculo = !!dadosVinc[chave];
+                return {
+                    nome: al.nome,
+                    turma: al.turma,
+                    chave: chave,
+                    conectado: temVinculo
+                };
+            }).sort((a, b) => a.nome.localeCompare(b.nome));
+
+            renderizarListaConexoes();
+        } catch(e) {
+            console.warn("[Conexões] Falha ao carregar:", e);
+            container.innerHTML = `<div class="desempenho-empty-msg">Erro ao buscar conexões.</div>`;
+        }
+    }
+
+    function renderizarListaConexoes() {
+        const container = document.getElementById("lista-conexoes-container");
+        if (!container) return;
+
+        if (conexoesAlunosCache.length === 0) {
+            container.innerHTML = `<div class="desempenho-empty-msg">Nenhum aluno registrado no sistema ainda.</div>`;
+            return;
+        }
+
+        let html = "";
+        conexoesAlunosCache.forEach((aluno, idx) => {
+            // Se não estiver conectado (não tem vínculo), mostramos desativado
+            const desabilitado = !aluno.conectado;
+            const opacity = desabilitado ? "0.5" : "1";
+            const cursor = desabilitado ? "not-allowed" : "pointer";
+            const statusTxt = desabilitado ? `<span style="font-size:10px;color:#fca5a5;font-style:italic;">(já desconectado)</span>` : "";
+
+            html += `<label class="conexao-item" style="opacity: ${opacity}; cursor: ${cursor};">
+                <input type="checkbox" class="chk-aluno-conexao" data-idx="${idx}" ${desabilitado ? "disabled" : ""} onchange="atualizarContadorConexoes()">
+                <span class="conexao-nome">${escaparHtml(aluno.nome)} ${statusTxt}</span>
+                <span class="conexao-turma">Turma ${escaparHtml(aluno.turma)}</span>
+            </label>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function toggleSelecionarTodosConexoes() {
+        const chkTodos = document.getElementById("chk-todos-conexoes");
+        const checkboxes = document.querySelectorAll(".chk-aluno-conexao:not(:disabled)");
+        const marcar = chkTodos ? chkTodos.checked : false;
+        checkboxes.forEach(chk => { chk.checked = marcar; });
+    }
+
+    function atualizarContadorConexoes() {
+        const chkTodos = document.getElementById("chk-todos-conexoes");
+        const checkboxes = document.querySelectorAll(".chk-aluno-conexao:not(:disabled)");
+        const marcados = document.querySelectorAll(".chk-aluno-conexao:checked");
+        if (chkTodos && checkboxes.length > 0) {
+            chkTodos.checked = (marcados.length === checkboxes.length);
+        }
+    }
+
+    async function confirmarDesconexaoSelecionados() {
+        if (!exigirProfessorAutenticado()) return;
+        
+        const selecionados = document.querySelectorAll(".chk-aluno-conexao:checked");
+        if (selecionados.length === 0) {
+            notificar("Selecione pelo menos um aluno.", "aviso");
+            return;
+        }
+
+        const confirmar = confirm(`⚠️ Desconectar ${selecionados.length} aparelho(s)?\n\nO app deles será reiniciado e pedirá o nome novamente. As notas e medalhas serão mantidas.`);
+        if (!confirmar) return;
+
+        const updates = {};
+        selecionados.forEach(chk => {
+            const idx = Number(chk.dataset.idx);
+            const aluno = conexoesAlunosCache[idx];
+            if (aluno) {
+                updates[`${CAMINHO_VINCULOS}/${aluno.chave}`] = null;
+            }
+        });
+
+        try {
+            await database.ref().update(updates);
+            notificar(`✅ ${selecionados.length} conexões encerradas com sucesso.`, "sucesso", 4000);
+            try { somConclusao(); } catch(e) {}
+            
+            // Recarrega a lista para mostrar o status atualizado
+            abrirGerenciarConexoes();
+        } catch(e) {
+            console.warn("[Conexões] Falha ao desconectar:", e);
+            notificar("❌ Erro ao desconectar. Verifique a conexão.", "erro", 5000);
+        }
+    }
+
+    function fecharGerenciarConexoes() {
+        document.getElementById("modal-gerenciar-conexoes")?.classList.add("hidden");
+    }
+    // ▲▲▲ FIM [17.14]
 
     // ▼▼▼ [17.10] Painel — Publicação de versão ───────────────────────
     const CAMINHO_ULTIMA_VERSAO_PAINEL = "config/ultimaVersao";
