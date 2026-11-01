@@ -19389,33 +19389,75 @@ function abrirBuscarAlunoComMeusDados() {
 
     // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
     // v10.14.0 · Experiência F1 — Bloco 11 de 12.
-    // gerarCardsComparacao() agora produz 3 estados mutuamente exclusivos:
-    //   🟣 .card-lider           → pontuação >= recorde do líder
-    //   🟢 .card-recorde-pessoal → pontuação > recorde pessoal anterior
+    // v10.14.1 · Refinamento cosmético — o texto de cada card agora
+    // descreve COMO o aluno chegou àquele resultado, em vez de usar
+    // sempre a mesma frase fixa:
+    //   🟣 .card-lider           → subdividido em 3 textos:
+    //        · turma vazia             → "PRIMEIRO DA TURMA! · Placar aberto"
+    //        · bateu o líder anterior  → "SUPERAÇÃO! · Você bateu o líder (X pts)"
+    //        · empatou com o líder     → "TOPO MANTIDO! · Você segue no 1º lugar"
+    //   🟢 .card-recorde-pessoal → subdividido em 2 textos:
+    //        · primeira partida do aluno → "ESTREIA REGISTRADA · Seu primeiro resultado"
+    //        · recorde pessoal batido    → "NOVO RECORDE PESSOAL · X pts"
     //   🟠 .card-recorde-mantido → caso contrário
-    // Os dois valores recordeLiderProjecao / recordePessoalProjecao são
+    // Os valores recordeLiderProjecao / recordePessoalProjecao são
     // carregados no início da partida (Blocos 8 e 12) e representam o
     // ESTADO PRÉ-PARTIDA (antes desta tentativa).
     function gerarCardsComparacao(melhor, tent) {
-        const pontos = Number(tent.pontos) || 0;
-        const lider  = Number(recordeLiderProjecao) || 0;
+        const pontos  = Number(tent.pontos) || 0;
+        const lider   = Number(recordeLiderProjecao) || 0;
         const pessoal = Number(recordePessoalProjecao) || 0;
 
-        // Se ainda não há líder (lider === 0) e o aluno fez > 0, ele vira
-        // o novo líder → cai no card roxo. Se o líder é ele mesmo e manteve,
-        // também é card roxo (o sinal é "superou ou manteve o topo da turma").
+        // Card roxo: aluno está (ou passou a estar) no topo da turma.
+        // O texto abaixo diferencia COMO ele chegou lá.
         const bateuLider = pontos > 0 && pontos >= lider;
 
         if (bateuLider) {
+            let labelLider;
+            if (lider === 0) {
+                // Turma ainda sem placar — este é o primeiro resultado registrado.
+                labelLider = "PRIMEIRO DA TURMA! · Placar aberto";
+            } else if (pontos > lider) {
+                // Superou o líder anterior de verdade.
+                labelLider = `SUPERAÇÃO! · Você bateu o líder (${lider.toLocaleString("pt-BR")} pts)`;
+            } else {
+                // Empatou com o líder (que pode ser ele mesmo ou outro aluno).
+                labelLider = "TOPO MANTIDO! · Você segue no 1º lugar";
+            }
+
             return `<div class="cards-comparacao">
                 <div class="card-podio card-lider">
                     <div class="card-icon">🟣</div>
                     <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
-                    <div class="card-label">SUPERAÇÃO! · Maior pontuação da turma</div>
+                    <div class="card-label">${labelLider}</div>
                 </div>
             </div>`;
         }
 
+        // Card verde: bateu o recorde pessoal (mas não alcançou o líder).
+        if (pontos > pessoal) {
+            const labelPessoal = (pessoal === 0)
+                ? "ESTREIA REGISTRADA · Seu primeiro resultado"
+                : `NOVO RECORDE PESSOAL · ${pontos.toLocaleString("pt-BR")} pts`;
+
+            return `<div class="cards-comparacao">
+                <div class="card-podio card-recorde-pessoal">
+                    <div class="card-icon">🟢</div>
+                    <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
+                    <div class="card-label">${labelPessoal}</div>
+                </div>
+            </div>`;
+        }
+
+        // Card laranja: não bateu nem líder nem recorde pessoal.
+        return `<div class="cards-comparacao">
+            <div class="card-podio card-recorde-mantido">
+                <div class="card-icon">🟠</div>
+                <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
+                <div class="card-label">RECORDE MANTIDO · Seu recorde: ${pessoal.toLocaleString("pt-BR")} pts</div>
+            </div>
+        </div>`;
+    }
         if (pontos > pessoal) {
             return `<div class="cards-comparacao">
                 <div class="card-podio card-recorde-pessoal">
@@ -29186,6 +29228,13 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     //   • obterRankingPorPontos(mod, turma)
     //   • obterHistoricoAluno(nome, turma, mod)
     //   • modalidadeClassificatoriaUnicaAtiva()
+    //
+    // v10.14.1 · Refinamento cosmético — mostrarSplashBandeirada() agora
+    // preenche #f1-splash-status com "Preparando seu resultado…". Antes o
+    // elemento existia, tinha CSS reservando espaço e aria-live configurado,
+    // mas nunca recebia texto (ficava um vazio visível abaixo do título).
+    // esconderSplashBandeirada() já limpa o status — o próximo uso começa
+    // sempre limpo, sem resíduo.
 
     // 1) Carrega o líder da turma + recorde pessoal na modalidade ativa.
     //    Chamado por iniciarPartidaClassificatoria (Bloco 8) antes da 1ª pergunta.
@@ -29332,10 +29381,18 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // 4) Mostra o splash de bandeirada. Puramente "show" — o delay
     //    e o hide são responsabilidade do Bloco 10 (finalizarCircuito).
     //    Mantida como async para consistência com chamadas via await.
+    //
+    //    v10.14.1 · Preenche #f1-splash-status com uma mensagem honesta
+    //    do que está acontecendo neste ponto do fluxo. A posição já foi
+    //    calculada em atualizarSplashPosicao() antes desta chamada, então
+    //    "Calculando sua posição…" seria mentira — usamos "Preparando
+    //    seu resultado…" para comunicar o que o aluno realmente espera.
     async function mostrarSplashBandeirada() {
         try {
             const el = document.getElementById("f1-splash-bandeirada");
             if (!el) return;
+            const status = document.getElementById("f1-splash-status");
+            if (status) status.textContent = "Preparando seu resultado…";
             el.classList.remove("hidden");
         } catch (e) {
             console.warn("F1 mostrarSplashBandeirada:", e);
