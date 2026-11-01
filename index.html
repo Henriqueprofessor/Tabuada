@@ -9171,6 +9171,421 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             cursor: pointer;
         }
         /* ▲▲▲ FIM [02.89] */
+
+        /* ▼▼▼ [02.90] Barra de Projeção F1 (5 estados) ──────── INÍCIO ─── */
+        /* v10.14.0 · Experiência F1 — Bloco 1 de 12.
+           Barra fina horizontal dentro de #tela-jogo, logo acima do
+           container da pergunta. Comunica em tempo real a projeção de
+           pontuação do aluno em 5 estados visuais distintos.
+
+           Estrutura HTML esperada (criada no Bloco 4):
+             .f1-barra-wrap
+               .f1-barra-track
+                 .f1-barra-fill
+               .f1-barra-txt
+
+           Classes de estado aplicadas no .f1-barra-wrap e/ou no .f1-barra-fill:
+             .f1-cinza    → respondidas < 4 (aquecimento, cinza neutro)
+             .f1-roxo     → projeção > líder (roxo/líder)
+             .f1-verde    → projeção > pessoal (verde/recorde)
+             .f1-amarelo  → projeção normal (dourado/em disputa)
+             .f1-vermelho → reta final + .brilho-retafinal (vermelho + pulso)
+        */
+
+        .f1-barra-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin: 6px 0 10px;
+            flex-shrink: 0;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .f1-barra-track {
+            position: relative;
+            flex: 1 1 auto;
+            height: 8px;
+            background: rgba(148, 163, 184, 0.18);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .f1-barra-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 6px;
+            background: #64748b; /* fallback cinza */
+            transition: width 400ms ease, background 300ms ease;
+            will-change: width, background;
+        }
+
+        .f1-barra-txt {
+            flex-shrink: 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.2;
+        }
+
+        /* ─── Estados (cor no fill — aceita classe no wrap OU no fill) ─── */
+        .f1-barra-fill.f1-cinza,
+        .f1-barra-wrap.f1-cinza .f1-barra-fill {
+            background: #64748b;
+        }
+
+        .f1-barra-fill.f1-roxo,
+        .f1-barra-wrap.f1-roxo .f1-barra-fill {
+            background: #a855f7;
+        }
+
+        .f1-barra-fill.f1-verde,
+        .f1-barra-wrap.f1-verde .f1-barra-fill {
+            background: #10b981;
+        }
+
+        .f1-barra-fill.f1-amarelo,
+        .f1-barra-wrap.f1-amarelo .f1-barra-fill {
+            background: #fbbf24;
+        }
+
+        .f1-barra-fill.f1-vermelho,
+        .f1-barra-wrap.f1-vermelho .f1-barra-fill {
+            background: #ef4444;
+        }
+
+        /* ─── Reta final: brilho pulsante suave ─── */
+        @keyframes f1PulsoRetaFinal {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55),
+                            inset 0 0 6px rgba(255, 255, 255, 0.25);
+            }
+            50% {
+                box-shadow: 0 0 8px 3px rgba(239, 68, 68, 0.55),
+                            inset 0 0 10px rgba(255, 255, 255, 0.45);
+            }
+        }
+
+        .f1-barra-fill.f1-vermelho.brilho-retafinal,
+        .f1-barra-wrap.f1-vermelho .f1-barra-fill.brilho-retafinal {
+            animation: f1PulsoRetaFinal 1.4s ease-in-out infinite;
+        }
+
+        /* ─── Contexto dentro de #tela-jogo: não empurra a pergunta ─── */
+        #tela-jogo .f1-barra-wrap {
+            min-height: 22px;
+            contain: layout style;
+        }
+
+        /* ─── Mobile: texto um pouco menor, barra continua visível ─── */
+        @media (max-width: 520px) {
+            .f1-barra-wrap {
+                gap: 8px;
+                margin: 4px 0 8px;
+            }
+            .f1-barra-track {
+                height: 7px;
+            }
+            .f1-barra-txt {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* ─── Acessibilidade: sem animação, mantendo o vermelho ─── */
+        @media (prefers-reduced-motion: reduce) {
+            .f1-barra-fill {
+                transition: none !important;
+            }
+            .f1-barra-fill.f1-vermelho.brilho-retafinal,
+            .f1-barra-wrap.f1-vermelho .f1-barra-fill.brilho-retafinal {
+                animation: none !important;
+                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+            }
+        }
+        /* ▲▲▲ FIM [02.90] */
+
+        /* ▼▼▼ [02.91] Cards de Pódio (roxo / verde / laranja) ─── INÍCIO ─── */
+        /* v10.14.0 · Experiência F1 — Bloco 2 de 12.
+           Cards de pódio exibidos na tela de resultado. Cada card
+           representa uma conquista visual diferente:
+
+             .card-lider           → roxo/líder   (DOMINANTE visualmente)
+             .card-recorde-pessoal → verde/recorde pessoal
+             .card-recorde-mantido → laranja/recorde mantido
+
+           Estrutura HTML esperada (criada no Bloco 11):
+             .card-podio
+               .card-icon
+               .card-valor
+               .card-label
+
+           Todos os cards têm a mesma base visual; a variante
+           (.card-lider / .card-recorde-pessoal / .card-recorde-mantido)
+           aplica cor, borda, gradiente e destaque extra.
+        */
+
+        /* ─── Base comum aos três cards ─── */
+        .card-podio {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            animation: f1CardIn 400ms ease both;
+        }
+
+        .card-podio .card-icon {
+            font-size: 2.6rem;
+            line-height: 1;
+            display: inline-block;
+            animation: f1CardIn 400ms ease both;
+        }
+
+        .card-podio .card-valor {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #f8fafc;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .card-podio .card-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            line-height: 1.25;
+        }
+
+        /* ─── Variante ROXO · Líder (dominante) ─── */
+        .card-podio.card-lider {
+            border: 2px solid #a855f7;
+            background: linear-gradient(
+                135deg,
+                rgba(168, 85, 247, 0.18),
+                rgba(168, 85, 247, 0.05)
+            );
+            box-shadow: 0 0 24px rgba(168, 85, 247, 0.35);
+        }
+
+        .card-podio.card-lider .card-icon {
+            font-size: 3.5rem;
+        }
+
+        .card-podio.card-lider .card-valor {
+            font-size: 2.4rem;
+            font-weight: 800;
+        }
+
+        .card-podio.card-lider .card-label {
+            color: #e9d5ff;
+        }
+
+        /* ─── Variante VERDE · Recorde pessoal ─── */
+        .card-podio.card-recorde-pessoal {
+            border: 2px solid #10b981;
+            background: linear-gradient(
+                135deg,
+                rgba(16, 185, 129, 0.14),
+                rgba(16, 185, 129, 0.04)
+            );
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.22);
+        }
+
+        .card-podio.card-recorde-pessoal .card-label {
+            color: #a7f3d0;
+        }
+
+        /* ─── Variante LARANJA · Recorde mantido ─── */
+        .card-podio.card-recorde-mantido {
+            border: 2px solid #f97316;
+            background: linear-gradient(
+                135deg,
+                rgba(249, 115, 22, 0.10),
+                rgba(249, 115, 22, 0.04)
+            );
+            box-shadow: 0 0 18px rgba(249, 115, 22, 0.20);
+        }
+
+        .card-podio.card-recorde-mantido .card-label {
+            color: #fed7aa;
+        }
+
+        /* ─── Entrada suave dos cards ─── */
+        @keyframes f1CardIn {
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Dominância do roxo em desktop: leve escala ─── */
+        @media (min-width: 900px) {
+            .card-podio.card-lider {
+                transform: scale(1.03);
+                animation: f1CardIn 400ms ease both;
+            }
+        }
+
+        /* ─── Acessibilidade: sem animação, sem scale ─── */
+        @media (prefers-reduced-motion: reduce) {
+            .card-podio,
+            .card-podio .card-icon {
+                animation: none !important;
+            }
+            .card-podio.card-lider {
+                transform: none !important;
+            }
+        }
+        /* ▲▲▲ FIM [02.91] */
+
+        /* ▼▼▼ [02.92] Splash de Bandeirada (overlay + animações) ─ INÍCIO ─── */
+        /* v10.14.0 · Experiência F1 — Bloco 3 de 12.
+           Overlay de "cruzando a linha de chegada" exibido na
+           transição para a tela de resultado. Bandeira quadriculada
+           feita em CSS puro (sem imagem, sem canvas) com animação
+           de ondulação sutil e emoji 🏁 balançando.
+
+           Estrutura HTML esperada (criada em bloco futuro):
+             #f1-splash-bandeirada
+               .f1-splash-bandeira
+               .f1-splash-emoji
+               .f1-splash-titulo
+               .f1-splash-status
+
+           Estado oculto: .hidden (global) ou atributo [hidden].
+        */
+
+        #f1-splash-bandeirada {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            padding: 24px;
+            background: rgba(15, 23, 42, 0.88);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            text-align: center;
+        }
+
+        #f1-splash-bandeirada.hidden,
+        #f1-splash-bandeirada[hidden] {
+            display: none !important;
+        }
+
+        /* ─── Bandeira quadriculada (CSS puro) ─── */
+        .f1-splash-bandeira {
+            width: 220px;
+            height: 140px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            background-image: repeating-conic-gradient(
+                #f8fafc 0 25%,
+                #0f172a 0 50%
+            );
+            background-size: 40px 40px;
+            box-shadow:
+                0 12px 32px rgba(0, 0, 0, 0.45),
+                inset 0 0 0 1px rgba(248, 250, 252, 0.15);
+            animation: f1OndaBandeira 1.2s ease-in-out infinite alternate;
+            transform-origin: center bottom;
+            will-change: transform;
+        }
+
+        @keyframes f1OndaBandeira {
+            0% {
+                transform: skewY(-2deg) translateY(0);
+            }
+            100% {
+                transform: skewY(2deg) translateY(-2px);
+            }
+        }
+
+        /* ─── Emoji 🏁 balançando ─── */
+        .f1-splash-emoji {
+            font-size: 4rem;
+            line-height: 1;
+            display: inline-block;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
+            animation: f1BalancoEmoji 900ms ease-in-out infinite alternate;
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        @keyframes f1BalancoEmoji {
+            0% {
+                transform: rotate(-8deg);
+            }
+            100% {
+                transform: rotate(8deg);
+            }
+        }
+
+        /* ─── Título "CRUZANDO A LINHA" ─── */
+        .f1-splash-titulo {
+            margin: 0;
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #f8fafc;
+            line-height: 1.15;
+            text-shadow:
+                0 0 12px rgba(34, 211, 238, 0.45),
+                0 2px 4px rgba(0, 0, 0, 0.40);
+        }
+
+        /* ─── Status "Calculando sua posição..." ─── */
+        .f1-splash-status {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            line-height: 1.2;
+            min-height: 1.2em;
+        }
+
+        /* ─── Mobile: bandeira e emoji um pouco menores ─── */
+        @media (max-width: 520px) {
+            .f1-splash-bandeira {
+                width: 180px;
+                height: 115px;
+                background-size: 32px 32px;
+            }
+            .f1-splash-emoji {
+                font-size: 3.2rem;
+            }
+        }
+
+        /* ─── Acessibilidade: desliga animações, mantém cores ─── */
+        @media (prefers-reduced-motion: reduce) {
+            .f1-splash-bandeira,
+            .f1-splash-emoji {
+                animation: none !important;
+            }
+        }
+        /* ▲▲▲ FIM [02.92] */
+
     </style>
 </head>
 <!-- ▲▲▲ FIM [01] HEAD ─────────────────────────────────────────────── -->
@@ -9476,6 +9891,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <div class="pergunta-info-destaque" id="info-pergunta-destaque">Pergunta 1 de 20</div>
         <div class="barra-progresso-perguntas" id="barra-progresso-perguntas"></div>
         <div id="barra-tempo"><div id="progresso"></div></div>
+        <div class="f1-barra-wrap" id="f1-barra-wrap" aria-live="polite" aria-label="Projeção F1">
+            <div class="f1-barra-track">
+                <div class="f1-barra-fill f1-cinza" id="f1-barra-fill" style="width:0%"></div>
+            </div>
+            <span class="f1-barra-txt" id="f1-barra-txt">Projeção: — pts</span>
+        </div>
         <div id="pergunta">X x Y = ?</div>
         <div class="lista-opcoes">
             <button class="btn-opcao" onclick="verificarResposta(this)"></button>
@@ -10260,6 +10681,26 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     </div>
     <!-- ▲▲▲ FIM [03.15] -->
+
+    <!-- ▼▼▼ [04.36] Overlay do Splash de Bandeirada ──────── INÍCIO ─── -->
+    <!-- v10.14.0 · Experiência F1 — Bloco 5 de 12.
+         Overlay de "cruzando a linha de chegada". Começa oculto.
+         O JS do Bloco 12 chama mostrarSplashBandeirada() para exibir
+         e esconderSplashBandeirada() para fechar.
+         O status (#f1-splash-status) é preenchido dinamicamente
+         (ex: "Calculando sua posição..."). -->
+    <div id="f1-splash-bandeirada" class="hidden"
+         role="dialog" aria-modal="true"
+         aria-label="Cruzando a linha de chegada">
+        <div class="f1-splash-conteudo">
+            <div class="f1-splash-bandeira" aria-hidden="true"></div>
+            <div class="f1-splash-emoji" aria-hidden="true">🏁</div>
+            <div class="f1-splash-titulo">CRUZANDO A LINHA</div>
+            <div class="f1-splash-status" id="f1-splash-status"
+                 aria-live="polite"></div>
+        </div>
+    </div>
+    <!-- ▲▲▲ FIM [04.36] -->
 
     <!-- ▼▼▼ [04.01] MODAL OPERAÇÃO ───────────────────────────── -->
     <div id="modal-operacao" class="modal-overlay hidden" onclick="fecharModalOperacao(event)">
@@ -11427,6 +11868,13 @@ verificarVersao();
     let countdownTimerInterval = null;
     let etapaEstadoCache = null;
     let tentativasCancelar = 0; // ⚠️ NOVO: Contador anti-exploit
+    // ▼ Experiência F1 — projeção em tempo real (Bloco 6 de 12)
+    let recordeLiderProjecao = 0;      // melhor pontuação da turma na mod atual
+    let recordePessoalProjecao = 0;    // melhor pontuação do próprio aluno na mod
+    let nomeLiderProjecao = "";        // nome do líder (para o card roxo)
+    let jaTocouFanfarraLider = false;  // flag anti-repeat do bônus
+    let projecaoAtual = 0;             // projeção recalculada a cada resposta
+    let estadoProjecao = "cinza";      // cinza|roxo|verde|amarelo|vermelho
     // ▲▲▲ FIM [06.01]
 
     // ▼▼▼ [06.02] Estado do desempenho ─────────────────────────────────────
@@ -11569,6 +12017,102 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             if (Date.now() < fim) requestAnimationFrame(f);
         })();
         confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 }, colors: ['#198754','#ffc107','#0066cc','#fd7e14'] });
+    }
+    // ▼ Experiência F1 — fanfarra do líder + confetes roxo/dourado (Bloco 7 de 12)
+
+    // Fanfarra ascendente C5-E5-G5-C6 (triangle, ~140ms por nota).
+    // Silenciosa em erro, respeita somAtivo e prefers-reduced-motion.
+    function somVitoriaLider() {
+        if (!somAtivo) return;
+        try {
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        } catch(e) { /* matchMedia pode falhar em navegadores antigos — segue */ }
+        try {
+            const ctx = inicializarAudio();
+            if (!ctx) return;
+            if (ctx.state === "suspended") {
+                ctx.resume()
+                    .then(() => _tocarFanfarraLider(ctx))
+                    .catch(() => { /* autoplay bloqueado — aceita em silêncio */ });
+            } else {
+                _tocarFanfarraLider(ctx);
+            }
+        } catch(e) {
+            console.warn("[F1] Falha ao tocar fanfarra do líder:", e);
+        }
+    }
+
+    function _tocarFanfarraLider(ctx) {
+        try {
+            const notas = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6
+            const dur = 0.14;      // duração base de cada nota
+            const sustain = 0.06;  // pequeno sustain após a nota
+            const base = ctx.currentTime;
+            notas.forEach((freq, i) => {
+                const inicio = base + i * dur;
+                const fim = inicio + dur + sustain;
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = "triangle";
+                o.frequency.setValueAtTime(freq, inicio);
+                g.gain.setValueAtTime(0.0001, inicio);
+                g.gain.linearRampToValueAtTime(0.08, inicio + 0.02);
+                g.gain.exponentialRampToValueAtTime(0.0001, fim);
+                o.connect(g);
+                g.connect(ctx.destination);
+                o.start(inicio);
+                o.stop(fim + 0.05);
+            });
+        } catch(e) {
+            console.warn("[F1] Falha ao agendar notas da fanfarra:", e);
+        }
+    }
+
+    // Confetes roxo (#a855f7) + dourado (#fbbf24).
+    // Duas explosões laterais + chuva central por 1.2s.
+    // Usa canvas-confetti (já disponível no <head>).
+    // Silencioso se prefers-reduced-motion ou se a lib não carregou.
+    function dispararConfetesLider() {
+        try {
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        } catch(e) { /* matchMedia pode falhar — segue */ }
+        if (typeof confetti !== "function") return;
+
+        const cores = ["#a855f7", "#fbbf24", "#c4b5fd", "#fde68a"];
+
+        try {
+            // Explosão lateral esquerda
+            confetti({
+                particleCount: 60,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0, y: 0.7 },
+                colors: cores
+            });
+            // Explosão lateral direita
+            confetti({
+                particleCount: 60,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1, y: 0.7 },
+                colors: cores
+            });
+            // Chuva central por ~1.2s
+            const fim = Date.now() + 1200;
+            (function chuva() {
+                confetti({
+                    particleCount: 4,
+                    spread: 90,
+                    origin: { x: 0.5, y: 0 },
+                    colors: cores,
+                    gravity: 1.2,
+                    scalar: 0.9
+                });
+                if (Date.now() < fim) requestAnimationFrame(chuva);
+            })();
+        } catch(e) {
+            console.warn("[F1] Falha ao disparar confetes do líder:", e);
+        }
     }
     // ▲▲▲ FIM [07.02]
 
@@ -18280,6 +18824,20 @@ function abrirBuscarAlunoComMeusDados() {
         document.getElementById("cabecalho-turma").innerText = `🏆 CLASSIFICATÓRIA — TURMA ${turmaAtual}`;
         mostrarTela("tela-jogo");
         atualizarVisibilidadeBotaoCancelar();
+
+        // ▼ Experiência F1 — carrega recordes p/ projeção em tempo real
+        // (Bloco 8 de 12). Só roda em partida oficial.
+        // try/catch: se Bloco 12 ainda não estiver carregado ou der
+        // erro, a partida segue normalmente.
+        try {
+            if (typeof carregarRecordesParaProjecao === "function") {
+                carregarRecordesParaProjecao();
+            }
+        } catch(e) {
+            console.warn("[F1] Falha ao carregar recordes para projeção:", e);
+        }
+        // ▲
+
         proximaPergunta();
     }
 
@@ -18295,6 +18853,13 @@ function abrirBuscarAlunoComMeusDados() {
         chutesRapidos = 0;
         tentativasCancelar = 0; // ⚠️ Zera o contador anti-exploit a cada nova partida
         jogoAtivo = true; finalizando = false;
+        // ▼ Experiência F1 — reset do estado da projeção (Bloco 8 de 12)
+        // recordeLiderProjecao / recordePessoalProjecao são recarregados
+        // por carregarRecordesParaProjecao() (Bloco 12) só em partida oficial.
+        jaTocouFanfarraLider = false;
+        projecaoAtual = 0;
+        estadoProjecao = "cinza";
+        // ▲
         if (timerInterval) clearInterval(timerInterval);
         if (timerTimeout) clearTimeout(timerTimeout);
         const b = document.getElementById("barra-progresso-perguntas"); if (b) b.innerHTML = "";
@@ -18464,6 +19029,10 @@ function abrirBuscarAlunoComMeusDados() {
         const s = document.getElementById("rodape-sequencia");
         if (s) s.innerHTML = `🔥 Sequência: <span class="seq-destaque">${sequenciaAtual}</span>`;
         atualizarBarraProgressoPerguntas();
+        // ▼ Experiência F1 — barra de projeção (Bloco 9 de 12)
+        try { atualizarBarraProjecao(); }
+        catch (e) { console.warn("F1 barra:", e); }
+        // ▲
     }
     function atualizarBarraProgressoPerguntas() {
         const b = document.getElementById("barra-progresso-perguntas"); if (!b) return;
@@ -18594,6 +19163,20 @@ function abrirBuscarAlunoComMeusDados() {
         setTimeout(() => { 
             modal.classList.add("hidden"); 
             modal.style.display = "none";
+            
+            // ▼ Experiência F1 — fanfarra do líder (Bloco 10)
+            // Só dispara depois que o splash de posição fechou, para o
+            // usuário VER o card roxo ao ouvir a fanfarra.
+            setTimeout(() => {
+                if (jaTocouFanfarraLider) return;
+                const cardLider = document.querySelector(".card-lider");
+                if (cardLider && !cardLider.classList.contains("hidden")) {
+                    jaTocouFanfarraLider = true;
+                    try { somVitoriaLider(); } catch(e) { console.warn("F1 fanfarra:", e); }
+                    try { dispararConfetesLider(); } catch(e) { console.warn("F1 confetes:", e); }
+                }
+            }, 100);
+            // ▲
         }, 300);
     }
 
@@ -18601,6 +19184,11 @@ function abrirBuscarAlunoComMeusDados() {
     async function finalizarCircuito() {
         if (finalizando) return;
         finalizando = true; jogoAtivo = false;
+        
+        // F1 (Bloco 10) — reset defensivo: Bloco 8 reseta no início da partida;
+        // este guard garante comportamento per-partida mesmo se Bloco 8
+        // ainda não foi aplicado.
+        if (!modoTreino && !treinoAnonimo) jaTocouFanfarraLider = false;
         
         _homeMapaCache = null;
 
@@ -18756,6 +19344,22 @@ function abrirBuscarAlunoComMeusDados() {
             // Atualiza a tela de splash com a posição
             atualizarSplashPosicao(posicaoFinal || "—");
 
+            // ▼ Experiência F1 — Splash de bandeirada (Bloco 10)
+            // Envolve a transição para a tela de resultado: mostra a
+            // bandeira quadriculada + "CRUZANDO A LINHA" por 1.5s
+            // (200ms em prefers-reduced-motion). O splash de posição
+            // fica por baixo (z 9000 vs 9999) e volta a aparecer
+            // quando a bandeirada desaparece.
+            try {
+                mostrarSplashBandeirada();
+                const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                await new Promise(r => setTimeout(r, reduzido ? 200 : 1500));
+                esconderSplashBandeirada();
+            } catch(e) {
+                console.warn("F1 splash bandeirada:", e);
+            }
+            // ▲
+
             mostrarTela("tela-resultado");
             
             verificarAlbumPosPartida(alunoAtual, turmaAtual, true).then(novas => {
@@ -18784,9 +19388,51 @@ function abrirBuscarAlunoComMeusDados() {
     // ▲▲▲ FIM [14.08]
 
     // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
+    // v10.14.0 · Experiência F1 — Bloco 11 de 12.
+    // gerarCardsComparacao() agora produz 3 estados mutuamente exclusivos:
+    //   🟣 .card-lider           → pontuação >= recorde do líder
+    //   🟢 .card-recorde-pessoal → pontuação > recorde pessoal anterior
+    //   🟠 .card-recorde-mantido → caso contrário
+    // Os dois valores recordeLiderProjecao / recordePessoalProjecao são
+    // carregados no início da partida (Blocos 8 e 12) e representam o
+    // ESTADO PRÉ-PARTIDA (antes desta tentativa).
     function gerarCardsComparacao(melhor, tent) {
-        const novo = ehMelhorResultado(tent, melhor) && tent.data === melhor.data;
-        return `<div class="cards-comparacao"><div class="card-compcard"><div class="card-comp-rotulo">Esta tentativa</div><div class="card-comp-valor">${tent.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div><div class="card-compcard card-recorde"><div class="card-comp-rotulo">${novo ? "🏆 Novo recorde!" : "Seu recorde oficial"}</div><div class="card-comp-valor">${melhor.pontos.toLocaleString('pt-BR')}</div><div class="card-comp-unidade">pontos</div></div></div>`;
+        const pontos = Number(tent.pontos) || 0;
+        const lider  = Number(recordeLiderProjecao) || 0;
+        const pessoal = Number(recordePessoalProjecao) || 0;
+
+        // Se ainda não há líder (lider === 0) e o aluno fez > 0, ele vira
+        // o novo líder → cai no card roxo. Se o líder é ele mesmo e manteve,
+        // também é card roxo (o sinal é "superou ou manteve o topo da turma").
+        const bateuLider = pontos > 0 && pontos >= lider;
+
+        if (bateuLider) {
+            return `<div class="cards-comparacao">
+                <div class="card-podio card-lider">
+                    <div class="card-icon">🟣</div>
+                    <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
+                    <div class="card-label">SUPERAÇÃO! · Maior pontuação da turma</div>
+                </div>
+            </div>`;
+        }
+
+        if (pontos > pessoal) {
+            return `<div class="cards-comparacao">
+                <div class="card-podio card-recorde-pessoal">
+                    <div class="card-icon">🟢</div>
+                    <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
+                    <div class="card-label">NOVO RECORDE PESSOAL · ${pontos.toLocaleString("pt-BR")} pts</div>
+                </div>
+            </div>`;
+        }
+
+        return `<div class="cards-comparacao">
+            <div class="card-podio card-recorde-mantido">
+                <div class="card-icon">🟠</div>
+                <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
+                <div class="card-label">RECORDE MANTIDO · Seu recorde: ${pessoal.toLocaleString("pt-BR")} pts</div>
+            </div>
+        </div>`;
     }
 
     async function renderizarCardClassificacao(r) {
@@ -28526,6 +29172,189 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         console.info("✅ [Evento] Hooks instalados.");
     })();
     // ▲▲▲ FIM [19.08]
+
+    // ▼▼▼ [19.09] Motor da Barra F1 + helpers do splash ────── INÍCIO ───
+    // v10.14.0 · Experiência F1 — Bloco 12 de 12.
+    // Cinco funções globais que fazem a barra de projeção (CSS [02.90],
+    // HTML [03.06]) e o splash de bandeirada (CSS [02.92], HTML [04.36])
+    // funcionarem em conjunto com a finalização (Bloco 10).
+    //
+    // Todas try/catch. Nenhuma cria CSS/HTML. Nenhuma toca som/confete
+    // (isso é [07.02]).
+    //
+    // Reutiliza funções existentes de ranking:
+    //   • obterRankingPorPontos(mod, turma)
+    //   • obterHistoricoAluno(nome, turma, mod)
+    //   • modalidadeClassificatoriaUnicaAtiva()
+
+    // 1) Carrega o líder da turma + recorde pessoal na modalidade ativa.
+    //    Chamado por iniciarPartidaClassificatoria (Bloco 8) antes da 1ª pergunta.
+    async function carregarRecordesParaProjecao() {
+        // Reset defensivo (permite rodar sem Bloco 8 aplicado, sem valores obsoletos).
+        recordeLiderProjecao = 0;
+        recordePessoalProjecao = 0;
+        nomeLiderProjecao = "";
+        try {
+            const nome  = obterNomeSalvoAluno();
+            const turma = obterTurmaSalvaAluno();
+            if (!nome || !turma) return;
+
+            // Modalidade ativa: prioriza Modo Classificatória Única; senão a modalidade atual.
+            const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
+                ? modalidadeClassificatoriaUnicaAtiva()
+                : null;
+            const mod = modUnica || modalidadeAtual || "0-10";
+
+            // Líder da turma (ranking já ordenado por pontos).
+            const rankingTurma = await obterRankingPorPontos(mod, turma).catch(() => []);
+            if (Array.isArray(rankingTurma) && rankingTurma.length > 0) {
+                const lider = rankingTurma[0];
+                recordeLiderProjecao = Number(lider.pontos) || 0;
+                nomeLiderProjecao   = lider.nome || "";
+            }
+
+            // Recorde pessoal: maior pontuação do aluno na modalidade.
+            const historico = await obterHistoricoAluno(nome, turma, mod).catch(() => []);
+            if (Array.isArray(historico) && historico.length > 0) {
+                recordePessoalProjecao = historico.reduce(
+                    (max, p) => Math.max(max, Number(p.pontos) || 0),
+                    0
+                );
+            }
+        } catch (e) {
+            console.warn("F1 carregarRecordesParaProjecao:", e);
+        }
+    }
+
+    // 2) Calcula a projeção atual (pontos escalados para 20 perguntas) e o estado.
+    //    Regra de estado: cinza (aquecimento) → amarelo/verde/roxo → vermelho (reta final).
+    function calcularProjecaoAtual() {
+        try {
+            const pontos      = Number(pontosAcumulados) || 0;
+            const respondidas = (Number(acertos) || 0) + (Number(erros) || 0);
+
+            // Aquecimento: menos de 4 respostas → não projeta ainda.
+            if (respondidas < 4) {
+                projecaoAtual = 0;
+                estadoProjecao = "cinza";
+                return;
+            }
+
+            // Fórmula: (pontos / respondidas) * 20 → projeção hipotética em 20 perguntas.
+            projecaoAtual = Math.round((pontos / respondidas) * 20);
+
+            // Linha de chegada: já respondeu tudo → vermelho independente do resto.
+            if (respondidas >= 20) {
+                estadoProjecao = "vermelho";
+                return;
+            }
+            // Reta final (15-19): ainda pode melhorar/piorar, mas o foco é terminar.
+            // ⚠️ NUNCA usar "=== 15" — o estado precisa persistir até 20.
+            if (respondidas >= 15) {
+                estadoProjecao = "vermelho";
+                return;
+            }
+
+            // Zona normal: compara projeção com referências.
+            const lider   = Number(recordeLiderProjecao) || 0;
+            const pessoal = Number(recordePessoalProjecao) || 0;
+
+            if (lider > 0 && projecaoAtual > lider) {
+                estadoProjecao = "roxo";
+            } else if (projecaoAtual > pessoal) {
+                estadoProjecao = "verde";
+            } else {
+                estadoProjecao = "amarelo";
+            }
+        } catch (e) {
+            console.warn("F1 calcularProjecaoAtual:", e);
+            projecaoAtual = 0;
+            estadoProjecao = "cinza";
+        }
+    }
+
+    // 3) Renderiza a barra no DOM: cor, largura e texto.
+    //    Chamado por atualizarStatus() (Bloco 9) a cada resposta.
+    function atualizarBarraProjecao() {
+        try {
+            const wrap = document.getElementById("f1-barra-wrap");
+            const fill = document.getElementById("f1-barra-fill");
+            const txt  = document.getElementById("f1-barra-txt");
+            if (!wrap || !fill || !txt) return; // Bloco 4 não aplicado
+
+            // Em treino (identificado ou anônimo), a barra não aparece
+            // — a projeção compara com recordes oficiais e confundiria o aluno.
+            if (typeof modoTreino !== "undefined" && modoTreino) {
+                wrap.style.display = "none";
+                return;
+            }
+            if (typeof treinoAnonimo !== "undefined" && treinoAnonimo) {
+                wrap.style.display = "none";
+                return;
+            }
+            wrap.style.display = ""; // garante visível em partida oficial
+
+            calcularProjecaoAtual();
+
+            // Cor: remove todas as classes de estado e aplica a atual.
+            fill.classList.remove("f1-cinza", "f1-roxo", "f1-verde", "f1-amarelo", "f1-vermelho", "brilho-retafinal");
+            fill.classList.add("f1-" + estadoProjecao);
+            if (estadoProjecao === "vermelho") fill.classList.add("brilho-retafinal");
+
+            // Largura: projeta em cima do maior recorde conhecido. Se não há
+            // nenhum recorde ainda, largura 0 (nada para comparar).
+            const maiorRecorde = Math.max(
+                Number(recordeLiderProjecao) || 0,
+                Number(recordePessoalProjecao) || 0
+            );
+            let widthPct = 0;
+            if (maiorRecorde > 0) {
+                widthPct = Math.min(100, (projecaoAtual / maiorRecorde) * 100);
+            }
+            fill.style.width = widthPct.toFixed(1) + "%";
+
+            // Texto: diferente por estado/fase.
+            const respondidas = (Number(acertos) || 0) + (Number(erros) || 0);
+            if (respondidas >= 20) {
+                txt.textContent = "🏁 LINHA DE CHEGADA! Conferindo resultado...";
+            } else if (estadoProjecao === "vermelho") {
+                txt.textContent = `🏁 RETA FINAL: Faltam ${20 - respondidas} perguntas!`;
+            } else if (estadoProjecao === "cinza") {
+                txt.textContent = "Projeção: — pts";
+            } else {
+                txt.textContent = `Projeção: ${projecaoAtual.toLocaleString("pt-BR")} pts`;
+            }
+        } catch (e) {
+            console.warn("F1 atualizarBarraProjecao:", e);
+        }
+    }
+
+    // 4) Mostra o splash de bandeirada. Puramente "show" — o delay
+    //    e o hide são responsabilidade do Bloco 10 (finalizarCircuito).
+    //    Mantida como async para consistência com chamadas via await.
+    async function mostrarSplashBandeirada() {
+        try {
+            const el = document.getElementById("f1-splash-bandeirada");
+            if (!el) return;
+            el.classList.remove("hidden");
+        } catch (e) {
+            console.warn("F1 mostrarSplashBandeirada:", e);
+        }
+    }
+
+    // 5) Esconde o splash e limpa o status (para o próximo uso começar limpo).
+    function esconderSplashBandeirada() {
+        try {
+            const el = document.getElementById("f1-splash-bandeirada");
+            if (el) el.classList.add("hidden");
+            const st = document.getElementById("f1-splash-status");
+            if (st) st.textContent = "";
+        } catch (e) {
+            console.warn("F1 esconderSplashBandeirada:", e);
+        }
+    }
+    // ▲▲▲ FIM [19.09]
+
     // ▼▼▼ Correção: Funções de Gerenciamento de Alunos e CSV ▼▼▼
     let alunosParaGerenciar = [];
 
