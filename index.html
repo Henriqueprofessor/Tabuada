@@ -132,7 +132,14 @@
 
         /* ▼▼▼ [02.05] Jogo ──────────────────────────────────── */
         #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
-        #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear; }
+                #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear, background 0.3s ease; }
+        
+        /* Cores da Projeção F1 aplicadas na Barra de Tempo */
+        .barra-tempo-cinza   { background: #64748b !important; }
+        .barra-tempo-amarelo { background: #fbbf24 !important; }
+        .barra-tempo-verde   { background: #10b981 !important; }
+        .barra-tempo-roxo    { background: #a855f7 !important; }
+        .barra-tempo-vermelho { background: #ef4444 !important; animation: pulse-bloco 1s infinite; }
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; transition: background 0.2s; }
         #pergunta.erro-visual { animation: shake-pergunta 0.3s ease; }
         @keyframes shake-pergunta { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
@@ -18927,29 +18934,15 @@ function abrirBuscarAlunoComMeusDados() {
     function iniciarCronometro() {
         tempoInicio = performance.now();
         const pr = document.getElementById("progresso");
-        if (pr) { 
-            pr.style.width = "100%"; 
-            pr.style.background = "#198754"; // Começa Verde
-        }
+        if (pr) { pr.style.width = "100%"; }
         let t = 10000;
         clearInterval(timerInterval); clearTimeout(timerTimeout);
         timerInterval = setInterval(() => {
             if (finalizando) return;
             t -= 100;
             const pct = Math.max(t / 10000 * 100, 0);
-            
-            if (pr) {
-                pr.style.width = pct + "%";
-                
-                // ⚠️ Lógica de cores da barra de tempo:
-                if (pct <= 20) {
-                    pr.style.background = "#dc3545"; // Vermelho (Últimos 2 segundos)
-                } else if (pct <= 50) {
-                    pr.style.background = "#ffc107"; // Amarelo (Metade do tempo)
-                } else {
-                    pr.style.background = "#198754"; // Verde (Tempo tranquilo)
-                }
-            }
+            // Apenas diminui a barra. A cor agora é controlada pela projeção.
+            if (pr) pr.style.width = pct + "%";
         }, 100);
         timerTimeout = setTimeout(() => { if (perguntaAberta) processarResposta(0, false, 10); }, 10000);
     }
@@ -29359,55 +29352,29 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     //    Chamado por atualizarStatus() (Bloco 9) a cada resposta.
     function atualizarBarraProjecao() {
         try {
-            const wrap = document.getElementById("f1-barra-wrap");
-            const fill = document.getElementById("f1-barra-fill");
-            const txt  = document.getElementById("f1-barra-txt");
-            if (!wrap || !fill || !txt) return; // Bloco 4 não aplicado
+            const barraTempo = document.getElementById("progresso");
+            if (!barraTempo) return;
 
-            // Em treino (identificado ou anônimo), a barra não aparece
-            // — a projeção compara com recordes oficiais e confundiria o aluno.
+            // Limpa as classes de cor anteriores
+            barraTempo.classList.remove("barra-tempo-cinza", "barra-tempo-roxo", "barra-tempo-verde", "barra-tempo-amarelo", "barra-tempo-vermelho");
+
+            // Em modo treino, a barra fica azul (cor padrão do app) para não confundir com ranking
             if (typeof modoTreino !== "undefined" && modoTreino) {
-                wrap.style.display = "none";
+                barraTempo.style.background = "#0ea5e9"; 
                 return;
             }
-            if (typeof treinoAnonimo !== "undefined" && treinoAnonimo) {
-                wrap.style.display = "none";
-                return;
-            }
-            wrap.style.display = ""; // garante visível em partida oficial
 
             calcularProjecaoAtual();
 
-            // Cor: remove todas as classes de estado e aplica a atual.
-            fill.classList.remove("f1-cinza", "f1-roxo", "f1-verde", "f1-amarelo", "f1-vermelho", "brilho-retafinal");
-            fill.classList.add("f1-" + estadoProjecao);
-            if (estadoProjecao === "vermelho") fill.classList.add("brilho-retafinal");
-
-            // Largura: projeta em cima do maior recorde conhecido. Se não há
-            // nenhum recorde ainda, largura 0 (nada para comparar).
-            const maiorRecorde = Math.max(
-                Number(recordeLiderProjecao) || 0,
-                Number(recordePessoalProjecao) || 0
-            );
-            let widthPct = 0;
-            if (maiorRecorde > 0) {
-                widthPct = Math.min(100, (projecaoAtual / maiorRecorde) * 100);
-            }
-            fill.style.width = widthPct.toFixed(1) + "%";
-
-            // Texto: diferente por estado/fase.
-            const respondidas = (Number(acertos) || 0) + (Number(erros) || 0);
-            if (respondidas >= 20) {
-                txt.textContent = "🏁 LINHA DE CHEGADA! Conferindo resultado...";
-            } else if (estadoProjecao === "vermelho") {
-                txt.textContent = `🏁 RETA FINAL: Faltam ${20 - respondidas} perguntas!`;
-            } else if (estadoProjecao === "cinza") {
-                txt.textContent = "Projeção: — pts";
-            } else {
-                txt.textContent = `Projeção: ${projecaoAtual.toLocaleString("pt-BR")} pts`;
-            }
+            // Aplica a classe correspondente à projeção
+            if (estadoProjecao === "cinza")        barraTempo.classList.add("barra-tempo-cinza");
+            else if (estadoProjecao === "roxo")    barraTempo.classList.add("barra-tempo-roxo");
+            else if (estadoProjecao === "verde")   barraTempo.classList.add("barra-tempo-verde");
+            else if (estadoProjecao === "amarelo") barraTempo.classList.add("barra-tempo-amarelo");
+            else if (estadoProjecao === "vermelho")barraTempo.classList.add("barra-tempo-vermelho");
+            
         } catch (e) {
-            console.warn("F1 atualizarBarraProjecao:", e);
+            console.warn("Erro ao atualizar cor da barra:", e);
         }
     }
 
