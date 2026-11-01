@@ -29581,6 +29581,53 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
     // ▲▲▲ FIM Correção ▼▲▲
+
+    // ▼▼▼ Funções do Modal de Consentimento Retroativo (LGPD) ───────────
+    function fecharConsentimentoRetroativo(e) {
+        if (e && e.target && e.target.closest(".modal-card")) return;
+        const modal = document.getElementById("modal-consentimento-retroativo");
+        if (modal) modal.classList.add("hidden");
+    }
+
+    async function confirmarConsentimentoRetroativo() {
+        const chk = document.getElementById("aceite-lgpd-retroativo");
+        if (!chk || !chk.checked) {
+            notificar("Você precisa marcar a caixa de aceite para continuar.", "aviso");
+            return;
+        }
+        
+        const nome = obterNomeSalvoAluno();
+        const turma = obterTurmaSalvaAluno();
+        
+        if (!nome || !turma) {
+            fecharConsentimentoRetroativo();
+            mostrarTela("tela-single");
+            return;
+        }
+        
+        try {
+            // Salva o consentimento no Firebase
+            await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).set({
+                aceito: true,
+                data: Date.now(),
+                versao: "1.0"
+            });
+            
+            fecharConsentimentoRetroativo();
+            notificar("Aceite registrado! Bom jogo.", "sucesso");
+            
+            // Chama a função de jogar novamente. 
+            // Como o consentimento agora está salvo no banco, a verificação vai passar
+            // e o fluxo seguirá normalmente para a tela de preparação da partida.
+            registrarAluno(false); 
+            
+        } catch(e) {
+            console.warn("Falha ao salvar consentimento retroativo:", e);
+            notificar("Erro ao salvar o aceite. Verifique sua conexão e tente novamente.", "erro");
+        }
+    }
+    // ▲▲▲ FIM Funções do Modal de Consentimento Retroativo
+
     </script>
 </body>
 </html>
