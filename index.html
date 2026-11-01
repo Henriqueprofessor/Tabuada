@@ -9173,6 +9173,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         /* ▲▲▲ FIM [02.89] */
 
         /* ▼▼▼ [02.90] Barra de Projeção F1 (5 estados) ──────── INÍCIO ─── */
+        /* ⚠️ Oculta a barra de projeção para deixar a tela mais limpa */
+        .f1-barra-wrap {
+            display: none !important;
+        }
         /* v10.14.0 · Experiência F1 — Bloco 1 de 12.
            Barra fina horizontal dentro de #tela-jogo, logo acima do
            container da pergunta. Comunica em tempo real a projeção de
@@ -18923,16 +18927,29 @@ function abrirBuscarAlunoComMeusDados() {
     function iniciarCronometro() {
         tempoInicio = performance.now();
         const pr = document.getElementById("progresso");
-        if (pr) { pr.style.width = "100%"; pr.style.background = "#198754"; }
+        if (pr) { 
+            pr.style.width = "100%"; 
+            pr.style.background = "#198754"; // Começa Verde
+        }
         let t = 10000;
         clearInterval(timerInterval); clearTimeout(timerTimeout);
         timerInterval = setInterval(() => {
             if (finalizando) return;
             t -= 100;
             const pct = Math.max(t / 10000 * 100, 0);
-            if (pr) pr.style.width = pct + "%";
-            if (pct < 40 && pr) pr.style.background = "#dc3545";
-            else if (pr && t > 2000) pr.style.background = "#198754";
+            
+            if (pr) {
+                pr.style.width = pct + "%";
+                
+                // ⚠️ Lógica de cores da barra de tempo:
+                if (pct <= 20) {
+                    pr.style.background = "#dc3545"; // Vermelho (Últimos 2 segundos)
+                } else if (pct <= 50) {
+                    pr.style.background = "#ffc107"; // Amarelo (Metade do tempo)
+                } else {
+                    pr.style.background = "#198754"; // Verde (Tempo tranquilo)
+                }
+            }
         }, 100);
         timerTimeout = setTimeout(() => { if (perguntaAberta) processarResposta(0, false, 10); }, 10000);
     }
@@ -19379,14 +19396,15 @@ function abrirBuscarAlunoComMeusDados() {
 
             // ▼ Experiência F1 — Splash de bandeirada (Bloco 10)
             // Envolve a transição para a tela de resultado: mostra a
-            // bandeira quadriculada + "CRUZANDO A LINHA" por 1.5s
+            // bandeira quadriculada + "CRUZANDO A LINHA" por 2.0s
             // (200ms em prefers-reduced-motion). O splash de posição
             // fica por baixo (z 9000 vs 9999) e volta a aparecer
             // quando a bandeirada desaparece.
             try {
                 mostrarSplashBandeirada();
                 const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                await new Promise(r => setTimeout(r, reduzido ? 200 : 1500));
+                // ⚠️ Aumentado de 1500 para 2800 milissegundos
+                await new Promise(r => setTimeout(r, reduzido ? 200 : 2800));
                 esconderSplashBandeirada();
             } catch(e) {
                 console.warn("F1 splash bandeirada:", e);
