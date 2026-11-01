@@ -19389,16 +19389,14 @@ function abrirBuscarAlunoComMeusDados() {
 
     // ▼▼▼ [14.09] Preenchimento do resultado ────────────────────────────
     // v10.14.0 · Experiência F1 — Bloco 11 de 12.
-    // v10.14.1 · Refinamento cosmético — o texto de cada card agora
-    // descreve COMO o aluno chegou àquele resultado, em vez de usar
+    // v10.14.1 · Refinamento cosmético — gerarCardsComparacao() agora
+    // diferencia COMO o aluno chegou a cada card, em vez de usar
     // sempre a mesma frase fixa:
-    //   🟣 .card-lider           → subdividido em 3 textos:
-    //        · turma vazia             → "PRIMEIRO DA TURMA! · Placar aberto"
-    //        · bateu o líder anterior  → "SUPERAÇÃO! · Você bateu o líder (X pts)"
-    //        · empatou com o líder     → "TOPO MANTIDO! · Você segue no 1º lugar"
-    //   🟢 .card-recorde-pessoal → subdividido em 2 textos:
-    //        · primeira partida do aluno → "ESTREIA REGISTRADA · Seu primeiro resultado"
-    //        · recorde pessoal batido    → "NOVO RECORDE PESSOAL · X pts"
+    //   🟣 .card-lider: lider===0       → "PRIMEIRO DA TURMA!"
+    //                   pontos > lider  → "SUPERAÇÃO!"
+    //                   pontos===lider  → "TOPO MANTIDO!"
+    //   🟢 .card-recorde-pessoal: pessoal===0 → "ESTREIA REGISTRADA"
+    //                            pessoal > 0  → "NOVO RECORDE PESSOAL"
     //   🟠 .card-recorde-mantido → caso contrário
     // Os valores recordeLiderProjecao / recordePessoalProjecao são
     // carregados no início da partida (Blocos 8 e 12) e representam o
@@ -19409,19 +19407,15 @@ function abrirBuscarAlunoComMeusDados() {
         const pessoal = Number(recordePessoalProjecao) || 0;
 
         // Card roxo: aluno está (ou passou a estar) no topo da turma.
-        // O texto abaixo diferencia COMO ele chegou lá.
         const bateuLider = pontos > 0 && pontos >= lider;
 
         if (bateuLider) {
             let labelLider;
             if (lider === 0) {
-                // Turma ainda sem placar — este é o primeiro resultado registrado.
                 labelLider = "PRIMEIRO DA TURMA! · Placar aberto";
             } else if (pontos > lider) {
-                // Superou o líder anterior de verdade.
                 labelLider = `SUPERAÇÃO! · Você bateu o líder (${lider.toLocaleString("pt-BR")} pts)`;
             } else {
-                // Empatou com o líder (que pode ser ele mesmo ou outro aluno).
                 labelLider = "TOPO MANTIDO! · Você segue no 1º lugar";
             }
 
@@ -19450,24 +19444,6 @@ function abrirBuscarAlunoComMeusDados() {
         }
 
         // Card laranja: não bateu nem líder nem recorde pessoal.
-        return `<div class="cards-comparacao">
-            <div class="card-podio card-recorde-mantido">
-                <div class="card-icon">🟠</div>
-                <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
-                <div class="card-label">RECORDE MANTIDO · Seu recorde: ${pessoal.toLocaleString("pt-BR")} pts</div>
-            </div>
-        </div>`;
-    }
-        if (pontos > pessoal) {
-            return `<div class="cards-comparacao">
-                <div class="card-podio card-recorde-pessoal">
-                    <div class="card-icon">🟢</div>
-                    <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
-                    <div class="card-label">NOVO RECORDE PESSOAL · ${pontos.toLocaleString("pt-BR")} pts</div>
-                </div>
-            </div>`;
-        }
-
         return `<div class="cards-comparacao">
             <div class="card-podio card-recorde-mantido">
                 <div class="card-icon">🟠</div>
