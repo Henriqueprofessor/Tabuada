@@ -26578,10 +26578,16 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         try {
             await Promise.all([ obterModoEvento(), obterModoClassificatoria() ]);
             if (typeof atualizarHeaderModoEvento === "function") atualizarHeaderModoEvento();
+            
+            // ⚠️ CORREÇÃO DO BUG: Força a re-renderização da Home com as configurações corretas
+            // (Modo Classificatória Única e Modo Evento) para evitar que a tela inicial
+            // mostre as 3 modalidades e botões bloqueados no primeiro carregamento.
+            if (typeof atualizarTelaInicialComEtapa === "function") {
+                await atualizarTelaInicialComEtapa();
+            }
         } catch (e) {
             console.warn("[Boot] Falha ao carregar configurações de modo:", e);
         }
-
         (async () => {
             try {
                 await verificarEIniciarEtapaSeNecessario();
