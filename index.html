@@ -55,7 +55,6 @@
     <link rel="dns-prefetch" href="https://copa-tabuada-ceib-default-rtdb.firebaseio.com">
 
     <!-- ▼ [P35] Confetti com defer (não bloqueia a renderização) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js"></script>
     <style>
         /* ▼▼▼ [02.01] Reset e base ──────────────────────────── */
         * { box-sizing: border-box; }
@@ -12081,6 +12080,31 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [07.01]
 
     // ▼▼▼ [07.02] Notificações e toasts ────────────────────────── INÍCIO ───
+    let _confettiCarregado = false;
+    let _confettiPromise = null;
+
+    // Carrega o script do confetti sob demanda (apenas quando precisar soltar os confetes)
+    function carregarConfetti() {
+        if (_confettiCarregado) return Promise.resolve();
+        if (_confettiPromise) return _confettiPromise;
+
+        _confettiPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js';
+            script.async = true;
+            script.onload = () => {
+                _confettiCarregado = true;
+                resolve();
+            };
+            script.onerror = () => {
+                _confettiPromise = null; // Permite tentar carregar de novo caso falhe
+                reject(new Error("Falha ao carregar confetti"));
+            };
+            document.head.appendChild(script);
+        });
+        return _confettiPromise;
+    }
+
     function notificar(mensagem, tipo = "info", duracao = 3500) {
         let c = document.getElementById("toast-container");
         if (!c) { c = document.createElement("div"); c.id = "toast-container"; c.className = "toast-container"; document.body.appendChild(c); }
@@ -12105,8 +12129,12 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
         requestAnimationFrame(p);
     }
-    function dispararConfetes() {
+
+    // Modificado para ser async e aguardar o carregamento do script
+    async function dispararConfetes() {
+        try { await carregarConfetti(); } catch(e) { console.warn("[Confetti] Falha ao carregar:", e); return; }
         if (typeof confetti !== 'function') return;
+        
         const fim = Date.now() + 2500;
         (function f() {
             confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#198754','#ffc107','#0066cc'] });
@@ -12115,22 +12143,18 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         })();
         confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 }, colors: ['#198754','#ffc107','#0066cc','#fd7e14'] });
     }
-    // ▼ Experiência F1 — fanfarra do líder + confetes roxo/dourado (Bloco 7 de 12)
 
-    // Fanfarra ascendente C5-E5-G5-C6 (triangle, ~140ms por nota).
-    // Silenciosa em erro, respeita somAtivo e prefers-reduced-motion.
+    // ▼ Experiência F1 — fanfarra do líder + confetes roxo/dourado
     function somVitoriaLider() {
         if (!somAtivo) return;
         try {
             if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-        } catch(e) { /* matchMedia pode falhar em navegadores antigos — segue */ }
+        } catch(e) { }
         try {
             const ctx = inicializarAudio();
             if (!ctx) return;
             if (ctx.state === "suspended") {
-                ctx.resume()
-                    .then(() => _tocarFanfarraLider(ctx))
-                    .catch(() => { /* autoplay bloqueado — aceita em silêncio */ });
+                ctx.resume().then(() => _tocarFanfarraLider(ctx)).catch(() => { });
             } else {
                 _tocarFanfarraLider(ctx);
             }
@@ -12141,9 +12165,9 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
 
     function _tocarFanfarraLider(ctx) {
         try {
-            const notas = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6
-            const dur = 0.14;      // duração base de cada nota
-            const sustain = 0.06;  // pequeno sustain após a nota
+            const notas = [523.25, 659.25, 783.99, 1046.50];
+            const dur = 0.14;
+            const sustain = 0.06;
             const base = ctx.currentTime;
             notas.forEach((freq, i) => {
                 const inicio = base + i * dur;
@@ -12165,46 +12189,22 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         }
     }
 
-    // Confetes roxo (#a855f7) + dourado (#fbbf24).
-    // Duas explosões laterais + chuva central por 1.2s.
-    // Usa canvas-confetti (já disponível no <head>).
-    // Silencioso se prefers-reduced-motion ou se a lib não carregou.
-    function dispararConfetesLider() {
+    // Modificado para ser async e aguardar o carregamento do script
+    async function dispararConfetesLider() {
+        try { await carregarConfetti(); } catch(e) { return; }
         try {
             if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-        } catch(e) { /* matchMedia pode falhar — segue */ }
+        } catch(e) { }
         if (typeof confetti !== "function") return;
 
         const cores = ["#a855f7", "#fbbf24", "#c4b5fd", "#fde68a"];
 
         try {
-            // Explosão lateral esquerda
-            confetti({
-                particleCount: 60,
-                angle: 60,
-                spread: 55,
-                origin: { x: 0, y: 0.7 },
-                colors: cores
-            });
-            // Explosão lateral direita
-            confetti({
-                particleCount: 60,
-                angle: 120,
-                spread: 55,
-                origin: { x: 1, y: 0.7 },
-                colors: cores
-            });
-            // Chuva central por ~1.2s
+            confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors: cores });
+            confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors: cores });
             const fim = Date.now() + 1200;
             (function chuva() {
-                confetti({
-                    particleCount: 4,
-                    spread: 90,
-                    origin: { x: 0.5, y: 0 },
-                    colors: cores,
-                    gravity: 1.2,
-                    scalar: 0.9
-                });
+                confetti({ particleCount: 4, spread: 90, origin: { x: 0.5, y: 0 }, colors: cores, gravity: 1.2, scalar: 0.9 });
                 if (Date.now() < fim) requestAnimationFrame(chuva);
             })();
         } catch(e) {
