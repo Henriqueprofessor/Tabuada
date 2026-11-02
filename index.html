@@ -11886,40 +11886,41 @@ verificarVersao();
     // [06] JS-FB · Estado global da aplicação
     // ═══════════════════════════════════════════════════════════════════════
 
-// ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
-let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
-let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
-let treinoAnonimo = false;
-let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
-let chutesRapidos = 0;
-let desempenhoOperacoes = {};
-let mapaFonteUltima = {};
-let mapaFonteAgregada = {};
-let modoVisualizacaoMapa = "agregado";
-let treinoFocoOperacoes = null;
-let treinoListaInteligente = null;
-let treinoFocoAbsoluto = null;
-let aguardandoFeedbackErro = false;
-let promocoesRecentes = [];
-let pilhaDetalhes = [];
-let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
-let alunosData=[], alunosFiltrados=[];
-let melhorMediaAluno = null, mediaTurma = null;
-let somAtivo = true, jaToCouSomSuperacao = false;
-let ultimoMelhorOficial = null, ultimaTentativa = null;
-let votacaoInicioCache = null;
-let votacaoTimerInterval = null;
-let countdownTimerInterval = null;
-let etapaEstadoCache = null;
-let tentativasCancelar = 0; // ⚠️ NOVO: Contador anti-exploit
-// ▼ Experiência F1 — projeção em tempo real (Bloco 6 de 12)
-let recordeLiderProjecao = 0;      // melhor pontuação da turma na mod atual
-let recordePessoalProjecao = 0;    // melhor pontuação do próprio aluno na mod
-let nomeLiderProjecao = "";        // nome do líder (para o card roxo)
-let jaTocouFanfarraLider = false;  // flag anti-repeat do bônus
-let projecaoAtual = 0;             // projeção recalculada a cada resposta
-let estadoProjecao = "cinza";      // cinza|roxo|verde|amarelo|vermelho
-// ▲▲▲ FIM [06.01]
+    // ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
+    let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
+    let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
+    let treinoAnonimo = false;
+    let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
+    let chutesRapidos = 0;
+    let desempenhoOperacoes = {};
+    let mapaFonteUltima = {};
+    let mapaFonteAgregada = {};
+    let modoVisualizacaoMapa = "agregado";
+    let treinoFocoOperacoes = null;
+    let treinoListaInteligente = null;
+    let treinoFocoAbsoluto = null;
+    let aguardandoFeedbackErro = false;
+    let promocoesRecentes = [];
+    let pilhaDetalhes = [];
+    let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
+    let alunosData=[], alunosFiltrados=[];
+    let melhorMediaAluno = null, mediaTurma = null;
+    let somAtivo = true, jaToCouSomSuperacao = false;
+    let ultimoMelhorOficial = null, ultimaTentativa = null;
+    let votacaoInicioCache = null;
+    let votacaoTimerInterval = null;
+    let countdownTimerInterval = null;
+    let etapaEstadoCache = null;
+    let tentativasCancelar = 0; // ⚠️ NOVO: Contador anti-exploit
+    
+    // ▼ Experiência F1 — projeção em tempo real
+    let recordeProximoAlvoProjecao = 0; // Pontuação de quem está imediatamente à frente no ranking
+    let recordePessoalProjecao = 0;     // Melhor pontuação do próprio aluno na modalidade
+    let nomeProximoAlvoProjecao = "";   // Nome de quem está à frente (ou o próprio, se for 1º)
+    let jaTocouFanfarraLider = false;   // Flag anti-repeat do bônus
+    let projecaoAtual = 0;              // Projeção recalculada a cada resposta
+    let estadoProjecao = "cinza";       // cinza|roxo|verde|amarelo|vermelho
+    // ▲▲▲ FIM [06.01]
 
     // ▼▼▼ [06.02] Estado do desempenho ─────────────────────────────────────
     let desempenhoPartidasCache = [];
@@ -29242,28 +29243,9 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [19.08]
 
     // ▼▼▼ [19.09] Motor da Barra F1 + helpers do splash ────── INÍCIO ───
-    // v10.14.0 · Experiência F1 — Bloco 12 de 12.
-    // Cinco funções globais que fazem a barra de projeção (CSS [02.90],
-    // HTML [03.06]) e o splash de bandeirada (CSS [02.92], HTML [04.36])
-    // funcionarem em conjunto com a finalização (Bloco 10).
-    //
-    // Todas try/catch. Nenhuma cria CSS/HTML. Nenhuma toca som/confete
-    // (isso é [07.02]).
-    //
-    // Reutiliza funções existentes de ranking:
-    //   • obterRankingPorPontos(mod, turma)
-    //   • obterHistoricoAluno(nome, turma, mod)
-    //   • modalidadeClassificatoriaUnicaAtiva()
-    //
-    // v10.14.1 · Refinamento cosmético — mostrarSplashBandeirada() agora
-    // preenche #f1-splash-status com "Preparando seu resultado…". Antes o
-    // elemento existia, tinha CSS reservando espaço e aria-live configurado,
-    // mas nunca recebia texto (ficava um vazio visível abaixo do título).
-    // esconderSplashBandeirada() já limpa o status — o próximo uso começa
-    // sempre limpo, sem resíduo.
+    // v10.14.2 · Implementada a "Trava do Roxo": a barra só atinge o estado
+    // roxo a partir da 10ª pergunta. Antes disso, o teto é o verde.
 
-    // 1) Carrega o líder da turma + recorde pessoal na modalidade ativa.
-    //    Chamado por iniciarPartidaClassificatoria (Bloco 8) antes da 1ª pergunta.
     async function carregarRecordesParaProjecao() {
         recordeProximoAlvoProjecao = 0;
         recordePessoalProjecao = 0;
@@ -29310,22 +29292,23 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             console.warn("F1 carregarRecordesParaProjecao:", e);
         }
     }
-    // 2) Calcula a projeção atual (pontos escalados para 20 perguntas) e o estado.
-    //    Regra de estado: cinza (aquecimento) → amarelo/verde/roxo → vermelho (reta final).
+
     function calcularProjecaoAtual() {
         try {
             const pontos      = Number(pontosAcumulados) || 0;
             const respondidas = (Number(acertos) || 0) + (Number(erros) || 0);
 
+            // 1. Aquecimento (menos de 4 respostas)
             if (respondidas < 4) {
                 projecaoAtual = 0;
                 estadoProjecao = "cinza";
                 return;
             }
 
+            // 2. Calcula a projeção final (média atual * 20)
             projecaoAtual = Math.round((pontos / respondidas) * 20);
 
-            // Reta final (vermelho)
+            // 3. Reta final (últimas 5 perguntas)
             if (respondidas >= 15) {
                 estadoProjecao = "vermelho";
                 return;
@@ -29333,12 +29316,16 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 
             const alvo    = Number(recordeProximoAlvoProjecao) || 0;
             const pessoal = Number(recordePessoalProjecao) || 0;
+            // O alvo real é o maior valor entre o colega à frente e o seu próprio recorde.
+            const alvoReal = Math.max(alvo, pessoal);
 
-            // Regra das cores:
-            if (alvo > 0 && projecaoAtual > alvo) {
-                estadoProjecao = "roxo"; // Vai ultrapassar o próximo (ou o próprio recorde, se for 1º)
-            } else if (projecaoAtual > pessoal) {
-                estadoProjecao = "verde"; // Vai bater o recorde pessoal, mas não alcança o alvo
+            // ⚠️ TRAVA DO ROXO: A barra só pode ficar roxa a partir da 10ª pergunta.
+            const podeFicarRoxo = respondidas >= 10;
+
+            if (podeFicarRoxo && alvoReal > 0 && projecaoAtual > alvoReal) {
+                estadoProjecao = "roxo"; // Vai bater o alvo real e o colega à frente
+            } else if (pessoal > 0 && projecaoAtual > pessoal) {
+                estadoProjecao = "verde"; // Vai bater o recorde pessoal, mas o Roxo está travado ou não alcança o alvo
             } else {
                 estadoProjecao = "amarelo"; // Projeção normal
             }
@@ -29350,8 +29337,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
 
-    // 3) Renderiza a barra no DOM: cor, largura e texto.
-    //    Chamado por atualizarStatus() (Bloco 9) a cada resposta.
     function atualizarBarraProjecao() {
         try {
             const barraTempo = document.getElementById("progresso");
@@ -29380,15 +29365,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
 
-    // 4) Mostra o splash de bandeirada. Puramente "show" — o delay
-    //    e o hide são responsabilidade do Bloco 10 (finalizarCircuito).
-    //    Mantida como async para consistência com chamadas via await.
-    //
-    //    v10.14.1 · Preenche #f1-splash-status com uma mensagem honesta
-    //    do que está acontecendo neste ponto do fluxo. A posição já foi
-    //    calculada em atualizarSplashPosicao() antes desta chamada, então
-    //    "Calculando sua posição…" seria mentira — usamos "Preparando
-    //    seu resultado…" para comunicar o que o aluno realmente espera.
     async function mostrarSplashBandeirada() {
         try {
             const el = document.getElementById("f1-splash-bandeirada");
@@ -29401,7 +29377,6 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
         }
     }
 
-    // 5) Esconde o splash e limpa o status (para o próximo uso começar limpo).
     function esconderSplashBandeirada() {
         try {
             const el = document.getElementById("f1-splash-bandeirada");
