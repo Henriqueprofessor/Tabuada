@@ -11886,40 +11886,40 @@ verificarVersao();
     // [06] JS-FB · Estado global da aplicação
     // ═══════════════════════════════════════════════════════════════════════
 
-    // ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
-    let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
-    let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
-    let treinoAnonimo = false;
-    let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
-    let chutesRapidos = 0;
-    let desempenhoOperacoes = {};
-    let mapaFonteUltima = {};
-    let mapaFonteAgregada = {};
-    let modoVisualizacaoMapa = "agregado";
-    let treinoFocoOperacoes = null;
-    let treinoListaInteligente = null;
-    let treinoFocoAbsoluto = null;
-    let aguardandoFeedbackErro = false;
-    let promocoesRecentes = [];
-    let pilhaDetalhes = [];
-    let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
-    let alunosData=[], alunosFiltrados=[];
-    let melhorMediaAluno = null, mediaTurma = null;
-    let somAtivo = true, jaToCouSomSuperacao = false;
-    let ultimoMelhorOficial = null, ultimaTentativa = null;
-    let votacaoInicioCache = null;
-    let votacaoTimerInterval = null;
-    let countdownTimerInterval = null;
-    let etapaEstadoCache = null;
-    let tentativasCancelar = 0; // ⚠️ NOVO: Contador anti-exploit
-    // ▼ Experiência F1 — projeção em tempo real (Bloco 6 de 12)
-    let recordeLiderProjecao = 0;      // melhor pontuação da turma na mod atual
-    let recordePessoalProjecao = 0;    // melhor pontuação do próprio aluno na mod
-    let nomeLiderProjecao = "";        // nome do líder (para o card roxo)
-    let jaTocouFanfarraLider = false;  // flag anti-repeat do bônus
-    let projecaoAtual = 0;             // projeção recalculada a cada resposta
-    let estadoProjecao = "cinza";      // cinza|roxo|verde|amarelo|vermelho
-    // ▲▲▲ FIM [06.01]
+// ▼▼▼ [06.01] Estado do jogo ───────────────────────────────────────────
+let alunoAtual="", turmaAtual="", modalidadeAtual="2-5", perguntaAtual=0, pontosAcumulados=0, acertos=0, erros=0, sequenciaAtual=0, maiorSequencia=0;
+let temposCorretas=[], respostaCorreta, tempoInicio, timerInterval, timerTimeout, perguntaAberta=false, jogoAtivo=false, finalizando=false, modoTreino=false;
+let treinoAnonimo = false;
+let desempenhoTabuadas={}, tipoRankingAtual="turma", temposRespostas=[], acertouPrimeira=false, temposRapidos=0;
+let chutesRapidos = 0;
+let desempenhoOperacoes = {};
+let mapaFonteUltima = {};
+let mapaFonteAgregada = {};
+let modoVisualizacaoMapa = "agregado";
+let treinoFocoOperacoes = null;
+let treinoListaInteligente = null;
+let treinoFocoAbsoluto = null;
+let aguardandoFeedbackErro = false;
+let promocoesRecentes = [];
+let pilhaDetalhes = [];
+let perguntasGeradas=[], tabuadaAtualPergunta=null, focoTreinoTabuadas=[], dificuldadesHistoricas={};
+let alunosData=[], alunosFiltrados=[];
+let melhorMediaAluno = null, mediaTurma = null;
+let somAtivo = true, jaToCouSomSuperacao = false;
+let ultimoMelhorOficial = null, ultimaTentativa = null;
+let votacaoInicioCache = null;
+let votacaoTimerInterval = null;
+let countdownTimerInterval = null;
+let etapaEstadoCache = null;
+let tentativasCancelar = 0; // ⚠️ NOVO: Contador anti-exploit
+// ▼ Experiência F1 — projeção em tempo real (Bloco 6 de 12)
+let recordeLiderProjecao = 0;      // melhor pontuação da turma na mod atual
+let recordePessoalProjecao = 0;    // melhor pontuação do próprio aluno na mod
+let nomeLiderProjecao = "";        // nome do líder (para o card roxo)
+let jaTocouFanfarraLider = false;  // flag anti-repeat do bônus
+let projecaoAtual = 0;             // projeção recalculada a cada resposta
+let estadoProjecao = "cinza";      // cinza|roxo|verde|amarelo|vermelho
+// ▲▲▲ FIM [06.01]
 
     // ▼▼▼ [06.02] Estado do desempenho ─────────────────────────────────────
     let desempenhoPartidasCache = [];
@@ -29265,42 +29265,51 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // 1) Carrega o líder da turma + recorde pessoal na modalidade ativa.
     //    Chamado por iniciarPartidaClassificatoria (Bloco 8) antes da 1ª pergunta.
     async function carregarRecordesParaProjecao() {
-        // Reset defensivo (permite rodar sem Bloco 8 aplicado, sem valores obsoletos).
-        recordeLiderProjecao = 0;
+        recordeProximoAlvoProjecao = 0;
         recordePessoalProjecao = 0;
-        nomeLiderProjecao = "";
+        nomeProximoAlvoProjecao = "";
+        
         try {
             const nome  = obterNomeSalvoAluno();
             const turma = obterTurmaSalvaAluno();
             if (!nome || !turma) return;
 
-            // Modalidade ativa: prioriza Modo Classificatória Única; senão a modalidade atual.
             const modUnica = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
-                ? modalidadeClassificatoriaUnicaAtiva()
-                : null;
+                ? modalidadeClassificatoriaUnicaAtiva() : null;
             const mod = modUnica || modalidadeAtual || "0-10";
 
-            // Líder da turma (ranking já ordenado por pontos).
-            const rankingTurma = await obterRankingPorPontos(mod, turma).catch(() => []);
-            if (Array.isArray(rankingTurma) && rankingTurma.length > 0) {
-                const lider = rankingTurma[0];
-                recordeLiderProjecao = Number(lider.pontos) || 0;
-                nomeLiderProjecao   = lider.nome || "";
+            // 1. Descobre o recorde pessoal do aluno
+            const historico = await obterHistoricoAluno(nome, turma, mod).catch(() => []);
+            if (historico.length > 0) {
+                recordePessoalProjecao = historico.reduce(
+                    (max, p) => Math.max(max, Number(p.pontos) || 0), 0
+                );
             }
 
-            // Recorde pessoal: maior pontuação do aluno na modalidade.
-            const historico = await obterHistoricoAluno(nome, turma, mod).catch(() => []);
-            if (Array.isArray(historico) && historico.length > 0) {
-                recordePessoalProjecao = historico.reduce(
-                    (max, p) => Math.max(max, Number(p.pontos) || 0),
-                    0
-                );
+            // 2. Descobre quem é o próximo alvo no ranking
+            const rankingTurma = await obterRankingPorPontos(mod, turma).catch(() => []);
+            if (rankingTurma.length > 0) {
+                const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
+                
+                if (idx > 0) {
+                    // O aluno está no ranking (ex: 5º lugar, idx=4). O alvo é o de cima (idx=3).
+                    recordeProximoAlvoProjecao = Number(rankingTurma[idx - 1].pontos) || 0;
+                    nomeProximoAlvoProjecao = rankingTurma[idx - 1].nome;
+                } else if (idx === 0) {
+                    // O aluno JÁ É O 1º LUGAR. O alvo é superar o próprio recorde.
+                    recordeProximoAlvoProjecao = recordePessoalProjecao;
+                    nomeProximoAlvoProjecao = nome;
+                } else {
+                    // O aluno não está no ranking ainda. O alvo é o último colocado do ranking.
+                    const ultimo = rankingTurma[rankingTurma.length - 1];
+                    recordeProximoAlvoProjecao = Number(ultimo.pontos) || 0;
+                    nomeProximoAlvoProjecao = ultimo.nome;
+                }
             }
         } catch (e) {
             console.warn("F1 carregarRecordesParaProjecao:", e);
         }
     }
-
     // 2) Calcula a projeção atual (pontos escalados para 20 perguntas) e o estado.
     //    Regra de estado: cinza (aquecimento) → amarelo/verde/roxo → vermelho (reta final).
     function calcularProjecaoAtual() {
@@ -29308,39 +29317,32 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             const pontos      = Number(pontosAcumulados) || 0;
             const respondidas = (Number(acertos) || 0) + (Number(erros) || 0);
 
-            // Aquecimento: menos de 4 respostas → não projeta ainda.
             if (respondidas < 4) {
                 projecaoAtual = 0;
                 estadoProjecao = "cinza";
                 return;
             }
 
-            // Fórmula: (pontos / respondidas) * 20 → projeção hipotética em 20 perguntas.
             projecaoAtual = Math.round((pontos / respondidas) * 20);
 
-            // Linha de chegada: já respondeu tudo → vermelho independente do resto.
-            if (respondidas >= 20) {
-                estadoProjecao = "vermelho";
-                return;
-            }
-            // Reta final (15-19): ainda pode melhorar/piorar, mas o foco é terminar.
-            // ⚠️ NUNCA usar "=== 15" — o estado precisa persistir até 20.
+            // Reta final (vermelho)
             if (respondidas >= 15) {
                 estadoProjecao = "vermelho";
                 return;
             }
 
-            // Zona normal: compara projeção com referências.
-            const lider   = Number(recordeLiderProjecao) || 0;
+            const alvo    = Number(recordeProximoAlvoProjecao) || 0;
             const pessoal = Number(recordePessoalProjecao) || 0;
 
-            if (lider > 0 && projecaoAtual > lider) {
-                estadoProjecao = "roxo";
+            // Regra das cores:
+            if (alvo > 0 && projecaoAtual > alvo) {
+                estadoProjecao = "roxo"; // Vai ultrapassar o próximo (ou o próprio recorde, se for 1º)
             } else if (projecaoAtual > pessoal) {
-                estadoProjecao = "verde";
+                estadoProjecao = "verde"; // Vai bater o recorde pessoal, mas não alcança o alvo
             } else {
-                estadoProjecao = "amarelo";
+                estadoProjecao = "amarelo"; // Projeção normal
             }
+
         } catch (e) {
             console.warn("F1 calcularProjecaoAtual:", e);
             projecaoAtual = 0;
