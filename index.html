@@ -19436,43 +19436,43 @@ function abrirBuscarAlunoComMeusDados() {
     // v10.14.1 · Refinamento cosmético — gerarCardsComparacao() agora
     // diferencia COMO o aluno chegou a cada card, em vez de usar
     // sempre a mesma frase fixa:
-    //   🟣 .card-lider: lider===0       → "PRIMEIRO DA TURMA!"
-    //                   pontos > lider  → "SUPERAÇÃO!"
-    //                   pontos===lider  → "TOPO MANTIDO!"
+    //   🟣 .card-lider: bateu o alvo  → "SUPERAÇÃO!"
+    //                   alvo === 0   → "TOPO MANTIDO!" / "PRIMEIRO DA TURMA!"
     //   🟢 .card-recorde-pessoal: pessoal===0 → "ESTREIA REGISTRADA"
     //                            pessoal > 0  → "NOVO RECORDE PESSOAL"
     //   🟠 .card-recorde-mantido → caso contrário
-    // Os valores recordeLiderProjecao / recordePessoalProjecao são
+    // Os valores recordeProximoAlvoProjecao / recordePessoalProjecao são
     // carregados no início da partida (Blocos 8 e 12) e representam o
     // ESTADO PRÉ-PARTIDA (antes desta tentativa).
     function gerarCardsComparacao(melhor, tent) {
         const pontos  = Number(tent.pontos) || 0;
-        const lider   = Number(recordeLiderProjecao) || 0;
+        const alvo    = Number(recordeProximoAlvoProjecao) || 0;
         const pessoal = Number(recordePessoalProjecao) || 0;
 
-        // Card roxo: aluno está (ou passou a estar) no topo da turma.
-        const bateuLider = pontos > 0 && pontos >= lider;
+        // Card roxo: aluno bateu o alvo (quem estava à frente) OU era o líder e manteve o topo.
+        const bateuAlvo = (alvo > 0 && pontos >= alvo) || (alvo === 0 && pontos > 0);
 
-        if (bateuLider) {
-            let labelLider;
-            if (lider === 0) {
-                labelLider = "PRIMEIRO DA TURMA! · Placar aberto";
-            } else if (pontos > lider) {
-                labelLider = `SUPERAÇÃO! · Você bateu o líder (${lider.toLocaleString("pt-BR")} pts)`;
+        if (bateuAlvo) {
+            let label;
+            if (alvo === 0) {
+                if (pessoal === 0) {
+                    label = "PRIMEIRO DA TURMA! · Placar aberto";
+                } else {
+                    label = "TOPO MANTIDO! · Você segue no 1º lugar";
+                }
             } else {
-                labelLider = "TOPO MANTIDO! · Você segue no 1º lugar";
+                label = `SUPERAÇÃO! · Você bateu a marca de ${alvo.toLocaleString("pt-BR")} pts`;
             }
-
             return `<div class="cards-comparacao">
                 <div class="card-podio card-lider">
                     <div class="card-icon">🟣</div>
                     <div class="card-valor">${pontos.toLocaleString("pt-BR")} pts</div>
-                    <div class="card-label">${labelLider}</div>
+                    <div class="card-label">${label}</div>
                 </div>
             </div>`;
         }
 
-        // Card verde: bateu o recorde pessoal (mas não alcançou o líder).
+        // Card verde: bateu o recorde pessoal, mas não alcançou o alvo.
         if (pontos > pessoal) {
             const labelPessoal = (pessoal === 0)
                 ? "ESTREIA REGISTRADA · Seu primeiro resultado"
