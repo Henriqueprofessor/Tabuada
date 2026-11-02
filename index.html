@@ -131,15 +131,67 @@
         /* ▲▲▲ FIM [02.04] */
 
         /* ▼▼▼ [02.05] Jogo ──────────────────────────────────── */
-        #barra-tempo { width: 100%; height: 16px; background: #e0e0e0; border-radius: 10px; overflow: hidden; margin-bottom: 16px; cursor: help; }
-                #progresso { width: 100%; height: 100%; background: #198754; transition: width 0.1s linear, background 0.3s ease; }
-        
-        /* Cores da Projeção F1 aplicadas na Barra de Tempo */
+        #barra-tempo { 
+            width: 100%; 
+            height: 16px; 
+            background: #e0e0e0; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            margin-bottom: 16px; 
+            cursor: help; 
+        }
+
+        #progresso { 
+            width: 100%; 
+            height: 100%; 
+            background: #198754; 
+            transition: width 0.1s linear, background 0.3s ease; 
+            /* Configuração para posicionar o ícone de acessibilidade na ponta da barra */
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
+            box-sizing: border-box;
+        }
+
+        /* Ícone indicador de cor (Acessibilidade para Daltonismo) */
+        #progresso::after {
+            font-size: 10px;
+            opacity: 0.95;
+            transition: opacity 0.3s ease;
+            line-height: 1;
+        }
+
+        /* Cores e Ícones da Projeção F1 */
         .barra-tempo-cinza   { background: #64748b !important; }
         .barra-tempo-amarelo { background: #fbbf24 !important; }
         .barra-tempo-verde   { background: #10b981 !important; }
         .barra-tempo-roxo    { background: #a855f7 !important; }
-        .barra-tempo-vermelho { background: #ef4444 !important; animation: pulse-bloco 1s infinite; }
+        .barra-tempo-treino  { background: #0ea5e9 !important; } /* Azul para modo treino */
+        
+        .barra-tempo-cinza::after   { content: "⚪"; }
+        .barra-tempo-amarelo::after { content: "🟡"; }
+        .barra-tempo-verde::after   { content: "🟢"; }
+        .barra-tempo-roxo::after    { content: "🟣"; }
+        .barra-tempo-treino::after  { content: "🎯"; }
+        .barra-tempo-vermelho::after{ content: "🔴"; }
+
+        .barra-tempo-vermelho { 
+            background: #ef4444 !important; 
+            animation: pulse-bloco 1s infinite; 
+        }
+
+        /* Respeito à preferência de Movimento Reduzido */
+        @media (prefers-reduced-motion: reduce) {
+            .barra-tempo-vermelho {
+                animation: none !important; /* Desliga o pulso */
+                background: #ef4444 !important; /* Mantém o vermelho sólido */
+            }
+            #progresso {
+                transition: background 0.3s ease;
+            }
+        }
+
         #pergunta { font-size: 42px; font-weight: bold; margin: 20px 0; padding: 20px; border-radius: 12px; transition: background 0.2s; }
         #pergunta.erro-visual { animation: shake-pergunta 0.3s ease; }
         @keyframes shake-pergunta { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
@@ -29243,8 +29295,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     // ▲▲▲ FIM [19.08]
 
     // ▼▼▼ [19.09] Motor da Barra F1 + helpers do splash ────── INÍCIO ───
-    // v10.14.2 · Implementada a "Trava do Roxo": a barra só atinge o estado
-    // roxo a partir da 10ª pergunta. Antes disso, o teto é o verde.
+    // v10.14.2 · Implementada a "Trava do Roxo" e correção do modo treino.
 
     async function carregarRecordesParaProjecao() {
         recordeProximoAlvoProjecao = 0;
@@ -29274,7 +29325,7 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
                 const idx = rankingTurma.findIndex(r => normalizarNome(r.nome) === normalizarNome(nome) && r.turma === turma);
                 
                 if (idx > 0) {
-                    // O aluno está no ranking (ex: 5º lugar, idx=4). O alvo é o de cima (idx=3).
+                    // O aluno está no ranking. O alvo é o de cima.
                     recordeProximoAlvoProjecao = Number(rankingTurma[idx - 1].pontos) || 0;
                     nomeProximoAlvoProjecao = rankingTurma[idx - 1].nome;
                 } else if (idx === 0) {
@@ -29342,12 +29393,16 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
             const barraTempo = document.getElementById("progresso");
             if (!barraTempo) return;
 
-            // Limpa as classes de cor anteriores
-            barraTempo.classList.remove("barra-tempo-cinza", "barra-tempo-roxo", "barra-tempo-verde", "barra-tempo-amarelo", "barra-tempo-vermelho");
+            // Limpa as classes de cor anteriores (incluindo a de treino)
+            barraTempo.classList.remove(
+                "barra-tempo-cinza", "barra-tempo-roxo", "barra-tempo-verde", 
+                "barra-tempo-amarelo", "barra-tempo-vermelho", "barra-tempo-treino"
+            );
 
-            // Em modo treino, a barra fica azul (cor padrão do app) para não confundir com ranking
+            // ⚠️ CORREÇÃO: Em modo treino, aplica a classe azul e encerra a função.
+            // Não calcula projeção, pois treino não vale ranking.
             if (typeof modoTreino !== "undefined" && modoTreino) {
-                barraTempo.style.background = "#0ea5e9"; 
+                barraTempo.classList.add("barra-tempo-treino");
                 return;
             }
 
