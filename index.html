@@ -19389,15 +19389,15 @@ function abrirBuscarAlunoComMeusDados() {
 
             // ▼ Experiência F1 — Splash de bandeirada (Bloco 10)
             // Envolve a transição para a tela de resultado: mostra a
-            // bandeira quadriculada + "CRUZANDO A LINHA" por 1.5s
+            // bandeira quadriculada + "CRUZANDO A LINHA" por 1 segundo
             // (200ms em prefers-reduced-motion). O splash de posição
             // fica por baixo (z 9000 vs 9999) e volta a aparecer
             // quando a bandeirada desaparece.
             try {
                 mostrarSplashBandeirada();
                 const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-                // ⚠️ Aumentado de 1500 para 2800 milissegundos
-                await new Promise(r => setTimeout(r, reduzido ? 200 : 2800));
+                // ⚠️ Duração: 1 segundo (200ms em prefers-reduced-motion)
+                await new Promise(r => setTimeout(r, reduzido ? 200 : 1000));
                 esconderSplashBandeirada();
             } catch(e) {
                 console.warn("F1 splash bandeirada:", e);
