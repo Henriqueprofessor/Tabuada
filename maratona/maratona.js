@@ -224,14 +224,13 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
 // ▲▲▲ FIM [M.03]
 
 
-// ▼▼▼ [M.04] render() + controller + esqueleto + erro ───────────── INÍCIO ───
+// ▼▼▼ [M.04] render() + controller + esqueleto + erro (v2 — Fase 1) ─ INÍCIO ───
 
 export function render(hostElement, opts) {
     if (!hostElement || !(hostElement instanceof Element)) {
         throw new Error("render() exige um Element DOM como host.");
     }
 
-    // Valida opts ANTES de qualquer coisa
     let optsValidos;
     try {
         optsValidos = _validarOpts(opts);
@@ -243,10 +242,8 @@ export function render(hostElement, opts) {
         };
     }
 
-    // Limpa o host
     try { hostElement.innerHTML = ""; } catch (e) {}
 
-    // Estado interno
     const S = {
         vivo: true,
         host: hostElement,
@@ -256,18 +253,23 @@ export function render(hostElement, opts) {
         deck: _gerarDeckSequencial(),
         blocoAtual: 0,
         indiceNoBloco: 0,
-        indiceGlobal: 0,
         temposBlocos: [],
         inicioBlocoPerf: 0,
+        tempoPausadoMs: 0,
+        pausadoEmPerf: null,
+        pausado: false,
+        cronoInterval: null,
         errosTropecos: [],
+        bonecoX: 20,
+        saindo: false,
         timers: _criarTimerRegistry()
     };
 
-    // Controller
     const controller = {
         destroy: function () {
             if (!S.vivo) return;
             S.vivo = false;
+            try { _pararCronometro(S); } catch (e) {}
             try { S.timers.clearAll(); } catch (e) {}
             try { hostElement.innerHTML = ""; } catch (e) {}
         },
@@ -278,17 +280,15 @@ export function render(hostElement, opts) {
                 eventoId: S.opts.eventoId,
                 blocoAtual: S.blocoAtual,
                 indiceNoBloco: S.indiceNoBloco,
-                indiceGlobal: S.indiceGlobal,
+                indiceGlobal: S.blocoAtual * PERGUNTAS_POR_BLOCO + S.indiceNoBloco,
                 temposBlocos: S.temposBlocos.slice(),
                 errosTropecos: S.errosTropecos.slice()
             };
         }
     };
+    S.controller = controller;
 
-    // Renderiza o esqueleto
     _renderizarEsqueleto(S);
-
-    // CSS + copaApp em background (não bloqueia)
     _garantirCssCarregado().catch(e => console.warn("[Maratona] CSS:", e));
     _esperarCopaApp(5000).then(app => {
         if (!S.vivo) return;
@@ -296,37 +296,21 @@ export function render(hostElement, opts) {
             S.copaApp = app;
             console.info("[Maratona] window.copaApp disponível. Versão:", app.versao);
         } else {
-            console.warn("[Maratona] window.copaApp NÃO ficou disponível em 5s. Verifique se o bloco [19.10] foi aplicado no index.html.");
+            console.warn("[Maratona] window.copaApp NÃO ficou disponível em 5s. Verifique o bloco [19.10] no index.html.");
         }
     });
+
+    _inicializarTelaSelecao(S);
 
     return controller;
 }
 
-// ─── Renderização do esqueleto (4 telas) ───
 function _renderizarEsqueleto(S) {
     const host = S.host;
     if (!host) return;
-
     host.innerHTML = `
         <div class="maratona-app" data-estado="selecao">
-            <div class="maratona-tela maratona-tela-selecao" data-tela="selecao">
-                <div class="maratona-card maratona-card-boas-vindas">
-                    <div class="maratona-kicker">🏁 MÓDULO MARATONA</div>
-                    <h2 class="maratona-titulo">Maratona com Barreiras</h2>
-                    <p class="maratona-sub">
-                        <strong>4 blocos · 40 perguntas</strong> em ordem sequencial.<br>
-                        Fatores fixos por bloco: <strong>2, 3, 4 e 5</strong> · multiplicadores de 1 a 10.
-                    </p>
-                    <p class="maratona-status">
-                        <span class="maratona-dot"></span>
-                        Esqueleto carregado · aguardando Fase 1
-                    </p>
-                    <p class="maratona-nota">
-                        Evento: <code data-evento-id>${_escapeHtml(S.opts.eventoId)}</code>
-                    </p>
-                </div>
-            </div>
+            <div class="maratona-tela maratona-tela-selecao" data-tela="selecao"></div>
             <div class="maratona-tela maratona-tela-jogo hidden" data-tela="jogo"></div>
             <div class="maratona-tela maratona-tela-checkpoint hidden" data-tela="checkpoint"></div>
             <div class="maratona-tela maratona-tela-resultado hidden" data-tela="resultado"></div>
