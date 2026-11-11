@@ -549,30 +549,11 @@ function _completarBloco(S) {
     S.timers.setTimeout(() => {
         if (!S.vivo) return;
         _mostrarTela(S, "checkpoint");
-        _renderizarCheckpointStub(S, tempo);
+        _renderizarCheckpoint(S, tempo); // <-- Chamada para a nova tela (Fase 2)
     }, 700);
 }
 
-function _renderizarCheckpointStub(S, tempo) {
-    const container = S.host.querySelector('[data-tela="checkpoint"]');
-    if (!container) return;
-    const isUltimo = S.blocoAtual >= TOTAL_BLOCOS - 1;
-    const rotuloBtn = isUltimo ? "🏁 Finalizar maratona" : "▶ Continuar";
-    container.innerHTML = `
-        <div class="maratona-card maratona-card-checkpoint">
-            <div class="maratona-kicker">🚧 BARREIRA ${S.blocoAtual + 1} DE ${TOTAL_BLOCOS}</div>
-            <h2 class="maratona-titulo">Bloco ${S.blocoAtual + 1} concluído!</h2>
-            <p class="maratona-sub">Tempo parcial do bloco: <strong>${_formatarTempo(tempo)}</strong></p>
-            <p class="maratona-sub" style="font-size:12.5px;color:var(--m-text-muted);">
-                O cronômetro está pausado. ${isUltimo ? "Você concluiu os 4 blocos!" : "O próximo bloco começa quando você clicar."}
-            </p>
-            <button type="button" class="maratona-btn-continuar" data-btn-continuar>${rotuloBtn}</button>
-        </div>
-    `;
-    const btn = container.querySelector("[data-btn-continuar]");
-    if (btn) btn.addEventListener("click", () => _continuarProximoBloco(S));
-}
-
+// ─── Continuar do checkpoint ───
 function _continuarProximoBloco(S) {
     if (!S.vivo) return;
     if (S.blocoAtual >= TOTAL_BLOCOS - 1) {
@@ -818,3 +799,104 @@ function _animarBonecoPulo(S) {
 }
 
 // ▲▲▲ FIM [M.06]
+
+// ▼▼▼ [M.07] Tela de checkpoint (pulo de barreira) ─────────────── INÍCIO ───
+
+function _renderizarCheckpoint(S, tempo) {
+    const container = S.host.querySelector('[data-tela="checkpoint"]');
+    if (!container) return;
+    const isUltimo = S.blocoAtual >= TOTAL_BLOCOS - 1;
+    const rotuloBtn = isUltimo ? "🏁 Finalizar maratona" : "▶ Continuar";
+    const blocoId = `b${S.blocoAtual + 1}`;
+    
+    // Som de checkpoint
+    _tocarSomCopaApp(S, "somConclusao");
+
+    container.innerHTML = `
+        <div class="maratona-card maratona-card-checkpoint">
+            <div class="maratona-kicker">🚧 BARREIRA ${S.blocoAtual + 1} DE ${TOTAL_BLOCOS}</div>
+            <h2 class="maratona-titulo">Bloco ${S.blocoAtual + 1} concluído!</h2>
+            
+            <div class="maratona-checkpoint-tempo">
+                <div class="maratona-checkpoint-tempo-rotulo">Tempo parcial</div>
+                <div class="maratona-checkpoint-tempo-valor">${_formatarTempo(tempo)}</div>
+            </div>
+
+            <div class="maratona-checkpoint-ranking" data-checkpoint-ranking>
+                <div class="maratona-ranking-loading">⏳ Calculando posição...</div>
+            </div>
+
+            <button type="button" class="maratona-btn-continuar" data-btn-continuar disabled>${rotuloBtn} (aguarde...)</button>
+        </div>
+    `;
+
+    const btn = container.querySelector("[data-btn-continuar]");
+    if (btn) {
+        // Libera o botão após 1,2 segundos
+        S.timers.setTimeout(() => {
+            if (!S.vivo) return;
+            btn.disabled = false;
+            btn.textContent = rotuloBtn;
+        }, 1200);
+        
+        btn.addEventListener("click", () => _continuarProximoBloco(S));
+    }
+
+    // Busca o ranking no Firebase (se disponível)
+    _buscarRankingBloco(S, blocoId);
+}
+
+async function _buscarRankingBloco(S, blocoId) {
+    const container = S.host.querySelector("[data-checkpoint-ranking]");
+    if (!container) return;
+
+    if (!S.copaApp || !S.copaApp.database) {
+        container.innerHTML = `<div class="maratona-ranking-erro">Ranking indisponível offline.</div>`;
+        return;
+    }
+
+    const nome = S.copaApp.obterNomeAluno();
+    const turma = S.copaApp.obterTurmaAluno();
+    if (!nome || !turma) {
+        container.innerHTML = `<div class="maratona-ranking-erro">Identifique-se para ver sua posição.</div>`;
+        return;
+    }
+
+    const chaveAluno = S.copaApp.chaveAluno(nome, turma);
+
+    try {
+        const snap = await S.copaApp.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/marcos/${blocoId}`).once('value');
+        if (!S.vivo) return;
+
+        const marcos = snap.val() || {};
+        const lista = Object.entries(marcos)
+            .map(([k, v]) => ({ chave: k, ...v }))
+            .filter(x => x.tempo != null)
+            .sort((a, b) => a.tempo - b.tempo);
+
+        const index = lista.findIndex(x => x.chave === chaveAluno);
+        
+        if (index !== -1) {
+            const posicao = index + 1;
+            container.innerHTML = `
+                <div class="maratona-ranking-posicao">
+                    <span class="maratona-ranking-icone">🏆</span>
+                    <span>Sua posição neste bloco: <strong>${posicao}º</strong> de ${lista.length}</span>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="maratona-ranking-posicao" style="color:var(--m-text-muted); border-color: rgba(148,163,184,0.3); background: rgba(10,22,40,0.6);">
+                    <span class="maratona-ranking-icone">🏁</span>
+                    <span>Você é o primeiro a registrar este bloco!</span>
+                </div>
+            `;
+        }
+    } catch (e) {
+        if (!S.vivo) return;
+        console.warn("[Maratona] Falha ao buscar ranking:", e);
+        container.innerHTML = `<div class="maratona-ranking-erro">Não foi possível carregar o ranking.</div>`;
+    }
+}
+
+// ▲▲▲ FIM [M.07]
