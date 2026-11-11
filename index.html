@@ -10332,6 +10332,19 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <div id="painel-evento-conteudo"><div class="desempenho-loading">⏳ Carregando dados do evento…</div></div>
                 </div>
 
+                <!-- ▼▼▼ [03.17] PAINEL PROFESSOR — MARATONA ─────────── INÍCIO ─── -->
+                <div class="senha-container" id="painel-maratona-wrapper">
+                    <h4 style="margin-top:0;">🏁 Gerenciar Eventos da Maratona</h4>
+                    <p style="font-size:11.5px;color:#6c757d;margin:0 0 10px 0;line-height:1.5;">
+                        Crie eventos para a Maratona com Barreiras. Apenas <strong>um evento pode estar ativo</strong> por vez.
+                        Quando ativo, o botão "Jogar Maratona" aparece na Home dos alunos.
+                    </p>
+                    <div id="painel-maratona-conteudo">
+                        <div class="desempenho-loading">⏳ Carregando eventos...</div>
+                    </div>
+                </div>
+                <!-- ▲▲▲ FIM [03.17] -->
+
                 <div class="senha-container">
                     <h4 style="margin-top:0;">🗳️ Votação da Etapa</h4>
                     <div id="painel-votacao-conteudo" style="font-size:13px;line-height:1.6;text-align:left;"></div>
@@ -10748,8 +10761,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     </div>
     <!-- ▲▲▲ FIM [03.15] -->
 
-    <!-- ▼▼▼ [03.16] FECHAMENTO DO MARCO PRINCIPAL ─────────────── FIM ─── -->
-    </main>
+    <!-- ▼▼▼ [03.16] TELA MARATONA ────────────────────────── INÍCIO ─── -->
+    <div id="tela-maratona" class="card hidden" style="padding: 0; background: transparent; box-shadow: none;">
+        <!-- O conteúdo será injetado pelo módulo maratona.js -->
+    </div>
     <!-- ▲▲▲ FIM [03.16] -->
 
     <!-- ▼▼▼ [04.36] Overlay do Splash de Bandeirada ──────── INÍCIO ─── -->
@@ -18614,7 +18629,7 @@ function abrirBuscarAlunoComMeusDados() {
     }
     // ▲▲▲ FIM [14.03]
 
-    // ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
+// ▼▼▼ [14.04] Navegação e registro ─────────────────────────────────
     const TELAS_COM_NAV_GLOBAL = new Set([
         "tela-inicial", "tela-mais", "tela-ranking",
         "tela-desempenho", "tela-album", "tela-hall-fama", "tela-perfil",
@@ -18642,7 +18657,7 @@ function abrirBuscarAlunoComMeusDados() {
     }
 
     function mostrarTela(id) {
-        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso","tela-aprender","tela-corrida"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
+        ["tela-inicial","tela-single","tela-jogo","tela-resultado","tela-ranking","tela-perfil","tela-desempenho","tela-painel","tela-preparacao","tela-album","tela-mais","tela-hall-fama","tela-meu-progresso","tela-aprender","tela-corrida","tela-maratona"].forEach(t => { document.getElementById(t)?.classList.add("hidden"); });
         document.getElementById(id)?.classList.remove("hidden");
 
         if (id === "tela-single") {
@@ -18683,6 +18698,7 @@ function abrirBuscarAlunoComMeusDados() {
             renderizarSugestoesIntervencao();
             renderizarPainelEvento();
             renderizarPainelOtimizacao();
+            renderizarPainelMaratona();
         }
         if (id === "tela-mais") {
             atualizarVisibilidadeMenuMais();
@@ -29652,6 +29668,333 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
     };
 })();
 // ▲▲▲ FIM [19.10]
+
+// ▼▼▼ [19.11] Integração: abrirMaratona() + import dinâmico ─── INÍCIO ───
+let _maratonaController = null;
+let _maratonaEventoIdAtivo = null;
+
+// Verifica se há um evento de maratona ativo no Firebase
+async function verificarEventoMaratonaAtivo() {
+    try {
+        const snap = await database.ref('copa_maratona/eventos').once('value');
+        const eventos = snap.val() || {};
+        
+        // Procura um evento com meta.ativo === true
+        for (const [id, dados] of Object.entries(eventos)) {
+            if (dados && dados.meta && dados.meta.ativo === true) {
+                return id;
+            }
+        }
+        return null;
+    } catch (e) {
+        console.info("[Maratona] Falha ao verificar evento ativo (permissão ou offline).");
+        return null;
+    }
+}
+
+// Abre a tela da Maratona e faz o import dinâmico
+async function abrirMaratona() {
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+
+    if (!nome || !turma) {
+        notificar("Você precisa se identificar para jogar a Maratona.", "aviso", 4000);
+        mostrarTela("tela-single");
+        return;
+    }
+
+    // 1. Garante que há um evento ativo
+    notificar("⏳ Verificando evento da Maratona...", "info", 2000);
+    const eventoId = await verificarEventoMaratonaAtivo();
+    
+    if (!eventoId) {
+        notificar("Não há nenhuma Maratona ativa no momento. Aguarde o professor iniciar.", "aviso", 5000);
+        return;
+    }
+
+    // 2. Vai para a tela da maratona
+    mostrarTela("tela-maratona");
+    const host = document.getElementById("tela-maratona");
+    if (!host) return;
+
+    host.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--neon-cyan);">⏳ Carregando módulo Maratona...</div>`;
+
+    try {
+        // 3. Importa o módulo (se ainda não estiver carregado)
+        const modulo = await import('./maratona/maratona.js');
+        
+        // 4. Limpa controller anterior, se houver
+        if (_maratonaController) {
+            _maratonaController.destroy();
+            _maratonaController = null;
+        }
+
+        // 5. Renderiza o módulo
+        host.innerHTML = ""; // Limpa o loading
+        _maratonaController = modulo.render(host, {
+            eventoId: eventoId,
+            onSair: function() {
+                // Chamado quando o aluno sai ou clica em Voltar ao Início
+                mostrarTela("tela-inicial");
+                _maratonaController = null;
+            },
+            onFinalizar: function(resultado) {
+                // Pode ser usado no futuro para salvar dados extras
+                console.info("[Maratona] Resultado final:", resultado);
+            }
+        });
+        _maratonaEventoIdAtivo = eventoId;
+
+    } catch (e) {
+        console.error("[Maratona] Erro ao carregar módulo:", e);
+        host.innerHTML = `
+            <div class="card" style="text-align: center; padding: 40px; margin: 20px auto; max-width: 500px;">
+                <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                <h2 style="color: var(--neon-red);">Erro ao carregar a Maratona</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Verifique sua conexão ou avise o professor.</p>
+                <button onclick="mostrarTela('tela-inicial')" class="botao-verde">Voltar ao Início</button>
+            </div>
+        `;
+    }
+}
+
+// Adiciona o botão na Home dinamicamente para não alterar o HTML estático original
+function injetarBotaoMaratonaNaHome() {
+    const telaInicial = document.getElementById("tela-inicial");
+    if (!telaInicial) return;
+    
+    // Evita duplicação
+    if (document.getElementById("btn-jogar-maratona")) return;
+
+    const container = document.createElement("div");
+    container.id = "maratona-home-container";
+    container.className = "mapa-home-card";
+    container.style.borderLeft = "4px solid var(--neon-gold)"; // Dourado
+    container.style.background = "linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(19,42,71,0.9) 100%)";
+    
+    container.innerHTML = `
+        <div class="mapa-home-titulo" style="color: var(--neon-gold);">
+            🏁 Maratona com Barreiras
+        </div>
+        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+            4 blocos, 40 perguntas e um cronômetro. Vença as barreiras e bata o recorde!
+        </div>
+        <button id="btn-jogar-maratona" class="botao-verde" style="width: 100%; margin: 0; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); box-shadow: 0 3px 0 #7c2d12;" onclick="abrirMaratona()">
+            ▶ Jogar Maratona
+        </button>
+    `;
+
+    // Insere antes do bloco de status da etapa (lá no final da Home)
+    const statusEtapa = telaInicial.querySelector(".home-card:last-of-type");
+    if (statusEtapa) {
+        telaInicial.insertBefore(container, statusEtapa);
+    } else {
+        telaInicial.appendChild(container);
+    }
+    
+    // Verifica se o evento está ativo para mostrar/esconder o botão
+    verificarEventoMaratonaAtivo().then(eventoId => {
+        const btn = document.getElementById("btn-jogar-maratona");
+        if (!eventoId && btn) {
+            container.style.display = "none"; // Esconde se não houver evento ativo
+        } else if (eventoId && btn) {
+            container.style.display = "block";
+        }
+    });
+}
+
+// Chama a injeção quando o DOM estiver pronto
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injetarBotaoMaratonaNaHome);
+} else {
+    injetarBotaoMaratonaNaHome();
+}
+// ▲▲▲ FIM [19.11]
+
+// ▼▼▼ [19.12] Painel do Professor: Gerenciar Maratona ──────── INÍCIO ───
+
+async function renderizarPainelMaratona() {
+    const container = document.getElementById("painel-maratona-conteudo");
+    if (!container) return;
+
+    try {
+        const snap = await database.ref('copa_maratona/eventos').once('value');
+        const eventos = snap.val() || {};
+        
+        // Ordena do mais recente para o mais antigo (baseado no criadoEm)
+        const listaIds = Object.keys(eventos).sort((a, b) => {
+            const ta = eventos[a]?.meta?.criadoEm || 0;
+            const tb = eventos[b]?.meta?.criadoEm || 0;
+            return tb - ta;
+        });
+
+        let html = `
+            <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+                <button onclick="criarEventoMaratona()" class="botao-verde" style="margin:0; flex:1;">➕ Criar Novo Evento</button>
+                <button onclick="renderizarPainelMaratona()" class="botao-secundario" style="margin:0; width:auto; padding:12px 20px;">🔄 Atualizar</button>
+            </div>
+        `;
+
+        if (listaIds.length === 0) {
+            html += `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">Nenhum evento de Maratona criado ainda.</div>`;
+        } else {
+            html += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+            for (const id of listaIds) {
+                const ev = eventos[id];
+                const meta = ev.meta || {};
+                const ativo = meta.ativo === true;
+                
+                const badge = ativo 
+                    ? `<span style="background:rgba(16,185,129,0.2); color:#6ee7b7; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800;">🟢 ATIVO</span>`
+                    : `<span style="background:rgba(148,163,184,0.2); color:#cbd5e1; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:800;">⚪ INATIVO</span>`;
+
+                const dataCriacao = meta.criadoEm ? new Date(meta.criadoEm).toLocaleDateString() : "—";
+
+                html += `
+                    <div style="background:rgba(10,22,40,0.5); border:1px solid var(--border-neon); border-radius:12px; padding:14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                            <div>
+                                <div style="font-weight:800; color:var(--text-primary); font-size:14px;">${escaparHtml(meta.nome || 'Evento sem nome')}</div>
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Criado em: ${dataCriacao} · ID: ${id}</div>
+                            </div>
+                            ${badge}
+                        </div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            ${!ativo 
+                                ? `<button onclick="ativarEventoMaratona('${id}')" class="botao-verde" style="margin:0; flex:1; padding:8px; font-size:12px;">▶ Ativar Evento</button>` 
+                                : `<button onclick="encerrarEventoMaratona('${id}')" class="botao-forcar" style="margin:0; flex:1; padding:8px; font-size:12px; background:#b45309;">⏹ Encerrar Evento</button>`
+                            }
+                            <button onclick="exportarCSVMaratona('${id}')" class="botao-secundario" style="margin:0; flex:1; padding:8px; font-size:12px;">📎 Exportar CSV</button>
+                        </div>
+                    </div>
+                `;
+            }
+            html += `</div>`;
+        }
+
+        container.innerHTML = html;
+    } catch (e) {
+        console.warn("[Painel Maratona] Erro ao carregar:", e);
+        container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar os eventos.</div>`;
+    }
+}
+
+async function criarEventoMaratona() {
+    if (!exigirProfessorAutenticado()) return;
+    const nome = prompt("📛 Nome do evento da Maratona:", "Maratona de Outubro");
+    if (!nome) return;
+
+    try {
+        const novoId = 'maratona_' + Date.now();
+        await database.ref(`copa_maratona/eventos/${novoId}/meta`).set({
+            nome: nome,
+            criadoEm: Date.now(),
+            ativo: false
+        });
+        notificar("Evento criado com sucesso!", "sucesso");
+        renderizarPainelMaratona();
+    } catch (e) {
+        console.warn(e);
+        notificar("Erro ao criar evento.", "erro");
+    }
+}
+
+async function ativarEventoMaratona(id) {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm(`Tem certeza que deseja ATIVAR este evento?\n\nO botão "Jogar Maratona" aparecerá na Home de todos os alunos.`)) return;
+
+    try {
+        const snap = await database.ref('copa_maratona/eventos').once('value');
+        const eventos = snap.val() || {};
+        const updates = {};
+
+        for (const key of Object.keys(eventos)) {
+            if (key === id) {
+                updates[`copa_maratona/eventos/${key}/meta/ativo`] = true;
+            } else if (eventos[key].meta && eventos[key].meta.ativo) {
+                updates[`copa_maratona/eventos/${key}/meta/ativo`] = false;
+            }
+        }
+
+        await database.ref().update(updates);
+        notificar("Evento ativado na Home!", "sucesso");
+        renderizarPainelMaratona();
+    } catch (e) {
+        console.warn(e);
+        notificar("Erro ao ativar evento.", "erro");
+    }
+}
+
+async function encerrarEventoMaratona(id) {
+    if (!exigirProfessorAutenticado()) return;
+    if (!confirm("Tem certeza que deseja ENCERRAR este evento?\n\nOs alunos não poderão mais jogar a maratona até um novo evento ser ativado.")) return;
+
+    try {
+        await database.ref(`copa_maratona/eventos/${id}/meta/ativo`).set(false);
+        notificar("Evento encerrado.", "info");
+        renderizarPainelMaratona();
+    } catch (e) {
+        console.warn(e);
+        notificar("Erro ao encerrar evento.", "erro");
+    }
+}
+
+async function exportarCSVMaratona(eventoId) {
+    if (!exigirProfessorAutenticado()) return;
+    notificar("⏳ Gerando CSV da maratona...", "info");
+    
+    try {
+        const [snapTempos, snapMarcos] = await Promise.all([
+            database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value'),
+            database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value')
+        ]);
+
+        const tempos = snapTempos.val() || {};
+        const marcos = snapMarcos.val() || {};
+
+        const esc = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
+        let csv = "\ufeffNOME,TURMA,STATUS,TEMPO_TOTAL,BLOCO1,BLOCO2,BLOCO3,BLOCO4,DATA\n";
+
+        const listaTempos = Object.values(tempos).sort((a, b) => a.tempoTotal - b.tempoTotal);
+
+        listaTempos.forEach(t => {
+            const tBlocos = t.temposBlocos || [];
+            const b1 = tBlocos[0] ? (tBlocos[0]/1000).toFixed(2) : "";
+            const b2 = tBlocos[1] ? (tBlocos[1]/1000).toFixed(2) : "";
+            const b3 = tBlocos[2] ? (tBlocos[2]/1000).toFixed(2) : "";
+            const b4 = tBlocos[3] ? (tBlocos[3]/1000).toFixed(2) : "";
+            
+            csv += `${esc(t.nome)},${esc(t.turma)},${esc(t.status)},${(t.tempoTotal/1000).toFixed(2)},${b1},${b2},${b3},${b4},${esc(t.data)}\n`;
+        });
+
+        csv += "\n\nRANKING DE MARCOS (RECORDES POR BLOCO)\n";
+        csv += "BLOCO,NOME,TURMA,TEMPO,DATA\n";
+        
+        for (const blocoId of ["b1", "b2", "b3", "b4"]) {
+            const alunosBloco = marcos[blocoId] || {};
+            const listaBloco = Object.values(alunosBloco).sort((a, b) => a.tempo - b.tempo);
+            listaBloco.forEach(m => {
+                csv += `${blocoId.toUpperCase()},${esc(m.nome)},${esc(m.turma)},${(m.tempo/1000).toFixed(2)},${esc(m.data)}\n`;
+            });
+        }
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `maratona_${eventoId}_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        
+        notificar("✅ CSV exportado!", "sucesso");
+    } catch (e) {
+        console.warn(e);
+        notificar("Erro ao exportar CSV.", "erro");
+    }
+}
+// ▲▲▲ FIM [19.12]
 
     // ▼▼▼ Correção: Funções de Gerenciamento de Alunos e CSV ▼▼▼
     let alunosParaGerenciar = [];
