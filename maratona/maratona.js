@@ -700,3 +700,121 @@ function _tocarSomCopaApp(S, nome) {
 }
 
 // ▲▲▲ FIM [M.05]
+
+// ▼▼▼ [M.06] Pista visual (SVG + boneco + barreiras) ─────────── INÍCIO ───
+
+const PISTA_X_INICIO = 20;
+const PISTA_X_FIM = 380;
+const PISTA_LARGURA = PISTA_X_FIM - PISTA_X_INICIO; // 360
+
+function _xParaProgresso(progresso) {
+    const p = Math.max(0, Math.min(1, progresso));
+    return PISTA_X_INICIO + p * PISTA_LARGURA;
+}
+
+function _progressoAtual(S) {
+    const idx = S.blocoAtual * PERGUNTAS_POR_BLOCO + Math.min(S.indiceNoBloco, PERGUNTAS_POR_BLOCO);
+    return idx / TOTAL_PERGUNTAS;
+}
+
+function _renderizarPistaHTML(S) {
+    const barreirasX = [
+        PISTA_X_INICIO + PISTA_LARGURA * 0.25,
+        PISTA_X_INICIO + PISTA_LARGURA * 0.50,
+        PISTA_X_INICIO + PISTA_LARGURA * 0.75,
+        PISTA_X_FIM
+    ];
+    const barreiras = barreirasX.map((x, i) =>
+        `<rect class="pista-barreira" data-barreira="${i}" x="${(x - 3).toFixed(1)}" y="55" width="6" height="30" rx="1.5"/>`
+    ).join("");
+    const bonecoX = S.bonecoX != null ? S.bonecoX : PISTA_X_INICIO;
+    return `
+        <svg viewBox="0 0 400 100" class="maratona-pista-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Pista da maratona">
+            <line x1="${PISTA_X_INICIO}" y1="70" x2="${PISTA_X_FIM}" y2="70" class="pista-trilha"/>
+            <line x1="${PISTA_X_INICIO}" y1="58" x2="${PISTA_X_INICIO}" y2="82" class="pista-linha-inicio"/>
+            ${barreiras}
+            <text x="${PISTA_X_FIM + 4}" y="52" text-anchor="middle" class="pista-chegada">🏁</text>
+            <g class="pista-boneco-posicao" data-boneco transform="translate(${bonecoX.toFixed(1)}, 0)">
+                <g class="pista-boneco-animacao">
+                    <circle cx="0" cy="55" r="8"/>
+                    <line x1="0" y1="63" x2="0" y2="75"/>
+                    <line x1="-4" y1="72" x2="4" y2="72"/>
+                </g>
+            </g>
+        </svg>
+    `;
+}
+
+function _atualizarPista(S) {
+    if (!S.vivo) return;
+    // Barreiras concluídas
+    S.host.querySelectorAll("[data-barreira]").forEach(el => {
+        const i = Number(el.dataset.barreira);
+        const concluida = S.temposBlocos[i] != null;
+        el.classList.toggle("concluida", concluida);
+    });
+    // Posição do boneco
+    const alvoX = _xParaProgresso(_progressoAtual(S));
+    if (Math.abs(alvoX - (S.bonecoX || PISTA_X_INICIO)) > 0.5) {
+        _animarBonecoPara(S, alvoX, 400);
+    }
+}
+
+// ─── Animação da posição (RAF, respeita prefers-reduced-motion) ───
+function _animarBonecoPara(S, targetX, duracao) {
+    if (!S.vivo) return;
+    const boneco = S.host.querySelector("[data-boneco]");
+    if (!boneco) { S.bonecoX = targetX; return; }
+
+    const reduzido = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const inicioX = S.bonecoX != null ? S.bonecoX : PISTA_X_INICIO;
+    if (reduzido || Math.abs(targetX - inicioX) < 0.5) {
+        S.bonecoX = targetX;
+        boneco.setAttribute("transform", `translate(${targetX.toFixed(1)}, 0)`);
+        return;
+    }
+
+    const t0 = performance.now();
+    function tick(agora) {
+        if (!S.vivo) return;
+        const t = Math.min(1, (agora - t0) / duracao);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const x = inicioX + (targetX - inicioX) * eased;
+        boneco.setAttribute("transform", `translate(${x.toFixed(1)}, 0)`);
+        if (t < 1) requestAnimationFrame(tick);
+        else S.bonecoX = targetX;
+    }
+    requestAnimationFrame(tick);
+}
+
+// ─── Animações curtas (classe CSS por um instante) ───
+function _animarClasseTemporaria(S, seletor, classe, duracaoMs) {
+    if (!S.vivo) return;
+    const el = S.host.querySelector(seletor);
+    if (!el) return;
+    el.classList.remove(classe);
+    // Reflow para reiniciar a animação
+    void el.offsetWidth;
+    el.classList.add(classe);
+    S.timers.setTimeout(() => {
+        if (!S.vivo) return;
+        const el2 = S.host.querySelector(seletor);
+        if (el2) el2.classList.remove(classe);
+    }, duracaoMs);
+}
+
+function _animarBonecoAvancar(S) {
+    _atualizarPista(S);
+    _animarClasseTemporaria(S, "[data-boneco] .pista-boneco-animacao", "avancando", 420);
+}
+
+function _animarBonecoTropecar(S) {
+    _atualizarPista(S);
+    _animarClasseTemporaria(S, "[data-boneco] .pista-boneco-animacao", "tropecando", 650);
+}
+
+function _animarBonecoPulo(S) {
+    _animarClasseTemporaria(S, "[data-boneco] .pista-boneco-animacao", "pulando", 750);
+}
+
+// ▲▲▲ FIM [M.06]
