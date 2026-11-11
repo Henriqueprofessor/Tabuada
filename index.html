@@ -18679,6 +18679,7 @@ function abrirBuscarAlunoComMeusDados() {
             atualizarTelaInicialComEtapa();
             preencherHomeEsports();
             renderizarMapaHome();
+            injetarBotaoMaratonaNaHome(); // <--- A MÁGICA ACONTECE AQUI
         }
         if (id === "tela-ranking") {
             atualizarDisplayUltimaSincronizacao();
@@ -18711,7 +18712,6 @@ function abrirBuscarAlunoComMeusDados() {
         }
     }
 
-    // NOVO: Função para verificar no banco se o aluno já aceitou os termos
     async function verificarConsentimentoSalvo(nome, turma) {
         try {
             const snap = await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).once("value");
@@ -18736,14 +18736,12 @@ function abrirBuscarAlunoComMeusDados() {
                 return;
             }
         } else {
-            // Veio do botão Jogar/Treinar na Home
             nomeBruto = obterNomeSalvoAluno();
             turma = obterTurmaSalvaAluno();
             if (!nomeBruto || !turma) {
                 mostrarTela("tela-single");
                 return;
             }
-            // Verifica se o consentimento já está salvo no banco
             const temConsentimento = await verificarConsentimentoSalvo(nomeBruto, turma);
             if (!temConsentimento) {
                 document.getElementById("modal-consentimento-retroativo").classList.remove("hidden");
@@ -18792,7 +18790,6 @@ function abrirBuscarAlunoComMeusDados() {
                 return;
             }
             
-            // Salva o consentimento caso não exista (alunos novos ou retroativos)
             try {
                 const snapC = await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).once("value");
                 if (!snapC.exists()) {
@@ -29679,7 +29676,6 @@ async function verificarEventoMaratonaAtivo() {
         const snap = await database.ref('copa_maratona/eventos').once('value');
         const eventos = snap.val() || {};
         
-        // Procura um evento com meta.ativo === true
         for (const [id, dados] of Object.entries(eventos)) {
             if (dados && dados.meta && dados.meta.ativo === true) {
                 return id;
@@ -29687,7 +29683,6 @@ async function verificarEventoMaratonaAtivo() {
         }
         return null;
     } catch (e) {
-        console.info("[Maratona] Falha ao verificar evento ativo (permissão ou offline).");
         return null;
     }
 }
@@ -29698,12 +29693,11 @@ async function abrirMaratona() {
     const turma = obterTurmaSalvaAluno();
 
     if (!nome || !turma) {
-        notificar("Você precisa se identificar para jogar a Maratona.", "aviso", 4000);
+        notificar("Para jogar a Maratona, você precisa se identificar primeiro.", "aviso", 4000);
         mostrarTela("tela-single");
         return;
     }
 
-    // 1. Garante que há um evento ativo
     notificar("⏳ Verificando evento da Maratona...", "info", 2000);
     const eventoId = await verificarEventoMaratonaAtivo();
     
@@ -29712,7 +29706,6 @@ async function abrirMaratona() {
         return;
     }
 
-    // 2. Vai para a tela da maratona
     mostrarTela("tela-maratona");
     const host = document.getElementById("tela-maratona");
     if (!host) return;
@@ -29720,26 +29713,21 @@ async function abrirMaratona() {
     host.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--neon-cyan);">⏳ Carregando módulo Maratona...</div>`;
 
     try {
-        // 3. Importa o módulo (se ainda não estiver carregado)
         const modulo = await import('./maratona/maratona.js');
         
-        // 4. Limpa controller anterior, se houver
         if (_maratonaController) {
             _maratonaController.destroy();
             _maratonaController = null;
         }
 
-        // 5. Renderiza o módulo
-        host.innerHTML = ""; // Limpa o loading
+        host.innerHTML = ""; 
         _maratonaController = modulo.render(host, {
             eventoId: eventoId,
             onSair: function() {
-                // Chamado quando o aluno sai ou clica em Voltar ao Início
                 mostrarTela("tela-inicial");
                 _maratonaController = null;
             },
             onFinalizar: function(resultado) {
-                // Pode ser usado no futuro para salvar dados extras
                 console.info("[Maratona] Resultado final:", resultado);
             }
         });
@@ -29758,19 +29746,27 @@ async function abrirMaratona() {
     }
 }
 
-// Adiciona o botão na Home dinamicamente para não alterar o HTML estático original
-function injetarBotaoMaratonaNaHome() {
+// Adiciona o botão na Home dinamicamente
+async function injetarBotaoMaratonaNaHome() {
     const telaInicial = document.getElementById("tela-inicial");
     if (!telaInicial) return;
     
-    // Evita duplicação
-    if (document.getElementById("btn-jogar-maratona")) return;
+    let container = document.getElementById("maratona-home-container");
+    
+    // Se já existe, só atualiza a visibilidade
+    if (container) {
+        const eventoId = await verificarEventoMaratonaAtivo();
+        container.style.display = eventoId ? "block" : "none";
+        return;
+    }
 
-    const container = document.createElement("div");
+    // Se não existe, cria
+    container = document.createElement("div");
     container.id = "maratona-home-container";
     container.className = "mapa-home-card";
-    container.style.borderLeft = "4px solid var(--neon-gold)"; // Dourado
+    container.style.borderLeft = "4px solid var(--neon-gold)";
     container.style.background = "linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(19,42,71,0.9) 100%)";
+    container.style.display = "none"; // Esconde até verificar
     
     container.innerHTML = `
         <div class="mapa-home-titulo" style="color: var(--neon-gold);">
@@ -29784,7 +29780,7 @@ function injetarBotaoMaratonaNaHome() {
         </button>
     `;
 
-    // Insere antes do bloco de status da etapa (lá no final da Home)
+    // Insere antes do último card (Etapa Classificatória)
     const statusEtapa = telaInicial.querySelector(".home-card:last-of-type");
     if (statusEtapa) {
         telaInicial.insertBefore(container, statusEtapa);
@@ -29792,22 +29788,10 @@ function injetarBotaoMaratonaNaHome() {
         telaInicial.appendChild(container);
     }
     
-    // Verifica se o evento está ativo para mostrar/esconder o botão
-    verificarEventoMaratonaAtivo().then(eventoId => {
-        const btn = document.getElementById("btn-jogar-maratona");
-        if (!eventoId && btn) {
-            container.style.display = "none"; // Esconde se não houver evento ativo
-        } else if (eventoId && btn) {
-            container.style.display = "block";
-        }
-    });
-}
-
-// Chama a injeção quando o DOM estiver pronto
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injetarBotaoMaratonaNaHome);
-} else {
-    injetarBotaoMaratonaNaHome();
+    const eventoId = await verificarEventoMaratonaAtivo();
+    if (eventoId) {
+        container.style.display = "block";
+    }
 }
 // ▲▲▲ FIM [19.11]
 
