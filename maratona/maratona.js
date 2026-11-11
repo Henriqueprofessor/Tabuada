@@ -333,6 +333,7 @@ function _renderizarErro(host, mensagem) {
 
 // ▲▲▲ FIM [M.04]
 
+
 // ▼▼▼ [M.05] Motor do jogo (fluxo, cronômetro, punição, DNF) ─ INÍCIO ───
 
 // ─── Troca entre telas ───
@@ -485,4 +486,217 @@ function _atualizarPerguntaNaTela(S) {
     `;
     card.querySelectorAll(".maratona-opcao").forEach(btn => {
         btn.addEventListener("click", () => {
-            const valor = Number(btn
+            const valor = Number(btn.dataset.valor);
+            _responder(S, valor, btn);
+        });
+    });
+}
+
+function _desabilitarOpcoes(S) {
+    S.host.querySelectorAll(".maratona-opcao").forEach(b => { b.disabled = true; });
+}
+
+// ─── Resposta ───
+function _responder(S, valor, btn) {
+    if (!S.vivo || S.tela !== "jogo" || S.saindo) return;
+    const idx = S.blocoAtual * PERGUNTAS_POR_BLOCO + S.indiceNoBloco;
+    const pergunta = S.deck[idx];
+    if (!pergunta) return;
+
+    _desabilitarOpcoes(S);
+    const acertou = valor === pergunta.resposta;
+
+    if (acertou) {
+        if (btn) btn.classList.add("certo");
+        _tocarSomCopaApp(S, "somAcerto");
+        _animarBonecoAvancar(S);
+        S.indiceNoBloco++;
+
+        if (S.indiceNoBloco >= PERGUNTAS_POR_BLOCO) {
+            _completarBloco(S);
+            return;
+        }
+        S.timers.setTimeout(() => {
+            if (!S.vivo) return;
+            _atualizarPerguntaNaTela(S);
+        }, 350);
+    } else {
+        if (btn) btn.classList.add("errado");
+        _tocarSomCopaApp(S, "somErro");
+        S.errosTropecos.push({
+            bloco: S.blocoAtual,
+            fA: pergunta.fA,
+            fB: pergunta.fB,
+            resposta: pergunta.resposta,
+            respostaDada: valor
+        });
+        if (S.indiceNoBloco > 0) S.indiceNoBloco--;
+        _animarBonecoTropecar(S);
+        S.timers.setTimeout(() => {
+            if (!S.vivo) return;
+            _atualizarPerguntaNaTela(S);
+        }, 750);
+    }
+}
+
+// ─── Conclusão de bloco ───
+function _completarBloco(S) {
+    if (!S.vivo) return;
+    _pausarCronometro(S);
+    const tempo = _tempoBlocoAtual(S);
+    S.temposBlocos[S.blocoAtual] = tempo;
+    _animarBonecoPulo(S);
+    S.timers.setTimeout(() => {
+        if (!S.vivo) return;
+        _mostrarTela(S, "checkpoint");
+        _renderizarCheckpointStub(S, tempo);
+    }, 700);
+}
+
+function _renderizarCheckpointStub(S, tempo) {
+    const container = S.host.querySelector('[data-tela="checkpoint"]');
+    if (!container) return;
+    const isUltimo = S.blocoAtual >= TOTAL_BLOCOS - 1;
+    const rotuloBtn = isUltimo ? "🏁 Finalizar maratona" : "▶ Continuar";
+    container.innerHTML = `
+        <div class="maratona-card maratona-card-checkpoint">
+            <div class="maratona-kicker">🚧 BARREIRA ${S.blocoAtual + 1} DE ${TOTAL_BLOCOS}</div>
+            <h2 class="maratona-titulo">Bloco ${S.blocoAtual + 1} concluído!</h2>
+            <p class="maratona-sub">Tempo parcial do bloco: <strong>${_formatarTempo(tempo)}</strong></p>
+            <p class="maratona-sub" style="font-size:12.5px;color:var(--m-text-muted);">
+                O cronômetro está pausado. ${isUltimo ? "Você concluiu os 4 blocos!" : "O próximo bloco começa quando você clicar."}
+            </p>
+            <button type="button" class="maratona-btn-continuar" data-btn-continuar>${rotuloBtn}</button>
+        </div>
+    `;
+    const btn = container.querySelector("[data-btn-continuar]");
+    if (btn) btn.addEventListener("click", () => _continuarProximoBloco(S));
+}
+
+function _continuarProximoBloco(S) {
+    if (!S.vivo) return;
+    if (S.blocoAtual >= TOTAL_BLOCOS - 1) {
+        _renderizarResultStub(S);
+        return;
+    }
+    S.blocoAtual++;
+    S.indiceNoBloco = 0;
+    _mostrarTela(S, "jogo");
+    _iniciarBloco(S);
+}
+
+// ─── Resultado (stub — substituído na Fase 3) ───
+function _renderizarResultStub(S) {
+    if (!S.vivo) return;
+    _mostrarTela(S, "resultado");
+    const container = S.host.querySelector('[data-tela="resultado"]');
+    if (!container) return;
+    const tempoTotal = S.temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0);
+    const linhas = S.temposBlocos.map((t, i) => `
+        <div class="maratona-resultado-linha">
+            <span>Bloco ${i + 1}</span>
+            <strong>${_formatarTempo(t)}</strong>
+        </div>
+    `).join("");
+    container.innerHTML = `
+        <div class="maratona-card maratona-card-boas-vindas">
+            <div class="maratona-kicker">🏁 MARATONA CONCLUÍDA</div>
+            <h2 class="maratona-titulo">Você cruzou a linha!</h2>
+            <p class="maratona-sub">Tempo total: <strong>${_formatarTempo(tempoTotal)}</strong></p>
+            <div class="maratona-resultado-lista">${linhas}</div>
+            <button type="button" class="maratona-btn-comecar" data-btn-voltar>🏠 Voltar ao início</button>
+        </div>
+    `;
+    const btn = container.querySelector("[data-btn-voltar]");
+    if (btn) btn.addEventListener("click", () => {
+        if (S.opts.onFinalizar) {
+            try {
+                S.opts.onFinalizar({
+                    eventoId: S.opts.eventoId,
+                    temposBlocos: S.temposBlocos.slice(),
+                    tempoTotal,
+                    errosTropecos: S.errosTropecos.slice()
+                });
+            } catch (e) { console.warn("[Maratona] onFinalizar:", e); }
+        }
+        if (S.opts.onSair) {
+            try { S.opts.onSair(); } catch (e) { console.warn("[Maratona] onSair:", e); }
+        }
+        try { S.controller.destroy(); } catch (e) {}
+    });
+}
+
+// ─── Sair (DNF) ───
+function _abrirModalSair(S) {
+    if (S.saindo) return;
+    const confirmou = window.confirm(
+        "Sair da maratona?\n\n" +
+        "O progresso atual NÃO será salvo como partida completa.\n" +
+        "Você aparecerá como DNF no ranking geral."
+    );
+    if (!confirmou) return;
+
+    S.saindo = true;
+    _pausarCronometro(S);
+    S.host.querySelectorAll("button").forEach(b => { b.disabled = true; });
+
+    _registrarDnf(S, "saiu").finally(() => {
+        if (S.opts.onSair) {
+            try { S.opts.onSair(); } catch (e) { console.warn("[Maratona] onSair:", e); }
+        }
+        try { S.controller.destroy(); } catch (e) {}
+    });
+}
+
+async function _registrarDnf(S, motivo) {
+    const app = S.copaApp;
+    if (!app || !app.database) {
+        console.info("[Maratona] Firebase indisponível — DNF não registrado.");
+        return;
+    }
+    const nome = app.obterNomeAluno();
+    const turma = app.obterTurmaAluno();
+    if (!nome || !turma) {
+        console.info("[Maratona] Aluno não identificado — DNF não registrado.");
+        return;
+    }
+    const chave = app.chaveAluno(nome, turma);
+    if (!chave) return;
+
+    let tempoAtualBloco = 0;
+    if (S.tela === "jogo" && S.inicioBlocoPerf) {
+        tempoAtualBloco = _tempoBlocoAtual(S);
+    }
+    const temposBlocos = [];
+    for (let i = 0; i < TOTAL_BLOCOS; i++) {
+        temposBlocos.push(S.temposBlocos[i] != null ? S.temposBlocos[i] : null);
+    }
+    const tempoTotal = temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0) + tempoAtualBloco;
+
+    const registro = {
+        nome,
+        turma,
+        temposBlocos,
+        tempoTotal,
+        data: new Date().toISOString(),
+        status: "dnf",
+        motivoDnf: motivo || "saiu"
+    };
+
+    const caminho = `copa_maratona/eventos/${S.opts.eventoId}/tempos/${chave}`;
+    try {
+        await app.database.ref(caminho).set(registro);
+        console.info("[Maratona] DNF registrado:", registro);
+    } catch (e) {
+        console.warn("[Maratona] Falha ao registrar DNF:", e && e.message);
+    }
+}
+
+// ─── Helpers de áudio ───
+function _tocarSomCopaApp(S, nome) {
+    const app = S.copaApp;
+    if (!app || typeof app[nome] !== "function") return;
+    try { app[nome](); } catch (e) {}
+}
+
+// ▲▲▲ FIM [M.05]
