@@ -18679,7 +18679,7 @@ function abrirBuscarAlunoComMeusDados() {
             atualizarTelaInicialComEtapa();
             preencherHomeEsports();
             renderizarMapaHome();
-            injetarBotaoMaratonaNaHome(); // <--- A MÁGICA ACONTECE AQUI
+            injetarBotaoMaratonaNaHome(); 
         }
         if (id === "tela-ranking") {
             atualizarDisplayUltimaSincronizacao();
@@ -18755,6 +18755,33 @@ function abrirBuscarAlunoComMeusDados() {
         if (naTelaCadastro) document.getElementById("nome-aluno").value = nome;
         if (!turma) { notificar("Selecione a turma.", "aviso"); return; }
 
+        // ⚠️ A MÁGICA DA MARATONA ACONTECE AGORA, ANTES DE VALIDAR A COPA:
+        // Se o aluno veio do botão "Jogar Maratona", ignoramos as regras da Copa e o mandamos direto.
+        if (window._redirecionarParaMaratona) {
+            window._redirecionarParaMaratona = false;
+            
+            alunoAtual = nome; 
+            turmaAtual = turma;
+            salvarTurmaENomeAluno(turma, nome);
+            iniciarListenerMsgAluno();
+
+            // Salva o consentimento silenciosamente, se necessário
+            try {
+                const snapC = await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).once("value");
+                if (!snapC.exists()) {
+                    await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).set({
+                        aceito: true, data: Date.now(), versao: "1.0"
+                    });
+                }
+            } catch(e) { console.warn("Falha ao salvar consentimento:", e); }
+
+            if (typeof abrirMaratona === "function") {
+                abrirMaratona();
+            }
+            return; // Interrompe a função aqui e não segue para a Copa
+        }
+
+        // --- FLUXO NORMAL DA COPA (se não for maratona) ---
         const modalidadeSelecionada = document.getElementById("modalidade-tabuada").value;
 
         if (!treino) {
@@ -18781,6 +18808,7 @@ function abrirBuscarAlunoComMeusDados() {
         treinoListaInteligente = null;
         treinoFocoAbsoluto = null;
         iniciarListenerMsgAluno();
+
         if (!modoTreino) {
             const r = await verificarVinculo(nome, turma);
             if (!r.permitido) {
@@ -18794,15 +18822,14 @@ function abrirBuscarAlunoComMeusDados() {
                 const snapC = await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).once("value");
                 if (!snapC.exists()) {
                     await database.ref(`vinculos/${chaveVinculo(nome, turma)}/consentimentoLGPD`).set({
-                        aceito: true,
-                        data: Date.now(),
-                        versao: "1.0"
+                        aceito: true, data: Date.now(), versao: "1.0"
                     });
                 }
             } catch(e) { console.warn("Falha ao salvar consentimento:", e); }
 
             if (r.status === "novo") notificar(`Dispositivo vinculado ao nome "${nome}". A partir de agora, use sempre este celular.`, "sucesso", 6000);
             else if (r.status === "revinculado") notificar(`Bem-vindo de volta! Como você ficou mais de 2 dias sem acessar o app, liberamos este aparelho automaticamente.`, "info", 8000);
+            
             const medias = await carregarMediasReferencia(nome, turma, modalidadeAtual);
             await carregarFocoTreino(nome, turma, modalidadeAtual);
             melhorMediaAluno = medias.melhorMediaAluno;
@@ -18814,6 +18841,7 @@ function abrirBuscarAlunoComMeusDados() {
                 else if (mediaTurma && melhorMediaAluno > mediaTurma) msg = "💪 Você está abaixo da média — com treino vai superar!";
                 else msg = "🏆 Chance de bater seu próprio recorde!";
             } else msg = "🎯 Primeira partida! Vamos criar sua melhor média!";
+            
             div.innerHTML = `<div class="preparacao-grid"><div class="prep-card"><span class="prep-rotulo">👤 Aluno</span><span class="prep-valor">${escaparHtml(nome)}</span></div><div class="prep-card"><span class="prep-rotulo">🏫 Turma</span><span class="prep-valor">${turma}</span></div><div class="prep-card"><span class="prep-rotulo">📚 Modalidade</span><span class="prep-valor">${MODALIDADES[modalidadeAtual].nome}</span></div><div class="prep-card"><span class="prep-rotulo">⏱️ Formato</span><span class="prep-valor">20 questões · 10s cada</span></div></div><div class="prep-bloco"><h4>📋 Como funciona?</h4><ul><li><strong>20 perguntas</strong> de multiplicação.</li><li>Até <strong>10 segundos</strong> por questão.</li><li>Respostas rápidas valem <strong>mais pontos</strong>.</li><li>Apenas o seu <strong>melhor resultado</strong> entra na classificação.</li></ul></div><div class="prep-bloco"><h4>📊 Suas referências</h4><div class="prep-referencias-linha"><div><span class="prep-rotulo">Seu melhor tempo médio dos acertos</span><span class="prep-valor-pequeno">${melhorMediaAluno ? melhorMediaAluno.toFixed(2)+"s" : "---"}</span></div><div><span class="prep-rotulo">Tempo médio dos acertos da turma</span><span class="prep-valor-pequeno">${mediaTurma ? mediaTurma.toFixed(2)+"s" : "---"}</span></div></div></div>${focoTreinoTabuadas.length ? `<div class="prep-foco"><strong>🎯 Foco recomendado</strong><br>${descreverFocoTreino()}</div>` : ""}<div class="prep-motivacao" style="margin-top:14px;">${msg}</div><div style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffc107;border-radius:10px;padding:12px 16px;text-align:left;font-size:13px;line-height:1.6;color:#6d4c41;margin-top:14px;">⚠️ <strong>Lembrete:</strong> seu nome cadastrado é <strong>${escaparHtml(nome)}</strong>. Se você se classificar e o nome não conferir com a chamada oficial, poderá ser <strong>desclassificado</strong>. Qualquer correção, procure o professor <em>antes</em> do fim da etapa.</div>`;
             mostrarTela("tela-preparacao");
             window._pendingGame = { nome, turma, modalidade: modalidadeAtual, treino: false };
@@ -29670,16 +29698,12 @@ Comece agora com a sua primeira resposta seguindo a estrutura do item 1 das Regr
 let _maratonaController = null;
 let _maratonaEventoIdAtivo = null;
 
-// Verifica se há um evento de maratona ativo no Firebase
 async function verificarEventoMaratonaAtivo() {
     try {
         const snap = await database.ref('copa_maratona/eventos').once('value');
         const eventos = snap.val() || {};
-        
         for (const [id, dados] of Object.entries(eventos)) {
-            if (dados && dados.meta && dados.meta.ativo === true) {
-                return id;
-            }
+            if (dados && dados.meta && dados.meta.ativo === true) return id;
         }
         return null;
     } catch (e) {
@@ -29687,13 +29711,14 @@ async function verificarEventoMaratonaAtivo() {
     }
 }
 
-// Abre a tela da Maratona e faz o import dinâmico
 async function abrirMaratona() {
     const nome = obterNomeSalvoAluno();
     const turma = obterTurmaSalvaAluno();
 
+    // Se não estiver logado, avisa e manda para o cadastro, marcando a intenção
     if (!nome || !turma) {
         notificar("Para jogar a Maratona, você precisa se identificar primeiro.", "aviso", 4000);
+        window._redirecionarParaMaratona = true; // <--- A MÁGICA AQUI
         mostrarTela("tela-single");
         return;
     }
@@ -29746,27 +29771,24 @@ async function abrirMaratona() {
     }
 }
 
-// Adiciona o botão na Home dinamicamente
 async function injetarBotaoMaratonaNaHome() {
     const telaInicial = document.getElementById("tela-inicial");
     if (!telaInicial) return;
     
     let container = document.getElementById("maratona-home-container");
     
-    // Se já existe, só atualiza a visibilidade
     if (container) {
         const eventoId = await verificarEventoMaratonaAtivo();
         container.style.display = eventoId ? "block" : "none";
         return;
     }
 
-    // Se não existe, cria
     container = document.createElement("div");
     container.id = "maratona-home-container";
     container.className = "mapa-home-card";
     container.style.borderLeft = "4px solid var(--neon-gold)";
     container.style.background = "linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(19,42,71,0.9) 100%)";
-    container.style.display = "none"; // Esconde até verificar
+    container.style.display = "none";
     
     container.innerHTML = `
         <div class="mapa-home-titulo" style="color: var(--neon-gold);">
@@ -29780,7 +29802,6 @@ async function injetarBotaoMaratonaNaHome() {
         </button>
     `;
 
-    // Insere antes do último card (Etapa Classificatória)
     const statusEtapa = telaInicial.querySelector(".home-card:last-of-type");
     if (statusEtapa) {
         telaInicial.insertBefore(container, statusEtapa);
