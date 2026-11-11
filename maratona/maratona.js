@@ -332,3 +332,157 @@ function _renderizarErro(host, mensagem) {
 }
 
 // ▲▲▲ FIM [M.04]
+
+// ▼▼▼ [M.05] Motor do jogo (fluxo, cronômetro, punição, DNF) ─ INÍCIO ───
+
+// ─── Troca entre telas ───
+function _mostrarTela(S, tela) {
+    if (!S.vivo) return;
+    S.tela = tela;
+    S.host.querySelectorAll("[data-tela]").forEach(el => {
+        el.classList.toggle("hidden", el.dataset.tela !== tela);
+    });
+    const app = S.host.querySelector(".maratona-app");
+    if (app) app.dataset.estado = tela;
+}
+
+// ─── Tela de seleção ───
+function _inicializarTelaSelecao(S) {
+    const container = S.host.querySelector('[data-tela="selecao"]');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="maratona-card maratona-card-boas-vindas">
+            <div class="maratona-kicker">🏁 MÓDULO MARATONA</div>
+            <h2 class="maratona-titulo">Maratona com Barreiras</h2>
+            <p class="maratona-sub">
+                <strong>4 blocos · 40 perguntas</strong> em ordem sequencial.<br>
+                Fatores fixos por bloco: <strong>2, 3, 4 e 5</strong> · multiplicadores de 1 a 10.
+            </p>
+            <div class="maratona-regras">
+                <div class="maratona-regra"><span class="maratona-regra-icone">✅</span><span>Acertou → avança para a próxima pergunta.</span></div>
+                <div class="maratona-regra"><span class="maratona-regra-icone">❌</span><span>Errou → volta uma pergunta (a 1ª do bloco não volta).</span></div>
+                <div class="maratona-regra"><span class="maratona-regra-icone">⏱️</span><span>O cronômetro conta o tempo real. Pausa a cada bloco concluído.</span></div>
+                <div class="maratona-regra"><span class="maratona-regra-icone">🏁</span><span>Vence quem somar o menor tempo nos 4 blocos.</span></div>
+            </div>
+            <p class="maratona-nota">Evento: <code data-evento-id>${_escapeHtml(S.opts.eventoId)}</code></p>
+            <button type="button" class="maratona-btn-comecar" data-btn-comecar>▶ Começar corrida</button>
+        </div>
+    `;
+    const btn = container.querySelector("[data-btn-comecar]");
+    if (btn) btn.addEventListener("click", () => _iniciarJogo(S));
+}
+
+// ─── Início do jogo ───
+function _iniciarJogo(S) {
+    if (!S.vivo) return;
+    S.blocoAtual = 0;
+    S.indiceNoBloco = 0;
+    S.temposBlocos = [];
+    S.errosTropecos = [];
+    S.bonecoX = 20;
+    S.saindo = false;
+    _mostrarTela(S, "jogo");
+    _renderizarTelaJogo(S);
+    _iniciarBloco(S);
+}
+
+// ─── Início de um bloco (reset do cronômetro) ───
+function _iniciarBloco(S) {
+    if (!S.vivo) return;
+    S.inicioBlocoPerf = performance.now();
+    S.tempoPausadoMs = 0;
+    S.pausadoEmPerf = null;
+    S.pausado = false;
+    _iniciarCronometro(S);
+    _atualizarPerguntaNaTela(S);
+    _atualizarPista(S);
+}
+
+// ─── Cronômetro ───
+function _iniciarCronometro(S) {
+    _pararCronometro(S);
+    if (!S.vivo) return;
+    S.cronoInterval = setInterval(() => {
+        if (!S.vivo || S.pausado) return;
+        _atualizarDisplayCronometro(S);
+    }, 50);
+    _atualizarDisplayCronometro(S);
+}
+
+function _pararCronometro(S) {
+    if (S.cronoInterval) {
+        clearInterval(S.cronoInterval);
+        S.cronoInterval = null;
+    }
+}
+
+function _tempoBlocoAtual(S) {
+    if (!S.inicioBlocoPerf) return 0;
+    if (S.pausado && S.pausadoEmPerf) {
+        return Math.max(0, S.pausadoEmPerf - S.inicioBlocoPerf - S.tempoPausadoMs);
+    }
+    return Math.max(0, performance.now() - S.inicioBlocoPerf - S.tempoPausadoMs);
+}
+
+function _pausarCronometro(S) {
+    if (S.pausado) return;
+    S.pausado = true;
+    S.pausadoEmPerf = performance.now();
+    _pararCronometro(S);
+    _atualizarDisplayCronometro(S);
+}
+
+function _atualizarDisplayCronometro(S) {
+    if (!S.vivo) return;
+    const el = S.host.querySelector("[data-cronometro]");
+    if (el) el.textContent = _formatarTempo(_tempoBlocoAtual(S));
+}
+
+// ─── Renderização da tela de jogo (HUD + pista + card de pergunta) ───
+function _renderizarTelaJogo(S) {
+    const container = S.host.querySelector('[data-tela="jogo"]');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="maratona-hud">
+            <div class="maratona-hud-bloco" data-hud-bloco></div>
+            <div class="maratona-hud-tempo" data-cronometro aria-live="off">0.00s</div>
+            <button type="button" class="maratona-hud-sair" data-btn-sair>Sair</button>
+        </div>
+        <div class="maratona-pista" data-pista></div>
+        <div class="maratona-pergunta-card" data-pergunta-card></div>
+    `;
+    const pista = container.querySelector("[data-pista]");
+    if (pista) pista.innerHTML = _renderizarPistaHTML(S);
+    const btnSair = container.querySelector("[data-btn-sair]");
+    if (btnSair) btnSair.addEventListener("click", () => _abrirModalSair(S));
+}
+
+function _atualizarPerguntaNaTela(S) {
+    if (!S.vivo) return;
+    const idx = S.blocoAtual * PERGUNTAS_POR_BLOCO + S.indiceNoBloco;
+    const pergunta = S.deck[idx];
+    if (!pergunta) return;
+
+    const hud = S.host.querySelector("[data-hud-bloco]");
+    if (hud) {
+        hud.innerHTML = `Bloco <strong>${S.blocoAtual + 1}/${TOTAL_BLOCOS}</strong> · Pergunta <strong>${S.indiceNoBloco + 1}/${PERGUNTAS_POR_BLOCO}</strong>`;
+    }
+
+    const distratores = _gerarDistratores(pergunta.fA, pergunta.fB, pergunta.resposta, 3);
+    const opcoes = [pergunta.resposta, ...distratores];
+    for (let i = opcoes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [opcoes[i], opcoes[j]] = [opcoes[j], opcoes[i]];
+    }
+
+    const card = S.host.querySelector("[data-pergunta-card]");
+    if (!card) return;
+    card.innerHTML = `
+        <div class="maratona-pergunta">${pergunta.fA} × ${pergunta.fB} = ?</div>
+        <div class="maratona-opcoes">
+            ${opcoes.map(v => `<button type="button" class="maratona-opcao" data-valor="${v}">${v}</button>`).join("")}
+        </div>
+    `;
+    card.querySelectorAll(".maratona-opcao").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const valor = Number(btn
