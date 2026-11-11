@@ -163,3 +163,395 @@
 }
 
 /* ▲▲▲ FIM [M.CSS.01] */
+
+/* ▼▼▼ [M.CSS.02] Pista + tela de jogo + animações ──────────── INÍCIO ─── */
+
+/* ─── Regras (tela de seleção) ─── */
+.maratona-regras {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.maratona-regra {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--m-text2);
+    line-height: 1.5;
+}
+
+.maratona-regra-icone {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.maratona-btn-comecar {
+    width: 100%;
+    margin-top: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 3px 0 #075985, 0 5px 16px rgba(14, 165, 233, 0.28);
+    transition: all 0.15s ease;
+}
+.maratona-btn-comecar:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+    transform: translateY(-1px);
+}
+.maratona-btn-comecar:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #075985, 0 2px 8px rgba(14, 165, 233, 0.28);
+}
+.maratona-btn-comecar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ─── HUD do jogo ─── */
+.maratona-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(10, 22, 40, 0.75);
+    border: 1px solid var(--m-border);
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+
+.maratona-hud-bloco {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--m-text2);
+    letter-spacing: 0.3px;
+    line-height: 1.3;
+}
+.maratona-hud-bloco strong {
+    color: var(--m-cyan);
+    font-weight: 900;
+}
+
+.maratona-hud-tempo {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--m-gold);
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+    line-height: 1;
+}
+
+.maratona-hud-sair {
+    padding: 7px 12px;
+    background: transparent;
+    color: var(--m-text2);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    width: auto;
+    margin: 0;
+}
+.maratona-hud-sair:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: var(--m-red);
+    color: #fca5a5;
+}
+.maratona-hud-sair:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Pista ─── */
+.maratona-pista {
+    background: linear-gradient(180deg, rgba(15, 35, 64, 0.85) 0%, rgba(10, 22, 40, 0.85) 100%);
+    border: 1px solid var(--m-border);
+    border-radius: 12px;
+    padding: 12px 10px 6px;
+    overflow: hidden;
+}
+
+.maratona-pista-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 130px;
+}
+
+.pista-trilha {
+    stroke: rgba(148, 163, 184, 0.4);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.pista-linha-inicio {
+    stroke: var(--m-green);
+    stroke-width: 3;
+    stroke-dasharray: 4 3;
+    opacity: 0.85;
+}
+
+.pista-barreira {
+    fill: var(--m-gold);
+    opacity: 0.65;
+    transition: fill 0.3s ease, opacity 0.3s ease;
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4));
+}
+
+.pista-barreira.concluida {
+    fill: var(--m-green);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.55));
+}
+
+.pista-chegada {
+    font-size: 16px;
+    dominant-baseline: middle;
+}
+
+.pista-boneco-posicao {
+    /* Posição controlada via atributo transform + RAF em JS */
+    will-change: transform;
+}
+
+.pista-boneco-animacao circle {
+    fill: var(--m-cyan);
+    stroke: #fff;
+    stroke-width: 1.5;
+    filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.6));
+}
+
+.pista-boneco-animacao line {
+    stroke: var(--m-cyan);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+/* ─── Animações do boneco ─── */
+@keyframes maratona-boneco-avanca {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.18); }
+    100% { transform: scale(1); }
+}
+
+@keyframes maratona-boneco-tropeca {
+    0%   { transform: translateY(0) rotate(0deg); }
+    25%  { transform: translateY(-4px) rotate(-18deg); }
+    55%  { transform: translateY(3px) rotate(16deg); }
+    80%  { transform: translateY(-2px) rotate(-6deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes maratona-boneco-pula {
+    0%   { transform: translateY(0); }
+    35%  { transform: translateY(-32px); }
+    65%  { transform: translateY(-32px); }
+    100% { transform: translateY(0); }
+}
+
+.pista-boneco-animacao.avancando {
+    animation: maratona-boneco-avanca 0.4s ease;
+    transform-origin: center center;
+    transform-box: fill-box;
+}
+
+.pista-boneco-animacao.tropecando {
+    animation: maratona-boneco-tropeca 0.65s ease;
+    transform-origin: center center;
+    transform-box: fill-box;
+}
+
+.pista-boneco-animacao.pulando {
+    animation: maratona-boneco-pula 0.75s ease;
+    transform-origin: center center;
+    transform-box: fill-box;
+}
+
+/* ─── Card da pergunta ─── */
+.maratona-pergunta-card {
+    background: linear-gradient(160deg, rgba(19, 42, 71, 0.95) 0%, rgba(15, 35, 64, 0.95) 100%);
+    border: 1px solid var(--m-border);
+    border-radius: 16px;
+    padding: 22px 20px;
+    text-align: center;
+    box-shadow: var(--m-shadow);
+}
+
+.maratona-pergunta {
+    font-size: clamp(34px, 8vw, 48px);
+    font-weight: 900;
+    color: var(--m-text);
+    letter-spacing: 1px;
+    line-height: 1.1;
+    margin: 0 0 18px;
+    font-variant-numeric: tabular-nums;
+}
+
+.maratona-opcoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.maratona-opcao {
+    padding: 18px 14px;
+    background: rgba(10, 22, 40, 0.7);
+    color: var(--m-text);
+    border: 2px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    font-size: clamp(20px, 5vw, 26px);
+    font-weight: 900;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s ease;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+    width: 100%;
+    margin: 0;
+}
+
+.maratona-opcao:hover:not(:disabled) {
+    background: rgba(34, 211, 238, 0.14);
+    border-color: var(--m-cyan);
+    transform: translateY(-1px);
+}
+
+.maratona-opcao:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.25);
+}
+
+.maratona-opcao.certo {
+    background: linear-gradient(135deg, #0b8f64 0%, #08744f 100%);
+    border-color: var(--m-green);
+    color: #fff;
+}
+
+.maratona-opcao.errado {
+    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+    border-color: var(--m-red);
+    color: #fff;
+}
+
+.maratona-opcao:disabled {
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+/* ─── Checkpoint stub ─── */
+.maratona-card-checkpoint {
+    border-left: 4px solid var(--m-gold);
+    text-align: center;
+    padding: 26px 22px;
+}
+
+.maratona-card-checkpoint .maratona-kicker {
+    color: var(--m-gold);
+    display: block;
+    margin-bottom: 10px;
+}
+
+.maratona-btn-continuar {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 3px 0 #075985;
+    transition: all 0.15s ease;
+}
+.maratona-btn-continuar:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+    transform: translateY(-1px);
+}
+
+/* ─── Resultado stub ─── */
+.maratona-resultado-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 14px 0 4px;
+    padding: 12px 14px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 10px;
+    text-align: left;
+}
+
+.maratona-resultado-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    font-size: 13.5px;
+    color: var(--m-text2);
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.15);
+}
+.maratona-resultado-linha:last-child { border-bottom: none; }
+.maratona-resultado-linha strong {
+    color: var(--m-gold);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 520px) {
+    .maratona-hud {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+    .maratona-hud-bloco { font-size: 11.5px; }
+    .maratona-hud-tempo { font-size: 20px; }
+    .maratona-pista { padding: 10px 6px 4px; }
+    .maratona-pista-svg { max-height: 110px; }
+    .maratona-pergunta-card { padding: 18px 14px; }
+    .maratona-pergunta { font-size: 30px; margin-bottom: 14px; }
+    .maratona-opcao { padding: 14px 10px; font-size: 20px; }
+    .maratona-regra { padding: 9px 11px; font-size: 12.5px; }
+    .maratona-btn-comecar { font-size: 15px; padding: 14px 16px; }
+}
+
+@media (max-width: 400px) {
+    .maratona-opcoes { grid-template-columns: 1fr; }
+}
+
+/* ─── Acessibilidade ─── */
+@media (prefers-reduced-motion: reduce) {
+    .pista-barreira { transition: none; }
+    .pista-boneco-animacao.avancando,
+    .pista-boneco-animacao.tropecando,
+    .pista-boneco-animacao.pulando {
+        animation: none !important;
+    }
+    .maratona-opcao,
+    .maratona-btn-comecar,
+    .maratona-hud-sair,
+    .maratona-btn-continuar { transition: none !important; }
+    .maratona-opcao:hover:not(:disabled),
+    .maratona-opcao:active:not(:disabled),
+    .maratona-btn-comecar:hover:not(:disabled),
+    .maratona-btn-comecar:active:not(:disabled),
+    .maratona-btn-continuar:hover { transform: none; }
+}
+
+/* ▲▲▲ FIM [M.CSS.02] */
