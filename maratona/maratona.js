@@ -914,7 +914,17 @@ function _renderizarResultado(S) {
 }
 
 function _renderizarTropecos(erros) {
-    if (!erros || erros.length === 0) return "";
+    if (!erros || erros.length === 0) {
+        // Se o aluno não errou nada, exibe mensagem motivadora em vez de esconder
+        return `
+            <div class="maratona-resultado-bloco">
+                <div class="maratona-resultado-subtitulo">Tropeços na corrida</div>
+                <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; padding:14px; border-radius:10px; font-size:13.5px; font-weight:700; display:flex; align-items:center; gap:8px;">
+                    <span>✨</span> Corrida perfeita! Você não cometeu nenhum erro.
+                </div>
+            </div>
+        `;
+    }
     
     const lista = erros.map(e => `
         <div class="maratona-tropeco-item">
@@ -939,36 +949,30 @@ async function _buscarRankingGeral(S, tempoTotal) {
     const container = S.host.querySelector("[data-resultado-ranking]");
     if (!container) return;
 
-    if (!S.copaApp || !S.copaApp.database) {
-        container.innerHTML = `<div class="maratona-ranking-erro">Ranking indisponível offline.</div>`;
-        return;
-    }
-
-    const nome = S.copaApp.obterNomeAluno();
-    const turma = S.copaApp.obterTurmaAluno();
+    const nome = S.copaApp ? S.copaApp.obterNomeAluno() : null;
+    const turma = S.copaApp ? S.copaApp.obterTurmaAluno() : null;
     
+    // Se não estiver logado, mostra uma mensagem amigável
     if (!nome || !turma) {
-        container.innerHTML = `<div class="maratona-ranking-erro">Identifique-se para ver sua posição geral.</div>`;
+        container.innerHTML = `<div class="maratona-ranking-erro">⚠️ Aluno não identificado. Faça login no app para ver sua posição real.</div>`;
         return;
     }
 
     const chaveAluno = S.copaApp.chaveAluno(nome, turma);
 
     try {
-        // Simula o salvamento deste tempo para podermos calcular a posição (a gravação real é Fase 4)
         const snap = await S.copaApp.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/tempos`).once('value');
         if (!S.vivo) return;
 
         const tempos = snap.val() || {};
         
-        // Adiciona o tempo atual à lista (para o cálculo)
         const lista = Object.values(tempos)
             .filter(x => x.status === 'completo' && x.tempoTotal != null)
-            .map(x => ({ chave: x.nome + x.turma, ...x })); // Simulação de chave
+            .map(x => ({ chave: x.nome + x.turma, ...x }));
 
+        // Adiciona o tempo atual (do próprio jogador) para simular a posição
         lista.push({ chave: chaveAluno, nome, turma, tempoTotal, status: 'completo' });
         
-        // Ordena do menor para o maior tempo
         lista.sort((a, b) => a.tempoTotal - b.tempoTotal);
 
         const index = lista.findIndex(x => x.chave === chaveAluno);
@@ -985,10 +989,8 @@ async function _buscarRankingGeral(S, tempoTotal) {
     } catch (e) {
         if (!S.vivo) return;
         console.warn("[Maratona] Falha ao buscar ranking geral:", e);
-        container.innerHTML = `<div class="maratona-ranking-erro">Não foi possível carregar o ranking geral.</div>`;
+        container.innerHTML = `<div class="maratona-ranking-erro">Não foi possível carregar o ranking geral (Firebase offline).</div>`;
     }
 }
 
 // ▲▲▲ FIM [M.08]
-
-
