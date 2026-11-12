@@ -124,6 +124,7 @@
     font-size: 12px;
 }
 
+/* ─── Tela de erro ─── */
 .maratona-card-erro {
     border-left: 4px solid var(--m-red);
     text-align: center;
@@ -148,6 +149,7 @@
     margin-bottom: 0;
 }
 
+/* ─── Mobile ─── */
 @media (max-width: 520px) {
     .maratona-app  { padding: 12px 8px; }
     .maratona-card { padding: 18px 16px; }
@@ -155,6 +157,7 @@
     .maratona-sub  { font-size: 13px; }
 }
 
+/* ─── Acessibilidade: sem animação ─── */
 @media (prefers-reduced-motion: reduce) {
     .maratona-dot { animation: none; }
 }
@@ -163,6 +166,7 @@
 
 /* ▼▼▼ [M.CSS.02] Pista + tela de jogo + animações ──────────── INÍCIO ─── */
 
+/* ─── Regras (tela de seleção) ─── */
 .maratona-regras {
     display: flex;
     flex-direction: column;
@@ -216,6 +220,7 @@
 }
 .maratona-btn-comecar:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* ─── HUD do jogo ─── */
 .maratona-hud {
     display: flex;
     justify-content: space-between;
@@ -271,6 +276,7 @@
 }
 .maratona-hud-sair:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ─── Pista ─── */
 .maratona-pista {
     background: linear-gradient(180deg, rgba(15, 35, 64, 0.85) 0%, rgba(10, 22, 40, 0.85) 100%);
     border: 1px solid var(--m-border);
@@ -318,6 +324,7 @@
 }
 
 .pista-boneco-posicao {
+    /* Posição controlada via atributo transform + RAF em JS */
     will-change: transform;
 }
 
@@ -334,6 +341,7 @@
     stroke-linecap: round;
 }
 
+/* ─── Animações do boneco ─── */
 @keyframes maratona-boneco-avanca {
     0%   { transform: scale(1); }
     50%  { transform: scale(1.18); }
@@ -373,6 +381,7 @@
     transform-box: fill-box;
 }
 
+/* ─── Card da pergunta ─── */
 .maratona-pergunta-card {
     background: linear-gradient(160deg, rgba(19, 42, 71, 0.95) 0%, rgba(15, 35, 64, 0.95) 100%);
     border: 1px solid var(--m-border);
@@ -442,6 +451,7 @@
     opacity: 0.85;
 }
 
+/* ─── Checkpoint stub ─── */
 .maratona-card-checkpoint {
     border-left: 4px solid var(--m-gold);
     text-align: center;
@@ -475,6 +485,7 @@
     transform: translateY(-1px);
 }
 
+/* ─── Resultado stub ─── */
 .maratona-resultado-lista {
     display: flex;
     flex-direction: column;
@@ -503,6 +514,7 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* ─── Mobile ─── */
 @media (max-width: 520px) {
     .maratona-hud {
         padding: 10px 12px;
@@ -523,6 +535,7 @@
     .maratona-opcoes { grid-template-columns: 1fr; }
 }
 
+/* ─── Acessibilidade ─── */
 @media (prefers-reduced-motion: reduce) {
     .pista-barreira { transition: none; }
     .pista-boneco-animacao.avancando,
@@ -814,3 +827,104 @@
 }
 
 /* ▲▲▲ FIM [M.CSS.05] */
+
+/* ▼▼▼ [M.CSS.06] Ranking Visual (Top 5) ───────────────────── INÍCIO ─── */
+
+.maratona-ranking-box {
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.18);
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.maratona-ranking-titulo {
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--m-text-muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.2);
+}
+
+.maratona-ranking-linha {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--m-text2);
+    margin-bottom: 4px;
+}
+
+.maratona-ranking-linha:nth-child(2) { background: rgba(251, 191, 36, 0.1); color: #fde68a; } /* Ouro */
+.maratona-ranking-linha:nth-child(3) { background: rgba(203, 213, 225, 0.1); color: #f1f5f9; } /* Prata */
+.maratona-ranking-linha:nth-child(4) { background: rgba(180, 83, 9, 0.1); color: #fed7aa; } /* Bronze */
+
+.maratona-ranking-linha.voce {
+    background: linear-gradient(90deg, rgba(34, 211, 238, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%) !important;
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    color: #fff;
+    font-weight: 800;
+}
+
+.maratona-ranking-linha .pos {
+    font-weight: 900;
+    text-align: center;
+}
+
+.maratona-ranking-linha .nome {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.maratona-ranking-linha .nome small {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.maratona-ranking-linha .tempo {
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: var(--m-gold);
+}
+.maratona-ranking-linha.voce .tempo {
+    color: var(--m-cyan);
+}
+/* ▲▲▲ FIM [M.CSS.06] */
+
+/* ▼▼▼ [M.CSS.07] Estilos da Tela de Ranking ──────────────── INÍCIO ─── */
+
+.maratona-bloco-marco {
+    margin-bottom: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-neon);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: left;
+}
+
+.maratona-bloco-titulo {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--neon-gold);
+    margin-bottom: 12px;
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.2);
+    padding-bottom: 8px;
+}
+
+.maratona-marco-vazio {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ▲▲▲ FIM [M.CSS.07] */
+
