@@ -2,6 +2,17 @@
  * maratona/maratona.js
  * Copa da Tabuada CEIB 2026 · Módulo "Maratona com Barreiras"
  * Versão do módulo: 1.0.0
+ *
+ * Blocos implementados até esta entrega:
+ *   M.01 — Núcleo: constantes, helpers, validação
+ *   M.02 — Gerador de deck sequencial (2x1 → 5x10)
+ *   M.03 — Distratores inteligentes (P1/P2/P3)
+ *   M.04 — render() + controller + _renderizarEsqueleto + _renderizarErro
+ *
+ * Contrato público:
+ *   import { render } from './maratona/maratona.js';
+ *   const ctrl = render(hostElement, { eventoId, onSair?, onFinalizar? });
+ *   ctrl.destroy(); ctrl.obterEstado();
  */
 
 // ▼▼▼ [M.01] Núcleo: constantes, helpers, validação ─────────────── INÍCIO ───
@@ -9,17 +20,21 @@
 const MODULO_NOME = "Maratona com Barreiras";
 const MODULO_VERSAO = "1.0.0";
 
+// Estrutura fixa do jogo
 const BLOCO_FATORES = [2, 3, 4, 5];
 const MULTIPLICADORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const TOTAL_BLOCOS = 4;
 const PERGUNTAS_POR_BLOCO = 10;
 const TOTAL_PERGUNTAS = TOTAL_BLOCOS * PERGUNTAS_POR_BLOCO; // 40
 
+// Distratores
 const DISTRATORES_MIN = 1;
 const DISTRATORES_MAX = 50;
 
+// CSS (uma única vez por sessão do módulo)
 const _cssPromise = { p: null };
 
+// ─── Helpers de escape (fallback local, independente do copaApp) ───
 function _escapeHtml(s) {
     if (s === null || s === undefined) return "";
     return String(s)
@@ -30,11 +45,13 @@ function _escapeHtml(s) {
         .replace(/'/g, "&#39;");
 }
 
+// ─── Helpers de tempo ───
 function _formatarTempo(ms) {
     if (!Number.isFinite(ms) || ms < 0) return "0.00s";
     return (ms / 1000).toFixed(2) + "s";
 }
 
+// ─── Garantia de CSS (com correção do import.meta.url) ───
 function _garantirCssCarregado() {
     if (_cssPromise.p) return _cssPromise.p;
     _cssPromise.p = new Promise((resolve) => {
@@ -47,6 +64,7 @@ function _garantirCssCarregado() {
         }
         const link = document.createElement("link");
         link.rel = "stylesheet";
+        // ⚠️ Correção obrigatória: caminho relativo ao PRÓPRIO maratona.js
         link.href = new URL("./maratona.css", import.meta.url).href;
         link.dataset.maratonaCss = "1";
         link.addEventListener("load", () => resolve(), { once: true });
@@ -59,6 +77,7 @@ function _garantirCssCarregado() {
     return _cssPromise.p;
 }
 
+// ─── Espera window.copaApp aparecer (não-bloqueante, não rejeita) ───
 function _esperarCopaApp(timeoutMs = 5000) {
     if (window.copaApp) return Promise.resolve(window.copaApp);
     return new Promise((resolve) => {
@@ -72,6 +91,7 @@ function _esperarCopaApp(timeoutMs = 5000) {
     });
 }
 
+// ─── Validação de opts ───
 function _validarOpts(opts) {
     if (!opts || typeof opts !== "object") {
         throw new Error("render() exige um objeto opts com a propriedade eventoId.");
@@ -86,6 +106,7 @@ function _validarOpts(opts) {
     };
 }
 
+// ─── Timer registry (para destroy limpar tudo) ───
 function _criarTimerRegistry() {
     const ids = new Set();
     return {
@@ -102,6 +123,7 @@ function _criarTimerRegistry() {
 }
 
 // ▲▲▲ FIM [M.01]
+
 
 // ▼▼▼ [M.02] Gerador de deck sequencial (2x1 → 5x10) ────────────── INÍCIO ───
 
@@ -125,6 +147,7 @@ function _gerarDeckSequencial() {
 
 // ▲▲▲ FIM [M.02]
 
+
 // ▼▼▼ [M.03] Distratores inteligentes (P1/P2/P3) ────────────────── INÍCIO ───
 
 function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
@@ -138,6 +161,7 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
         candidatos.push({ valor: v, prioridade });
     };
 
+    // P1 — tabuadas vizinhas (2x6=12, 2x8=16, 3x7=21 para 2x7=14)
     [fB - 1, fB + 1, fB - 2, fB + 2].forEach((b, i) => {
         if (b >= 1 && b <= 10) push(fA * b, i < 2 ? 1 : 2);
     });
@@ -145,6 +169,7 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
         if (a >= 1 && a <= 10) push(a * fB, i < 2 ? 1 : 2);
     });
 
+    // P2 — resposta ± 1 / ± fator / ± multiplicador
     push(resposta + 1, 1);
     push(resposta - 1, 1);
     push(resposta + fA, 1);
@@ -152,6 +177,7 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
     push(resposta + fB, 2);
     push(resposta - fB, 2);
 
+    // P3 — soma, ±2, ±10, metade, dobro
     push(fA + fB, 3);
     push(resposta + 2, 3);
     push(resposta - 2, 3);
@@ -160,6 +186,7 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
     push(Math.floor(resposta / 2), 3);
     push(resposta * 2, 3);
 
+    // Ordena globalmente por prioridade
     candidatos.sort((x, y) => x.prioridade - y.prioridade);
 
     const menores = candidatos.filter(c => c.valor < resposta);
@@ -172,6 +199,7 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
         return true;
     };
 
+    // Estratégia: 1 menor + 1 maior + 1 extra (maior prioridade entre os restantes)
     adicionar(menores[0]);
     adicionar(maiores[0]);
     for (const c of candidatos) {
@@ -179,6 +207,7 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
         adicionar(c);
     }
 
+    // Fallback de segurança (caso extremos de borda)
     let tentativas = 0;
     while (escolhidos.length < quantidade && tentativas < 100) {
         tentativas++;
@@ -194,7 +223,8 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
 
 // ▲▲▲ FIM [M.03]
 
-// ▼▼▼ [M.04] render() + controller + esqueleto + erro ───────────── INÍCIO ───
+
+// ▼▼▼ [M.04] render() + controller + esqueleto + erro (v2 — Fase 1) ─ INÍCIO ───
 
 export function render(hostElement, opts) {
     if (!hostElement || !(hostElement instanceof Element)) {
@@ -232,7 +262,6 @@ export function render(hostElement, opts) {
         errosTropecos: [],
         bonecoX: 20,
         saindo: false,
-        recordePessoalNovo: {},
         timers: _criarTimerRegistry()
     };
 
@@ -267,7 +296,7 @@ export function render(hostElement, opts) {
             S.copaApp = app;
             console.info("[Maratona] window.copaApp disponível. Versão:", app.versao);
         } else {
-            console.warn("[Maratona] window.copaApp NÃO ficou disponível em 5s.");
+            console.warn("[Maratona] window.copaApp NÃO ficou disponível em 5s. Verifique o bloco [19.10] no index.html.");
         }
     });
 
@@ -303,6 +332,7 @@ function _renderizarErro(host, mensagem) {
 }
 
 // ▲▲▲ FIM [M.04]
+
 
 // ▼▼▼ [M.05] Motor do jogo (fluxo, cronômetro, punição, DNF) ─ INÍCIO ───
 
@@ -511,14 +541,14 @@ function _completarBloco(S) {
     S.timers.setTimeout(() => {
         if (!S.vivo) return;
         _mostrarTela(S, "checkpoint");
-        _renderizarCheckpoint(S, tempo);
+        _renderizarCheckpoint(S, tempo); // Chamada Fase 2
     }, 700);
 }
 
 function _continuarProximoBloco(S) {
     if (!S.vivo) return;
     if (S.blocoAtual >= TOTAL_BLOCOS - 1) {
-        _renderizarResultado(S);
+        _renderizarResultado(S); // Chamada Fase 3/4
         return;
     }
     S.blocoAtual++;
@@ -566,7 +596,7 @@ function _tocarSomCopaApp(S, nome) {
 
 const PISTA_X_INICIO = 20;
 const PISTA_X_FIM = 380;
-const PISTA_LARGURA = PISTA_X_FIM - PISTA_X_INICIO;
+const PISTA_LARGURA = PISTA_X_FIM - PISTA_X_INICIO; // 360
 
 function _xParaProgresso(progresso) {
     const p = Math.max(0, Math.min(1, progresso));
@@ -608,17 +638,20 @@ function _renderizarPistaHTML(S) {
 
 function _atualizarPista(S) {
     if (!S.vivo) return;
+    // Barreiras concluídas
     S.host.querySelectorAll("[data-barreira]").forEach(el => {
         const i = Number(el.dataset.barreira);
         const concluida = S.temposBlocos[i] != null;
         el.classList.toggle("concluida", concluida);
     });
+    // Posição do boneco
     const alvoX = _xParaProgresso(_progressoAtual(S));
     if (Math.abs(alvoX - (S.bonecoX || PISTA_X_INICIO)) > 0.5) {
         _animarBonecoPara(S, alvoX, 400);
     }
 }
 
+// ─── Animação da posição (RAF, respeita prefers-reduced-motion) ───
 function _animarBonecoPara(S, targetX, duracao) {
     if (!S.vivo) return;
     const boneco = S.host.querySelector("[data-boneco]");
@@ -645,11 +678,13 @@ function _animarBonecoPara(S, targetX, duracao) {
     requestAnimationFrame(tick);
 }
 
+// ─── Animações curtas (classe CSS por um instante) ───
 function _animarClasseTemporaria(S, seletor, classe, duracaoMs) {
     if (!S.vivo) return;
     const el = S.host.querySelector(seletor);
     if (!el) return;
     el.classList.remove(classe);
+    // Reflow para reiniciar a animação
     void el.offsetWidth;
     el.classList.add(classe);
     S.timers.setTimeout(() => {
@@ -727,41 +762,71 @@ async function _buscarRankingBloco(S, blocoId, novoTempo) {
     const turma = app ? app.obterTurmaAluno() : null;
     
     if (!app || !app.database || !nome || !turma) {
-        container.innerHTML = `<div class="maratona-ranking-erro">Identifique-se para ver seu recorde.</div>`;
+        container.innerHTML = `<div class="maratona-ranking-erro">Identifique-se para ver o ranking.</div>`;
         return;
     }
 
     const chaveAluno = app.chaveAluno(nome, turma);
 
     try {
-        const snap = await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/marcos/${blocoId}/${chaveAluno}`).once('value');
+        const snap = await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/marcos/${blocoId}`).once('value');
         if (!S.vivo) return;
 
-        const dadosAtuais = snap.val();
-        const recordeAntigo = dadosAtuais ? dadosAtuais.tempo : null;
+        const marcos = snap.val() || {};
+        let lista = Object.values(marcos).filter(x => x.tempo != null);
+        
+        // Adiciona o tempo atual do jogador à lista (para visualização imediata)
+        lista = lista.filter(x => !(x.nome === nome && x.turma === turma));
+        lista.push({ nome, turma, tempo: novoTempo });
+        
+        lista.sort((a, b) => a.tempo - b.tempo);
 
-        if (recordeAntigo === null || novoTempo < recordeAntigo) {
-            container.innerHTML = `
-                <div class="maratona-ranking-posicao destaque" style="background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;">
-                    <span class="maratona-ranking-icone">🔥</span>
-                    <span>Novo Recorde Pessoal!</span>
-                </div>
-            `;
+        const index = lista.findIndex(x => x.nome === nome && x.turma === turma);
+        const recordeAntigo = marcos[chaveAluno] ? marcos[chaveAluno].tempo : null;
+        const bateuRecorde = (recordeAntigo === null || novoTempo < recordeAntigo);
+
+        if (bateuRecorde) {
             S.recordePessoalNovo[blocoId] = novoTempo;
-        } else {
-            container.innerHTML = `
-                <div class="maratona-ranking-posicao" style="color:var(--m-text-muted); border-color: rgba(148,163,184,0.3); background: rgba(10,22,40,0.6);">
-                    <span class="maratona-ranking-icone">🏁</span>
-                    <span>Seu recorde neste bloco é <strong>${_formatarTempo(recordeAntigo)}</strong></span>
-                </div>
-            `;
         }
+
+        // Desenha o Top 5
+        let html = `<div class="maratona-ranking-box">
+            <div class="maratona-ranking-titulo">🏆 Melhores tempos deste bloco</div>`;
+            
+        lista.slice(0, 5).forEach((m, i) => {
+            const ehVoce = (m.nome === nome && m.turma === turma);
+            html += `<div class="maratona-ranking-linha ${ehVoce ? 'voce' : ''}">
+                <span class="pos">${i + 1}º</span>
+                <span class="nome">${escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span>
+                <span class="tempo">${_formatarTempo(m.tempo)}</span>
+            </div>`;
+        });
+
+        // Se o aluno não estiver no Top 5, mostra a posição dele embaixo
+        if (index >= 5) {
+            html += `<div class="maratona-ranking-linha voce" style="margin-top:4px; border-top:1px dashed rgba(148,163,184,.3); border-radius:0; padding-top:8px;">
+                <span class="pos">${index + 1}º</span>
+                <span class="nome">${escaparHtml(nome.split(' ')[0])} <small>(${turma})</small></span>
+                <span class="tempo">${_formatarTempo(novoTempo)}</span>
+            </div>`;
+        }
+        
+        html += `</div>`;
+
+        if (bateuRecorde) {
+            html += `<div class="maratona-ranking-posicao destaque" style="margin-top: 10px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;">
+                <span class="maratona-ranking-icone">🔥</span>
+                <span>Novo Recorde Pessoal!</span>
+            </div>`;
+        }
+
+        container.innerHTML = html;
+
     } catch (e) {
         if (!S.vivo) return;
         container.innerHTML = `<div class="maratona-ranking-erro">Ranking offline.</div>`;
     }
 }
-
 // ▲▲▲ FIM [M.07]
 
 // ▼▼▼ [M.08] Tela de resultado final ───────────────────────────── INÍCIO ───
@@ -787,7 +852,7 @@ async function _renderizarResultado(S) {
             </div>
 
             <div class="maratona-resultado-ranking" data-resultado-ranking>
-                <div class="maratona-ranking-loading">⏳ Salvando tempo e buscando posição...</div>
+                <div class="maratona-ranking-loading">⏳ Salvando e buscando posição...</div>
             </div>
 
             <div class="maratona-resultado-bloco">
@@ -863,34 +928,47 @@ async function _buscarRankingGeral(S, tempoTotal) {
         return;
     }
 
-    const chaveAluno = app.chaveAluno(nome, turma);
-
     try {
         const snap = await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/tempos`).once('value');
         if (!S.vivo) return;
 
         const tempos = snap.val() || {};
-        const lista = Object.values(tempos)
-            .filter(x => x.status === 'completo' && x.tempoTotal != null)
-            .map(x => ({ chave: x.nome + x.turma, ...x }));
-
-        lista.sort((a, b) => a.tempoTotal - b.tempoTotal);
-        const index = lista.findIndex(x => x.chave === chaveAluno);
+        let lista = Object.values(tempos).filter(x => x.status === 'completo' && x.tempoTotal != null);
         
-        if (index !== -1) {
-            container.innerHTML = `
-                <div class="maratona-ranking-posicao destaque">
-                    <span class="maratona-ranking-icone">🏆</span>
-                    <span>Posição geral: <strong>${index + 1}º</strong> lugar de ${lista.length}</span>
-                </div>
-            `;
+        lista.sort((a, b) => a.tempoTotal - b.tempoTotal);
+        const index = lista.findIndex(x => x.nome === nome && x.turma === turma);
+        
+        // Desenha o Top 5 Geral
+        let html = `<div class="maratona-ranking-box">
+            <div class="maratona-ranking-titulo">🏆 Top 5 Geral da Maratona</div>`;
+            
+        lista.slice(0, 5).forEach((m, i) => {
+            const ehVoce = (m.nome === nome && m.turma === turma);
+            const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
+            html += `<div class="maratona-ranking-linha ${ehVoce ? 'voce' : ''}">
+                <span class="pos">${medalha}</span>
+                <span class="nome">${escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span>
+                <span class="tempo">${_formatarTempo(m.tempoTotal)}</span>
+            </div>`;
+        });
+
+        // Se o aluno não estiver no Top 5, mostra a posição dele embaixo
+        if (index >= 5) {
+            html += `<div class="maratona-ranking-linha voce" style="margin-top:4px; border-top:1px dashed rgba(148,163,184,.3); border-radius:0; padding-top:8px;">
+                <span class="pos">${index + 1}º</span>
+                <span class="nome">${escaparHtml(nome.split(' ')[0])} <small>(${turma})</small></span>
+                <span class="tempo">${_formatarTempo(tempoTotal)}</span>
+            </div>`;
         }
+        
+        html += `</div>`;
+        container.innerHTML = html;
+
     } catch (e) {
         if (!S.vivo) return;
         container.innerHTML = `<div class="maratona-ranking-erro">Ranking offline.</div>`;
     }
 }
-
 // ▲▲▲ FIM [M.08]
 
 // ▼▼▼ [M.09] Persistência + rankings do Firebase ─────────────── INÍCIO ───
@@ -915,8 +993,10 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
     if (status === "dnf") registro.motivoDnf = motivoDnf;
 
     try {
+        // 1. Salva o tempo total (geral)
         await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/tempos/${chaveAluno}`).set(registro);
 
+        // 2. Salva os marcos, SE a partida foi completa e se bateu recorde
         if (status === "completo" && S.recordePessoalNovo) {
             const promises = [];
             for (const [blocoId, novoTempo] of Object.entries(S.recordePessoalNovo)) {
@@ -928,7 +1008,7 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
         }
     } catch (e) {
         if (e && e.message && e.message.includes("permission_denied")) {
-            console.info("[Maratona] Sem permissão para salvar no Firebase (permission_denied).");
+            console.info("[Maratona] Sem permissão para salvar no Firebase (permission_denied). O resultado não foi gravado.");
         } else {
             console.warn("[Maratona] Falha ao salvar no Firebase:", e);
         }
