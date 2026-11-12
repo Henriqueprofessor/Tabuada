@@ -852,16 +852,17 @@ async function _renderizarResultado(S) {
             </div>
 
             <div class="maratona-resultado-ranking" data-resultado-ranking>
-                <div class="maratona-ranking-loading">⏳ Salvando e buscando posição...</div>
+                <div class="maratona-ranking-loading">⏳ Salvando tempo e buscando posição...</div>
             </div>
 
             <div class="maratona-resultado-bloco">
-                <div class="maratona-resultado-subtitulo">Tempos por bloco</div>
-                <div class="maratona-resultado-lista">
+                <div class="maratona-resultado-subtitulo">Tempos e Posições por bloco</div>
+                <div class="maratona-resultado-lista" id="maratona-lista-blocos-res" style="display:flex; flex-direction:column; gap:8px;">
                     ${S.temposBlocos.map((t, i) => `
-                        <div class="maratona-resultado-linha">
-                            <span>Bloco ${i + 1} (Fator ${i + 2})</span>
-                            <strong>${_formatarTempo(t)}</strong>
+                        <div class="maratona-resultado-linha" id="linha-bloco-${i}">
+                            <span style="flex:1;">Bloco ${i + 1} (Fator ${i + 2})</span>
+                            <strong style="color:var(--m-gold); margin-right:12px;">${_formatarTempo(t)}</strong>
+                            <span class="maratona-posicao-bloco" id="pos-bloco-${i}" style="color:var(--m-cyan); font-weight:800; font-size:12px;">⏳...</span>
                         </div>
                     `).join("")}
                 </div>
@@ -886,6 +887,52 @@ async function _renderizarResultado(S) {
 
     await _salvarResultadoFirebase(S, S.temposBlocos, tempoTotal, "completo");
     _buscarRankingGeral(S, tempoTotal);
+    _buscarPosicoesBlocos(S); // <-- NOVA FUNÇÃO
+}
+
+async function _buscarPosicoesBlocos(S) {
+    const app = S.copaApp;
+    const nome = app ? app.obterNomeAluno() : null;
+    const turma = app ? app.obterTurmaAluno() : null;
+    if (!app || !app.database || !nome || !turma) return;
+
+    try {
+        const snap = await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/marcos`).once('value');
+        if (!S.vivo) return;
+        const todosMarcos = snap.val() || {};
+
+        for (let i = 0; i < 4; i++) {
+            const blocoId = `b${i + 1}`;
+            const meuTempo = S.temposBlocos[i];
+            const marcosBloco = todosMarcos[blocoId] || {};
+            
+            // Conta quantos alunos têm tempo MENOR que o meu
+            let posicao = 1;
+            let total = 0;
+            Object.values(marcosBloco).forEach(m => {
+                if (m.tempo != null) {
+                    total++;
+                    if (m.tempo < meuTempo) posicao++;
+                }
+            });
+            // Adiciona a mim mesmo ao total
+            total++;
+
+            const posEl = document.getElementById(`pos-bloco-${i}`);
+            if (posEl) {
+                if (posicao === 1) posEl.innerHTML = `🥇 1º lugar`;
+                else if (posicao === 2) posEl.innerHTML = `🥈 2º lugar`;
+                else if (posicao === 3) posEl.innerHTML = `🥉 3º lugar`;
+                else posEl.innerHTML = `${posicao}º lugar`;
+            }
+        }
+    } catch (e) {
+        console.warn("[Maratona] Falha ao buscar posições dos blocos:", e);
+        for (let i = 0; i < 4; i++) {
+            const posEl = document.getElementById(`pos-bloco-${i}`);
+            if (posEl) posEl.innerHTML = `—`;
+        }
+    }
 }
 
 function _renderizarTropecos(erros) {
@@ -938,7 +985,6 @@ async function _buscarRankingGeral(S, tempoTotal) {
         lista.sort((a, b) => a.tempoTotal - b.tempoTotal);
         const index = lista.findIndex(x => x.nome === nome && x.turma === turma);
         
-        // Desenha o Top 5 Geral
         let html = `<div class="maratona-ranking-box">
             <div class="maratona-ranking-titulo">🏆 Top 5 Geral da Maratona</div>`;
             
@@ -952,7 +998,6 @@ async function _buscarRankingGeral(S, tempoTotal) {
             </div>`;
         });
 
-        // Se o aluno não estiver no Top 5, mostra a posição dele embaixo
         if (index >= 5) {
             html += `<div class="maratona-ranking-linha voce" style="margin-top:4px; border-top:1px dashed rgba(148,163,184,.3); border-radius:0; padding-top:8px;">
                 <span class="pos">${index + 1}º</span>
