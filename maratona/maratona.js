@@ -1404,3 +1404,120 @@ export async function exportarCSVMaratona(eventoId, app) {
     }
 }
 // ▲▲▲ FIM [M.19]
+
+// ▼▼▼ [M.19.D] Renderização do Hall da Fama (Módulo Maratona) ─── INÍCIO ───
+export async function renderizarHallDaFama(container, app) {
+    if (!app || !app.database) {
+        container.innerHTML = `<div class="desempenho-empty-msg">Banco de dados indisponível.</div>`;
+        return;
+    }
+
+    try {
+        // Busca o evento ativo (ou o mais recente)
+        const snapEv = await app.database.ref('copa_maratona/eventos').once('value');
+        const eventos = snapEv.val() || {};
+        let eventoId = null;
+        let maxTs = 0;
+
+        for (const [id, dados] of Object.entries(eventos)) {
+            const meta = dados && dados.meta;
+            if (!meta) continue;
+            if (meta.ativo === true) { eventoId = id; break; }
+            const ts = meta.criadoEm || 0;
+            if (ts > maxTs) { maxTs = ts; eventoId = id; }
+        }
+
+        if (!eventoId) {
+            container.innerHTML = `<div class="desempenho-empty-msg">Nenhum evento de maratona encontrado.</div>`;
+            return;
+        }
+
+        // Busca os dados de tempos (pódio geral) e marcos (recordes por bloco)
+        const [snapTempos, snapMarcos] = await Promise.all([
+            app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value'),
+            app.database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value')
+        ]);
+
+        const tempos = snapTempos.val() || {};
+        const marcos = snapMarcos.val() || {};
+
+        // --- 1. Pódio Geral (Top 3 Tempo Total) ---
+        let listaGeral = Object.values(tempos).filter(t => t && t.status === 'completo' && t.tempoTotal != null);
+        listaGeral.sort((a, b) => a.tempoTotal - b.tempoTotal);
+        const top3 = listaGeral.slice(0, 3);
+
+        let htmlPodio = `<div class="maratona-hall-podio">`;
+        // Renderiza na ordem visual: 2º, 1º, 3º
+        const ordemVisual = [
+            { pos: 2, item: top3[1], classe: 'pos-2', emoji: '🥈' },
+            { pos: 1, item: top3[0], classe: 'pos-1', emoji: '🥇' },
+            { pos: 3, item: top3[2], classe: 'pos-3', emoji: '🥉' }
+        ];
+
+        ordemVisual.forEach(o => {
+            if (!o.item) return;
+            htmlPodio += `
+                <div class="maratona-hall-podio-item ${o.classe}">
+                    <span class="maratona-hall-podio-emoji">${o.emoji}</span>
+                    <span class="maratona-hall-podio-nome">${_escapeHtml(o.item.nome)}</span>
+                    <span class="maratona-hall-podio-turma">Turma ${o.item.turma}</span>
+                    <span class="maratona-hall-podio-tempo">${(o.item.tempoTotal / 1000).toFixed(2)}s</span>
+                </div>
+            `;
+        });
+        htmlPodio += `</div>`;
+        
+        if (top3.length === 0) {
+            htmlPodio = `<div class="desempenho-empty-msg">Ninguém completou a maratona ainda.</div>`;
+        }
+
+        // --- 2. Recordes por Bloco ---
+        let htmlBlocos = `<div class="maratona-hall-blocos-grid">`;
+        const blocosIds = ['b1', 'b2', 'b3', 'b4'];
+        
+        blocosIds.forEach(b => {
+            const num = b.replace('b', '');
+            const alunosBloco = marcos[b] || {};
+            
+            // Pega o Top 1 do bloco
+            let listaB = Object.values(alunosBloco).filter(m => m && m.tempo != null);
+            listaB.sort((x, y) => x.tempo - y.tempo);
+            const top1 = listaB[0];
+
+            htmlBlocos += `
+                <div class="maratona-hall-bloco-card">
+                    <div class="maratona-hall-bloco-titulo">🏁 Bloco ${num} (Fator ${Number(num)+1})</div>
+            `;
+            
+            if (top1) {
+                htmlBlocos += `
+                    <div class="maratona-hall-bloco-linha">
+                        <span class="maratona-hall-bloco-nome">${_escapeHtml(top1.nome)} <small style="color:var(--text-muted);font-size:10px;">(${top1.turma})</small></span>
+                        <span class="maratona-hall-bloco-tempo">${(top1.tempo / 1000).toFixed(2)}s</span>
+                    </div>
+                `;
+            } else {
+                htmlBlocos += `<div style="font-size:12px;color:var(--text-muted);font-style:italic;">Sem recordes ainda.</div>`;
+            }
+            
+            htmlBlocos += `</div>`;
+        });
+        htmlBlocos += `</div>`;
+
+        // Monta a tela final
+        container.innerHTML = `
+            <div style="background:linear-gradient(135deg, rgba(19,42,71,0.6) 0%, rgba(15,35,64,0.6) 100%); border:1px solid var(--border-neon); border-radius:14px; padding:16px; text-align:left;">
+                <h3 style="font-size:14px; color:var(--neon-gold); margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.5px;">🏆 Pódio Geral</h3>
+                ${htmlPodio}
+                
+                <h3 style="font-size:14px; color:var(--neon-cyan); margin:30px 0 14px 0; text-transform:uppercase; letter-spacing:0.5px;">⚡ Recordistas por Bloco</h3>
+                ${htmlBlocos}
+            </div>
+        `;
+        
+    } catch (e) {
+        console.warn("[Hall Maratona] Erro ao renderizar:", e);
+        container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar os dados. Tente novamente.</div>`;
+    }
+}
+// ▲▲▲ FIM [M.19.D]
