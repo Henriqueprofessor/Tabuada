@@ -30201,6 +30201,7 @@ async function abrirRankingMaratona(opts = {}) {
     
     carregarDadosRankingMaratona();
 }
+
 async function _popularDropdownTurmasMaratona() {
     const sel = document.getElementById("maratona-turma-select");
     if (!sel || !_eventoRankingMaratonaId) return;
@@ -30315,66 +30316,6 @@ function _atualizarBotoesRankingMaratona() {
 // existe evento) ou o Ranking da Copa.
 // ─────────────────────────────────────────────────────────────────
 
-// ▼▼▼ [M.16.C] Renderizador do card "Seus Recordes" ─── INÍCIO ───
-async function carregarMeusRecordesMaratona() {
-    const container = document.getElementById("maratona-meus-recordes");
-    if (!container) return;
-
-    const nome = obterNomeSalvoAluno();
-    const turma = obterTurmaSalvaAluno();
-    
-    if (!nome || !turma || !_eventoRankingMaratonaId) {
-        container.classList.add("hidden");
-        return;
-    }
-
-    const chave = chaveAlbum(nome, turma);
-
-    try {
-        const [b1, b2, b3, b4, tempoTotal] = await Promise.all([
-            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b1/${chave}`).once('value'),
-            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b2/${chave}`).once('value'),
-            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b3/${chave}`).once('value'),
-            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b4/${chave}`).once('value'),
-            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/tempos/${chave}`).once('value')
-        ]);
-
-        const recB1 = b1.val() ? b1.val().tempo : null;
-        const recB2 = b2.val() ? b2.val().tempo : null;
-        const recB3 = b3.val() ? b3.val().tempo : null;
-        const recB4 = b4.val() ? b4.val().tempo : null;
-        
-        const tTotalData = tempoTotal.val();
-        const tTotal = tTotalData && tTotalData.status === 'completo' ? tTotalData.tempoTotal : null;
-
-        // Se o aluno não tem nenhum registro, esconde o card
-        if (!recB1 && !recB2 && !recB3 && !recB4 && !tTotal) {
-            container.classList.add("hidden");
-            return;
-        }
-
-        const fmtTempo = (ms) => ms ? (ms / 1000).toFixed(2) + 's' : '—';
-
-        container.innerHTML = `
-            <div class="maratona-recorde-card">
-                <div class="maratona-recorde-titulo">🏅 Seus Recordes</div>
-                <div class="maratona-recorde-grid">
-                    <div class="maratona-recorde-item"><span class="rotulo">B1</span><span class="valor">${fmtTempo(recB1)}</span></div>
-                    <div class="maratona-recorde-item"><span class="rotulo">B2</span><span class="valor">${fmtTempo(recB2)}</span></div>
-                    <div class="maratona-recorde-item"><span class="rotulo">B3</span><span class="valor">${fmtTempo(recB3)}</span></div>
-                    <div class="maratona-recorde-item"><span class="rotulo">B4</span><span class="valor">${fmtTempo(recB4)}</span></div>
-                    <div class="maratona-recorde-item destaque"><span class="rotulo">Total</span><span class="valor">${fmtTempo(tTotal)}</span></div>
-                </div>
-            </div>
-        `;
-        container.classList.remove("hidden");
-    } catch (e) {
-        console.warn("[Maratona] Falha ao carregar recordes do aluno:", e);
-        container.classList.add("hidden");
-    }
-}
-// ▲▲▲ FIM [M.16.C]
-
 async function irParaRankingGlobal() {
     const eventoId = await verificarEventoMaratonaAtivo();
     if (eventoId) {
@@ -30397,7 +30338,6 @@ function _obterNomeExibicaoRankingMaratona(nome, turma) {
     }
     const turmaAluno = obterTurmaSalvaAluno();
     const ehTurmaDoAluno = turmaAluno && String(turma) === String(turmaAluno);
-    // Completo apenas em contextos da própria turma do aluno
     if (ehTurmaDoAluno && (_escopoRankingMaratona === 'porTurma' || _escopoRankingMaratona === 'turmas')) {
         return nome;
     }
@@ -30460,6 +30400,65 @@ async function carregarDadosRankingMaratona() {
     }
 }
 
+// ─── M.16: Renderizador do card "Seus Recordes" ───
+async function carregarMeusRecordesMaratona() {
+    const container = document.getElementById("maratona-meus-recordes");
+    if (!container) return;
+
+    const nome = obterNomeSalvoAluno();
+    const turma = obterTurmaSalvaAluno();
+    
+    if (!nome || !turma || !_eventoRankingMaratonaId) {
+        container.classList.add("hidden");
+        return;
+    }
+
+    const chave = chaveAlbum(nome, turma);
+
+    try {
+        const [b1, b2, b3, b4, tempoTotal] = await Promise.all([
+            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b1/${chave}`).once('value'),
+            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b2/${chave}`).once('value'),
+            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b3/${chave}`).once('value'),
+            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos/b4/${chave}`).once('value'),
+            database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/tempos/${chave}`).once('value')
+        ]);
+
+        const recB1 = b1.val() ? b1.val().tempo : null;
+        const recB2 = b2.val() ? b2.val().tempo : null;
+        const recB3 = b3.val() ? b3.val().tempo : null;
+        const recB4 = b4.val() ? b4.val().tempo : null;
+        
+        const tTotalData = tempoTotal.val();
+        const tTotal = tTotalData && tTotalData.status === 'completo' ? tTotalData.tempoTotal : null;
+
+        // Se o aluno não tem nenhum registro, esconde o card
+        if (!recB1 && !recB2 && !recB3 && !recB4 && !tTotal) {
+            container.classList.add("hidden");
+            return;
+        }
+
+        const fmtTempo = (ms) => ms ? (ms / 1000).toFixed(2) + 's' : '—';
+
+        container.innerHTML = `
+            <div class="maratona-recorde-card">
+                <div class="maratona-recorde-titulo">🏅 Seus Recordes</div>
+                <div class="maratona-recorde-grid">
+                    <div class="maratona-recorde-item"><span class="rotulo">B1</span><span class="valor">${fmtTempo(recB1)}</span></div>
+                    <div class="maratona-recorde-item"><span class="rotulo">B2</span><span class="valor">${fmtTempo(recB2)}</span></div>
+                    <div class="maratona-recorde-item"><span class="rotulo">B3</span><span class="valor">${fmtTempo(recB3)}</span></div>
+                    <div class="maratona-recorde-item"><span class="rotulo">B4</span><span class="valor">${fmtTempo(recB4)}</span></div>
+                    <div class="maratona-recorde-item destaque"><span class="rotulo">Total</span><span class="valor">${fmtTempo(tTotal)}</span></div>
+                </div>
+            </div>
+        `;
+        container.classList.remove("hidden");
+    } catch (e) {
+        console.warn("[Maratona] Falha ao carregar recordes do aluno:", e);
+        container.classList.add("hidden");
+    }
+}
+
 // ─── Renderizador 1: Tempo Total (geral ou porTurma) ───
 async function _renderRankingTempoTotal(container) {
     const snap = await database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/tempos`).once('value');
@@ -30504,10 +30503,13 @@ async function _renderRankingTempoTotal(container) {
         const classeLinha = pos <= 3 ? `podio-${pos}` : "";
         const classeVoce = ehVoce ? "voce-linha" : "";
         const nomeExibicao = _obterNomeExibicaoRankingMaratona(r.nome, r.turma);
+        
+        // ⚠️ M.17: O selo de recordista vai apenas para o 1º lugar
+        const seloRecorde = pos === 1 ? `<span class="maratona-badge-recorde">👑 TOP 1</span>` : "";
 
         html += `<tr class="${classeLinha} ${classeVoce}">
             <td class="center" style="font-weight:800;">${medalha}</td>
-            <td>${escaparHtml(nomeExibicao)}${ehVoce ? ' <span class="ranking-voce-tag">Você</span>' : ''}</td>
+            <td>${escaparHtml(nomeExibicao)}${seloRecorde}${ehVoce ? ' <span class="ranking-voce-tag">Você</span>' : ''}</td>
             <td class="center">${escaparHtml(r.turma)}</td>
             <td class="tempo">${(r.tempoTotal / 1000).toFixed(2)}s</td>
             <td class="center tempo data">${formatarDataCurta(r.data)}</td>
@@ -30569,10 +30571,13 @@ async function _renderRankingBarreira(container) {
         const classeLinha = pos <= 3 ? `podio-${pos}` : "";
         const classeVoce = ehVoce ? "voce-linha" : "";
         const nomeExibicao = _obterNomeExibicaoRankingMaratona(r.nome, r.turma);
+        
+        // ⚠️ M.17: O selo de recordista vai apenas para o 1º lugar
+        const seloRecorde = pos === 1 ? `<span class="maratona-badge-recorde">👑 TOP 1</span>` : "";
 
         html += `<tr class="${classeLinha} ${classeVoce}">
             <td class="center" style="font-weight:800;">${medalha}</td>
-            <td>${escaparHtml(nomeExibicao)}${ehVoce ? ' <span class="ranking-voce-tag">Você</span>' : ''}</td>
+            <td>${escaparHtml(nomeExibicao)}${seloRecorde}${ehVoce ? ' <span class="ranking-voce-tag">Você</span>' : ''}</td>
             <td class="center">${escaparHtml(r.turma)}</td>
             <td class="tempo">${(r.tempo / 1000).toFixed(2)}s</td>
             <td class="center tempo data">${formatarDataCurta(r.data)}</td>
