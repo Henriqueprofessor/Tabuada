@@ -796,6 +796,7 @@ function _animarBonecoPulo(S) {
 function _renderizarCheckpoint(S, tempo) {
     const container = S.host.querySelector('[data-tela="checkpoint"]');
     if (!container) return;
+    
     const isUltimo = S.blocoAtual >= TOTAL_BLOCOS - 1;
     const rotuloBtn = isUltimo ? "🏁 Finalizar maratona" : "▶ Continuar";
     const blocoId = `b${S.blocoAtual + 1}`;
@@ -803,7 +804,9 @@ function _renderizarCheckpoint(S, tempo) {
     
     _tocarSomCopaApp(S, "somConclusao");
 
-    const btnVerRankingHtml = S.opts.onVerRanking
+    // ⚠️ CORREÇÃO: Se for o último bloco, NÃO exibe o botão "Ver ranking do bloco".
+    // O botão "Ver ranking completo" já aparece na tela de Resultado Final.
+    const btnVerRankingHtml = (S.opts.onVerRanking && !isUltimo)
         ? `<button type="button" class="maratona-btn-ver-ranking" data-btn-ver-ranking disabled>🏆 Ver ranking completo do Bloco ${numBloco}</button>`
         : "";
 
@@ -849,6 +852,7 @@ function _renderizarCheckpoint(S, tempo) {
 
     _buscarRankingBloco(S, blocoId, tempo);
 }
+
 async function _buscarRankingBloco(S, blocoId, novoTempo) {
     const container = S.host.querySelector("[data-checkpoint-ranking]");
     if (!container) return;
