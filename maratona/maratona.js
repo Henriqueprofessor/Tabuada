@@ -1143,6 +1143,82 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
     const eventoId = S.opts.eventoId;
     const basePath = `copa_maratona/eventos/${eventoId}`;
 
+    const blocosCompletos = (status === "completo")
+        ? TOTAL_BLOCOS
+        : Math.max(0, Math.min(TOTAL_BLOCOS, S.blocoAtual));
+
+    const promises = [];
+
+    // 1) Marcos por bloco
+    for (let i = 0; i < blocosCompletos; i++) {
+        const t = Number(temposBlocos[i]);
+        if (!Number.isFinite(t) || t <= 0) continue;
+        const blocoId = `b${i + 1}`;
+        promises.push(
+            _tentarGravarMarco(app, basePath, blocoId, chaveAluno, t, nome, turma)
+                .catch(() => {})
+        );
+    }
+
+    // 2) Tempo total (com regra de "melhor ever")
+    promises.push(
+        _tentarGravarTempoTotal(app, basePath, chaveAluno, {
+            nome, turma, temposBlocos, tempoTotal, status,
+            motivoDnf: (status === "dnf") ? (motivoDnf || "saiu") : null
+        }).catch(() => {})
+    );
+
+    // ⚠️ M.18 - Salvar no histórico (grava todas as corridas)
+    promises.push(
+        _salvarHistoricoMaratona(app, basePath, chaveAluno, {
+            nome, turma, temposBlocos, tempoTotal, status, motivoDnf
+        }).catch(() => {})
+    );
+
+    try {
+        await Promise.all(promises);
+    } catch (e) {
+        console.warn("[Maratona] Falha agregada ao salvar resultado:", e);
+    }
+}
+
+// ▼▼▼ [M.18.A] Nova função para salvar histórico ─── INÍCIO ───
+async function _salvarHistoricoMaratona(app, basePath, chaveAluno, dados) {
+    const { nome, turma, temposBlocos, tempoTotal, status, motivoDnf } = dados;
+    
+    const registro = {
+        nome,
+        turma,
+        temposBlocos: temposBlocos.slice(),
+        tempoTotal,
+        status,
+        data: new Date().toISOString()
+    };
+    if (status === "dnf" && motivoDnf) {
+        registro.motivoDnf = motivoDnf;
+    }
+
+    try {
+        // Usa push() para gerar um ID único para cada corrida (runId)
+        await app.database.ref(`${basePath}/historico/${chaveAluno}`).push(registro);
+    } catch (e) {
+        console.warn("[Maratona] Falha ao gravar histórico:", e);
+    }
+}
+// ▲▲▲ FIM [M.18.A] Nova função para salvar histórico
+    const app = S.copaApp;
+    if (!app || !app.database) return;
+
+    const nome = app.obterNomeAluno();
+    const turma = app.obterTurmaAluno();
+    if (!nome || !turma) return;
+
+    const chaveAluno = app.chaveAluno(nome, turma);
+    if (!chaveAluno) return;
+
+    const eventoId = S.opts.eventoId;
+    const basePath = `copa_maratona/eventos/${eventoId}`;
+
     // ─── Quantos blocos foram DE FATO completados nesta corrida ───
     // Em COMPLETE: os 4 blocos. Em DNF: só até o bloco onde o aluno
     // estava (S.blocoAtual é 0-indexed e representa o bloco em que ele
