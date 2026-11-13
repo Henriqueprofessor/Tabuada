@@ -928,3 +928,493 @@
 
 /* ▲▲▲ FIM [M.CSS.07] */
 
+/* ▼▼▼ [M.CSS.08] Ranking da Maratona — Fase 2 ─────────────── INÍCIO ─── */
+
+/* ─── Info do evento no topo ─── */
+.maratona-rank-evento-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(34, 211, 238, 0.06);
+    border: 1px solid rgba(34, 211, 238, 0.25);
+    border-left: 3px solid var(--neon-cyan, #22d3ee);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text-secondary, #cbd5e1);
+    line-height: 1.4;
+    text-align: left;
+}
+.maratona-rank-evento-info strong {
+    color: var(--neon-cyan, #22d3ee);
+    font-weight: 800;
+}
+.maratona-rank-evento-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--neon-cyan, #22d3ee);
+    box-shadow: 0 0 8px var(--neon-cyan, #22d3ee);
+    animation: maratona-rank-pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+@keyframes maratona-rank-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.55; transform: scale(0.9); }
+}
+
+/* ─── Escopo (3 botões) ─── */
+.maratona-escopo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.maratona-escopo .aba-principal {
+    width: 100%;
+    padding: 12px 10px;
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    margin: 0;
+}
+
+/* ─── Dropdown de turma (porTurma) ─── */
+.maratona-turma-select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(10, 22, 40, 0.55);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+.maratona-turma-select-wrap.hidden {
+    display: none !important;
+}
+.maratona-turma-select-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-secondary, #cbd5e1);
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+    margin: 0;
+}
+.maratona-turma-select {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    background: rgba(10, 22, 40, 0.85);
+    color: var(--text-primary, #f8fafc);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 0;
+    font-family: inherit;
+}
+.maratona-turma-select:focus {
+    outline: none;
+    border-color: var(--neon-cyan, #22d3ee);
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+.maratona-turma-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ─── Métrica (2 botões) ─── */
+.maratona-metrica {
+    margin-bottom: 12px;
+}
+.maratona-metrica.hidden {
+    display: none !important;
+}
+.maratona-metrica-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.maratona-metrica-tabs .aba-principal {
+    width: 100%;
+    padding: 11px 10px;
+    font-size: 13px;
+    font-weight: 800;
+    margin: 0;
+}
+
+/* ─── Sub-abas de bloco B1..B4 ─── */
+.maratona-blocos-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 6px;
+    background: rgba(10, 22, 40, 0.5);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 10px;
+}
+.maratona-blocos-tabs.hidden {
+    display: none !important;
+}
+.aba-bloco {
+    width: 100%;
+    padding: 9px 8px;
+    background: transparent;
+    color: var(--text-secondary, #cbd5e1);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    margin: 0;
+}
+.aba-bloco:hover:not(.ativa) {
+    background: rgba(34, 211, 238, 0.08);
+    color: var(--text-primary, #f8fafc);
+}
+.aba-bloco.ativa {
+    background: linear-gradient(135deg, #0891b2 0%, #0369a1 100%);
+    color: #fff;
+    border-color: var(--neon-cyan, #22d3ee);
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+}
+.aba-bloco:focus-visible {
+    outline: 3px solid var(--neon-cyan, #22d3ee);
+    outline-offset: 2px;
+}
+
+/* ─── Tabela de ranking ─── */
+.maratona-tabela-rank {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.maratona-tabela-rank thead th {
+    padding: 10px 8px;
+    background: rgba(34, 211, 238, 0.10);
+    color: var(--neon-cyan, #22d3ee);
+    font-size: 11.5px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+    white-space: nowrap;
+}
+.maratona-tabela-rank thead th.center {
+    text-align: center;
+}
+.maratona-tabela-rank tbody td {
+    padding: 11px 8px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    color: var(--text-primary, #f8fafc);
+    vertical-align: middle;
+}
+.maratona-tabela-rank tbody td.center {
+    text-align: center;
+}
+.maratona-tabela-rank tbody td.tempo {
+    font-weight: 900;
+    color: var(--neon-gold, #fbbf24);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+.maratona-tabela-rank tbody td.tempo.data {
+    font-weight: 700;
+    color: var(--text-muted, #94a3b8);
+    font-size: 12.5px;
+    text-align: center;
+}
+
+/* Pódio na tabela de ranking */
+.maratona-tabela-rank tbody tr.podio-1 { background: linear-gradient(90deg, rgba(251, 191, 36, 0.16) 0%, transparent 100%); }
+.maratona-tabela-rank tbody tr.podio-2 { background: linear-gradient(90deg, rgba(203, 213, 225, 0.14) 0%, transparent 100%); }
+.maratona-tabela-rank tbody tr.podio-3 { background: linear-gradient(90deg, rgba(180, 83, 9, 0.16) 0%, transparent 100%); }
+.maratona-tabela-rank tbody tr.podio-1 td:first-child { border-left: 4px solid #fbbf24; }
+.maratona-tabela-rank tbody tr.podio-2 td:first-child { border-left: 4px solid #cbd5e1; }
+.maratona-tabela-rank tbody tr.podio-3 td:first-child { border-left: 4px solid #b45309; }
+
+/* Aluno logado */
+.maratona-tabela-rank tbody tr.voce-linha td {
+    background: rgba(34, 211, 238, 0.12) !important;
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+/* ─── Tabela de Turmas (M.13 vai usar) ─── */
+.maratona-tabela-turmas {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.maratona-tabela-turmas thead th {
+    padding: 10px 8px;
+    background: rgba(34, 211, 238, 0.10);
+    color: var(--neon-cyan, #22d3ee);
+    font-size: 11.5px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+    white-space: nowrap;
+}
+.maratona-tabela-turmas thead th.center { text-align: center; }
+.maratona-tabela-turmas tbody td {
+    padding: 11px 8px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    color: var(--text-primary, #f8fafc);
+    vertical-align: middle;
+}
+.maratona-tabela-turmas tbody td.center { text-align: center; }
+.maratona-tabela-turmas tbody td.tempo {
+    font-weight: 900;
+    color: var(--neon-gold, #fbbf24);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+.maratona-tabela-turmas tbody tr.podio-1 { background: linear-gradient(90deg, rgba(251, 191, 36, 0.16) 0%, transparent 100%); }
+.maratona-tabela-turmas tbody tr.podio-2 { background: linear-gradient(90deg, rgba(203, 213, 225, 0.14) 0%, transparent 100%); }
+.maratona-tabela-turmas tbody tr.podio-3 { background: linear-gradient(90deg, rgba(180, 83, 9, 0.16) 0%, transparent 100%); }
+.maratona-tabela-turmas tbody tr.podio-1 td:first-child { border-left: 4px solid #fbbf24; }
+.maratona-tabela-turmas tbody tr.podio-2 td:first-child { border-left: 4px solid #cbd5e1; }
+.maratona-tabela-turmas tbody tr.podio-3 td:first-child { border-left: 4px solid #b45309; }
+.maratona-tabela-turmas tbody tr.turma-aluno td {
+    background: rgba(34, 211, 238, 0.12) !important;
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+/* ─── Empty state ─── */
+.maratona-rank-empty {
+    padding: 40px 20px;
+    text-align: center;
+    background: rgba(10, 22, 40, 0.4);
+    border: 1px dashed rgba(148, 163, 184, 0.25);
+    border-radius: 12px;
+    color: var(--text-muted, #94a3b8);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+.maratona-rank-empty .maratona-rank-empty-emoji {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 10px;
+    opacity: 0.6;
+}
+.maratona-rank-empty strong {
+    color: var(--text-secondary, #cbd5e1);
+    font-weight: 800;
+}
+
+/* ─── Nota de rodapé (M.13 vai usar) ─── */
+.maratona-rank-nota {
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: rgba(34, 211, 238, 0.06);
+    border-left: 3px solid var(--neon-cyan, #22d3ee);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-muted, #94a3b8);
+    line-height: 1.55;
+    text-align: left;
+}
+.maratona-rank-nota strong {
+    color: var(--text-secondary, #cbd5e1);
+    font-weight: 800;
+}
+.maratona-rank-contagem {
+    display: inline-block;
+    background: rgba(34, 211, 238, 0.12);
+    color: var(--neon-cyan, #22d3ee);
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-left: 6px;
+    letter-spacing: 0.3px;
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 620px) {
+    .maratona-escopo {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    .maratona-escopo .aba-principal {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    .maratona-turma-select-wrap {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+    .maratona-turma-select-label {
+        font-size: 12px;
+    }
+    .maratona-turma-select {
+        width: 100%;
+    }
+    .maratona-metrica-tabs .aba-principal {
+        padding: 10px 8px;
+        font-size: 12.5px;
+    }
+    .maratona-blocos-tabs {
+        gap: 4px;
+    }
+    .aba-bloco {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+    .maratona-tabela-rank,
+    .maratona-tabela-turmas {
+        font-size: 13px;
+    }
+    .maratona-tabela-rank thead th,
+    .maratona-tabela-rank tbody td,
+    .maratona-tabela-turmas thead th,
+    .maratona-tabela-turmas tbody td {
+        padding: 9px 6px;
+    }
+    .maratona-tabela-rank thead th,
+    .maratona-tabela-turmas thead th {
+        font-size: 10.5px;
+    }
+}
+
+/* ─── Acessibilidade ─── */
+@media (prefers-reduced-motion: reduce) {
+    .maratona-rank-evento-dot { animation: none; }
+    .aba-bloco { transition: none !important; }
+}
+
+/* ▲▲▲ FIM [M.CSS.08] */
+
+/* ▼▼▼ [M.CSS.09] Botões "Ver ranking completo" ───────────── INÍCIO ─── */
+
+/* Botão secundário do checkpoint (dashed, discreto) */
+.maratona-btn-ver-ranking {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: transparent;
+    color: var(--m-cyan, #22d3ee);
+    border: 1px dashed rgba(34, 211, 238, 0.5);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    box-shadow: none;
+}
+.maratona-btn-ver-ranking:hover:not(:disabled) {
+    background: rgba(34, 211, 238, 0.10);
+    border-style: solid;
+    border-color: var(--m-cyan, #22d3ee);
+    color: #a5f3fc;
+}
+.maratona-btn-ver-ranking:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Wrapper de ações do resultado (2 botões lado a lado) */
+.maratona-resultado-acoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+@media (max-width: 420px) {
+    .maratona-resultado-acoes {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Botão "Ver ranking completo" (destaque ciano, igual ao Começar) */
+.maratona-btn-ver-ranking-destaque {
+    width: 100%;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 3px 0 #075985, 0 4px 12px rgba(14, 165, 233, 0.25);
+    transition: all 0.15s ease;
+    margin: 0;
+}
+.maratona-btn-ver-ranking-destaque:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0284c7 0%, #075985 100%);
+    transform: translateY(-1px);
+}
+.maratona-btn-ver-ranking-destaque:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 #075985, 0 2px 8px rgba(14, 165, 233, 0.25);
+}
+
+/* Botão "Voltar ao início" no resultado (secundário) */
+.maratona-btn-voltar-secundario {
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+    color: var(--m-text2, #cbd5e1);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    margin: 0;
+}
+.maratona-btn-voltar-secundario:hover:not(:disabled) {
+    background: rgba(148, 163, 184, 0.10);
+    border-color: var(--m-text2, #cbd5e1);
+    color: var(--m-text, #f8fafc);
+}
+
+@media (max-width: 520px) {
+    .maratona-btn-ver-ranking {
+        font-size: 12.5px;
+        padding: 11px 14px;
+    }
+    .maratona-btn-ver-ranking-destaque,
+    .maratona-btn-voltar-secundario {
+        font-size: 13.5px;
+        padding: 13px 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .maratona-btn-ver-ranking,
+    .maratona-btn-ver-ranking-destaque,
+    .maratona-btn-voltar-secundario {
+        transition: none !important;
+    }
+    .maratona-btn-ver-ranking-destaque:hover:not(:disabled),
+    .maratona-btn-ver-ranking-destaque:active:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* ▲▲▲ FIM [M.CSS.09] */
+
