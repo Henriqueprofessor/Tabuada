@@ -30183,58 +30183,13 @@ async function encerrarEventoMaratona(id) {
 }
 
 async function exportarCSVMaratona(eventoId) {
-    if (!exigirProfessorAutenticado()) return;
-    notificar("⏳ Gerando CSV da maratona...", "info");
-    
     try {
-        const [snapTempos, snapMarcos] = await Promise.all([
-            database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value'),
-            database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value')
-        ]);
-
-        const tempos = snapTempos.val() || {};
-        const marcos = snapMarcos.val() || {};
-
-        const esc = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
-        let csv = "\ufeffNOME,TURMA,STATUS,TEMPO_TOTAL,BLOCO1,BLOCO2,BLOCO3,BLOCO4,DATA\n";
-
-        const listaTempos = Object.values(tempos).sort((a, b) => a.tempoTotal - b.tempoTotal);
-
-        listaTempos.forEach(t => {
-            const tBlocos = t.temposBlocos || [];
-            const b1 = tBlocos[0] ? (tBlocos[0]/1000).toFixed(2) : "";
-            const b2 = tBlocos[1] ? (tBlocos[1]/1000).toFixed(2) : "";
-            const b3 = tBlocos[2] ? (tBlocos[2]/1000).toFixed(2) : "";
-            const b4 = tBlocos[3] ? (tBlocos[3]/1000).toFixed(2) : "";
-            
-            csv += `${esc(t.nome)},${esc(t.turma)},${esc(t.status)},${(t.tempoTotal/1000).toFixed(2)},${b1},${b2},${b3},${b4},${esc(t.data)}\n`;
-        });
-
-        csv += "\n\nRANKING DE MARCOS (RECORDES POR BLOCO)\n";
-        csv += "BLOCO,NOME,TURMA,TEMPO,DATA\n";
-        
-        for (const blocoId of ["b1", "b2", "b3", "b4"]) {
-            const alunosBloco = marcos[blocoId] || {};
-            const listaBloco = Object.values(alunosBloco).sort((a, b) => a.tempo - b.tempo);
-            listaBloco.forEach(m => {
-                csv += `${blocoId.toUpperCase()},${esc(m.nome)},${esc(m.turma)},${(m.tempo/1000).toFixed(2)},${esc(m.data)}\n`;
-            });
-        }
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `maratona_${eventoId}_${new Date().toISOString().slice(0,10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 3000);
-        
-        notificar("✅ CSV exportado!", "sucesso");
+        // Chama o cérebro que está guardado no arquivo maratona.js
+        const modulo = await import('./maratona/maratona.js');
+        modulo.exportarCSVMaratona(eventoId, window.copaApp);
     } catch (e) {
-        console.warn(e);
-        notificar("Erro ao exportar CSV.", "erro");
+        console.warn("[Maratona] Falha ao carregar módulo CSV:", e);
+        notificar("Erro ao carregar o módulo de exportação.", "erro");
     }
 }
 // ▲▲▲ FIM [19.12]
