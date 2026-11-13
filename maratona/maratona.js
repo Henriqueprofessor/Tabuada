@@ -959,3 +959,302 @@ export async function renderizarHallDaFama(container, app) {
     }
 }
 // ▲▲▲ FIM [M.19.D]
+
+// ▼▼▼ [M.20] Estatísticas da Maratona no Painel ─── INÍCIO ───
+export async function renderizarEstatisticasMaratona(container, app, eventosCache) {
+    if (!app || !app.database) {
+        container.innerHTML = `<div class="desempenho-empty-msg">Banco de dados indisponível.</div>`;
+        return;
+    }
+
+    try {
+        // 1. Descobre qual evento usar (o ativo, ou o mais recente)
+        let eventoId = null;
+        let maxTs = 0;
+        let nomeEvento = "Evento";
+
+        for (const [id, dados] of Object.entries(eventosCache)) {
+            const meta = dados && dados.meta;
+            if (!meta) continue;
+            if (meta.ativo === true) { eventoId = id; nomeEvento = meta.nome || nomeEvento; break; }
+            const ts = meta.criadoEm || 0;
+            if (ts > maxTs) { maxTs = ts; eventoId = id; nomeEvento = meta.nome || nomeEvento; }
+        }
+
+        if (!eventoId) {
+            container.innerHTML = `<div class="desempenho-empty-msg">Nenhum evento encontrado para analisar.</div>`;
+            return;
+        }
+
+        // 2. Busca os dados de tempos e marcos
+        const [snapTempos, snapMarcos] = await Promise.all([
+            app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value'),
+            app.database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value')
+        ]);
+
+        const tempos = snapTempos.val() || {};
+        const marcos = snapMarcos.val() || {};
+
+        // 3. Processa as métricas
+        const totalAlunos = Object.keys(tempos).length;
+        let completos = 0;
+        let dnfs = 0;
+
+        Object.values(tempos).forEach(t => {
+            if (t.status === 'completo') completos++;
+            else dnfs++;
+        });
+
+        const taxaConclusao = totalAlunos > 0 ? Math.round((completos / totalAlunos) * 100) : 0;
+        const pctCompleto = totalAlunos > 0 ? (completos / totalAlunos) * 100 : 0;
+        const pctDnf = totalAlunos > 0 ? (dnfs / totalAlunos) * 100 : 0;
+
+        // 4. Pega os melhores tempos de cada bloco
+        const melhoresBlocos = [];
+        ['b1', 'b2', 'b3', 'b4'].forEach(b => {
+            const alunosBloco = marcos[b] || {};
+            let lista = Object.values(alunosBloco).filter(m => m && m.tempo != null);
+            lista.sort((x, y) => x.tempo - y.tempo);
+            melhoresBlocos.push({
+                bloco: b.toUpperCase(),
+                nome: lista[0] ? lista[0].nome.split(' ')[0] : '—',
+                tempo: lista[0] ? (lista[0].tempo / 1000).toFixed(2) + 's' : '—'
+            });
+        });
+
+        // 5. Monta o HTML
+        let html = `
+            <div class="maratona-stats-wrap">
+                <div style="font-size:13px; font-weight:800; color:var(--neon-cyan); text-transform:uppercase; margin-bottom:-4px;">
+                    📊 Estatísticas do Evento: ${app.escaparHtml(nomeEvento)}
+                </div>
+                
+                <div class="maratona-stats-grid">
+                    <div class="maratona-stats-card">
+                        <span class="maratona-stats-valor">${totalAlunos}</span>
+                        <span class="maratona-stats-rotulo">Alunos que jogaram</span>
+                    </div>
+                    <div class="maratona-stats-card destaque">
+                        <span class="maratona-stats-valor">${taxaConclusao}%</span>
+                        <span class="maratona-stats-rotulo">Taxa de Conclusão</span>
+                    </div>
+                </div>
+
+                <div class="maratona-stats-barra-wrap">
+                    <div class="maratona-stats-barra-titulo">
+                        <span>Completos: ${completos}</span>
+                        <span>Desistiram (DNF): ${dnfs}</span>
+                    </div>
+                    <div class="maratona-stats-barra-trilha">
+                        <div class="maratona-stats-barra-fill completo" style="width: ${pctCompleto}%"></div>
+                        <div class="maratona-stats-barra-fill dnf" style="width: ${pctDnf}%"></div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(10,22,40,0.6); border:1px solid rgba(56,189,248,0.2); border-radius:12px; padding:14px;">
+                    <div class="maratona-stats-barra-titulo" style="margin-bottom:10px;">
+                        <span>⚡ Melhores Tempos por Bloco</span>
+                    </div>
+                    <div class="maratona-stats-melhores">
+                        ${melhoresBlocos.map(b => `
+                            <div class="maratona-stats-melhor-linha">
+                                <span>${b.bloco}</span>
+                                <span style="color:var(--text-secondary); font-size:12px;">${app.escaparHtml(b.nome)}</span>
+                                <strong>${b.tempo}</strong>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+
+    } catch (e) {
+        console.error("[Painel Maratona] Erro nas estatísticas:", e);
+        container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar as estatísticas do evento.</div>`;
+    }
+}
+// ▲▲▲ FIM [M.20]
+
+// ▼▼▼ [M.21] INÍCIO — Polimento Visual ───
+(function maratonaPolimento() {
+  if (window.__maratonaPolimentoOK) return;
+  window.__maratonaPolimentoOK = true;
+
+  // ---------- FOGOS DE ARTIFÍCIO ----------
+  const coresFw = ['#FFD700','#FF3D00','#00E5FF','#76FF03','#E040FB','#FF4081','#FFEB3B'];
+
+  function getCamada() {
+    let l = document.querySelector('.maratona-fireworks-layer');
+    if (!l) {
+      l = document.createElement('div');
+      l.className = 'maratona-fireworks-layer';
+      document.body.appendChild(l);
+    }
+    return l;
+  }
+
+  function dispararFogos(centros) {
+    centros = centros || 3;
+    const camada = getCamada();
+    for (let c = 0; c < centros; c++) {
+      const cx = window.innerWidth  * (0.15 + Math.random() * 0.7);
+      const cy = window.innerHeight * (0.10 + Math.random() * 0.55);
+      const n  = 16 + Math.floor(Math.random() * 8);
+      for (let i = 0; i < n; i++) {
+        const p = document.createElement('div');
+        p.className = 'maratona-fw-particula';
+        p.style.left = cx + 'px';
+        p.style.top  = cy + 'px';
+        const ang  = (Math.PI * 2 * i) / n + Math.random() * 0.2;
+        const dist = 70 + Math.random() * 130;
+        p.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+        p.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+        p.style.background = coresFw[Math.floor(Math.random() * coresFw.length)];
+        p.style.boxShadow = '0 0 10px ' + p.style.background;
+        camada.appendChild(p);
+        setTimeout(() => p.remove(), 1250);
+      }
+    }
+  }
+  window.maratonaDispararFogos = dispararFogos;
+
+  // ---------- DETECÇÃO AUTOMÁTICA DE RECORDE ----------
+  let ultimoFogo = 0;
+  const COOLDOWN_MS = 2500;
+
+  function pareceRecorde(txt) {
+    txt = (txt || '').toLowerCase();
+    return txt.includes('novo recorde')
+        || txt.includes('recorde novo')
+        || txt.includes('quebrou o recorde')
+        || txt.includes('🏆')
+        || txt.includes('🥇');
+  }
+
+  function dentroMaratona(node) {
+    return node.closest &&
+      node.closest('[id*="maratona" i], [class*="maratona" i]');
+  }
+
+  new MutationObserver((muts) => {
+    for (const m of muts) {
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (!dentroMaratona(n)) continue;
+        if (!pareceRecorde(n.textContent || '')) continue;
+        const agora = Date.now();
+        if (agora - ultimoFogo < COOLDOWN_MS) continue;
+        ultimoFogo = agora;
+        dispararFogos(4);
+      }
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+
+  // ---------- TRANSIÇÃO SUAVE ENTRE BLOCOS ----------
+  new MutationObserver(() => {
+    document.querySelectorAll('[class*="maratona" i]').forEach((el) => {
+      if (el.offsetParent === null) return;
+      if (el.classList.contains('maratona-anim-bloco')) return;
+      const cls = (el.className || '').toString().toLowerCase();
+      if (!(cls.includes('tela') || cls.includes('bloco') || cls.includes('screen'))) return;
+      el.classList.add('maratona-anim-bloco');
+      setTimeout(() => el.classList.remove('maratona-anim-bloco'), 500);
+    });
+  }).observe(document.body, {
+    childList: true, subtree: true,
+    attributes: true, attributeFilter: ['class', 'style', 'hidden']
+  });
+
+  // ---------- GATILHO MANUAL (para uso futuro) ----------
+  document.addEventListener('maratona:recorde', () => dispararFogos(5));
+})();
+// ▲▲▲ FIM [M.21] ───
+
+// ▼▼▼ [M.22-B] INÍCIO — Botão "Testar Fogos" no Painel ───
+(function maratonaTestarFogos() {
+  if (window.__maratonaTestarFogosOK) return;
+  window.__maratonaTestarFogosOK = true;
+
+  // Procura o Painel do Professor na tela (por id ou classe).
+  var SELETOR_PAINEL =
+    '[id*="painel" i],[id*="professor" i],[class*="painel" i],' +
+    '[class*="professor" i],[id*="admin" i],[class*="admin" i]';
+
+  function painelVisivel() {
+    var lista = document.querySelectorAll(SELETOR_PAINEL);
+    for (var i = 0; i < lista.length; i++) {
+      var el = lista[i];
+      if (el.offsetParent === null) continue; // escondido
+      var r = el.getBoundingClientRect();
+      if (r.width < 200 || r.height < 120) continue; // pequeno demais
+      return el;
+    }
+    return null;
+  }
+
+  function criarBotao() {
+    var b = document.createElement('button');
+    b.id = 'maratona-btn-testar-fogos';
+    b.type = 'button';
+    b.textContent = '🧪 Testar Fogos';
+    b.style.cssText = [
+      'position:fixed',
+      'right:18px',
+      'bottom:18px',
+      'z-index:100000',
+      'padding:12px 18px',
+      'border-radius:999px',
+      'border:2px solid #FFD700',
+      'background:linear-gradient(135deg,#1a1a2e,#16213e)',
+      'color:#FFD700',
+      'font-weight:700',
+      'font-size:14px',
+      'cursor:pointer',
+      'box-shadow:0 6px 22px rgba(255,215,0,.35)',
+      'letter-spacing:.3px'
+    ].join(';');
+
+    b.addEventListener('click', function () {
+      if (typeof window.maratonaDispararFogos === 'function') {
+        window.maratonaDispararFogos(5);
+        b.textContent = '🎆 Fogos disparados!';
+        setTimeout(function () {
+          b.textContent = '🧪 Testar Fogos';
+        }, 1800);
+      } else {
+        alert(
+          'A função de fogos (M.21-B) não foi carregada.\n\n' +
+          'Cole o bloco M.21-B no FINAL do maratona.js e recarregue a página.'
+        );
+      }
+    });
+
+    return b;
+  }
+
+  function sincronizar() {
+    var painel = painelVisivel();
+    var existente = document.getElementById('maratona-btn-testar-fogos');
+    if (painel && !existente) {
+      document.body.appendChild(criarBotao());
+    } else if (!painel && existente) {
+      existente.remove();
+    }
+  }
+
+  // Verificação rápida sempre que a tela mudar.
+  new MutationObserver(sincronizar).observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  // Rede de segurança: checa a cada 1,2s (cobre abertura/fecho do Painel).
+  setInterval(sincronizar, 1200);
+
+  // Checagem inicial.
+  setTimeout(sincronizar, 400);
+})();
+// ▲▲▲ FIM [M.22-B] ───
+
