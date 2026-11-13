@@ -92,6 +92,9 @@ function _esperarCopaApp(timeoutMs = 5000) {
 }
 
 // ─── Validação de opts ───
+
+// ▼▼▼ [M.15.A] _validarOpts com onVerRanking ─────────────── INÍCIO ───
+
 function _validarOpts(opts) {
     if (!opts || typeof opts !== "object") {
         throw new Error("render() exige um objeto opts com a propriedade eventoId.");
@@ -102,9 +105,12 @@ function _validarOpts(opts) {
     return {
         eventoId: opts.eventoId.trim(),
         onSair: typeof opts.onSair === "function" ? opts.onSair : null,
-        onFinalizar: typeof opts.onFinalizar === "function" ? opts.onFinalizar : null
+        onFinalizar: typeof opts.onFinalizar === "function" ? opts.onFinalizar : null,
+        onVerRanking: typeof opts.onVerRanking === "function" ? opts.onVerRanking : null
     };
 }
+
+// ▲▲▲ FIM [M.15.A]
 
 // ─── Timer registry (para destroy limpar tudo) ───
 function _criarTimerRegistry() {
@@ -244,26 +250,34 @@ export function render(hostElement, opts) {
 
     try { hostElement.innerHTML = ""; } catch (e) {}
 
-    const S = {
-        vivo: true,
-        host: hostElement,
-        opts: optsValidos,
-        copaApp: null,
-        tela: "selecao",
-        deck: _gerarDeckSequencial(),
-        blocoAtual: 0,
-        indiceNoBloco: 0,
-        temposBlocos: [],
-        inicioBlocoPerf: 0,
-        tempoPausadoMs: 0,
-        pausadoEmPerf: null,
-        pausado: false,
-        cronoInterval: null,
-        errosTropecos: [],
-        bonecoX: 20,
-        saindo: false,
-        timers: _criarTimerRegistry()
-    };
+// ▼▼▼ [M.10.A] State S — adiciona recordePessoalNovo ──────────── INÍCIO ───
+const S = {
+    vivo: true,
+    host: hostElement,
+    opts: optsValidos,
+    copaApp: null,
+    tela: "selecao",
+    deck: _gerarDeckSequencial(),
+    blocoAtual: 0,
+    indiceNoBloco: 0,
+    temposBlocos: [],
+    inicioBlocoPerf: 0,
+    tempoPausadoMs: 0,
+    pausadoEmPerf: null,
+    pausado: false,
+    cronoInterval: null,
+    errosTropecos: [],
+    bonecoX: 20,
+    saindo: false,
+    // Mapa { b1: tempoMs, b2: tempoMs, ... } com os records pessoais
+    // detectados NESTA corrida. Usado apenas para UI (ex.: exibir
+    // "Novo Recorde Pessoal!" no checkpoint). A gravação real dos
+    // marcos é feita em _salvarResultadoFirebase() por transação,
+    // independente deste campo.
+    recordePessoalNovo: {},
+    timers: _criarTimerRegistry()
+};
+// ▲▲▲ FIM [M.10.A]
 
     const controller = {
         destroy: function () {
@@ -589,6 +603,73 @@ function _tocarSomCopaApp(S, nome) {
     if (!app || typeof app[nome] !== "function") return;
     try { app[nome](); } catch (e) {}
 }
+// ▼▼▼ [M.15.B] Helpers "Ver ranking completo" ─────────────── INÍCIO ───
+
+// Dispara o callback onVerRanking (se configurado pelo host).
+// O callback recebe { escopo, metrica, bloco? } e é responsável por
+// navegar para a tela de ranking no index.html.
+function _acionarVerRankingCompleto(S, parametros) {
+    if (!S.vivo) return;
+    if (!S.opts.onVerRanking) {
+        console.warn("[Maratona] onVerRanking não configurado pelo host. Não é possível abrir o ranking.");
+        return;
+    }
+    try {
+        S.opts.onVerRanking(parametros || { escopo: "geral", metrica: "tempo" });
+    } catch(e) {
+        console.warn("[Maratona] onVerRanking lançou erro:", e);
+    }
+}
+
+// Chamado pelo botão "Ver ranking do Bloco X" no checkpoint.
+// ⚠️ O usuário vai SAIR da maratona. Os blocos JÁ CONCLUÍDOS são
+// preservados (via marcos) — só o bloco atual não conta como completo.
+function _sairDoCheckpointParaRanking(S) {
+    if (!S.vivo || S.saindo) return;
+
+    const numBloco = S.blocoAtual + 1;
+    const blocosConcluidos = S.blocoAtual;
+
+    const ok = window.confirm(
+        `Ver o ranking completo do Bloco ${numBloco}?\n\n` +
+        `⚠️ Você vai SAIR da maratona agora.\n` +
+        `✅ Os ${blocosConcluidos} bloco(s) já concluído(s) foram salvos.\n` +
+        `❌ O Bloco ${numBloco} não será completado (a corrida conta como DNF).`
+    );
+    if (!ok) return;
+
+    _pausarCronometro(S);
+    S.saindo = true;
+    S.host.querySelectorAll("button").forEach(b => { b.disabled = true; });
+
+    // Usa os tempos já registrados (o bloco atual em checkpoint já está lá)
+    const temposBlocos = [...S.temposBlocos];
+    const tempoTotal = temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0);
+
+    _salvarResultadoFirebase(S, temposBlocos, tempoTotal, "dnf", "ver_ranking").finally(() => {
+        _acionarVerRankingCompleto(S, {
+            escopo: "geral",
+            metrica: "barreira",
+            bloco: `b${numBloco}`
+        });
+        try { S.controller.destroy(); } catch(e) {}
+    });
+}
+
+// Chamado pelo botão "Ver ranking completo" no resultado final.
+// A corrida JÁ FOI SALVA como COMPLETE em _renderizarResultado.
+// Basta navegar para o ranking (geral + tempo).
+function _sairDoResultadoParaRanking(S) {
+    if (!S.vivo || S.saindo) return;
+    S.saindo = true;
+    _acionarVerRankingCompleto(S, {
+        escopo: "geral",
+        metrica: "tempo"
+    });
+    try { S.controller.destroy(); } catch(e) {}
+}
+
+// ▲▲▲ FIM [M.15.B]
 
 // ▲▲▲ FIM [M.05]
 
@@ -718,13 +799,18 @@ function _renderizarCheckpoint(S, tempo) {
     const isUltimo = S.blocoAtual >= TOTAL_BLOCOS - 1;
     const rotuloBtn = isUltimo ? "🏁 Finalizar maratona" : "▶ Continuar";
     const blocoId = `b${S.blocoAtual + 1}`;
+    const numBloco = S.blocoAtual + 1;
     
     _tocarSomCopaApp(S, "somConclusao");
 
+    const btnVerRankingHtml = S.opts.onVerRanking
+        ? `<button type="button" class="maratona-btn-ver-ranking" data-btn-ver-ranking disabled>🏆 Ver ranking completo do Bloco ${numBloco}</button>`
+        : "";
+
     container.innerHTML = `
         <div class="maratona-card maratona-card-checkpoint">
-            <div class="maratona-kicker">🚧 BARREIRA ${S.blocoAtual + 1} DE ${TOTAL_BLOCOS}</div>
-            <h2 class="maratona-titulo">Bloco ${S.blocoAtual + 1} concluído!</h2>
+            <div class="maratona-kicker">🚧 BARREIRA ${numBloco} DE ${TOTAL_BLOCOS}</div>
+            <h2 class="maratona-titulo">Bloco ${numBloco} concluído!</h2>
             
             <div class="maratona-checkpoint-tempo">
                 <div class="maratona-checkpoint-tempo-rotulo">Tempo parcial</div>
@@ -736,23 +822,33 @@ function _renderizarCheckpoint(S, tempo) {
             </div>
 
             <button type="button" class="maratona-btn-continuar" data-btn-continuar disabled>${rotuloBtn} (aguarde...)</button>
+            ${btnVerRankingHtml}
         </div>
     `;
 
     const btn = container.querySelector("[data-btn-continuar]");
-    if (btn) {
-        S.timers.setTimeout(() => {
-            if (!S.vivo) return;
+    const btnVer = container.querySelector("[data-btn-ver-ranking]");
+    
+    S.timers.setTimeout(() => {
+        if (!S.vivo) return;
+        if (btn) {
             btn.disabled = false;
             btn.textContent = rotuloBtn;
-        }, 1200);
-        
+        }
+        if (btnVer) {
+            btnVer.disabled = false;
+        }
+    }, 1200);
+
+    if (btn) {
         btn.addEventListener("click", () => _continuarProximoBloco(S));
+    }
+    if (btnVer) {
+        btnVer.addEventListener("click", () => _sairDoCheckpointParaRanking(S));
     }
 
     _buscarRankingBloco(S, blocoId, tempo);
 }
-
 async function _buscarRankingBloco(S, blocoId, novoTempo) {
     const container = S.host.querySelector("[data-checkpoint-ranking]");
     if (!container) return;
@@ -841,6 +937,11 @@ async function _renderizarResultado(S) {
     
     const tempoTotal = S.temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0);
     
+    const btnVerRankingHtml = S.opts.onVerRanking
+        ? `<button type="button" class="maratona-btn-ver-ranking-destaque" data-btn-ver-ranking>🏆 Ver ranking completo</button>`
+        : "";
+    const gridStyle = S.opts.onVerRanking ? "" : "grid-template-columns: 1fr;";
+    
     container.innerHTML = `
         <div class="maratona-card maratona-card-resultado">
             <div class="maratona-kicker">🏁 MARATONA CONCLUÍDA</div>
@@ -870,12 +971,15 @@ async function _renderizarResultado(S) {
 
             ${_renderizarTropecos(S.errosTropecos)}
 
-            <button type="button" class="maratona-btn-comecar" data-btn-voltar style="margin-top:20px;">🏠 Voltar ao início</button>
+            <div class="maratona-resultado-acoes" style="${gridStyle}">
+                ${btnVerRankingHtml}
+                <button type="button" class="maratona-btn-voltar-secundario" data-btn-voltar>🏠 Voltar ao início</button>
+            </div>
         </div>
     `;
 
-    const btn = container.querySelector("[data-btn-voltar]");
-    if (btn) btn.addEventListener("click", () => {
+    const btnVoltar = container.querySelector("[data-btn-voltar]");
+    if (btnVoltar) btnVoltar.addEventListener("click", () => {
         if (S.opts.onFinalizar) {
             try { S.opts.onFinalizar({ eventoId: S.opts.eventoId, temposBlocos: S.temposBlocos.slice(), tempoTotal }); } catch (e) {}
         }
@@ -885,9 +989,12 @@ async function _renderizarResultado(S) {
         try { S.controller.destroy(); } catch (e) {}
     });
 
+    const btnVerRanking = container.querySelector("[data-btn-ver-ranking]");
+    if (btnVerRanking) btnVerRanking.addEventListener("click", () => _sairDoResultadoParaRanking(S));
+
     await _salvarResultadoFirebase(S, S.temposBlocos, tempoTotal, "completo");
     _buscarRankingGeral(S, tempoTotal);
-    _buscarPosicoesBlocos(S); // <-- NOVA FUNÇÃO
+    _buscarPosicoesBlocos(S);
 }
 
 async function _buscarPosicoesBlocos(S) {
@@ -1059,5 +1166,140 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
         }
     }
 }
+
+// ▼▼▼ [M.10.B] Persistência com compare-before-set ──────── INÍCIO ───
+
+async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, motivoDnf = null) {
+    const app = S.copaApp;
+    if (!app || !app.database) return;
+
+    const nome = app.obterNomeAluno();
+    const turma = app.obterTurmaAluno();
+    if (!nome || !turma) return;
+
+    const chaveAluno = app.chaveAluno(nome, turma);
+    if (!chaveAluno) return;
+
+    const eventoId = S.opts.eventoId;
+    const basePath = `copa_maratona/eventos/${eventoId}`;
+
+    // ─── Quantos blocos foram DE FATO completados nesta corrida ───
+    // Em COMPLETE: os 4 blocos. Em DNF: só até o bloco onde o aluno
+    // estava (S.blocoAtual é 0-indexed e representa o bloco em que ele
+    // estava quando saiu — os anteriores a ele já estão completos).
+    const blocosCompletos = (status === "completo")
+        ? TOTAL_BLOCOS
+        : Math.max(0, Math.min(TOTAL_BLOCOS, S.blocoAtual));
+
+    // ─── Dispara em paralelo: gravar marcos + gravar tempo total ───
+    const promises = [];
+
+    // 1) Marcos por bloco (B1..Bx completados)
+    for (let i = 0; i < blocosCompletos; i++) {
+        const t = Number(temposBlocos[i]);
+        if (!Number.isFinite(t) || t <= 0) continue;
+        const blocoId = `b${i + 1}`;
+        promises.push(
+            _tentarGravarMarco(app, basePath, blocoId, chaveAluno, t, nome, turma)
+                .catch(() => { /* já loga dentro */ })
+        );
+    }
+
+    // 2) Tempo total (com regra de "melhor ever")
+    promises.push(
+        _tentarGravarTempoTotal(app, basePath, chaveAluno, {
+            nome, turma, temposBlocos, tempoTotal, status,
+            motivoDnf: (status === "dnf") ? (motivoDnf || "saiu") : null
+        }).catch(() => { /* já loga dentro */ })
+    );
+
+    try {
+        await Promise.all(promises);
+    } catch (e) {
+        console.warn("[Maratona] Falha agregada ao salvar resultado:", e);
+    }
+}
+
+// ─── Grava / atualiza o tempo total com regra de "melhor ever" ───
+async function _tentarGravarTempoTotal(app, basePath, chaveAluno, dados) {
+    const { nome, turma, temposBlocos, tempoTotal, status, motivoDnf } = dados;
+    const novoCompleto = (status === "completo");
+
+    const registroNovo = {
+        nome,
+        turma,
+        temposBlocos: temposBlocos.slice(),
+        tempoTotal,
+        data: new Date().toISOString(),
+        status
+    };
+    if (novoCompleto) {
+        delete registroNovo.motivoDnf;
+    } else if (motivoDnf) {
+        registroNovo.motivoDnf = motivoDnf;
+    }
+
+    try {
+        const ref = app.database.ref(`${basePath}/tempos/${chaveAluno}`);
+        // Transação: garante que dois alunos não se atropelem e que a
+        // regra "melhor ever" seja aplicada atomicamente.
+        await ref.transaction((atual) => {
+            // Sem registro anterior: grava
+            if (!atual) return registroNovo;
+
+            const atualCompleto = atual.status === "completo";
+            const tempoAtual = Number(atual.tempoTotal) || 0;
+
+            // COMPLETO sempre vence DNF
+            if (novoCompleto && !atualCompleto) return registroNovo;
+
+            // COMPLETO vs COMPLETO: só substitui se for mais rápido
+            if (novoCompleto && atualCompleto) {
+                if (tempoTotal < tempoAtual) return registroNovo;
+                return; // aborta (mantém o melhor já gravado)
+            }
+
+            // DNF vs COMPLETO: NUNCA sobrescreve
+            if (!novoCompleto && atualCompleto) return; // aborta
+
+            // DNF vs DNF: atualiza para refletir o último estado conhecido
+            return registroNovo;
+        });
+    } catch (e) {
+        if (e && e.message && e.message.includes("permission_denied")) {
+            console.info("[Maratona] Sem permissão para gravar tempo total (permission_denied).");
+        } else {
+            console.warn("[Maratona] Falha ao gravar tempo total:", e);
+        }
+    }
+}
+
+// ─── Grava / atualiza o recorde pessoal de UM bloco (menor tempo) ───
+async function _tentarGravarMarco(app, basePath, blocoId, chaveAluno, novoTempo, nome, turma) {
+    try {
+        const ref = app.database.ref(`${basePath}/marcos/${blocoId}/${chaveAluno}`);
+        await ref.transaction((atual) => {
+            // Só grava se for a primeira vez OU se o novo tempo for
+            // ESTRITAMENTE menor que o atual. Empate não substitui
+            // (mantém a data original da conquista, que é mais justa
+            // como "primeira vez que bateu").
+            if (atual && Number(atual.tempo) <= novoTempo) return; // aborta
+            return {
+                tempo: novoTempo,
+                data: new Date().toISOString(),
+                nome,
+                turma
+            };
+        });
+    } catch (e) {
+        if (e && e.message && e.message.includes("permission_denied")) {
+            console.info(`[Maratona] Sem permissão para gravar marco ${blocoId} (permission_denied).`);
+        } else {
+            console.warn(`[Maratona] Falha ao gravar marco ${blocoId}:`, e);
+        }
+    }
+}
+
+// ▲▲▲ FIM [M.10.B]
 
 // ▲▲▲ FIM [M.09]
