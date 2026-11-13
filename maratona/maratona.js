@@ -1258,12 +1258,15 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
 })();
 // ▲▲▲ FIM [M.22-B] ───
 
-// ▼▼▼ [M.25-B] INÍCIO — Top 5 Geral + Top 5 Turma (Blocos 1 a 4) ───
+// ▼▼▼ [M.25-B] INÍCIO — Top 5 Geral + Top 5 Turma (Corrigido) ───
 (function maratonaTop5Checkpoints() {
   if (window.__maratonaTop5CheckpointsOK) return;
   window.__maratonaTop5CheckpointsOK = true;
 
-  // Função para buscar todos os dados do ranking no Firebase
+  let processando = false;
+  let timeoutId = null;
+
+  // Busca os dados no Firebase com segurança
   async function buscarTodoRanking() {
     if (typeof firebase === 'undefined' || !firebase.database) return [];
     const nodes = ['ranking', 'maratona/ranking', 'maratona_ranking', 'ranking_maratona'];
@@ -1273,7 +1276,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         const data = snap.val();
         if (data) {
           const alunos = Object.values(data);
-          if (alunos.length > 0 && alunos[0].tempos) { // Estrutura da Maratona
+          if (alunos.length > 0 && alunos[0].tempos) {
             return alunos;
           }
         }
@@ -1282,7 +1285,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     return [];
   }
 
-  // Descobre qual bloco está na tela e o tempo do aluno
+  // Identifica em qual bloco o aluno está
   function getBlocoAtual(texto) {
     if (texto.includes('Bloco 1') || texto.includes('B1')) return { id: 0, nome: 'BLOCO 1' };
     if (texto.includes('Bloco 2') || texto.includes('B2')) return { id: 1, nome: 'BLOCO 2' };
@@ -1291,87 +1294,100 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     return null;
   }
 
-  function injetarCards(screenNode) {
-    if (screenNode.querySelector('.top5-maratona-injetado')) return;
+  // Monta a lista do Top 5
+  function criarListaHTML(lista, titulo, blocoId) {
+    if (lista.length === 0) return '';
+    let html = `<div class="top5-turma-injetado">
+      <div class="top5-turma-header">${titulo}</div>
+      <div class="top5-turma-list">`;
+    
+    lista.slice(0, 5).forEach((aluno, index) => {
+      let pos = index + 1;
+      let medalha = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `${pos}º`;
+      let nome = aluno.nome || 'Aluno';
+      let tempo = parseFloat(aluno.tempos[blocoId]).toFixed(2) + 's';
+      
+      // Tenta achar o próprio aluno (por email ou pelo nome "Você")
+      let isEu = false;
+      if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+        if (aluno.email === firebase.auth().currentUser.email) isEu = true;
+      }
+      if (nome.toLowerCase().includes('você') || nome.toLowerCase().includes('(você)')) isEu = true;
 
-    // Descobre qual bloco é
-    const bloco = getBlocoAtual(screenNode.textContent);
+      let classeItem = isEu ? 'top5-turma-item minha-posicao' : 'top5-turma-item';
+      
+      html += `<div class="${classeItem}">
+        <span>${medalha} ${nome}</span>
+        <span class="top5-turma-tempo">${tempo}</span>
+      </div>`;
+    });
+    
+    html += `</div></div>`;
+    return html;
+  }
+
+  // Função principal que faz a injeção na tela
+  async function tentarInjetar() {
+    if (processando) return;
+    
+    // Se o card já existe na tela, não faz nada (evita loop)
+    if (document.querySelector('.top5-maratona-injetado')) return;
+
+    const textoCorpo = document.body.textContent;
+    const bloco = getBlocoAtual(textoCorpo);
     if (!bloco) return;
 
-    // Descobre a turma do aluno
-    let turma = localStorage.getItem('turma') || localStorage.getItem('turma_aluno') || window.alunoTurma || 'Sem Turma';
+    processando = true;
 
-    buscarTodoRanking().then(alunos => {
-      if (alunos.length === 0) return;
+    try {
+      let turma = localStorage.getItem('turma') || localStorage.getItem('turma_aluno') || window.alunoTurma || 'Sem Turma';
+      let alunos = await buscarTodoRanking();
+      
+      if (alunos.length === 0) {
+        processando = false;
+        return;
+      }
 
-      // 1. Filtra e ordena o Ranking Geral daquele bloco
       let rankingGeral = alunos
         .filter(a => a.tempos && a.tempos[bloco.id] > 0)
         .sort((a, b) => a.tempos[bloco.id] - b.tempos[bloco.id]);
 
-      // 2. Filtra e ordena o Ranking da Turma daquele bloco
       let rankingTurma = rankingGeral.filter(a => a.turma === turma);
 
-      // Função para criar o HTML da lista (Top 5)
-      function criarListaHTML(lista, titulo, ehTurma) {
-        if (lista.length === 0) return '';
-        let html = `<div class="top5-turma-injetado">
-          <div class="top5-turma-header">${titulo}</div>
-          <div class="top5-turma-list">`;
-        
-        lista.slice(0, 5).forEach((aluno, index) => {
-          let pos = index + 1;
-          let medalha = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `${pos}º`;
-          let nome = aluno.nome || 'Aluno';
-          let tempo = parseFloat(aluno.tempos[bloco.id]).toFixed(2) + 's';
-          let isEu = aluno.email === (firebase.auth().currentUser?.email) || nome.toLowerCase().includes('você');
-          let classeItem = isEu ? 'top5-turma-item minha-posicao' : 'top5-turma-item';
-          
-          html += `<div class="${classeItem}">
-            <span>${medalha} ${nome}</span>
-            <span class="top5-turma-tempo">${tempo}</span>
-          </div>`;
-        });
-        
-        html += `</div></div>`;
-        return html;
-      }
-
-      // Monta o HTML final (Geral + Turma)
-      let htmlGeral = criarListaHTML(rankingGeral, `🏆 TOP 5 GERAL - ${bloco.nome}`, false);
-      let htmlTurma = criarListaHTML(rankingTurma, `🏫 TOP 5 DA SUA TURMA (${turma}) - ${bloco.nome}`, true);
+      let htmlGeral = criarListaHTML(rankingGeral, `🏆 TOP 5 GERAL - ${bloco.nome}`, bloco.id);
+      let htmlTurma = criarListaHTML(rankingTurma, `🏫 TOP 5 DA SUA TURMA (${turma}) - ${bloco.nome}`, bloco.id);
 
       let container = document.createElement('div');
       container.className = 'top5-maratona-injetado';
       container.innerHTML = htmlGeral + htmlTurma;
 
-      // Onde injetar? Vamos procurar o botão de "Ver Ranking" ou "Voltar"
-      let btnReferencia = Array.from(screenNode.querySelectorAll('button, a')).find(el => 
+      // Procura um botão para colocar o card logo acima dele
+      let btnReferencia = Array.from(document.querySelectorAll('button, a')).find(el => 
         el.textContent.includes('Ranking') || el.textContent.includes('Voltar ao início') || el.textContent.includes('Continuar')
       );
 
-      if (btnReferencia) {
-        // Injeta antes do botão
+      if (btnReferencia && btnReferencia.parentNode) {
         btnReferencia.parentNode.insertBefore(container, btnReferencia);
       } else {
-        // Se não achar botão, injeta no final do card principal
-        screenNode.appendChild(container);
+        // Se não achar o botão, joga no final da tela
+        document.body.appendChild(container);
       }
-    });
+    } catch (e) {
+      console.error('Erro ao injetar Top 5:', e);
+    }
+    
+    processando = false;
   }
 
-  // Observa a tela para saber quando o Checkpoint ou Tela Final aparece
-  const observer = new MutationObserver((mutations) => {
-    for (const m of mutations) {
-      for (const n of m.addedNodes) {
-        if (n.nodeType === 1) {
-          let txt = n.textContent || '';
-          if (txt.includes('Bloco') || txt.includes('Você cruzou a linha!') || txt.includes('Tempo Total') || txt.includes('Checkpoint')) {
-            setTimeout(() => injetarCards(n), 800); // Delay para o Firebase carregar
-          }
-        }
-      }
-    }
+  // Observador com "Freio de Mão" (Debounce)
+  const observer = new MutationObserver(() => {
+    // Se a tela mudar, cancela a tentativa anterior
+    if (timeoutId) clearTimeout(timeoutId);
+    
+    // Espera a tela ficar 500ms parada para tentar injetar
+    timeoutId = setTimeout(() => {
+      tentarInjetar();
+    }, 500);
   });
   
   observer.observe(document.body, { childList: true, subtree: true });
