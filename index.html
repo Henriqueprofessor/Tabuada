@@ -9898,7 +9898,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
 
     <!-- ▼▼▼ [03.04] CADASTRO ─────────────────────────────────── -->
     <div id="tela-single" class="card hidden">
-        <h2>🏆 Etapa Classificatória</h2>
+        <h2 id="titulo-tela-single">🏆 Etapa Classificatória</h2>
         <label for="nome-aluno">Nome completo (sem abreviações)</label>
         <input type="text" id="nome-aluno" placeholder="Ex: Maria Eduarda Silva" autocomplete="name">
         <p class="dica-nome">✍️ Escreva <strong>nome e sobrenome completos</strong>, com iniciais maiúsculas. Ex: <em>João Pedro Souza</em>.</p>
@@ -9921,12 +9921,15 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <option value="1003">1003</option><option value="1004">1004</option><option value="2001">2001</option>
             <option value="2002">2002</option><option value="2003">2003</option><option value="3001">3001</option><option value="3002">3002</option>
         </select>
-        <label for="modalidade-tabuada">Modalidade</label>
-        <select id="modalidade-tabuada">
-            <option value="2-5">Tabuadas do 2 ao 5</option>
-            <option value="6-9">Tabuadas do 6 ao 9</option>
-            <option value="0-10">Completa - Tabuadas do 1 ao 10</option>
-        </select>
+        
+        <div id="container-modalidade-single">
+            <label for="modalidade-tabuada">Modalidade</label>
+            <select id="modalidade-tabuada">
+                <option value="2-5">Tabuadas do 2 ao 5</option>
+                <option value="6-9">Tabuadas do 6 ao 9</option>
+                <option value="0-10">Completa - Tabuadas do 1 ao 10</option>
+            </select>
+        </div>
 
         <!-- ▼ NOVO: Consentimento LGPD ▼ -->
         <div class="aviso-privacidade" style="margin-top: 12px; margin-bottom: 4px; background: rgba(34,211,238,0.08); border: 1px dashed rgba(34,211,238,0.3); border-radius: 10px; padding: 12px 14px; text-align: left;">
@@ -9940,11 +9943,12 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
         <!-- ▲ FIM NOVO ▲ -->
 
         <div style="display: flex; gap: 10px;">
-            <button onclick="registrarAluno(false)" class="botao-verde">🏆 Classificatória</button>
+            <button id="btn-single-classificatoria" onclick="registrarAluno(false)" class="botao-verde">🏆 Classificatória</button>
             <button class="botao-treino" onclick="registrarAluno(true)">🎯 Modo Treino</button>
         </div>
         <button onclick="mostrarTela('tela-inicial')" class="botao-secundario" style="margin-top:10px;">⬅️ Voltar</button>
     </div>
+    <!-- ▲▲▲ FIM [03.04] -->
 
     <!-- ▼▼▼ [03.05] PREPARAÇÃO ───────────────────────────────── -->
     <div id="tela-preparacao" class="card hidden">
@@ -18697,6 +18701,7 @@ function abrirBuscarAlunoComMeusDados() {
             const selectTurma = document.getElementById("turma-aluno");
             if (nomeSalvo && inputNome) inputNome.value = nomeSalvo;
             if (turmaSalva && selectTurma) selectTurma.value = turmaSalva;
+            if (typeof ajustarTelaSingleParaEvento === "function") ajustarTelaSingleParaEvento();
         }
 
         atualizarNavGlobal(id);
@@ -18808,7 +18813,8 @@ function abrirBuscarAlunoComMeusDados() {
             return;
         }
 
-        const modalidadeSelecionada = document.getElementById("modalidade-tabuada").value;
+        const selectMod = document.getElementById("modalidade-tabuada");
+        const modalidadeSelecionada = selectMod ? selectMod.value : "0-10";
 
         if (!treino) {
             const fase = await resolverFaseAtual();
@@ -30189,6 +30195,50 @@ async function carregarDadosRankingMaratona() {
     } catch (e) {
         console.warn("Erro no ranking:", e);
         container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar.</div>`;
+    }
+}
+// ▼▼▼ Nova função para adaptar a tela de cadastro ao Evento
+async function ajustarTelaSingleParaEvento() {
+    const eventoId = await verificarEventoMaratonaAtivo();
+    const titulo = document.getElementById("titulo-tela-single");
+    const containerMod = document.getElementById("container-modalidade-single");
+    const btnClass = document.getElementById("btn-single-classificatoria");
+
+    if (eventoId) {
+        // ==========================================
+        // MODO MARATONA ATIVO
+        // ==========================================
+        if (titulo) titulo.innerHTML = "🏁 Maratona com Barreiras";
+        
+        if (containerMod) {
+            containerMod.innerHTML = `
+                <label>Modalidade</label>
+                <div style="padding:12px; background:rgba(10,22,40,0.5); border:1px solid var(--border-neon); border-radius:8px; color:var(--neon-gold); font-weight:bold; margin-bottom:12px;">
+                    🏁 Maratona Oficial (4 Blocos)
+                </div>
+            `;
+        }
+        
+        if (btnClass) btnClass.innerHTML = "▶ Jogar Maratona";
+
+    } else {
+        // ==========================================
+        // MODO COPA (PADRÃO)
+        // ==========================================
+        if (titulo) titulo.innerHTML = "🏆 Etapa Classificatória";
+        
+        if (containerMod) {
+            containerMod.innerHTML = `
+                <label for="modalidade-tabuada">Modalidade</label>
+                <select id="modalidade-tabuada">
+                    <option value="2-5">Tabuadas do 2 ao 5</option>
+                    <option value="6-9">Tabuadas do 6 ao 9</option>
+                    <option value="0-10">Completa - Tabuadas do 1 ao 10</option>
+                </select>
+            `;
+        }
+        
+        if (btnClass) btnClass.innerHTML = "🏆 Classificatória";
     }
 }
 // ▲▲▲ FIM [19.13]
