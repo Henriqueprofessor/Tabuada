@@ -9783,7 +9783,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             </span>
             <span class="nav-label">Hall da Fama</span>
         </button>
-        <button class="bottom-nav-btn" data-tela="ranking" onclick="mostrarTela('tela-ranking')">
+        <button class="bottom-nav-btn" data-tela="ranking" onclick="irParaRankingGlobal()">
             <span class="nav-icon-wrap">
                 <span class="nav-icon">🏆</span>
             </span>
@@ -10771,11 +10771,16 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <!-- ▼▼▼ [03.18] TELA RANKING DA MARATONA ────────────── INÍCIO ─── -->
     <div id="tela-ranking-maratona" class="card hidden">
         <h2>🏁 Ranking da Maratona</h2>
-        <p class="subtitulo" style="text-align:left;">Confira os melhores tempos da competição atual.</p>
+        <p class="subtitulo" style="text-align:left;">Confira os melhores tempos da competição.</p>
         
+        <div class="ranking-escopo" style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+            <button class="aba-principal ativa" id="btn-rank-mar-geral" onclick="mudarEscopoRankingMaratona('geral')" style="flex:1;">🌍 Geral</button>
+            <button class="aba-principal" id="btn-rank-mar-turma" onclick="mudarEscopoRankingMaratona('turma')" style="flex:1;">🏫 Minha Turma</button>
+        </div>
+
         <div class="maratona-tabs" style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-            <button class="aba-principal ativa" id="aba-rank-mar-geral" onclick="mudarAbaRankingMaratona('geral')" style="flex:1;">🏆 Ranking Geral</button>
-            <button class="aba-principal" id="aba-rank-mar-marcos" onclick="mudarAbaRankingMaratona('marcos')" style="flex:1;">⚡ Ranking de Marcos</button>
+            <button class="aba-principal ativa" id="aba-rank-mar-tempo" onclick="mudarMetricaRankingMaratona('tempo')" style="flex:1; font-size:13px;">⏱️ Tempo Total</button>
+            <button class="aba-principal" id="aba-rank-mar-marcos" onclick="mudarMetricaRankingMaratona('marcos')" style="flex:1; font-size:13px;">⚡ Marcos (Recordes)</button>
         </div>
 
         <div id="ranking-maratona-conteudo">
@@ -29736,10 +29741,9 @@ async function abrirMaratona() {
     const nome = obterNomeSalvoAluno();
     const turma = obterTurmaSalvaAluno();
 
-    // Se não estiver logado, avisa e manda para o cadastro, marcando a intenção
     if (!nome || !turma) {
         notificar("Para jogar a Maratona, você precisa se identificar primeiro.", "aviso", 4000);
-        window._redirecionarParaMaratona = true; // <--- A MÁGICA AQUI
+        window._redirecionarParaMaratona = true;
         mostrarTela("tela-single");
         return;
     }
@@ -29748,7 +29752,7 @@ async function abrirMaratona() {
     const eventoId = await verificarEventoMaratonaAtivo();
     
     if (!eventoId) {
-        notificar("Não há nenhuma Maratona ativa no momento. Aguarde o professor iniciar.", "aviso", 5000);
+        notificar("Não há nenhuma Maratona ativa no momento.", "aviso", 5000);
         return;
     }
 
@@ -29781,14 +29785,7 @@ async function abrirMaratona() {
 
     } catch (e) {
         console.error("[Maratona] Erro ao carregar módulo:", e);
-        host.innerHTML = `
-            <div class="card" style="text-align: center; padding: 40px; margin: 20px auto; max-width: 500px;">
-                <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-                <h2 style="color: var(--neon-red);">Erro ao carregar a Maratona</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 20px;">Verifique sua conexão ou avise o professor.</p>
-                <button onclick="mostrarTela('tela-inicial')" class="botao-verde">Voltar ao Início</button>
-            </div>
-        `;
+        host.innerHTML = `<div class="card" style="text-align: center; padding: 40px; margin: 20px auto; max-width: 500px;"><div style="font-size: 40px; margin-bottom: 10px;">⚠️</div><h2 style="color: var(--neon-red);">Erro ao carregar</h2><button onclick="mostrarTela('tela-inicial')" class="botao-verde">Voltar</button></div>`;
     }
 }
 
@@ -29797,42 +29794,58 @@ async function injetarBotaoMaratonaNaHome() {
     if (!telaInicial) return;
     
     let container = document.getElementById("maratona-home-container");
+    if (container) container.remove(); // Remove para recriar atualizado
     
-    if (container) {
-        const eventoId = await verificarEventoMaratonaAtivo();
-        container.style.display = eventoId ? "block" : "none";
-        return;
-    }
+    const eventoId = await verificarEventoMaratonaAtivo();
+    
+    if (!eventoId) return; // Se não tem evento, não mostra nada (o app fica normal)
 
+    // =========================================================
+    // MODO EXCLUSIVO: O APP VIRA A MARATONA
+    // =========================================================
+    
+    // 1. Oculta as coisas da Copa na Home
+    const ctnPosicoes = document.getElementById("acao-principal-container");
+    const ctnRitmo = document.getElementById("ritmo-copa-container");
+    const ctnMeta = document.getElementById("meta-pessoal-container");
+    const ctnMapa = document.getElementById("mapa-home-container");
+    const ctnStatusCopa = telaInicial.querySelector(".home-card:last-of-type");
+
+    if (ctnPosicoes) ctnPosicoes.style.display = "none";
+    if (ctnRitmo) ctnRitmo.style.display = "none";
+    if (ctnMeta) ctnMeta.style.display = "none";
+    if (ctnMapa) ctnMapa.style.display = "none";
+    if (ctnStatusCopa) ctnStatusCopa.style.display = "none";
+
+    // 2. Insere o card da Maratona no TOPO da Home (logo abaixo do Hero)
+    const hero = telaInicial.querySelector(".hero-esports");
+    
     container = document.createElement("div");
     container.id = "maratona-home-container";
     container.className = "mapa-home-card";
     container.style.borderLeft = "4px solid var(--neon-gold)";
-    container.style.background = "linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(19,42,71,0.9) 100%)";
-    container.style.display = "none";
+    container.style.background = "linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(19,42,71,0.95) 100%)";
+    container.style.marginTop = "16px";
     
     container.innerHTML = `
-        <div class="mapa-home-titulo" style="color: var(--neon-gold);">
+        <div class="mapa-home-titulo" style="color: var(--neon-gold); font-size: 16px;">
             🏁 Maratona com Barreiras
         </div>
-        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
-            4 blocos, 40 perguntas e um cronômetro. Vença as barreiras e bata o recorde!
+        <div style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 16px; line-height:1.5;">
+            O evento oficial do momento! São 4 blocos, 40 perguntas e um cronômetro. Vença as barreiras e bata o recorde!
         </div>
-        <button id="btn-jogar-maratona" class="botao-verde" style="width: 100%; margin: 0; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); box-shadow: 0 3px 0 #7c2d12;" onclick="abrirMaratona()">
-            ▶ Jogar Maratona
+        <button id="btn-jogar-maratona" class="botao-verde" style="width: 100%; margin: 0; padding:16px; font-size:16px; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); box-shadow: 0 4px 0 #7c2d12;" onclick="abrirMaratona()">
+            ▶ JOGAR MARATONA AGORA
+        </button>
+        <button class="home-btn-link" style="margin-top:12px; border-color:var(--neon-gold); color:var(--neon-gold);" onclick="abrirRankingMaratona()">
+            🏆 Ver Ranking do Evento
         </button>
     `;
 
-    const statusEtapa = telaInicial.querySelector(".home-card:last-of-type");
-    if (statusEtapa) {
-        telaInicial.insertBefore(container, statusEtapa);
+    if (hero && hero.nextSibling) {
+        telaInicial.insertBefore(container, hero.nextSibling);
     } else {
-        telaInicial.appendChild(container);
-    }
-    
-    const eventoId = await verificarEventoMaratonaAtivo();
-    if (eventoId) {
-        container.style.display = "block";
+        telaInicial.prepend(container);
     }
 }
 // ▲▲▲ FIM [19.11]
@@ -30023,15 +30036,25 @@ async function exportarCSVMaratona(eventoId) {
 // ▲▲▲ FIM [19.12]
 
 // ▼▼▼ [19.13] Lógica do Ranking da Maratona (Aluno) ────────── INÍCIO ───
-let _abaRankingMaratonaAtual = 'geral';
+let _escopoRankingMaratona = 'geral';
+let _metricaRankingMaratona = 'tempo';
 let _eventoRankingMaratonaId = null;
+
+// Função que decide se o botão "Ranking" do menu abre a Maratona ou a Copa
+async function irParaRankingGlobal() {
+    const eventoId = await verificarEventoMaratonaAtivo();
+    if (eventoId) {
+        abrirRankingMaratona();
+    } else {
+        mostrarTela('tela-ranking');
+    }
+}
 
 async function abrirRankingMaratona() {
     mostrarTela("tela-ranking-maratona");
     const container = document.getElementById("ranking-maratona-conteudo");
     container.innerHTML = `<div class="desempenho-loading">⏳ Buscando evento ativo...</div>`;
 
-    // Descobre qual evento está ativo (ou o último encerrado)
     try {
         const snap = await database.ref('copa_maratona/eventos').once('value');
         const eventos = snap.val() || {};
@@ -30052,25 +30075,34 @@ async function abrirRankingMaratona() {
             return;
         }
     } catch (e) {
-        container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar dados. Verifique a conexão.</div>`;
+        container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar dados.</div>`;
         return;
     }
 
-    // Atualiza o visual das abas
-    _abaRankingMaratonaAtual = 'geral';
-    document.getElementById("aba-rank-mar-geral")?.classList.add("ativa");
-    document.getElementById("aba-rank-mar-marcos")?.classList.remove("ativa");
-
+    _escopoRankingMaratona = 'geral';
+    _metricaRankingMaratona = 'tempo';
+    _atualizarBotoesRankingMaratona();
     carregarDadosRankingMaratona();
 }
 
-function mudarAbaRankingMaratona(aba) {
-    _abaRankingMaratonaAtual = aba;
-    
-    document.getElementById("aba-rank-mar-geral")?.classList.toggle("ativa", aba === 'geral');
-    document.getElementById("aba-rank-mar-marcos")?.classList.toggle("ativa", aba === 'marcos');
-    
+function mudarEscopoRankingMaratona(escopo) {
+    _escopoRankingMaratona = escopo;
+    _atualizarBotoesRankingMaratona();
     carregarDadosRankingMaratona();
+}
+
+function mudarMetricaRankingMaratona(metrica) {
+    _metricaRankingMaratona = metrica;
+    _atualizarBotoesRankingMaratona();
+    carregarDadosRankingMaratona();
+}
+
+function _atualizarBotoesRankingMaratona() {
+    document.getElementById("btn-rank-mar-geral")?.classList.toggle("ativa", _escopoRankingMaratona === 'geral');
+    document.getElementById("btn-rank-mar-turma")?.classList.toggle("ativa", _escopoRankingMaratona === 'turma');
+    
+    document.getElementById("aba-rank-mar-tempo")?.classList.toggle("ativa", _metricaRankingMaratona === 'tempo');
+    document.getElementById("aba-rank-mar-marcos")?.classList.toggle("ativa", _metricaRankingMaratona === 'marcos');
 }
 
 async function carregarDadosRankingMaratona() {
@@ -30082,22 +30114,21 @@ async function carregarDadosRankingMaratona() {
     const turmaAluno = obterTurmaSalvaAluno();
 
     try {
-        if (_abaRankingMaratonaAtual === 'geral') {
+        if (_metricaRankingMaratona === 'tempo') {
             const snap = await database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/tempos`).once('value');
             const tempos = snap.val() || {};
             
-            // Filtra apenas quem completou e ordena pelo menor tempo
-            const lista = Object.values(tempos)
-                .filter(t => t.status === 'completo' && t.tempoTotal != null)
-                .sort((a, b) => a.tempoTotal - b.tempoTotal);
+            let lista = Object.values(tempos).filter(t => t.status === 'completo' && t.tempoTotal != null);
+            if (_escopoRankingMaratona === 'turma') lista = lista.filter(t => t.turma === turmaAluno);
+            
+            lista.sort((a, b) => a.tempoTotal - b.tempoTotal);
 
             if (lista.length === 0) {
-                container.innerHTML = `<div class="desempenho-empty-msg">Ninguém completou a maratona ainda. Seja o primeiro!</div>`;
+                container.innerHTML = `<div class="desempenho-empty-msg">Ninguém completou a maratona ainda.</div>`;
                 return;
             }
 
             let html = `<div class="tabela-container"><table><thead><tr><th>Pos.</th><th>Nome</th><th>Turma</th><th>Tempo Total</th></tr></thead><tbody>`;
-            
             lista.forEach((r, i) => {
                 const pos = i + 1;
                 const ehVoce = (normalizarNome(r.nome) === normalizarNome(nomeAluno) && r.turma === turmaAluno);
@@ -30120,19 +30151,15 @@ async function carregarDadosRankingMaratona() {
             const snap = await database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos`).once('value');
             const marcos = snap.val() || {};
             
-            const blocos = [
-                { id: 'b1', fator: 2 },
-                { id: 'b2', fator: 3 },
-                { id: 'b3', fator: 4 },
-                { id: 'b4', fator: 5 }
-            ];
+            const blocos = [ { id: 'b1', fator: 2 }, { id: 'b2', fator: 3 }, { id: 'b3', fator: 4 }, { id: 'b4', fator: 5 } ];
 
             let html = "";
             let temAlgumDado = false;
 
             blocos.forEach(b => {
-                const alunosBloco = marcos[b.id] || {};
-                const lista = Object.values(alunosBloco).sort((a, b) => a.tempo - b.tempo);
+                let lista = Object.values(marcos[b.id] || {});
+                if (_escopoRankingMaratona === 'turma') lista = lista.filter(m => m.turma === turmaAluno);
+                lista.sort((a, b) => a.tempo - b.tempo);
                 
                 if (lista.length > 0) temAlgumDado = true;
 
@@ -30143,7 +30170,7 @@ async function carregarDadosRankingMaratona() {
                     html += `<div class="maratona-marco-vazio">Nenhum recorde registrado.</div>`;
                 } else {
                     html += `<ul class="hall-lista">`;
-                    lista.forEach((r, i) => {
+                    lista.slice(0, 10).forEach((r, i) => { // Mostra Top 10 por bloco
                         const ehVoce = (normalizarNome(r.nome) === normalizarNome(nomeAluno) && r.turma === turmaAluno);
                         const medalha = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`;
                         html += `<li class="hall-item ${ehVoce ? 'voce-linha' : ''}" style="${ehVoce ? 'border-color:var(--neon-cyan);' : ''}">
@@ -30161,7 +30188,7 @@ async function carregarDadosRankingMaratona() {
         }
     } catch (e) {
         console.warn("Erro no ranking:", e);
-        container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar. Verifique sua conexão.</div>`;
+        container.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar.</div>`;
     }
 }
 // ▲▲▲ FIM [19.13]
