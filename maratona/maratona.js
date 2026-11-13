@@ -1123,51 +1123,7 @@ async function _buscarRankingGeral(S, tempoTotal) {
 }
 // ▲▲▲ FIM [M.08]
 
-// ▼▼▼ [M.09] Persistência + rankings do Firebase ─────────────── INÍCIO ───
-
-async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, motivoDnf = null) {
-    const app = S.copaApp;
-    if (!app || !app.database) return;
-
-    const nome = app.obterNomeAluno();
-    const turma = app.obterTurmaAluno();
-    if (!nome || !turma) return;
-
-    const chaveAluno = app.chaveAluno(nome, turma);
-    if (!chaveAluno) return;
-
-    const registro = {
-        nome, turma, temposBlocos,
-        tempoTotal,
-        data: new Date().toISOString(),
-        status: status || "completo"
-    };
-    if (status === "dnf") registro.motivoDnf = motivoDnf;
-
-    try {
-        // 1. Salva o tempo total (geral)
-        await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/tempos/${chaveAluno}`).set(registro);
-
-        // 2. Salva os marcos, SE a partida foi completa e se bateu recorde
-        if (status === "completo" && S.recordePessoalNovo) {
-            const promises = [];
-            for (const [blocoId, novoTempo] of Object.entries(S.recordePessoalNovo)) {
-                const marco = { tempo: novoTempo, data: new Date().toISOString(), nome, turma };
-                const refMarco = app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/marcos/${blocoId}/${chaveAluno}`);
-                promises.push(refMarco.set(marco));
-            }
-            await Promise.all(promises);
-        }
-    } catch (e) {
-        if (e && e.message && e.message.includes("permission_denied")) {
-            console.info("[Maratona] Sem permissão para salvar no Firebase (permission_denied). O resultado não foi gravado.");
-        } else {
-            console.warn("[Maratona] Falha ao salvar no Firebase:", e);
-        }
-    }
-}
-
-// ▼▼▼ [M.10.B] Persistência com compare-before-set ──────── INÍCIO ───
+// ▼▼▼ [M.09] Persistência com compare-before-set (v2) ─────── INÍCIO ───
 
 async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, motivoDnf = null) {
     const app = S.copaApp;
@@ -1299,7 +1255,5 @@ async function _tentarGravarMarco(app, basePath, blocoId, chaveAluno, novoTempo,
         }
     }
 }
-
-// ▲▲▲ FIM [M.10.B]
 
 // ▲▲▲ FIM [M.09]
