@@ -1337,3 +1337,70 @@ async function _tentarGravarMarco(app, basePath, blocoId, chaveAluno, novoTempo,
 }
 
 // ▲▲▲ FIM [M.09]
+
+// ▼▼▼ [M.19] Exportação CSV Avançada (Módulo Maratona) ─── INÍCIO ───
+export async function exportarCSVMaratona(eventoId, app) {
+    if (!app || !app.database) {
+        if (app && app.notificar) app.notificar("Banco de dados indisponível.", "erro");
+        return;
+    }
+
+    if (app.notificar) app.notificar("⏳ Gerando planilha... Aguarde.", "info");
+
+    try {
+        const snapTempos = await app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value');
+        const tempos = snapTempos.val() || {};
+
+        // Pega todos os alunos que têm algum registro
+        const lista = Object.values(tempos).filter(t => t && t.nome);
+        
+        // ⚠️ Ordena alfabeticamente pelo nome do aluno (como você pediu)
+        lista.sort((a, b) => a.nome.localeCompare(b.nome));
+
+        const esc = (s) => `"${String(s == null ? "" : s).replace(/"/g, '""')}"`;
+        const fmtTempo = (ms) => (Number.isFinite(ms) && ms > 0) ? (ms / 1000).toFixed(2) : "";
+
+        // Cabeçalho com colunas separadas para cada bloco
+        let csv = "\ufeffNOME,TURMA,STATUS,TEMPO_TOTAL,BLOCO1,BLOCO2,BLOCO3,BLOCO4,DATA\n";
+
+        lista.forEach(t => {
+            const blocos = t.temposBlocos || [];
+            
+            // Formata os tempos de cada bloco (se existirem)
+            const b1 = fmtTempo(blocos[0]);
+            const b2 = fmtTempo(blocos[1]);
+            const b3 = fmtTempo(blocos[2]);
+            const b4 = fmtTempo(blocos[3]);
+            
+            // Define o status (Completo ou DNF)
+            let statusTxt = t.status === 'completo' ? 'COMPLETO' : 'DNF';
+            if (t.status === 'dnf' && t.motivoDnf) {
+                statusTxt = `DNF (${t.motivoDnf})`;
+            }
+
+            // Tempo total (se for DNF, mostra o tempo que deu até parar)
+            const tempoTotal = fmtTempo(t.tempoTotal);
+            const dataFmt = t.data ? new Date(t.data).toLocaleString('pt-BR') : "";
+
+            // Monta a linha da planilha
+            csv += `${esc(t.nome)},${esc(t.turma)},${esc(statusTxt)},${tempoTotal},${b1},${b2},${b3},${b4},${esc(dataFmt)}\n`;
+        });
+
+        // Cria o arquivo para download
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `maratona_${eventoId}_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        
+        if (app.notificar) app.notificar("✅ Planilha exportada com sucesso!", "sucesso");
+    } catch(e) {
+        console.error("[CSV Maratona] Erro:", e);
+        if (app.notificar) app.notificar("Erro ao exportar planilha.", "erro");
+    }
+}
+// ▲▲▲ FIM [M.19]
