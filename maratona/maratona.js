@@ -1258,15 +1258,14 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
 })();
 // ▲▲▲ FIM [M.22-B] ───
 
-// ▼▼▼ [M.25-B] INÍCIO — Top 5 Geral + Top 5 Turma (Corrigido) ───
-(function maratonaTop5Checkpoints() {
-  if (window.__maratonaTop5CheckpointsOK) return;
-  window.__maratonaTop5CheckpointsOK = true;
+// ▼▼▼ [M.26-B] INÍCIO — Injeção Segura Top 5 (Sem piscar) ───
+(function maratonaTop5Seguro() {
+  if (window.__maratonaTop5SeguroOK) return;
+  window.__maratonaTop5SeguroOK = true;
 
-  let processando = false;
-  let timeoutId = null;
+  let executando = false;
 
-  // Busca os dados no Firebase com segurança
+  // Função para buscar todos os dados do ranking no Firebase
   async function buscarTodoRanking() {
     if (typeof firebase === 'undefined' || !firebase.database) return [];
     const nodes = ['ranking', 'maratona/ranking', 'maratona_ranking', 'ranking_maratona'];
@@ -1276,25 +1275,13 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         const data = snap.val();
         if (data) {
           const alunos = Object.values(data);
-          if (alunos.length > 0 && alunos[0].tempos) {
-            return alunos;
-          }
+          if (alunos.length > 0 && alunos[0].tempos) return alunos;
         }
       } catch (e) {}
     }
     return [];
   }
 
-  // Identifica em qual bloco o aluno está
-  function getBlocoAtual(texto) {
-    if (texto.includes('Bloco 1') || texto.includes('B1')) return { id: 0, nome: 'BLOCO 1' };
-    if (texto.includes('Bloco 2') || texto.includes('B2')) return { id: 1, nome: 'BLOCO 2' };
-    if (texto.includes('Bloco 3') || texto.includes('B3')) return { id: 2, nome: 'BLOCO 3' };
-    if (texto.includes('Bloco 4') || texto.includes('B4') || texto.includes('Você cruzou a linha!')) return { id: 3, nome: 'BLOCO 4 (GERAL)' };
-    return null;
-  }
-
-  // Monta a lista do Top 5
   function criarListaHTML(lista, titulo, blocoId) {
     if (lista.length === 0) return '';
     let html = `<div class="top5-turma-injetado">
@@ -1307,7 +1294,6 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
       let nome = aluno.nome || 'Aluno';
       let tempo = parseFloat(aluno.tempos[blocoId]).toFixed(2) + 's';
       
-      // Tenta achar o próprio aluno (por email ou pelo nome "Você")
       let isEu = false;
       if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
         if (aluno.email === firebase.auth().currentUser.email) isEu = true;
@@ -1326,70 +1312,68 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     return html;
   }
 
-  // Função principal que faz a injeção na tela
   async function tentarInjetar() {
-    if (processando) return;
-    
-    // Se o card já existe na tela, não faz nada (evita loop)
+    // 1. Se já injetou, para.
     if (document.querySelector('.top5-maratona-injetado')) return;
+    
+    // 2. Verifica se REALMENTE estamos na tela final (procura o botão de ranking)
+    let btnRanking = Array.from(document.querySelectorAll('button, a')).find(el => 
+      el.textContent.includes('Ver ranking completo') || el.textContent.includes('Ver ranking do Bloco')
+    );
+    
+    // Se não achou o botão, NÃO estamos na tela de vitória. Aborta e não faz nada.
+    if (!btnRanking) return;
 
-    const textoCorpo = document.body.textContent;
-    const bloco = getBlocoAtual(textoCorpo);
-    if (!bloco) return;
+    // 3. Descobre qual bloco (pelo texto perto do botão ou da tela)
+    let textoNaTela = document.body.textContent;
+    let blocoId = 3; // Padrão: Bloco 4 (Geral)
+    let blocoNome = 'BLOCO 4 (GERAL)';
+    
+    if (textoNaTela.includes('Bloco 1') || textoNaTela.includes('B1')) { blocoId = 0; blocoNome = 'BLOCO 1'; }
+    else if (textoNaTela.includes('Bloco 2') || textoNaTela.includes('B2')) { blocoId = 1; blocoNome = 'BLOCO 2'; }
+    else if (textoNaTela.includes('Bloco 3') || textoNaTela.includes('B3')) { blocoId = 2; blocoNome = 'BLOCO 3'; }
 
-    processando = true;
+    if (executando) return;
+    executando = true;
 
     try {
       let turma = localStorage.getItem('turma') || localStorage.getItem('turma_aluno') || window.alunoTurma || 'Sem Turma';
       let alunos = await buscarTodoRanking();
       
       if (alunos.length === 0) {
-        processando = false;
+        executando = false;
         return;
       }
 
       let rankingGeral = alunos
-        .filter(a => a.tempos && a.tempos[bloco.id] > 0)
-        .sort((a, b) => a.tempos[bloco.id] - b.tempos[bloco.id]);
+        .filter(a => a.tempos && a.tempos[blocoId] > 0)
+        .sort((a, b) => a.tempos[blocoId] - b.tempos[blocoId]);
 
       let rankingTurma = rankingGeral.filter(a => a.turma === turma);
 
-      let htmlGeral = criarListaHTML(rankingGeral, `🏆 TOP 5 GERAL - ${bloco.nome}`, bloco.id);
-      let htmlTurma = criarListaHTML(rankingTurma, `🏫 TOP 5 DA SUA TURMA (${turma}) - ${bloco.nome}`, bloco.id);
+      let htmlGeral = criarListaHTML(rankingGeral, `🏆 TOP 5 GERAL - ${blocoNome}`, blocoId);
+      let htmlTurma = criarListaHTML(rankingTurma, `🏫 TOP 5 DA SUA TURMA (${turma})`, blocoId);
 
       let container = document.createElement('div');
       container.className = 'top5-maratona-injetado';
       container.innerHTML = htmlGeral + htmlTurma;
 
-      // Procura um botão para colocar o card logo acima dele
-      let btnReferencia = Array.from(document.querySelectorAll('button, a')).find(el => 
-        el.textContent.includes('Ranking') || el.textContent.includes('Voltar ao início') || el.textContent.includes('Continuar')
-      );
+      // A MÁGICA: Injeta EXATAMENTE acima do botão "Ver Ranking"
+      btnRanking.parentNode.insertBefore(container, btnRanking);
 
-      if (btnReferencia && btnReferencia.parentNode) {
-        btnReferencia.parentNode.insertBefore(container, btnReferencia);
-      } else {
-        // Se não achar o botão, joga no final da tela
-        document.body.appendChild(container);
-      }
     } catch (e) {
       console.error('Erro ao injetar Top 5:', e);
     }
     
-    processando = false;
+    executando = false;
   }
 
-  // Observador com "Freio de Mão" (Debounce)
+  // Fica apenas escutando quando a tela final é desenhada
   const observer = new MutationObserver(() => {
-    // Se a tela mudar, cancela a tentativa anterior
-    if (timeoutId) clearTimeout(timeoutId);
-    
-    // Espera a tela ficar 500ms parada para tentar injetar
-    timeoutId = setTimeout(() => {
-      tentarInjetar();
-    }, 500);
+    // Delay seguro para o React/Vue terminar de renderizar
+    setTimeout(tentarInjetar, 400); 
   });
   
   observer.observe(document.body, { childList: true, subtree: true });
 })();
-// ▲▲▲ FIM [M.25-B] ───
+// ▲▲▲ FIM [M.26-B] ───
