@@ -9861,6 +9861,14 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <small class="subtitulo-botao">Tempos totais e recordes</small>
                 </span>
             </button>
+            <!-- ⚠️ NOVO BOTÃO DO HALL DA FAMA -->
+            <button onclick="abrirHallDaFamaMaratona()" class="botao-secundario" style="border-left: 4px solid #a855f7;">
+                <span class="icone">🌟</span>
+                <span>
+                    Hall da Fama da Maratona
+                    <small class="subtitulo-botao">Os melhores de cada bloco</small>
+                </span>
+            </button>
             <button onclick="iniciarTreinoAnonimo()" class="botao-treino">
                 <span class="icone">🎯</span>
                 <span>Treino Livre</span>
@@ -10879,6 +10887,20 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
     <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:20px;">🏠 Voltar ao Início</button>
 </div>
 <!-- ▲▲▲ FIM [03.18] -->
+
+<!-- ▼▼▼ [03.19] TELA HALL DA FAMA DA MARATONA ────────────── INÍCIO ─── -->
+<div id="tela-hall-maratona" class="card hidden">
+    <h2>🌟 Hall da Fama da Maratona</h2>
+    <p class="subtitulo" style="text-align:left;">Os alunos mais rápidos da competição. Quem vai quebrar o próximo recorde?</p>
+    
+    <div id="hall-maratona-conteudo">
+        <div class="desempenho-loading">⏳ Carregando recordes...</div>
+    </div>
+
+    <button onclick="mostrarTela('tela-mais')" class="botao-secundario" style="margin-top:20px;">⬅️ Voltar</button>
+    <button onclick="mostrarTela('tela-inicial')" class="botao-verde" style="margin-top:10px;">🏠 Início</button>
+</div>
+<!-- ▲▲▲ FIM [03.19] -->
 
     <!-- ▼▼▼ [03.16] TELA MARATONA ────────────────────────── INÍCIO ─── -->
     <div id="tela-maratona" class="card hidden" style="padding: 0; background: transparent; box-shadow: none;">
@@ -29998,17 +30020,13 @@ async function injetarBotaoMaratonaNaHome() {
     if (!telaInicial) return;
     
     let container = document.getElementById("maratona-home-container");
-    if (container) container.remove(); // Remove para recriar atualizado
+    if (container) container.remove(); 
     
     const eventoId = await verificarEventoMaratonaAtivo();
     
-    if (!eventoId) return; // Se não tem evento, não mostra nada (o app fica normal)
+    if (!eventoId) return; 
 
-    // =========================================================
     // MODO EXCLUSIVO: O APP VIRA A MARATONA
-    // =========================================================
-    
-    // 1. Oculta as coisas da Copa na Home
     const ctnPosicoes = document.getElementById("acao-principal-container");
     const ctnRitmo = document.getElementById("ritmo-copa-container");
     const ctnMeta = document.getElementById("meta-pessoal-container");
@@ -30021,7 +30039,6 @@ async function injetarBotaoMaratonaNaHome() {
     if (ctnMapa) ctnMapa.style.display = "none";
     if (ctnStatusCopa) ctnStatusCopa.style.display = "none";
 
-    // 2. Insere o card da Maratona no TOPO da Home (logo abaixo do Hero)
     const hero = telaInicial.querySelector(".hero-esports");
     
     container = document.createElement("div");
@@ -30052,6 +30069,25 @@ async function injetarBotaoMaratonaNaHome() {
         telaInicial.prepend(container);
     }
 }
+
+// ▼▼▼ [M.19.C] Ponte para o Hall da Fama ─── INÍCIO ───
+async function abrirHallDaFamaMaratona() {
+    mostrarTela("tela-hall-maratona");
+    const container = document.getElementById("hall-maratona-conteudo");
+    if (!container) return;
+
+    container.innerHTML = `<div class="desempenho-loading">⏳ Buscando recordes...</div>`;
+
+    try {
+        const modulo = await import('./maratona/maratona.js');
+        await modulo.renderizarHallDaFama(container, window.copaApp);
+    } catch (e) {
+        console.warn("[Hall Maratona] Erro ao carregar módulo:", e);
+        container.innerHTML = `<div class="desempenho-empty-msg">Não foi possível carregar o Hall da Fama.</div>`;
+    }
+}
+// ▲▲▲ FIM [M.19.C]
+
 // ▲▲▲ FIM [19.11]
 
 // ▼▼▼ [19.12] Painel do Professor: Gerenciar Maratona ──────── INÍCIO ───
