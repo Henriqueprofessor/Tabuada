@@ -10396,6 +10396,11 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <div id="painel-maratona-conteudo">
                         <div class="desempenho-loading">⏳ Carregando eventos...</div>
                     </div>
+                    
+                    <!-- ⚠️ M.20 - Container para as estatísticas (injetado pelo maratona.js) -->
+                    <div id="painel-maratona-stats-conteudo" style="margin-top: 20px; border-top: 1px dashed rgba(148,163,184,0.3); padding-top: 16px; display: none;">
+                        <!-- O maratona.js vai preencher isso aqui -->
+                    </div>
                 </div>
                 <!-- ▲▲▲ FIM [03.17] -->
 
@@ -30094,13 +30099,13 @@ async function abrirHallDaFamaMaratona() {
 
 async function renderizarPainelMaratona() {
     const container = document.getElementById("painel-maratona-conteudo");
+    const statsContainer = document.getElementById("painel-maratona-stats-conteudo");
     if (!container) return;
 
     try {
         const snap = await database.ref('copa_maratona/eventos').once('value');
         const eventos = snap.val() || {};
         
-        // Ordena do mais recente para o mais antigo (baseado no criadoEm)
         const listaIds = Object.keys(eventos).sort((a, b) => {
             const ta = eventos[a]?.meta?.criadoEm || 0;
             const tb = eventos[b]?.meta?.criadoEm || 0;
@@ -30116,6 +30121,7 @@ async function renderizarPainelMaratona() {
 
         if (listaIds.length === 0) {
             html += `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">Nenhum evento de Maratona criado ainda.</div>`;
+            if (statsContainer) statsContainer.style.display = "none";
         } else {
             html += `<div style="display:flex; flex-direction:column; gap:8px;">`;
             for (const id of listaIds) {
@@ -30149,6 +30155,18 @@ async function renderizarPainelMaratona() {
                 `;
             }
             html += `</div>`;
+
+            // ⚠️ M.20 - Chama o maratona.js para injetar as estatísticas do evento mais recente/ativo
+            if (statsContainer) {
+                statsContainer.style.display = "block";
+                statsContainer.innerHTML = `<div class="desempenho-loading">⏳ Calculando estatísticas...</div>`;
+                import('./maratona/maratona.js').then(modulo => {
+                    modulo.renderizarEstatisticasMaratona(statsContainer, window.copaApp, eventos);
+                }).catch(e => {
+                    console.warn("Falha ao carregar estatísticas da maratona:", e);
+                    statsContainer.innerHTML = `<div class="desempenho-empty-msg">Erro ao carregar estatísticas.</div>`;
+                });
+            }
         }
 
         container.innerHTML = html;
@@ -30220,7 +30238,6 @@ async function encerrarEventoMaratona(id) {
 
 async function exportarCSVMaratona(eventoId) {
     try {
-        // Chama o cérebro que está guardado no arquivo maratona.js
         const modulo = await import('./maratona/maratona.js');
         modulo.exportarCSVMaratona(eventoId, window.copaApp);
     } catch (e) {
