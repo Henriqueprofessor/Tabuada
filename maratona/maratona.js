@@ -1258,3 +1258,122 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
 })();
 // ▲▲▲ FIM [M.22-B] ───
 
+// ▼▼▼ [M.25-B] INÍCIO — Top 5 Geral + Top 5 Turma (Blocos 1 a 4) ───
+(function maratonaTop5Checkpoints() {
+  if (window.__maratonaTop5CheckpointsOK) return;
+  window.__maratonaTop5CheckpointsOK = true;
+
+  // Função para buscar todos os dados do ranking no Firebase
+  async function buscarTodoRanking() {
+    if (typeof firebase === 'undefined' || !firebase.database) return [];
+    const nodes = ['ranking', 'maratona/ranking', 'maratona_ranking', 'ranking_maratona'];
+    for (let node of nodes) {
+      try {
+        const snap = await firebase.database().ref(node).once('value');
+        const data = snap.val();
+        if (data) {
+          const alunos = Object.values(data);
+          if (alunos.length > 0 && alunos[0].tempos) { // Estrutura da Maratona
+            return alunos;
+          }
+        }
+      } catch (e) {}
+    }
+    return [];
+  }
+
+  // Descobre qual bloco está na tela e o tempo do aluno
+  function getBlocoAtual(texto) {
+    if (texto.includes('Bloco 1') || texto.includes('B1')) return { id: 0, nome: 'BLOCO 1' };
+    if (texto.includes('Bloco 2') || texto.includes('B2')) return { id: 1, nome: 'BLOCO 2' };
+    if (texto.includes('Bloco 3') || texto.includes('B3')) return { id: 2, nome: 'BLOCO 3' };
+    if (texto.includes('Bloco 4') || texto.includes('B4') || texto.includes('Você cruzou a linha!')) return { id: 3, nome: 'BLOCO 4 (GERAL)' };
+    return null;
+  }
+
+  function injetarCards(screenNode) {
+    if (screenNode.querySelector('.top5-maratona-injetado')) return;
+
+    // Descobre qual bloco é
+    const bloco = getBlocoAtual(screenNode.textContent);
+    if (!bloco) return;
+
+    // Descobre a turma do aluno
+    let turma = localStorage.getItem('turma') || localStorage.getItem('turma_aluno') || window.alunoTurma || 'Sem Turma';
+
+    buscarTodoRanking().then(alunos => {
+      if (alunos.length === 0) return;
+
+      // 1. Filtra e ordena o Ranking Geral daquele bloco
+      let rankingGeral = alunos
+        .filter(a => a.tempos && a.tempos[bloco.id] > 0)
+        .sort((a, b) => a.tempos[bloco.id] - b.tempos[bloco.id]);
+
+      // 2. Filtra e ordena o Ranking da Turma daquele bloco
+      let rankingTurma = rankingGeral.filter(a => a.turma === turma);
+
+      // Função para criar o HTML da lista (Top 5)
+      function criarListaHTML(lista, titulo, ehTurma) {
+        if (lista.length === 0) return '';
+        let html = `<div class="top5-turma-injetado">
+          <div class="top5-turma-header">${titulo}</div>
+          <div class="top5-turma-list">`;
+        
+        lista.slice(0, 5).forEach((aluno, index) => {
+          let pos = index + 1;
+          let medalha = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `${pos}º`;
+          let nome = aluno.nome || 'Aluno';
+          let tempo = parseFloat(aluno.tempos[bloco.id]).toFixed(2) + 's';
+          let isEu = aluno.email === (firebase.auth().currentUser?.email) || nome.toLowerCase().includes('você');
+          let classeItem = isEu ? 'top5-turma-item minha-posicao' : 'top5-turma-item';
+          
+          html += `<div class="${classeItem}">
+            <span>${medalha} ${nome}</span>
+            <span class="top5-turma-tempo">${tempo}</span>
+          </div>`;
+        });
+        
+        html += `</div></div>`;
+        return html;
+      }
+
+      // Monta o HTML final (Geral + Turma)
+      let htmlGeral = criarListaHTML(rankingGeral, `🏆 TOP 5 GERAL - ${bloco.nome}`, false);
+      let htmlTurma = criarListaHTML(rankingTurma, `🏫 TOP 5 DA SUA TURMA (${turma}) - ${bloco.nome}`, true);
+
+      let container = document.createElement('div');
+      container.className = 'top5-maratona-injetado';
+      container.innerHTML = htmlGeral + htmlTurma;
+
+      // Onde injetar? Vamos procurar o botão de "Ver Ranking" ou "Voltar"
+      let btnReferencia = Array.from(screenNode.querySelectorAll('button, a')).find(el => 
+        el.textContent.includes('Ranking') || el.textContent.includes('Voltar ao início') || el.textContent.includes('Continuar')
+      );
+
+      if (btnReferencia) {
+        // Injeta antes do botão
+        btnReferencia.parentNode.insertBefore(container, btnReferencia);
+      } else {
+        // Se não achar botão, injeta no final do card principal
+        screenNode.appendChild(container);
+      }
+    });
+  }
+
+  // Observa a tela para saber quando o Checkpoint ou Tela Final aparece
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      for (const n of m.addedNodes) {
+        if (n.nodeType === 1) {
+          let txt = n.textContent || '';
+          if (txt.includes('Bloco') || txt.includes('Você cruzou a linha!') || txt.includes('Tempo Total') || txt.includes('Checkpoint')) {
+            setTimeout(() => injetarCards(n), 800); // Delay para o Firebase carregar
+          }
+        }
+      }
+    }
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: true });
+})();
+// ▲▲▲ FIM [M.25-B] ───
