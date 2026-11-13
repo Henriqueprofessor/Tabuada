@@ -9647,14 +9647,37 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             }
         }
 
-        /* ─── Acessibilidade: desliga animações, mantém cores ─── */
-        @media (prefers-reduced-motion: reduce) {
-            .f1-splash-bandeira,
-            .f1-splash-emoji {
-                animation: none !important;
+            /* ─── Acessibilidade: desliga animações, mantém cores ─── */
+            @media (prefers-reduced-motion: reduce) {
+                .f1-splash-bandeira,
+                .f1-splash-emoji {
+                    animation: none !important;
+                }
             }
-        }
-        /* ▲▲▲ FIM [02.92] */
+            /* ▲▲▲ FIM [02.92] */
+
+/* ▼▼▼ [M.18.B] Histórico da Maratona no Desempenho ─── INÍCIO ─── */
+.maratona-hist-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border-neon);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: left;
+    box-shadow: var(--shadow-card);
+}
+/* ... (o resto do CSS do M.18.B que eu mandei) ... */
+@media (max-width: 520px) {
+    .maratona-hist-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    .maratona-hist-tempo {
+        text-align: left;
+        margin-top: 4px;
+    }
+}
+/* ▲▲▲ FIM [M.18.B] */
 
     </style>
 </head>
@@ -10254,6 +10277,10 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
             <div id="desempenho-historico" class="desempenho-historico-wrap"><div class="desempenho-loading">⏳ Carregando histórico…</div></div>
             <p class="desempenho-nota-rodape">💡 Estas estatísticas consideram todas as partidas oficiais. A modalidade "Todas" soma o desempenho em 2-5, 6-9 e 1-10.</p>
         </div>
+
+        <!-- ▼ M.18 - Histórico da Maratona (FORA do desempenho-conteudo) -->
+        <div id="desempenho-maratona-historico-container" class="hidden" style="margin-top:24px;"></div>
+
         <div id="desempenho-vazio" class="hidden">
             <div class="desempenho-empty-state">
                 <span class="desempenho-empty-icone">🎯</span>
@@ -21079,7 +21106,7 @@ function abrirBuscarAlunoComMeusDados() {
     }
     // ▲▲▲ FIM [16.05]
 
-    // ▼▼▼ [16.06] Orquestração do Desempenho ────────────────────────
+// ▼▼▼ [16.06] Orquestração do Desempenho ────────────────────────
     function abrirMeuDesempenho() {
         mostrarTela("tela-desempenho");
         comparativoTurmaCache = null;
@@ -21095,14 +21122,8 @@ function abrirBuscarAlunoComMeusDados() {
         const isProfessor = professorAutenticado();
 
         if (nome && turma && !isProfessor) {
-            if (campo) {
-                campo.value = nome;
-                campo.disabled = true;
-            }
-            if (selTurma) {
-                selTurma.value = turma;
-                selTurma.disabled = true;
-            }
+            if (campo) { campo.value = nome; campo.disabled = true; }
+            if (selTurma) { selTurma.value = turma; selTurma.disabled = true; }
             if (texto) texto.textContent = "Ver meu desempenho:";
             carregarMeuDesempenho(nome, turma);
         } else if (nome && turma && isProfessor) {
@@ -21151,6 +21172,10 @@ function abrirBuscarAlunoComMeusDados() {
         document.getElementById("desempenho-historico").innerHTML = `<div class="desempenho-historico-skeleton"><div class="linha-sk"></div><div class="linha-sk"></div><div class="linha-sk"></div></div>`;
         const certCtn = document.getElementById("desempenho-certificados-container");
         if (certCtn) certCtn.innerHTML = `<div class="desempenho-loading" style="grid-column:1/-1;">⏳ Carregando certificados…</div>`;
+        
+        // ⚠️ M.18 - Chama o histórico da maratona aqui
+        renderizarHistoricoMaratona(nome, turma);
+
         let partidas = [];
         try { partidas = await obterHistoricoAluno(nome, turma); }
         catch(e) { console.warn("Falha ao carregar histórico para desempenho:", e); }
@@ -21189,7 +21214,112 @@ function abrirBuscarAlunoComMeusDados() {
         renderizarEvolucaoRanking();
         renderizarHistoricoPartidas();
     }
-    // ▲▲▲ FIM [16.06]
+
+    // ▼▼▼ [M.18.D] Renderizar Histórico da Maratona ─── INÍCIO ───
+    async function renderizarHistoricoMaratona(nome, turma) {
+        const container = document.getElementById("desempenho-maratona-historico-container");
+        if (!container) return;
+
+        if (!nome || !turma) {
+            container.classList.add("hidden");
+            return;
+        }
+
+        const chave = chaveAlbum(nome, turma);
+
+        try {
+            // Busca o evento ativo ou o último evento
+            const snapEv = await database.ref('copa_maratona/eventos').once('value');
+            const eventos = snapEv.val() || {};
+            let eventoId = null;
+            let maxTs = 0;
+
+            for (const [id, dados] of Object.entries(eventos)) {
+                const meta = dados && dados.meta;
+                if (!meta) continue;
+                if (meta.ativo === true) {
+                    eventoId = id;
+                    break; // Se achou o ativo, usa ele
+                }
+                const ts = meta.criadoEm || 0;
+                if (ts > maxTs) { maxTs = ts; eventoId = id; } // Senão, pega o mais recente
+            }
+
+            if (!eventoId) {
+                container.classList.add("hidden");
+                return;
+            }
+
+            // Busca o histórico do aluno nesse evento
+            const snapHist = await database.ref(`copa_maratona/eventos/${eventoId}/historico/${chave}`).once('value');
+            const dadosHist = snapHist.val();
+
+            if (!dadosHist) {
+                container.classList.add("hidden");
+                return;
+            }
+
+            // Transforma em array e ordena do mais recente para o mais antigo
+            const lista = Object.values(dadosHist).sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            let html = `
+                <div class="maratona-hist-wrap">
+                    <div class="maratona-hist-cabecalho">
+                        <div class="maratona-hist-titulo">🏁 Histórico da Maratona</div>
+                        <span style="font-size:11.5px;color:var(--text-muted);">${lista.length} ${lista.length === 1 ? "corrida" : "corridas"}</span>
+                    </div>
+                    <div class="maratona-hist-lista">
+            `;
+
+            lista.forEach(corrida => {
+                const dataFmt = formatarDataHoraCurta(corrida.data);
+                const ehCompleto = corrida.status === "completo";
+                
+                // Formata o tempo total
+                const tempoTotalStr = (corrida.tempoTotal > 0) 
+                    ? (corrida.tempoTotal / 1000).toFixed(2) + 's' 
+                    : '—';
+
+                // Cria as tags dos blocos
+                let blocosHtml = "";
+                for (let i = 0; i < 4; i++) {
+                    const t = corrida.temposBlocos && corrida.temposBlocos[i];
+                    if (t > 0) {
+                        blocosHtml += `<span class="maratona-hist-bloco-tag completo">B${i+1}: ${(t/1000).toFixed(1)}s</span>`;
+                    } else if (!ehCompleto && i === (corrida.temposBlocos ? corrida.temposBlocos.length : 0)) {
+                        blocosHtml += `<span class="maratona-hist-bloco-tag">B${i+1}: Parou</span>`;
+                    } else {
+                        blocosHtml += `<span class="maratona-hist-bloco-tag">B${i+1}: —</span>`;
+                    }
+                }
+
+                html += `
+                    <div class="maratona-hist-item ${ehCompleto ? '' : 'dnf'}">
+                        <div class="maratona-hist-data">${dataFmt}</div>
+                        <div class="maratona-hist-blocos">${blocosHtml}</div>
+                        <div class="maratona-hist-tempo ${ehCompleto ? '' : 'dnf-tempo'}">
+                            ${ehCompleto ? tempoTotalStr : 'DNF'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            container.classList.remove("hidden");
+
+        } catch (e) {
+            console.warn("[Desempenho] Falha ao renderizar histórico da maratona:", e);
+            container.classList.add("hidden");
+        }
+    }
+    // ▲▲▲ FIM [M.18.D]
+
+// ▲▲▲ FIM [16.06]
 
     // ▼▼▼ [16.07] Maestria absoluta (certificado lendário 0-10) ────────
     async function verificarMaestriaAbsoluta(nome, turma) {
