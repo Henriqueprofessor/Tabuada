@@ -1409,8 +1409,11 @@ export async function renderizarHallDaFama(container, app) {
       const totalAcertos = {};
       const maxSequencia = {};
 
-      Object.values(historico).forEach(arr => {
-        arr.forEach(partida => {
+      // ⚠️ CORREÇÃO: Transformar os valores de cada aluno em um array antes do forEach
+      Object.values(historico).forEach(alunoHist => {
+        Object.values(alunoHist || {}).forEach(partida => {
+          if (!partida || !partida.nome) return;
+          
           const key = partida.nome + '|' + partida.turma;
           
           if (!totalErros[key]) totalErros[key] = 0;
@@ -1472,7 +1475,7 @@ export async function renderizarHallDaFama(container, app) {
               if (s.tentativas >= 5 && s.taxa >= 0.90) verdes++;
           });
           
-          const partidaRef = Object.values(historico).flat().find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
+          const partidaRef = Object.values(historico).flatMap(h => Object.values(h || {})).find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
           const nomeReal = partidaRef ? partidaRef.nome : key.split('_')[0];
           const turmaReal = partidaRef ? partidaRef.turma : '?';
           
@@ -1482,7 +1485,7 @@ export async function renderizarHallDaFama(container, app) {
       // 4. Colecionador de Elite
       const colecionadores = Object.entries(medalhas).map(([key, meds]) => {
           const qtd = Object.keys(meds || {}).length;
-          const partidaRef = Object.values(historico).flat().find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
+          const partidaRef = Object.values(historico).flatMap(h => Object.values(h || {})).find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
           const nomeReal = partidaRef ? partidaRef.nome : key.split('_')[0];
           const turmaReal = partidaRef ? partidaRef.turma : '?';
           return { nome: nomeReal, turma: turmaReal, qtd };
