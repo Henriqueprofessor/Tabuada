@@ -24199,8 +24199,17 @@ function abrirBuscarAlunoComMeusDados() {
 
     // ▼▼▼ [18.02] Hall da Fama ──────────────────────────────────────
     async function abrirHallDaFama() {
-        mostrarTela("tela-hall-fama");
-        await renderizarHallDaFama();
+        // ⚠️ NOVO: Verifica se existe uma maratona ativa antes de abrir
+        const eventoMaratonaId = await verificarEventoMaratonaAtivo();
+        
+        if (eventoMaratonaId) {
+            // Se houver maratona ativa, carrega o Hall da Maratona
+            abrirHallDaFamaMaratona();
+        } else {
+            // Se não, abre o Hall normal da Copa
+            mostrarTela("tela-hall-fama");
+            await renderizarHallDaFama();
+        }
     }
 
     function hallFormatarValor(item, tipoValor) {
