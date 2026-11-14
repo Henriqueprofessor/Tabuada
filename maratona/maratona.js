@@ -174,9 +174,9 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
 export function render(hostElement, opts) {
     if (!hostElement || !(hostElement instanceof Element)) throw new Error("render() exige um Element DOM como host.");
 
-    // 🛑 TRAVA DE SEGURANÇA: Impede que o app principal recarregue e faça a tela piscar
+    // 🛑 TRAVA DE SEGURANÇA
     if (hostElement.querySelector('.maratona-app')) {
-        console.warn("[Maratona] Bloqueado: o módulo já está sendo exibido na tela. Ignorando re-renderização para evitar piscadas.");
+        console.warn("[Maratona] Bloqueado: o módulo já está sendo exibido na tela.");
         return { destroy: () => {}, obterEstado: () => ({ vivo: true, tela: 'ativa' }) };
     }
 
@@ -193,7 +193,8 @@ export function render(hostElement, opts) {
         deck: _gerarDeckSequencial(), blocoAtual: 0, indiceNoBloco: 0, temposBlocos: [],
         inicioBlocoPerf: 0, tempoPausadoMs: 0, pausadoEmPerf: null, pausado: false,
         cronoInterval: null, errosTropecos: [], bonecoX: 20, saindo: false,
-        recordePessoalNovo: {}, timers: _criarTimerRegistry()
+        recordePessoalNovo: {}, timers: _criarTimerRegistry(),
+        mapStats: {}, tempoInicioConta: 0 // NOVO: Rastreamento do mapa
     };
 
     const controller = {
@@ -217,7 +218,8 @@ export function render(hostElement, opts) {
         if (app) { S.copaApp = app; console.info("[Maratona] window.copaApp disponível. Versão:", app.versao); }
         else console.warn("[Maratona] window.copaApp NÃO ficou disponível em 5s.");
     });
-    _inicializarTelaSelecao(S);
+    
+    _inicializarTelaSelecao(S); // Chama a tela inicial com o botão do mapa
 
     return controller;
 }
@@ -233,6 +235,30 @@ function _renderizarEsqueleto(S) {
             <div class="maratona-tela maratona-tela-resultado hidden" data-tela="resultado"></div>
         </div>
     `;
+}
+
+function _inicializarTelaSelecao(S) {
+    const container = S.host.querySelector('[data-tela="selecao"]');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="maratona-card maratona-card-boas-vindas">
+            <div class="maratona-kicker">🏁 MÓDULO MARATONA</div>
+            <h2 class="maratona-titulo">Maratona com Barreiras</h2>
+            <p class="maratona-sub"><strong>4 blocos · 40 perguntas</strong> em ordem sequencial.<br>Fatores fixos por bloco: <strong>2, 3, 4 e 5</strong> · multiplicadores de 1 a 10.</p>
+            <div class="maratona-regras">
+                <div class="maratona-regra"><span class="maratona-regra-icone">✅</span><span>Acertou → avança para a próxima pergunta.</span></div>
+                <div class="maratona-regra"><span class="maratona-regra-icone">❌</span><span>Errou → volta uma pergunta (a 1ª do bloco não volta).</span></div>
+                <div class="maratona-regra"><span class="maratona-regra-icone">⏱️</span><span>O cronômetro conta o tempo real. Pausa a cada bloco concluído.</span></div>
+                <div class="maratona-regra"><span class="maratona-regra-icone">🏁</span><span>Vence quem somar o menor tempo nos 4 blocos.</span></div>
+            </div>
+            <p class="maratona-nota">Evento: <code data-evento-id>${_escapeHtml(S.opts.eventoId)}</code></p>
+            
+            <button type="button" class="maratona-btn-comecar" data-btn-comecar style="margin-bottom: 10px;">▶ Começar corrida</button>
+            <button type="button" class="maratona-btn-ver-ranking" onclick="window.abrirMapaMaratonaModal()" style="margin-top: 0;">🗺️ Ver meu Mapa de Tabuadas</button>
+        </div>
+    `;
+    const btn = container.querySelector("[data-btn-comecar]");
+    if (btn) btn.addEventListener("click", () => _iniciarJogo(S));
 }
 
 function _renderizarErro(host, mensagem) {
@@ -259,31 +285,14 @@ function _mostrarTela(S, tela) {
     if (app) app.dataset.estado = tela;
 }
 
-function _inicializarTelaSelecao(S) {
-    const container = S.host.querySelector('[data-tela="selecao"]');
-    if (!container) return;
-    container.innerHTML = `
-        <div class="maratona-card maratona-card-boas-vindas">
-            <div class="maratona-kicker">🏁 MÓDULO MARATONA</div>
-            <h2 class="maratona-titulo">Maratona com Barreiras</h2>
-            <p class="maratona-sub"><strong>4 blocos · 40 perguntas</strong> em ordem sequencial.<br>Fatores fixos por bloco: <strong>2, 3, 4 e 5</strong> · multiplicadores de 1 a 10.</p>
-            <div class="maratona-regras">
-                <div class="maratona-regra"><span class="maratona-regra-icone">✅</span><span>Acertou → avança para a próxima pergunta.</span></div>
-                <div class="maratona-regra"><span class="maratona-regra-icone">❌</span><span>Errou → volta uma pergunta (a 1ª do bloco não volta).</span></div>
-                <div class="maratona-regra"><span class="maratona-regra-icone">⏱️</span><span>O cronômetro conta o tempo real. Pausa a cada bloco concluído.</span></div>
-                <div class="maratona-regra"><span class="maratona-regra-icone">🏁</span><span>Vence quem somar o menor tempo nos 4 blocos.</span></div>
-            </div>
-            <p class="maratona-nota">Evento: <code data-evento-id>${_escapeHtml(S.opts.eventoId)}</code></p>
-            <button type="button" class="maratona-btn-comecar" data-btn-comecar>▶ Começar corrida</button>
-        </div>
-    `;
-    const btn = container.querySelector("[data-btn-comecar]");
-    if (btn) btn.addEventListener("click", () => _iniciarJogo(S));
-}
-
 function _iniciarJogo(S) {
     if (!S.vivo) return;
     S.blocoAtual = 0; S.indiceNoBloco = 0; S.temposBlocos = []; S.errosTropecos = []; S.bonecoX = 20; S.saindo = false;
+    
+    // NOVO: Rastreador de operações para o Mapa
+    S.mapStats = {}; 
+    S.tempoInicioConta = 0;
+
     _mostrarTela(S, "jogo");
     _renderizarTelaJogo(S);
     _iniciarBloco(S);
@@ -360,6 +369,10 @@ function _atualizarPerguntaNaTela(S) {
 
     const card = S.host.querySelector("[data-pergunta-card]");
     if (!card) return;
+    
+    // NOVO: Reinicia o timer para a nova conta
+    S.tempoInicioConta = performance.now();
+
     card.innerHTML = `
         <div class="maratona-pergunta">${pergunta.fA} × ${pergunta.fB} = ?</div>
         <div class="maratona-opcoes">${opcoes.map(v => `<button type="button" class="maratona-opcao" data-valor="${v}">${v}</button>`).join("")}</div>
@@ -381,6 +394,12 @@ function _responder(S, valor, btn) {
 
     _desabilitarOpcoes(S);
     const acertou = valor === pergunta.resposta;
+    const tempoResposta = Math.max(0, performance.now() - S.tempoInicioConta);
+
+    // NOVO: Salva a resposta no rastreador do Mapa
+    const chaveOp = `${pergunta.fA}x${pergunta.fB}`;
+    if (!S.mapStats[chaveOp]) S.mapStats[chaveOp] = { respostas: [] };
+    S.mapStats[chaveOp].respostas.push({ acertou, tempo: tempoResposta });
 
     if (acertou) {
         if (btn) btn.classList.add("certo");
@@ -827,12 +846,15 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
 
     promises.push(_tentarGravarTempoTotal(app, basePath, chaveAluno, { nome, turma, temposBlocos, tempoTotal, status, motivoDnf: (status === "dnf") ? (motivoDnf || "saiu") : null }).catch(() => {}));
 
-    // Adicionado errosTropecos para contar os erros no Álbum
+    // NOVO: Salvar os dados do Mapa
+    if (S.mapStats && Object.keys(S.mapStats).length > 0) {
+        promises.push(_salvarMapaMaratona(app, basePath, chaveAluno, S.mapStats).catch(() => {}));
+    }
+
     promises.push(_salvarHistoricoMaratona(app, basePath, chaveAluno, { nome, turma, temposBlocos, tempoTotal, status, motivoDnf, errosTropecos: S.errosTropecos }).catch(() => {}));
 
     try { 
         await Promise.all(promises); 
-        // Dispara a verificação de medalhas se a corrida foi completa
         if (status === "completo") {
             await _verificarNovasMedalhas(app, eventoId, chaveAluno);
         }
@@ -841,11 +863,35 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
     }
 }
 
+// NOVO: Função que mescla os dados do mapa com o que já existe no banco
+async function _salvarMapaMaratona(app, basePath, chaveAluno, mapStats) {
+    try {
+        const snap = await app.database.ref(`${basePath}/mapas/${chaveAluno}`).once('value');
+        let atual = snap.val() || {};
+        
+        Object.entries(mapStats).forEach(([opKey, data]) => {
+            if (!atual[opKey]) atual[opKey] = { historico: [] };
+            let hist = atual[opKey].historico || [];
+            
+            data.respostas.forEach(r => {
+                hist.push({ acertou: !!r.acertou, tempo: Number(r.tempo) || 0, data: Date.now() });
+            });
+            
+            // Mantém apenas as últimas 15 respostas (mesma lógica do jogo principal)
+            if (hist.length > 15) hist = hist.slice(-15);
+            atual[opKey].historico = hist;
+        });
+
+        await app.database.ref(`${basePath}/mapas/${chaveAluno}`).set(atual);
+    } catch (e) {
+        console.warn("[Maratona] Falha ao salvar mapa:", e);
+    }
+}
+
 async function _salvarHistoricoMaratona(app, basePath, chaveAluno, dados) {
     const { nome, turma, temposBlocos, tempoTotal, status, motivoDnf, errosTropecos } = dados;
     const registro = { nome, turma, temposBlocos: temposBlocos.slice(), tempoTotal, status, data: new Date().toISOString() };
     
-    // Salva os erros para a medalha "Sem Tropeço"
     if (errosTropecos) registro.errosTropecos = errosTropecos;
     if (status === "dnf" && motivoDnf) registro.motivoDnf = motivoDnf;
     
@@ -1905,3 +1951,101 @@ window.abrirAlbumMaratonaModal = async function() {
 };
 
 // ▲▲▲ FIM [M.31]
+
+// ▼▼▼ [M.32] Mapa de Tabuadas da Maratona ────────────────── INÍCIO ───
+
+const MAPA_JANELA_AVALIACAO_MARATONA = 10;
+const LIMIAR_DOMINIO_MARATONA = 0.90;
+const LIMIAR_QUASE_MARATONA = 0.80;
+const LIMIAR_DESENV_MARATONA = 0.60;
+
+function _statsDaOperacaoMaratona(historico) {
+    const lista = (historico || []).slice(-MAPA_JANELA_AVALIACAO_MARATONA);
+    const tentativas = lista.length;
+    if (tentativas === 0) return { tentativas: 0, acertos: 0, taxa: 0 };
+    const acertos = lista.filter(r => r.acertou).length;
+    return { tentativas, acertos, taxa: acertos / tentativas };
+}
+
+function _estadoDaOperacaoMaratona(historico, minTent = 5) {
+    const s = _statsDaOperacaoMaratona(historico);
+    if (s.tentativas === 0) return "cinza";
+    if (s.taxa < LIMIAR_DESENV_MARATONA) return "vermelho";
+    if (s.taxa < LIMIAR_QUASE_MARATONA) return "amarelo";
+    if (s.taxa < LIMIAR_DOMINIO_MARATONA) return "azul";
+    if (s.tentativas >= minTent) return "verde";
+    return "cinza-parcial";
+}
+
+window.abrirMapaMaratonaModal = async function() {
+    const app = window.copaApp;
+    if (!app || !app.database) return;
+    
+    const nome = app.obterNomeAluno();
+    const turma = app.obterTurmaAluno();
+    if (!nome || !turma) { app.notificar("Identifique-se para ver o mapa.", "aviso"); return; }
+    const chaveAluno = app.chaveAluno(nome, turma);
+
+    const snapEv = await app.database.ref('copa_maratona/eventos').once('value');
+    const eventos = snapEv.val() || {};
+    let eventoId = null;
+    for (const [id, dados] of Object.entries(eventos)) {
+        if (dados && dados.meta && dados.meta.ativo === true) { eventoId = id; break; }
+    }
+    if (!eventoId) { app.notificar("Nenhum evento ativo.", "aviso"); return; }
+
+    app.notificar("⏳ Carregando mapa...", "info");
+    const snapMapa = await app.database.ref(`copa_maratona/eventos/${eventoId}/mapas/${chaveAluno}`).once('value');
+    const mapaDados = snapMapa.val() || {};
+
+    const overlay = document.createElement("div");
+    overlay.className = "maratona-mapa-overlay";
+    
+    let html = `
+        <div class="maratona-mapa-modal">
+            <div class="maratona-mapa-header">
+                <h3>🗺️ Mapa de Tabuadas (Maratona)</h3>
+                <button class="maratona-mapa-close" onclick="this.closest('.maratona-mapa-overlay').remove()">×</button>
+            </div>
+            <div class="maratona-mapa-body">
+                <p style="font-size:13px; color:#cbd5e1; margin-bottom:16px; line-height:1.5;">
+                    Como a Maratona foca nos fatores <strong>2, 3, 4 e 5</strong>, apenas as linhas correspondentes serão preenchidas aqui. As demais operações ficam disponíveis nos treinos normais do app.
+                </p>
+                <div class="maratona-mapa-grid-wrapper">
+                    <table class="maratona-mapa-grid">
+                        <thead><tr><th></th>`;
+    for (let b = 1; b <= 10; b++) html += `<th>${b}</th>`;
+    html += `</tr></thead><tbody>`;
+
+    for (let a = 1; a <= 10; a++) {
+        html += `<tr><th>${a}</th>`;
+        for (let b = 1; b <= 10; b++) {
+            const k = `${a}x${b}`;
+            const hist = mapaDados[k] ? mapaDados[k].historico : [];
+            const est = _estadoDaOperacaoMaratona(hist);
+            const s = _statsDaOperacaoMaratona(hist);
+            const tentTxt = s.tentativas > 0 ? `<span style="position:absolute;bottom:2px;right:4px;font-size:9px;opacity:0.7;">${s.tentativas}</span>` : "";
+            
+            html += `<td class="maratona-mapa-celula ${est}" style="position:relative; cursor:help;" title="${a}x${b} · ${s.acertos}/${s.tentativas} acertos">
+                ${a}x${b} ${tentTxt}
+            </td>`;
+        }
+        html += `</tr>`;
+    }
+    html += `</tbody></table></div>
+        <div class="maratona-mapa-legenda">
+            <div class="item"><span class="cor" style="background:#22c55e;"></span> Dominada</div>
+            <div class="item"><span class="cor" style="background:#e2e8f0; border:2px dashed #0ea5e9;"></span> A confirmar</div>
+            <div class="item"><span class="cor" style="background:#38bdf8;"></span> Quase lá</div>
+            <div class="item"><span class="cor" style="background:#facc15;"></span> Em treino</div>
+            <div class="item"><span class="cor" style="background:#ef4444;"></span> Preciso reforçar</div>
+            <div class="item"><span class="cor" style="background:#334155;"></span> Sem prática</div>
+        </div>
+    </div></div>`;
+
+    overlay.innerHTML = html;
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+    document.body.appendChild(overlay);
+};
+
+// ▲▲▲ FIM [M.32]
