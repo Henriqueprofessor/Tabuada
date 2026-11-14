@@ -15680,22 +15680,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // ▲▲▲ FIM [11.07]
 
     // ▼▼▼ [11.08] Renderização — capa, cabeçalho, filtros, corpo ────────
-    // v10.7.2 · O botão "Como funciona o Álbum?" saiu do rodapé de
-    // #album-conteudo-view (bloco [03.11]) e virou um ícone circular
-    // compacto "?" ao lado da saudação.
-    //
-    // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
-    //   renderizarCapa / renderizarCabecalhoAlbum / abrirAlbum passam a
-    //   contar apenas as medalhas VISÍVEIS (medalhaVisivelNoModoAtual).
-    //
-    // v10.14.0 · Integração com Álbum da Maratona
-    //   abrirAlbum() agora verifica se há uma Maratona ativa. Se sim,
-    //   redireciona para o modal do Álbum da Maratona automaticamente.
 
     function renderizarCapa() {
         const { nome, turma, persistidas, estrelas } = albumEstado;
 
-        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Conta só as medalhas visíveis
         const medalsVisiveis = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
         const total = medalsVisiveis.length;
         const coladas = medalsVisiveis.filter(m => persistidas[m.id]).length;
@@ -15715,7 +15703,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         if (!container) return;
         const { nome, turma, persistidas, dados, estrelas, secoesCompletas } = albumEstado;
 
-        // ⚠️ v10.13.0 · P-B4 (Pacote 4) — Conta só as medalhas visíveis
         const medalsVisiveis = MEDALS.filter(m => medalhaVisivelNoModoAtual(m));
         const total = medalsVisiveis.length;
         const coladas = medalsVisiveis.filter(m => persistidas[m.id]).length;
@@ -15803,13 +15790,14 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function abrirAlbum() {
-        // ⚠️ NOVO: Verifica se a Maratona está ativa. Se sim, abre o Álbum da Maratona.
+        // ⚠️ REDIRECIONAMENTO INTELIGENTE: Se houver Maratona ativa, abre o Álbum da Maratona.
         const eventoMaratonaId = await verificarEventoMaratonaAtivo();
         if (eventoMaratonaId && window.abrirAlbumMaratonaModal) {
             window.abrirAlbumMaratonaModal();
             return;
         }
 
+        // Se não houver Maratona, abre o Álbum da Copa normal
         mostrarTela("tela-album");
         carregarFiltrosAlbum();
         const capaView = document.getElementById("album-capa-view");
@@ -15852,7 +15840,6 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
             albumEstado = { nome, turma, persistidas, dados, estrelas, pronta: true, novasMedalhas: novas || [], novasSecoes: novasSecoes || [], secoesCompletas: secoesCompletas || {}, novaPatente };
             renderizarCapa();
 
-            // ⚠️ v10.13.0 · P-B4 (Pacote 4) — marca como visto contando só as visíveis
             const modUnicaParaContagem = (typeof modalidadeClassificatoriaUnicaAtiva === "function")
                 ? modalidadeClassificatoriaUnicaAtiva()
                 : null;
