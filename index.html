@@ -30503,14 +30503,13 @@ async function abrirRankingMaratona(opts = {}) {
     carregarDadosRankingMaratona();
 }
 
-// NOVO: Função que constrói e injeta o card de Tempo Ideal
+// ─── NOVO: Card do Tempo Ideal com botão de Duelo ───
 async function renderizarTempoIdealMaratona(eventoId) {
     let containerIdeal = document.getElementById("maratona-tempo-ideal-container");
     if (!containerIdeal) {
         containerIdeal = document.createElement("div");
         containerIdeal.id = "maratona-tempo-ideal-container";
         
-        // Injeta antes do seletor de abas (Geral, Turmas, Por Turma)
         const escopoEl = document.querySelector(".maratona-escopo");
         if (escopoEl && escopoEl.parentNode) {
             escopoEl.parentNode.insertBefore(containerIdeal, escopoEl);
@@ -30566,6 +30565,13 @@ async function renderizarTempoIdealMaratona(eventoId) {
                 🏆 O humano mais perto disso: <strong>${escaparHtml(melhorHumano.nome.split(' ')[0])} (${melhorHumano.turma})</strong> com ${(melhorHumano.tempoTotal / 1000).toFixed(2)}s
             </div>`;
         }
+        
+        // Botão de Duelo com o Fantasma
+        if (temTodos) {
+            html += `<button class="maratona-btn-comecar" onclick="duelarComFantasma()" style="margin-top: 16px; padding: 12px 20px; font-size: 14px; width: 100%; max-width: 250px; background: linear-gradient(135deg, #22d3ee 0%, #0369a1 100%); box-shadow: 0 3px 0 #075985; display: flex; align-items: center; justify-content: center; gap: 8px; margin-left: auto; margin-right: auto;">
+            ⚔️ Duelar com o Fantasma
+        </button>`;
+        }
 
         html += `</div>`;
         containerIdeal.innerHTML = html;
@@ -30573,6 +30579,137 @@ async function renderizarTempoIdealMaratona(eventoId) {
     } catch (e) {
         console.warn("[Ranking Maratona] Falha ao calcular tempo ideal:", e);
         containerIdeal.innerHTML = "";
+    }
+}
+
+// ─── NOVO: Lógica do Duelo contra o Fantasma ───
+async function duelarComFantasma() {
+    const app = window.copaApp;
+    if (!app || !app.database) return;
+
+    const nomeAluno = app.obterNomeAluno();
+    const turmaAluno = app.obterTurmaAluno();
+    const chaveAluno = app.chaveAluno(nomeAluno, turmaAluno);
+
+    if (!nomeAluno || !turmaAluno) {
+        notificar("Identifique-se para duelar.", "aviso");
+        return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'maratona-modal-compare';
+    overlay.innerHTML = `
+      <div class="maratona-modal-card">
+        <div class="maratona-modal-header">
+          <h3>⚔️ Você vs. Fantasma</h3>
+          <button class="maratona-modal-close">&times;</button>
+        </div>
+        <div class="maratona-modal-body">
+          <div class="maratona-ranking-loading">⏳ Cruzando dados...</div>
+        </div>
+      </div>
+    `;
+    
+    const fecharModal = () => overlay.remove();
+    overlay.querySelector('.maratona-modal-close').onclick = fecharModal;
+    overlay.onclick = (ev) => { if (ev.target === overlay) fecharModal(); };
+    document.body.appendChild(overlay);
+
+    try {
+        // Pega os dados do aluno
+        const snapMeuTempo = await app.database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/tempos/${chaveAluno}`).once('value');
+        const dadosMeu = snapMeuTempo.val();
+        
+        if (!dadosMeu || dadosMeu.status !== 'completo') {
+            throw new Error("Você precisa completar a maratona pelo menos uma vez para duelar com o Fantasma!");
+        }
+
+        // Pega os dados do Fantasma (menores tempos de cada bloco)
+        const snapMarcos = await app.database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/marcos`).once('value');
+        const marcos = snapMarcos.val() || {};
+        
+        let b1 = Infinity, b2 = Infinity, b3 = Infinity, b4 = Infinity;
+        if (marcos.b1) Object.values(marcos.b1).forEach(m => { if (m.tempo > 0) b1 = Math.min(b1, m.tempo); });
+        if (marcos.b2) Object.values(marcos.b2).forEach(m => { if (m.tempo > 0) b2 = Math.min(b2, m.tempo); });
+        if (marcos.b3) Object.values(marcos.b3).forEach(m => { if (m.tempo > 0) b3 = Math.min(b3, m.tempo); });
+        if (marcos.b4) Object.values(marcos.b4).forEach(m => { if (m.tempo > 0) b4 = Math.min(b4, m.tempo); });
+
+        let dadosFantasma = {
+            nome: "Fantasma",
+            temposBlocos: [b1, b2, b3, b4],
+            tempoTotal: b1 + b2 + b3 + b4
+        };
+
+        // Monta a tabela comparativa
+        let htmlRows = '';
+        const blocos = [0, 1, 2, 3];
+
+        blocos.forEach(i => {
+            const tMeu = (dadosMeu.temposBlocos && dadosMeu.temposBlocos[i] != null) ? dadosMeu.temposBlocos[i] : null;
+            const tTarget = dadosFantasma.temposBlocos[i];
+
+            const valMeu = tMeu != null ? (tMeu / 1000).toFixed(2) : '—';
+            const valTarget = tTarget != null && tTarget !== Infinity ? (tTarget / 1000).toFixed(2) : '—';
+            
+            let diffHtml = '—';
+            if (tMeu != null && tTarget != null && tTarget !== Infinity) {
+                const diff = tTarget - tMeu; // Positivo = Eu sou mais rápido que o fantasma
+                const diffSegundos = Math.abs(diff / 1000).toFixed(2);
+                
+                if (diff > 0) diffHtml = `<span style="color:#10b981; font-weight:bold;">+${diffSegundos}s</span>`;
+                else if (diff < 0) diffHtml = `<span style="color:#ef4444; font-weight:bold;">-${diffSegundos}s</span>`;
+                else diffHtml = `<span style="color:#fbbf24; font-weight:bold;">Empate</span>`;
+            }
+
+            htmlRows += `<tr>
+              <td>Bloco ${i+1}</td>
+              <td>${valMeu === '—' ? '—' : valMeu + 's'}</td>
+              <td>${valTarget === '—' ? '—' : valTarget + 's'}</td>
+              <td>${diffHtml}</td>
+            </tr>`;
+        });
+
+        // Total
+        const totalMeu = dadosMeu.tempoTotal || 0;
+        const totalTarget = dadosFantasma.tempoTotal;
+        const diffTotal = totalTarget - totalMeu;
+        const diffTotalSeg = Math.abs(diffTotal / 1000).toFixed(2);
+        
+        let totalHtml = '';
+        if (diffTotal > 0) totalHtml = `<span style="color:#10b981; font-weight:bold;">+${diffTotalSeg}s</span>`;
+        else if (diffTotal < 0) totalHtml = `<span style="color:#ef4444; font-weight:bold;">-${diffTotalSeg}s</span>`;
+        else totalHtml = `<span style="color:#fbbf24; font-weight:bold;">Empate</span>`;
+
+        htmlRows += `<tr style="background:rgba(255,215,0,0.1); font-weight:bold; border-top: 2px solid rgba(255,215,0,0.3);">
+            <td>TOTAL</td>
+            <td>${(totalMeu / 1000).toFixed(2)}s</td>
+            <td>${(totalTarget / 1000).toFixed(2)}s</td>
+            <td>${totalHtml}</td>
+        </tr>`;
+
+        // Atualiza a tela
+        overlay.querySelector('.maratona-modal-body').innerHTML = `
+            <p style="text-align:center; margin-top:0; margin-bottom:16px; font-size:14px; color:#e2e8f0;">
+              Você 🆚 <strong style="color:#22d3ee;">👻 Fantasma</strong>
+            </p>
+            <table class="maratona-tabela-compare">
+              <thead>
+                <tr>
+                  <th>Bloco</th>
+                  <th>Você</th>
+                  <th>Fantasma</th>
+                  <th>Diferença</th>
+                </tr>
+              </thead>
+              <tbody>${htmlRows}</tbody>
+            </table>
+        `;
+
+    } catch (err) {
+        console.warn("[Duelo Fantasma] Erro:", err);
+        overlay.querySelector('.maratona-modal-body').innerHTML = `
+            <p style="color:#ef4444; font-weight:bold; text-align:center;">${escaparHtml(err.message)}</p>
+        `;
     }
 }
 
@@ -30645,7 +30782,6 @@ function mudarTurmaRankingMaratona(turma) {
 // ─────────────────────────────────────────────────────────────────
 
 function _atualizarBotoesRankingMaratona() {
-    // Escopo
     const escopos = ['geral', 'turmas', 'porTurma'];
     escopos.forEach(esc => {
         const id = esc === 'geral' ? 'btn-rank-mar-geral'
@@ -30658,7 +30794,6 @@ function _atualizarBotoesRankingMaratona() {
         }
     });
 
-    // Métrica
     const metTempo = document.getElementById("aba-rank-mar-tempo");
     const metBarr  = document.getElementById("aba-rank-mar-barreira");
     if (metTempo) {
@@ -30670,7 +30805,6 @@ function _atualizarBotoesRankingMaratona() {
         metBarr.setAttribute("aria-selected", String(_metricaRankingMaratona === 'barreira'));
     }
 
-    // Blocos B1..B4
     ['b1', 'b2', 'b3', 'b4'].forEach(b => {
         const el = document.getElementById(`aba-rank-mar-${b}`);
         if (el) {
@@ -30679,15 +30813,13 @@ function _atualizarBotoesRankingMaratona() {
         }
     });
 
-    // Visibilidade condicional
     document.getElementById("maratona-turma-select-wrap")?.classList.toggle("hidden", _escopoRankingMaratona !== 'porTurma');
     document.getElementById("maratona-metrica-wrap")?.classList.toggle("hidden", _escopoRankingMaratona === 'turmas');
     document.getElementById("maratona-blocos-wrap")?.classList.toggle("hidden", _metricaRankingMaratona !== 'barreira');
 }
 
 // ─────────────────────────────────────────────────────────────────
-// irParaRankingGlobal — decide se abre o Ranking da Maratona (quando
-// existe evento) ou o Ranking da Copa.
+// irParaRankingGlobal
 // ─────────────────────────────────────────────────────────────────
 
 async function irParaRankingGlobal() {
@@ -30700,12 +30832,11 @@ async function irParaRankingGlobal() {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// Renderizadores dos 3 escopos + 2 métricas
+// Renderizadores
 // ─────────────────────────────────────────────────────────────────
 
 const _BLOCO_FATORES_RANK = { b1: 2, b2: 3, b3: 4, b4: 5 };
 
-// ─── LGPD: nome completo só em contextos privados ───
 function _obterNomeExibicaoRankingMaratona(nome, turma) {
     if (typeof professorAutenticado === "function" && professorAutenticado()) {
         return nome;
@@ -30718,7 +30849,6 @@ function _obterNomeExibicaoRankingMaratona(nome, turma) {
     return obterNomePublico(nome);
 }
 
-// ─── Empty state ───
 function _renderEmptyRankingMaratona(mensagem) {
     return `<div class="maratona-rank-empty">
         <span class="maratona-rank-empty-emoji" aria-hidden="true">🏁</span>
@@ -30727,7 +30857,6 @@ function _renderEmptyRankingMaratona(mensagem) {
     </div>`;
 }
 
-// ─── Nota de rodapé ───
 function _renderNotaRankingMaratona(tipo, total, numBloco, fatorBloco) {
     const contagem = total > 0
         ? `<span class="maratona-rank-contagem">${total} ${total === 1 ? "participante" : "participantes"}</span>`
@@ -30749,7 +30878,6 @@ function _renderNotaRankingMaratona(tipo, total, numBloco, fatorBloco) {
     return "";
 }
 
-// ─── Orquestrador ───
 async function carregarDadosRankingMaratona() {
     const container = document.getElementById("ranking-maratona-conteudo");
     if (!container || !_eventoRankingMaratonaId) return;
@@ -30774,7 +30902,6 @@ async function carregarDadosRankingMaratona() {
     }
 }
 
-// ─── M.16: Renderizador do card "Seus Recordes" ───
 async function carregarMeusRecordesMaratona() {
     const container = document.getElementById("maratona-meus-recordes");
     if (!container) return;
@@ -30806,7 +30933,6 @@ async function carregarMeusRecordesMaratona() {
         const tTotalData = tempoTotal.val();
         const tTotal = tTotalData && tTotalData.status === 'completo' ? tTotalData.tempoTotal : null;
 
-        // Se o aluno não tem nenhum registro, esconde o card
         if (!recB1 && !recB2 && !recB3 && !recB4 && !tTotal) {
             container.classList.add("hidden");
             return;
@@ -30833,7 +30959,6 @@ async function carregarMeusRecordesMaratona() {
     }
 }
 
-// ─── Renderizador 1: Tempo Total (geral ou porTurma) ───
 async function _renderRankingTempoTotal(container) {
     const snap = await database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/tempos`).once('value');
     const tempos = snap.val() || {};
@@ -30843,7 +30968,6 @@ async function _renderRankingTempoTotal(container) {
         lista = lista.filter(t => String(t.turma) === String(_turmaFiltrada));
     }
 
-    // Ordena por tempo asc → data asc (quem chegou primeiro em caso de empate)
     lista.sort((a, b) => {
         if (a.tempoTotal !== b.tempoTotal) return a.tempoTotal - b.tempoTotal;
         return new Date(a.data || 0) - new Date(b.data || 0);
@@ -30878,7 +31002,6 @@ async function _renderRankingTempoTotal(container) {
         const classeVoce = ehVoce ? "voce-linha" : "";
         const nomeExibicao = _obterNomeExibicaoRankingMaratona(r.nome, r.turma);
         
-        // O selo de recordista vai apenas para o 1º lugar
         const seloRecorde = pos === 1 ? `<span class="maratona-badge-recorde">👑 TOP 1</span>` : "";
 
         html += `<tr class="${classeLinha} ${classeVoce}">
@@ -30895,7 +31018,6 @@ async function _renderRankingTempoTotal(container) {
     container.innerHTML = html;
 }
 
-// ─── Renderizador 2: Por Barreira (geral ou porTurma, bloco único) ───
 async function _renderRankingBarreira(container) {
     const bloco = _blocoRankingMaratona || 'b1';
     const numBloco = bloco.replace('b', '');
@@ -30911,7 +31033,6 @@ async function _renderRankingBarreira(container) {
         lista = lista.filter(m => String(m.turma) === String(_turmaFiltrada));
     }
 
-    // Ordena por tempo asc → data asc
     lista.sort((a, b) => {
         if (a.tempo !== b.tempo) return a.tempo - b.tempo;
         return new Date(a.data || 0) - new Date(b.data || 0);
@@ -30946,7 +31067,6 @@ async function _renderRankingBarreira(container) {
         const classeVoce = ehVoce ? "voce-linha" : "";
         const nomeExibicao = _obterNomeExibicaoRankingMaratona(r.nome, r.turma);
         
-        // O selo de recordista vai apenas para o 1º lugar
         const seloRecorde = pos === 1 ? `<span class="maratona-badge-recorde">👑 TOP 1</span>` : "";
 
         html += `<tr class="${classeLinha} ${classeVoce}">
@@ -30963,12 +31083,10 @@ async function _renderRankingBarreira(container) {
     container.innerHTML = html;
 }
 
-// ─── Renderizador 3: Turmas (agregado, média top 3) ───
 async function _renderRankingTurmasAgregadas(container) {
     const snap = await database.ref(`copa_maratona/eventos/${_eventoRankingMaratonaId}/tempos`).once('value');
     const tempos = snap.val() || {};
 
-    // Agrupa por turma (só completos)
     const porTurma = {};
     Object.values(tempos).forEach(t => {
         if (!t || t.status !== 'completo' || t.tempoTotal == null || !t.turma) return;
@@ -30976,7 +31094,6 @@ async function _renderRankingTurmasAgregadas(container) {
         porTurma[t.turma].push(t);
     });
 
-    // Calcula agregado por turma (só entra com ≥3 completos)
     const MIN_COMPLETOS = 3;
     const agregados = [];
     Object.entries(porTurma).forEach(([turma, lista]) => {
@@ -30992,7 +31109,6 @@ async function _renderRankingTurmasAgregadas(container) {
         });
     });
 
-    // Ordena por média asc → nome da turma asc (desempate)
     agregados.sort((a, b) => {
         if (a.media !== b.media) return a.media - b.media;
         return String(a.turma).localeCompare(String(b.turma));
