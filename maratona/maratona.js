@@ -1220,13 +1220,13 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     const tds = tr.querySelectorAll('td');
     if (tds.length < 3) return;
 
-    // 1. Extrai o nome (limpando emojis e textos da tabela) e a turma
+    // 1. Extração super limpa do nome e turma
     let rawName = tds[1].textContent;
     rawName = rawName.replace(/\(.*?\)/g, ''); // remove (3002)
-    rawName = rawName.replace('← Você', '').trim(); // remove seta
-    rawName = rawName.replace('👑', '').replace('TOP 1', '').trim(); // remove coroa
-    rawName = rawName.replace(/[🥇🥈🥉]/g, '').trim(); // remove medalhas
-    const nomeTarget = rawName;
+    rawName = rawName.replace(/← Você/g, ''); // remove seta
+    rawName = rawName.replace(/👑|TOP 1|[🥇🥈🥉]/g, ''); // remove coroas e medalhas
+    rawName = rawName.replace(/^\d+º\s*/, ''); // remove "1º ", "2º " do começo
+    const nomeTarget = rawName.trim();
     const turmaTarget = tds[2].textContent.trim();
 
     const meuNome = app.obterNomeAluno();
@@ -1242,7 +1242,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
           <button class="maratona-modal-close">&times;</button>
         </div>
         <div class="maratona-modal-body">
-          <div class="maratona-ranking-loading">⏳ Cruzando dados e buscando posições...</div>
+          <div class="maratona-ranking-loading">⏳ Cruzando dados...</div>
         </div>
       </div>
     `;
@@ -1269,42 +1269,54 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
       }
       if (!eventoId) throw new Error("Evento não encontrado.");
 
-      // 3. Baixa a lista completa de tempos (MUITO mais seguro que buscar por chave)
+      // 3. Baixa a lista completa de tempos
       const snapTempos = await app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value');
       const tempos = snapTempos.val() || {};
 
       let dadosMeu = null;
       let dadosTarget = null;
 
-      // 4. Procura os dados do Aluno Logado
+      // Funções auxiliares para limpar strings e facilitar a comparação
+      const limparNome = (n) => String(n || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+      const limparTurma = (t) => String(t || '').replace(/[^a-z0-9]/g, '').trim();
+
+      const meuNomeLimpo = limparNome(meuNome);
+      const minhaTurmaLimpa = limparTurma(minhaTurma);
+      const nomeTargetLimpo = limparNome(nomeTarget);
+      const turmaTargetLimpa = limparTurma(turmaTarget);
+
+      // 4. Procura os dados com busca inteligente
       for (const key in tempos) {
         const t = tempos[key];
-        if (t.turma === minhaTurma && (t.nome === meuNome || meuNome.includes(t.nome) || t.nome.includes(meuNome))) {
-          dadosMeu = t;
-          break;
+        const tNomeLimpo = limparNome(t.nome);
+        const tTurmaLimpa = limparTurma(t.turma);
+
+        // Verifica Aluno Logado
+        if (!dadosMeu && tTurmaLimpa === minhaTurmaLimpa) {
+          if (tNomeLimpo === meuNomeLimpo || tNomeLimpo.includes(meuNomeLimpo) || meuNomeLimpo.includes(tNomeLimpo)) {
+            dadosMeu = t;
+          }
+        }
+
+        // Verifica Alvo
+        if (!dadosTarget && tTurmaLimpa === turmaTargetLimpa) {
+          if (tNomeLimpo === nomeTargetLimpo || tNomeLimpo.includes(nomeTargetLimpo) || nomeTargetLimpo.includes(tNomeLimpo)) {
+            dadosTarget = t;
+          }
         }
       }
 
-      // 5. Procura os dados do Adversário
-      for (const key in tempos) {
-        const t = tempos[key];
-        if (t.turma === turmaTarget && (t.nome === nomeTarget || t.nome.startsWith(nomeTarget) || nomeTarget.startsWith(t.nome))) {
-          dadosTarget = t;
-          break;
-        }
-      }
-
-      if (!dadosMeu) throw new Error("Seus dados não foram encontrados no ranking.");
+      if (!dadosMeu) throw new Error("Seus dados não foram encontrados no ranking do evento.");
       if (!dadosTarget) throw new Error(`Dados de ${nomeTarget} não encontrados.`);
       
       // Regra do Resultado Nulo (se clicou em si mesmo)
-      if (dadosMeu === dadosTarget) {
+      if (dadosMeu === dadosTarget || (dadosMeu.nome === dadosTarget.nome && dadosMeu.turma === dadosTarget.turma)) {
         alert("Você não pode comparar com você mesmo! (Resultado Nulo)");
         overlay.remove();
         return;
       }
 
-      // 6. Monta a tabela comparativa (Bloco a Bloco)
+      // 5. Monta a tabela comparativa (Bloco a Bloco)
       let htmlRows = '';
       const blocos = [0, 1, 2, 3];
 
@@ -1333,7 +1345,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         </tr>`;
       });
 
-      // 7. Cálculo do Total
+      // 6. Cálculo do Total
       const totalMeu = dadosMeu.tempoTotal || 0;
       const totalTarget = dadosTarget.tempoTotal || 0;
       const diffTotal = totalTarget - totalMeu;
@@ -1351,7 +1363,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         <td>${totalHtml}</td>
       </tr>`;
 
-      // 8. Atualiza a tela do modal
+      // 7. Atualiza a tela do modal
       overlay.querySelector('.maratona-modal-body').innerHTML = `
         <p style="text-align:center; margin-top:0; margin-bottom:16px; font-size:14px; color:#e2e8f0;">
           Você 🆚 <strong style="color:#22d3ee;">${dadosTarget.nome}</strong>
