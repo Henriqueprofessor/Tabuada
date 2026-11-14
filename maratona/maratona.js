@@ -289,7 +289,7 @@ function _iniciarJogo(S) {
     if (!S.vivo) return;
     S.blocoAtual = 0; S.indiceNoBloco = 0; S.temposBlocos = []; S.errosTropecos = []; S.bonecoX = 20; S.saindo = false;
     
-    // NOVO: Rastreador de operações para o Mapa
+    // Rastreador de operações para o Mapa
     S.mapStats = {}; 
     S.tempoInicioConta = 0;
 
@@ -370,7 +370,7 @@ function _atualizarPerguntaNaTela(S) {
     const card = S.host.querySelector("[data-pergunta-card]");
     if (!card) return;
     
-    // NOVO: Reinicia o timer para a nova conta
+    // Reinicia o timer para a nova conta
     S.tempoInicioConta = performance.now();
 
     card.innerHTML = `
@@ -396,7 +396,7 @@ function _responder(S, valor, btn) {
     const acertou = valor === pergunta.resposta;
     const tempoResposta = Math.max(0, performance.now() - S.tempoInicioConta);
 
-    // NOVO: Salva a resposta no rastreador do Mapa
+    // Salva a resposta no rastreador do Mapa
     const chaveOp = `${pergunta.fA}x${pergunta.fB}`;
     if (!S.mapStats[chaveOp]) S.mapStats[chaveOp] = { respostas: [] };
     S.mapStats[chaveOp].respostas.push({ acertou, tempo: tempoResposta });
@@ -412,7 +412,17 @@ function _responder(S, valor, btn) {
     } else {
         if (btn) btn.classList.add("errado");
         _tocarSomCopaApp(S, "somErro");
-        S.errosTropecos.push({ bloco: S.blocoAtual, fA: pergunta.fA, fB: pergunta.fB, resposta: pergunta.resposta, respostaDada: valor });
+        
+        // Adicionado o indiceGlobal para calcularmos a sequência depois
+        S.errosTropecos.push({ 
+            bloco: S.blocoAtual, 
+            indiceGlobal: idx, 
+            fA: pergunta.fA, 
+            fB: pergunta.fB, 
+            resposta: pergunta.resposta, 
+            respostaDada: valor 
+        });
+        
         if (S.indiceNoBloco > 0) S.indiceNoBloco--;
         _animarBonecoTropecar(S);
         S.timers.setTimeout(() => { if (!S.vivo) return; _atualizarPerguntaNaTela(S); }, 750);
@@ -894,10 +904,31 @@ async function _salvarHistoricoMaratona(app, basePath, chaveAluno, dados) {
     
     if (errosTropecos) registro.errosTropecos = errosTropecos;
     if (status === "dnf" && motivoDnf) registro.motivoDnf = motivoDnf;
-    
+
+    // NOVO: Cálculo da Maior Sequência de Acertos
+    let maxSeq = 0;
+    const totalPerguntas = 40;
+
+    if (status === 'completo') {
+        if (!errosTropecos || errosTropecos.length === 0) {
+            maxSeq = totalPerguntas; // Perfeito
+        } else {
+            const erros = [...errosTropecos].sort((a, b) => (a.indiceGlobal || 0) - (b.indiceGlobal || 0));
+            let lastErr = -1;
+            
+            erros.forEach(e => {
+                const seq = (e.indiceGlobal || 0) - lastErr - 1;
+                if (seq > maxSeq) maxSeq = seq;
+                lastErr = e.indiceGlobal || 0;
+            });
+            const seqFinal = totalPerguntas - 1 - lastErr;
+            if (seqFinal > maxSeq) maxSeq = seqFinal;
+        }
+    }
+    registro.maxSequencia = maxSeq;
+
     try { await app.database.ref(`${basePath}/historico/${chaveAluno}`).push(registro); } catch (e) { console.warn("[Maratona] Falha ao gravar histórico:", e); }
 }
-
 async function _tentarGravarTempoTotal(app, basePath, chaveAluno, dados) {
     const { nome, turma, temposBlocos, tempoTotal, status, motivoDnf } = dados;
     const novoCompleto = (status === "completo");
@@ -1455,7 +1486,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
   if (window.__maratonaHallIndependenteOK) return;
   window.__maratonaHallIndependenteOK = true;
 
-  async function renderizarHallMaratona(container, app) {
+async function renderizarHallMaratona(container, app) {
     try {
       const snapEv = await app.database.ref('copa_maratona/eventos').once('value');
       const eventos = snapEv.val() || {};
@@ -1475,42 +1506,117 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         return;
       }
 
-      const snapTempos = await app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value');
+      // Buscando todas as fontes de dados
+      const [snapTempos, snapMarcos, snapHist, snapMapas, snapMedalhas] = await Promise.all([
+        app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value'),
+        app.database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value'),
+        app.database.ref(`copa_maratona/eventos/${eventoId}/historico`).once('value'),
+        app.database.ref(`copa_maratona/eventos/${eventoId}/mapas`).once('value'),
+        app.database.ref(`copa_maratona/eventos/${eventoId}/medalhas`).once('value')
+      ]);
+
       const tempos = snapTempos.val() || {};
-      
-      const snapMarcos = await app.database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value');
       const marcos = snapMarcos.val() || {};
-
-      const snapHist = await app.database.ref(`copa_maratona/eventos/${eventoId}/historico`).once('value');
       const historico = snapHist.val() || {};
+      const mapas = snapMapas.val() || {};
+      const medalhas = snapMedalhas.val() || {};
 
-      const listaTempos = Object.values(tempos).filter(t => t && t.nome);
-      const completos = listaTempos.filter(t => t.status === 'completo').sort((a, b) => a.tempoTotal - b.tempoTotal);
+      // --- Processamento de Dados ---
       
+      // 1. Mestre da Velocidade (Menor tempo total completo)
+      const completos = Object.values(tempos).filter(t => t && t.status === 'completo').sort((a, b) => a.tempoTotal - b.tempoTotal);
+
+      // 2. Maratonista Nato (Mais partidas completas)
       const contagemCompletos = {};
+      // 3. O Implacável (Média de tempo nas completas)
+      const somaTempos = {};
+      
+      // 4. Muralha de Aço (Precisão Geral) e 5. Sequência de Ouro (Max Sequência)
+      const totalErros = {};
+      const totalCorridasCompletas = {};
+      const maxSequencia = {};
+
       Object.values(historico).forEach(arr => {
         arr.forEach(partida => {
+          const key = partida.nome + '|' + partida.turma;
+          
+          if (!totalErros[key]) totalErros[key] = 0;
+          if (!totalCorridasCompletas[key]) totalCorridasCompletas[key] = 0;
+          if (!somaTempos[key]) somaTempos[key] = 0;
+          if (!maxSequencia[key] || partida.maxSequencia > maxSequencia[key]) {
+              maxSequencia[key] = partida.maxSequencia || 0;
+          }
+
           if (partida.status === 'completo') {
-            const key = partida.nome + '|' + partida.turma;
             contagemCompletos[key] = (contagemCompletos[key] || 0) + 1;
+            totalCorridasCompletas[key]++;
+            somaTempos[key] += (partida.tempoTotal || 0);
+            if (partida.errosTropecos) {
+                totalErros[key] += partida.errosTropecos.length;
+            }
+          } else if (partida.errosTropecos) {
+              // DNFs também contam para os erros totais
+              totalErros[key] += partida.errosTropecos.length;
           }
         });
       });
+
       const maratonistas = Object.entries(contagemCompletos)
         .map(([key, qtd]) => ({ nome: key.split('|')[0], turma: key.split('|')[1], qtd }))
         .sort((a, b) => b.qtd - a.qtd);
 
-      const contagemTotal = {};
-      Object.values(historico).forEach(arr => {
-        arr.forEach(partida => {
-          const key = partida.nome + '|' + partida.turma;
-          contagemTotal[key] = (contagemTotal[key] || 0) + 1;
-        });
-      });
-      const sobreviventes = Object.entries(contagemTotal)
-        .map(([key, qtd]) => ({ nome: key.split('|')[0], turma: key.split('|')[1], qtd }))
-        .sort((a, b) => b.qtd - a.qtd);
+      const implacaveis = Object.entries(somaTempos)
+        .filter(([key, soma]) => totalCorridasCompletas[key] >= 2) // Mínimo 2 corridas para ter média justa
+        .map(([key, soma]) => ({ 
+            nome: key.split('|')[0], 
+            turma: key.split('|')[1], 
+            media: soma / totalCorridasCompletas[key] 
+        }))
+        .sort((a, b) => a.media - b.media);
 
+      const muralhas = Object.entries(totalCorridasCompletas)
+        .map(([key, qtd]) => {
+            const totalPerguntas = qtd * 40;
+            const erros = totalErros[key] || 0;
+            const precisao = totalPerguntas > 0 ? ((totalPerguntas - erros) / totalPerguntas) * 100 : 0;
+            return { nome: key.split('|')[0], turma: key.split('|')[1], precisao, totalPerguntas };
+        })
+        .filter(x => x.totalPerguntas > 0)
+        .sort((a, b) => b.precisao - a.precisao);
+
+      const sequencias = Object.entries(maxSequencia)
+        .map(([key, seq]) => ({ nome: key.split('|')[0], turma: key.split('|')[1], seq }))
+        .sort((a, b) => b.seq - a.seq);
+
+      // 6. Dono do Mapa (Operações verdes nos fatores 2, 3, 4, 5)
+      const donosMapa = Object.entries(mapas).map(([key, ops]) => {
+          let verdes = 0;
+          Object.entries(ops).forEach(([opKey, data]) => {
+              const fA = parseInt(opKey.split('x')[0]);
+              if (![2, 3, 4, 5].includes(fA)) return;
+              const hist = data.historico || [];
+              const s = _statsDaOperacaoMaratona(hist);
+              if (s.tentativas >= 5 && s.taxa >= 0.90) verdes++;
+          });
+          
+          // Tenta achar o nome real no histórico
+          const partidaRef = Object.values(historico).flat().find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
+          const nomeReal = partidaRef ? partidaRef.nome : key.split('_')[0];
+          const turmaReal = partidaRef ? partidaRef.turma : '?';
+          
+          return { nome: nomeReal, turma: turmaReal, verdes };
+      }).sort((a, b) => b.verdes - a.verdes);
+
+      // 7. Colecionador de Elite (Mais medalhas)
+      const colecionadores = Object.entries(medalhas).map(([key, meds]) => {
+          const qtd = Object.keys(meds || {}).length;
+          const partidaRef = Object.values(historico).flat().find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
+          const nomeReal = partidaRef ? partidaRef.nome : key.split('_')[0];
+          const turmaReal = partidaRef ? partidaRef.turma : '?';
+          return { nome: nomeReal, turma: turmaReal, qtd };
+      }).filter(x => x.qtd > 0).sort((a, b) => b.qtd - a.qtd);
+
+      // 8. Caçador de Pódios (Top 3 Geral)
       const podios = {};
       completos.slice(0, 10).forEach((t, i) => {
         if (i < 3) {
@@ -1522,6 +1628,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         .map(([key, qtd]) => ({ nome: key.split('|')[0], turma: key.split('|')[1], qtd }))
         .sort((a, b) => b.qtd - a.qtd);
 
+      // 9. Recordistas de Blocos
       const recordesBloco = [];
       ['b1', 'b2', 'b3', 'b4'].forEach(b => {
         const alunos = marcos[b] || {};
@@ -1533,8 +1640,10 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         });
       });
 
+      // --- Montagem do HTML ---
       let html = `<div class="maratona-hall-container-override">`;
 
+      // 1. Mestre da Velocidade
       html += `
         <div class="maratona-hall-card">
           <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🏆</span><h4 class="maratona-hall-card-title">Mestre da Velocidade</h4></div>
@@ -1545,15 +1654,127 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
                 <span class="maratona-hall-nome">${i===0?'🥇':i===1?'🥈':'🥉'} ${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
                 <span class="maratona-hall-valor">${(m.tempoTotal / 1000).toFixed(2)}s</span>
               </div>
-            `).join('')}
-            ${completos.length === 0 ? '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>' : ''}
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
           </div>
         </div>
       `;
 
+      // 2. Dono do Mapa
       html += `
         <div class="maratona-hall-card">
-          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">⚡</span><h4 class="maratona-hall-card-title">Recordistas de Blocos</h4></div>
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">👑</span><h4 class="maratona-hall-card-title">Dono do Mapa</h4></div>
+          <p class="maratona-hall-card-desc">Quem mais dominou as operações (fatores 2 a 5).</p>
+          <div class="maratona-hall-lista">
+            ${donosMapa.slice(0, 3).map((m, i) => `
+              <div class="maratona-hall-linha pos-${i+1}">
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-valor">${m.verdes}/40 ops</span>
+              </div>
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
+          </div>
+        </div>
+      `;
+
+      // 3. Colecionador de Elite
+      html += `
+        <div class="maratona-hall-card">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">📖</span><h4 class="maratona-hall-card-title">Colecionador de Elite</h4></div>
+          <p class="maratona-hall-card-desc">Quem mais medalhas conquistou no Álbum da Maratona.</p>
+          <div class="maratona-hall-lista">
+            ${colecionadores.slice(0, 3).map((m, i) => `
+              <div class="maratona-hall-linha pos-${i+1}">
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-valor">${m.qtd} medalhas</span>
+              </div>
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
+          </div>
+        </div>
+      `;
+
+      // 4. O Implacável
+      html += `
+        <div class="maratona-hall-card">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🎯</span><h4 class="maratona-hall-card-title">O Implacável</h4></div>
+          <p class="maratona-hall-card-desc">Menor tempo médio considerando todas as corridas completas.</p>
+          <div class="maratona-hall-lista">
+            ${implacaveis.slice(0, 3).map((m, i) => `
+              <div class="maratona-hall-linha pos-${i+1}">
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-valor">${(m.media / 1000).toFixed(2)}s</span>
+              </div>
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
+          </div>
+        </div>
+      `;
+
+      // 5. Muralha de Aço
+      html += `
+        <div class="maratona-hall-card">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🛡️</span><h4 class="maratona-hall-card-title">Muralha de Aço</h4></div>
+          <p class="maratona-hall-card-desc">Maior taxa de precisão (acertos vs erros totais).</p>
+          <div class="maratona-hall-lista">
+            ${muralhas.slice(0, 3).map((m, i) => `
+              <div class="maratona-hall-linha pos-${i+1}">
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-valor">${m.precisao.toFixed(1)}%</span>
+              </div>
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
+          </div>
+        </div>
+      `;
+
+      // 6. Sequência de Ouro
+      html += `
+        <div class="maratona-hall-card">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">⚡</span><h4 class="maratona-hall-card-title">Sequência de Ouro</h4></div>
+          <p class="maratona-hall-card-desc">Maior número de acertos consecutivos sem errar.</p>
+          <div class="maratona-hall-lista">
+            ${sequencias.slice(0, 3).map((m, i) => `
+              <div class="maratona-hall-linha pos-${i+1}">
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-valor">${m.seq} acertos</span>
+              </div>
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
+          </div>
+        </div>
+      `;
+
+      // 7. Maratonista Nato
+      html += `
+        <div class="maratona-hall-card">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🔥</span><h4 class="maratona-hall-card-title">Maratonista Nato</h4></div>
+          <p class="maratona-hall-card-desc">Quem completou a maratona o maior número de vezes.</p>
+          <div class="maratona-hall-lista">
+            ${maratonistas.slice(0, 3).map((m, i) => `
+              <div class="maratona-hall-linha pos-${i+1}">
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-valor">${m.qtd} ${m.qtd === 1 ? 'vez' : 'vezes'}</span>
+              </div>
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
+          </div>
+        </div>
+      `;
+
+      // 8. Caçador de Pódios
+      html += `
+        <div class="maratona-hall-card">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🏅</span><h4 class="maratona-hall-card-title">Caçador de Pódios</h4></div>
+          <p class="maratona-hall-card-desc">Quem mais vezes ficou no Top 3 Geral.</p>
+          <div class="maratona-hall-lista">
+            ${cacadores.slice(0, 3).map((m, i) => `
+              <div class="maratona-hall-linha pos-${i+1}">
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-valor">${m.qtd} pódios</span>
+              </div>
+            `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
+          </div>
+        </div>
+      `;
+
+      // 9. Recordistas de Blocos
+      html += `
+        <div class="maratona-hall-card">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">⏱️</span><h4 class="maratona-hall-card-title">Recordistas de Blocos</h4></div>
           <p class="maratona-hall-card-desc">Os donos dos melhores tempos em cada barreira.</p>
           <div class="maratona-hall-blocos">
             ${recordesBloco.map(r => `
@@ -1567,64 +1788,13 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         </div>
       `;
 
+      // 10. Álbum da Maratona (Botão)
       html += `
-        <div class="maratona-hall-card">
-          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🔥</span><h4 class="maratona-hall-card-title">Maratonista Nato</h4></div>
-          <p class="maratona-hall-card-desc">Quem completou a maratona o maior número de vezes.</p>
-          <div class="maratona-hall-lista">
-            ${maratonistas.slice(0, 3).map((m, i) => `
-              <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
-                <span class="maratona-hall-valor">${m.qtd} ${m.qtd === 1 ? 'vez' : 'vezes'}</span>
-              </div>
-            `).join('')}
-            ${maratonistas.length === 0 ? '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>' : ''}
-          </div>
-        </div>
-      `;
-
-      html += `
-        <div class="maratona-hall-card">
-          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🛡️</span><h4 class="maratona-hall-card-title">Sobrevivente</h4></div>
-          <p class="maratona-hall-card-desc">Quem mais entrou na pista, independente de terminar.</p>
-          <div class="maratona-hall-lista">
-            ${sobreviventes.slice(0, 3).map((m, i) => `
-              <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
-                <span class="maratona-hall-valor">${m.qtd} corridas</span>
-              </div>
-            `).join('')}
-            ${sobreviventes.length === 0 ? '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>' : ''}
-          </div>
-        </div>
-      `;
-
-      html += `
-        <div class="maratona-hall-card">
-          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">👑</span><h4 class="maratona-hall-card-title">Caçador de Pódios</h4></div>
-          <p class="maratona-hall-card-desc">Quem mais vezes ficou no Top 3 Geral.</p>
-          <div class="maratona-hall-lista">
-            ${cacadores.slice(0, 3).map((m, i) => `
-              <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
-                <span class="maratona-hall-valor">${m.qtd} pódios</span>
-              </div>
-            `).join('')}
-            ${cacadores.length === 0 ? '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>' : ''}
-          </div>
-        </div>
-      `;
-
-      // ⚠️ Card 6 AGORA ABRE O ÁLBUM
-      html += `
-        <div class="maratona-hall-card">
-          <div class="maratona-hall-card-header">
-            <span class="maratona-hall-card-emoji">📖</span>
-            <h4 class="maratona-hall-card-title">Álbum da Maratona</h4>
-          </div>
+        <div class="maratona-hall-card" style="background: linear-gradient(160deg, rgba(251, 191, 36, 0.1) 0%, rgba(15, 35, 64, 0.95) 100%); border-color: rgba(251,191,36,0.4);">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🎒</span><h4 class="maratona-hall-card-title" style="color: var(--neon-gold);">Seu Álbum</h4></div>
           <p class="maratona-hall-card-desc">Colecione as figurinhas de cada bloco e complete o álbum.</p>
           <div class="maratona-hall-lista" style="flex-grow:1; display:flex; align-items:center; justify-content:center; padding-top:10px;">
-            <button class="maratona-btn-comecar" onclick="window.abrirAlbumMaratonaModal()" style="padding:12px 20px; font-size:13px; width:100%; max-width:200px;">📖 Abrir Álbum</button>
+            <button class="maratona-btn-comecar" onclick="window.abrirAlbumMaratonaModal()" style="padding:12px 20px; font-size:13px; width:100%; max-width:200px; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); box-shadow: 0 3px 0 #7c2d12;">📖 Abrir Álbum</button>
           </div>
         </div>
       `;
@@ -1636,50 +1806,8 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
       console.error("Erro no Hall da Maratona:", e);
       container.innerHTML = `<div class="maratona-rank-empty">Erro ao carregar as conquistas da maratona.</div>`;
     }
-  }
+}
 
-  let isRendering = false;
-
-  function verificarHallDaFama() {
-    if (isRendering) return;
-    const headers = Array.from(document.querySelectorAll('h1, h2, h3'));
-    const hallTitle = headers.find(el => el.textContent.includes('Hall da Fama'));
-
-    if (!hallTitle) return;
-
-    let container = hallTitle.parentElement;
-    while (container && container.tagName !== 'BODY') {
-        if (container.querySelector('.maratona-hall-container-override')) return;
-        if (container.querySelector('[class*="mais-medalhas" i]') || container.textContent.includes('Mais Medalhas')) break;
-        container = container.parentElement;
-    }
-
-    if (!container || container.tagName === 'BODY') return;
-
-    const urlTemMaratona = window.location.href.toLowerCase().includes('maratona');
-    const app = window.copaApp;
-    
-    if (urlTemMaratona || (app && app.eventoAtivo === 'maratona')) {
-        isRendering = true;
-        const filhosOriginais = Array.from(container.children);
-        filhosOriginais.forEach(filho => {
-            if (!filho.classList.contains('maratona-hall-container-override')) {
-                filho.classList.add('hall-original-escondido');
-            }
-        });
-
-        const novoContainer = document.createElement('div');
-        container.appendChild(novoContainer);
-
-        if (app && app.database) {
-            renderizarHallMaratona(novoContainer, app);
-        }
-        setTimeout(() => { isRendering = false; }, 1000);
-    }
-  }
-
-  setInterval(verificarHallDaFama, 1000);
-})();
 // ▲▲▲ FIM [M.30-B]
 
 // ▼▼▼ [M.31] Álbum da Maratona ────────────────────────────── INÍCIO ───
