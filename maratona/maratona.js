@@ -194,7 +194,7 @@ export function render(hostElement, opts) {
         inicioBlocoPerf: 0, tempoPausadoMs: 0, pausadoEmPerf: null, pausado: false,
         cronoInterval: null, errosTropecos: [], bonecoX: 20, saindo: false,
         recordePessoalNovo: {}, timers: _criarTimerRegistry(),
-        mapStats: {}, tempoInicioConta: 0 // NOVO: Rastreamento do mapa
+        mapStats: {}, tempoInicioConta: 0, sequenciaAtual: 0, maxSequencia: 0 // mapa + sequência real de respostas
     };
 
     const controller = {
@@ -288,6 +288,7 @@ function _mostrarTela(S, tela) {
 function _iniciarJogo(S) {
     if (!S.vivo) return;
     S.blocoAtual = 0; S.indiceNoBloco = 0; S.temposBlocos = []; S.errosTropecos = []; S.bonecoX = 20; S.saindo = false;
+    S.sequenciaAtual = 0; S.maxSequencia = 0;
     
     // Rastreador de operações para o Mapa
     S.mapStats = {}; 
@@ -394,6 +395,12 @@ function _responder(S, valor, btn) {
 
     _desabilitarOpcoes(S);
     const acertou = valor === pergunta.resposta;
+    if (acertou) {
+        S.sequenciaAtual++;
+        S.maxSequencia = Math.max(S.maxSequencia, S.sequenciaAtual);
+    } else {
+        S.sequenciaAtual = 0;
+    }
     const tempoResposta = Math.max(0, performance.now() - S.tempoInicioConta);
 
     // Salva a resposta no rastreador do Mapa
@@ -661,18 +668,18 @@ async function _buscarRankingBloco(S, blocoId, novoTempo, numBloco) {
 
         const gerarRankingHTML = (arr, titulo) => {
             if (arr.length === 0) return '';
-            let html = `<div class="top5-turma-injetado"><div class="top5-turma-header">${titulo}</div><div class="top5-turma-list">`;
+            let html = `<div class="top5-turma-injetado"><div class="top5-turma-header">${_escapeHtml(titulo)}</div><div class="top5-turma-list">`;
             arr.slice(0, 5).forEach((m, i) => {
                 const ehVoce = (m.nome === nome && m.turma === turma);
                 const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
                 html += `<div class="top5-turma-item ${ehVoce ? 'minha-posicao' : ''}">
-                    <span>${medalha} ${_escapeHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span>
+                    <span>${medalha} ${_escapeHtml(String(m.nome || '').split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small> ${ehVoce ? '← Você' : ''}</span>
                     <span class="top5-turma-tempo">${_formatarTempo(m.tempo)}</span>
                 </div>`;
             });
             if (arr.findIndex(x => x.nome === nome && x.turma === turma) >= 5) {
                 html += `<div class="top5-turma-item minha-posicao" style="border-top:1px dashed rgba(255,255,255,.2); border-radius:0; margin-top:4px;">
-                    <span>${index + 1}º ${_escapeHtml(nome.split(' ')[0])} <small>(${turma})</small></span>
+                    <span>${index + 1}º ${_escapeHtml(String(nome).split(' ')[0])} <small>(${_escapeHtml(turma)})</small></span>
                     <span class="top5-turma-tempo">${_formatarTempo(novoTempo)}</span>
                 </div>`;
             }
@@ -799,19 +806,19 @@ async function _buscarRankingGeral(S, tempoTotal) {
 
         const gerarRankingHTML = (arr, titulo, isGeral) => {
             if (arr.length === 0) return '';
-            let html = `<div class="top5-turma-injetado"><div class="top5-turma-header">${titulo}</div><div class="top5-turma-list">`;
+            let html = `<div class="top5-turma-injetado"><div class="top5-turma-header">${_escapeHtml(titulo)}</div><div class="top5-turma-list">`;
             arr.slice(0, 5).forEach((m, i) => {
                 const ehVoce = (m.nome === nome && m.turma === turma);
                 const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
                 html += `<div class="top5-turma-item ${ehVoce ? 'minha-posicao' : ''}">
-                    <span>${medalha} ${_escapeHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span>
+                    <span>${medalha} ${_escapeHtml(String(m.nome || '').split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small> ${ehVoce ? '← Você' : ''}</span>
                     <span class="top5-turma-tempo">${_formatarTempo(m.tempoTotal)}</span>
                 </div>`;
             });
             const index = arr.findIndex(x => x.nome === nome && x.turma === turma);
             if (index >= 5) {
                 html += `<div class="top5-turma-item minha-posicao" style="border-top:1px dashed rgba(255,255,255,.2); border-radius:0; margin-top:4px;">
-                    <span>${index + 1}º ${_escapeHtml(nome.split(' ')[0])} <small>(${turma})</small></span>
+                    <span>${index + 1}º ${_escapeHtml(String(nome).split(' ')[0])} <small>(${_escapeHtml(turma)})</small></span>
                     <span class="top5-turma-tempo">${_formatarTempo(tempoTotal)}</span>
                 </div>`;
             }
@@ -843,7 +850,9 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
 
     const eventoId = S.opts.eventoId;
     const basePath = `copa_maratona/eventos/${eventoId}`;
-    const blocosCompletos = (status === "completo") ? TOTAL_BLOCOS : Math.max(0, Math.min(TOTAL_BLOCOS, S.blocoAtual));
+    const blocosCompletos = (status === "completo")
+        ? TOTAL_BLOCOS
+        : Math.max(0, Math.min(TOTAL_BLOCOS, S.blocoAtual + (motivoDnf === "ver_ranking" ? 1 : 0)));
 
     const promises = [];
 
@@ -861,13 +870,17 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
         promises.push(_salvarMapaMaratona(app, basePath, chaveAluno, S.mapStats).catch(() => {}));
     }
 
-    promises.push(_salvarHistoricoMaratona(app, basePath, chaveAluno, { nome, turma, temposBlocos, tempoTotal, status, motivoDnf, errosTropecos: S.errosTropecos }).catch(() => {}));
+    promises.push(_salvarHistoricoMaratona(app, basePath, chaveAluno, {
+        nome, turma, temposBlocos, tempoTotal, status, motivoDnf,
+        errosTropecos: S.errosTropecos,
+        blocosCompletos,
+        maxSequencia: S.maxSequencia
+    }).catch(() => {}));
 
     try { 
         await Promise.all(promises); 
-        if (status === "completo") {
-            await _verificarNovasMedalhas(app, eventoId, chaveAluno);
-        }
+        // As medalhas de participação e de barreira também podem ser conquistadas numa partida DNF.
+        await _verificarNovasMedalhas(app, eventoId, chaveAluno);
     } catch (e) { 
         console.warn("[Maratona] Falha agregada ao salvar resultado:", e); 
     }
@@ -899,33 +912,14 @@ async function _salvarMapaMaratona(app, basePath, chaveAluno, mapStats) {
 }
 
 async function _salvarHistoricoMaratona(app, basePath, chaveAluno, dados) {
-    const { nome, turma, temposBlocos, tempoTotal, status, motivoDnf, errosTropecos } = dados;
+    const { nome, turma, temposBlocos, tempoTotal, status, motivoDnf, errosTropecos, blocosCompletos, maxSequencia } = dados;
     const registro = { nome, turma, temposBlocos: temposBlocos.slice(), tempoTotal, status, data: new Date().toISOString() };
     
     if (errosTropecos) registro.errosTropecos = errosTropecos;
     if (status === "dnf" && motivoDnf) registro.motivoDnf = motivoDnf;
-
-    // NOVO: Cálculo da Maior Sequência de Acertos
-    let maxSeq = 0;
-    const totalPerguntas = 40;
-
-    if (status === 'completo') {
-        if (!errosTropecos || errosTropecos.length === 0) {
-            maxSeq = totalPerguntas; // Perfeito
-        } else {
-            const erros = [...errosTropecos].sort((a, b) => (a.indiceGlobal || 0) - (b.indiceGlobal || 0));
-            let lastErr = -1;
-            
-            erros.forEach(e => {
-                const seq = (e.indiceGlobal || 0) - lastErr - 1;
-                if (seq > maxSeq) maxSeq = seq;
-                lastErr = e.indiceGlobal || 0;
-            });
-            const seqFinal = totalPerguntas - 1 - lastErr;
-            if (seqFinal > maxSeq) maxSeq = seqFinal;
-        }
-    }
-    registro.maxSequencia = maxSeq;
+    registro.blocosCompletos = Math.max(0, Math.min(TOTAL_BLOCOS, Number(blocosCompletos) || 0));
+    // Este valor é atualizado a cada resposta e mede a sequência real de cliques corretos.
+    registro.maxSequencia = Math.max(0, Number(maxSequencia) || 0);
 
     try { await app.database.ref(`${basePath}/historico/${chaveAluno}`).push(registro); } catch (e) { console.warn("[Maratona] Falha ao gravar histórico:", e); }
 }
@@ -1049,7 +1043,7 @@ export async function renderizarHallDaFama(container, app) {
                 <div class="maratona-hall-podio-item ${o.classe}">
                     <span class="maratona-hall-podio-emoji">${o.emoji}</span>
                     <span class="maratona-hall-podio-nome">${_escapeHtml(o.item.nome)}</span>
-                    <span class="maratona-hall-podio-turma">Turma ${o.item.turma}</span>
+                    <span class="maratona-hall-podio-turma">Turma ${_escapeHtml(o.item.turma)}</span>
                     <span class="maratona-hall-podio-tempo">${(o.item.tempoTotal / 1000).toFixed(2)}s</span>
                 </div>
             `;
@@ -1071,7 +1065,7 @@ export async function renderizarHallDaFama(container, app) {
             htmlBlocos += `<div class="maratona-hall-bloco-card"><div class="maratona-hall-bloco-titulo">🏁 Bloco ${num} (Fator ${Number(num)+1})</div>`;
             
             if (top1) {
-                htmlBlocos += `<div class="maratona-hall-bloco-linha"><span class="maratona-hall-bloco-nome">${_escapeHtml(top1.nome)} <small style="color:var(--text-muted);font-size:10px;">(${top1.turma})</small></span><span class="maratona-hall-bloco-tempo">${(top1.tempo / 1000).toFixed(2)}s</span></div>`;
+                htmlBlocos += `<div class="maratona-hall-bloco-linha"><span class="maratona-hall-bloco-nome">${_escapeHtml(top1.nome)} <small style="color:var(--text-muted);font-size:10px;">(${_escapeHtml(top1.turma)})</small></span><span class="maratona-hall-bloco-tempo">${(top1.tempo / 1000).toFixed(2)}s</span></div>`;
             } else {
                 htmlBlocos += `<div style="font-size:12px;color:var(--text-muted);font-style:italic;">Sem recordes ainda.</div>`;
             }
@@ -1456,14 +1450,14 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
       // 7. Atualiza a tela do modal
       overlay.querySelector('.maratona-modal-body').innerHTML = `
         <p style="text-align:center; margin-top:0; margin-bottom:16px; font-size:14px; color:#e2e8f0;">
-          Você 🆚 <strong style="color:#22d3ee;">${dadosTarget.nome}</strong>
+          Você 🆚 <strong style="color:#22d3ee;">${_escapeHtml(dadosTarget.nome)}</strong>
         </p>
         <table class="maratona-tabela-compare">
           <thead>
             <tr>
               <th>Bloco</th>
               <th>Você</th>
-              <th>${dadosTarget.nome.split(' ')[0]}</th>
+              <th>${_escapeHtml(String(dadosTarget.nome || '').split(' ')[0])}</th>
               <th>Diferença</th>
             </tr>
           </thead>
@@ -1474,7 +1468,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     } catch (err) {
       console.warn("[Duelo] Erro:", err);
       overlay.querySelector('.maratona-modal-body').innerHTML = `
-        <p style="color:#ef4444; font-weight:bold; text-align:center;">Erro: ${err.message}</p>
+        <p style="color:#ef4444; font-weight:bold; text-align:center;">Erro: ${_escapeHtml(err.message)}</p>
       `;
     }
   });
@@ -1554,9 +1548,6 @@ async function renderizarHallMaratona(container, app) {
             if (partida.errosTropecos) {
                 totalErros[key] += partida.errosTropecos.length;
             }
-          } else if (partida.errosTropecos) {
-              // DNFs também contam para os erros totais
-              totalErros[key] += partida.errosTropecos.length;
           }
         });
       });
@@ -1576,10 +1567,11 @@ async function renderizarHallMaratona(container, app) {
 
       const muralhas = Object.entries(totalCorridasCompletas)
         .map(([key, qtd]) => {
-            const totalPerguntas = qtd * 40;
+            const respostasCertas = qtd * PERGUNTAS_POR_BLOCO * TOTAL_BLOCOS;
             const erros = totalErros[key] || 0;
-            const precisao = totalPerguntas > 0 ? ((totalPerguntas - erros) / totalPerguntas) * 100 : 0;
-            return { nome: key.split('|')[0], turma: key.split('|')[1], precisao, totalPerguntas };
+            const totalTentativas = respostasCertas + erros;
+            const precisao = totalTentativas > 0 ? (respostasCertas / totalTentativas) * 100 : 0;
+            return { nome: key.split('|')[0], turma: key.split('|')[1], precisao, totalPerguntas: respostasCertas };
         })
         .filter(x => x.totalPerguntas > 0)
         .sort((a, b) => b.precisao - a.precisao);
@@ -1651,7 +1643,7 @@ async function renderizarHallMaratona(container, app) {
           <div class="maratona-hall-lista">
             ${completos.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${i===0?'🥇':i===1?'🥈':'🥉'} ${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${i===0?'🥇':i===1?'🥈':'🥉'} ${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${(m.tempoTotal / 1000).toFixed(2)}s</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1667,7 +1659,7 @@ async function renderizarHallMaratona(container, app) {
           <div class="maratona-hall-lista">
             ${donosMapa.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${m.verdes}/40 ops</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1683,7 +1675,7 @@ async function renderizarHallMaratona(container, app) {
           <div class="maratona-hall-lista">
             ${colecionadores.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${m.qtd} medalhas</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1699,7 +1691,7 @@ async function renderizarHallMaratona(container, app) {
           <div class="maratona-hall-lista">
             ${implacaveis.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${(m.media / 1000).toFixed(2)}s</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1711,11 +1703,11 @@ async function renderizarHallMaratona(container, app) {
       html += `
         <div class="maratona-hall-card">
           <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">🛡️</span><h4 class="maratona-hall-card-title">Muralha de Aço</h4></div>
-          <p class="maratona-hall-card-desc">Maior taxa de precisão (acertos vs erros totais).</p>
+          <p class="maratona-hall-card-desc">Maior precisão nas corridas completas (acertos / tentativas).</p>
           <div class="maratona-hall-lista">
             ${muralhas.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${m.precisao.toFixed(1)}%</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1731,7 +1723,7 @@ async function renderizarHallMaratona(container, app) {
           <div class="maratona-hall-lista">
             ${sequencias.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${m.seq} acertos</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1747,7 +1739,7 @@ async function renderizarHallMaratona(container, app) {
           <div class="maratona-hall-lista">
             ${maratonistas.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${m.qtd} ${m.qtd === 1 ? 'vez' : 'vezes'}</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1763,7 +1755,7 @@ async function renderizarHallMaratona(container, app) {
           <div class="maratona-hall-lista">
             ${cacadores.slice(0, 3).map((m, i) => `
               <div class="maratona-hall-linha pos-${i+1}">
-                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small></span>
+                <span class="maratona-hall-nome">${app.escaparHtml(m.nome.split(' ')[0])} <small>(${_escapeHtml(m.turma)})</small></span>
                 <span class="maratona-hall-valor">${m.qtd} pódios</span>
               </div>
             `).join('') || '<div class="maratona-hall-linha" style="justify-content:center; color:#94a3b8; font-size:12px;">Sem registros</div>'}
@@ -1807,6 +1799,9 @@ async function renderizarHallMaratona(container, app) {
       container.innerHTML = `<div class="maratona-rank-empty">Erro ao carregar as conquistas da maratona.</div>`;
     }
 }
+
+window.renderizarHallMaratona = renderizarHallMaratona;
+})();
 
 // ▲▲▲ FIM [M.30-B]
 
