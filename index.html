@@ -9854,21 +9854,7 @@ table td { border-bottom-color: rgba(148, 163, 184, 0.15) !important; }
                     <small class="subtitulo-botao">100m, 200m ou Maratona (1 a 5 min)</small>
                 </span>
             </button>
-            <button onclick="abrirRankingMaratona()" class="botao-secundario" style="border-left: 4px solid var(--neon-gold);">
-                <span class="icone">🏆</span>
-                <span>
-                    Ranking da Maratona
-                    <small class="subtitulo-botao">Tempos totais e recordes</small>
-                </span>
-            </button>
-            <!-- ⚠️ NOVO BOTÃO DO HALL DA FAMA -->
-            <button onclick="abrirHallDaFamaMaratona()" class="botao-secundario" style="border-left: 4px solid #a855f7;">
-                <span class="icone">🌟</span>
-                <span>
-                    Hall da Fama da Maratona
-                    <small class="subtitulo-botao">Os melhores de cada bloco</small>
-                </span>
-            </button>
+            
             <button onclick="iniciarTreinoAnonimo()" class="botao-treino">
                 <span class="icone">🎯</span>
                 <span>Treino Livre</span>
@@ -15701,6 +15687,10 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     // v10.13.0 · P-B4 (Pacote 4) — Modo Classificatória Única
     //   renderizarCapa / renderizarCabecalhoAlbum / abrirAlbum passam a
     //   contar apenas as medalhas VISÍVEIS (medalhaVisivelNoModoAtual).
+    //
+    // v10.14.0 · Integração com Álbum da Maratona
+    //   abrirAlbum() agora verifica se há uma Maratona ativa. Se sim,
+    //   redireciona para o modal do Álbum da Maratona automaticamente.
 
     function renderizarCapa() {
         const { nome, turma, persistidas, estrelas } = albumEstado;
@@ -15789,6 +15779,7 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
         renderizarCapa();
         setTimeout(() => document.getElementById("album-btn-abrir")?.focus(), 80);
     }
+    
     function abrirAlbumConteudo() {
         const capa = document.getElementById("album-capa-card");
         const capaView = document.getElementById("album-capa-view");
@@ -15812,6 +15803,13 @@ const PERFIL_SYNC_CACHE_MS = 2 * 60 * 1000;   // 2 minutos
     }
 
     async function abrirAlbum() {
+        // ⚠️ NOVO: Verifica se a Maratona está ativa. Se sim, abre o Álbum da Maratona.
+        const eventoMaratonaId = await verificarEventoMaratonaAtivo();
+        if (eventoMaratonaId && window.abrirAlbumMaratonaModal) {
+            window.abrirAlbumMaratonaModal();
+            return;
+        }
+
         mostrarTela("tela-album");
         carregarFiltrosAlbum();
         const capaView = document.getElementById("album-capa-view");
