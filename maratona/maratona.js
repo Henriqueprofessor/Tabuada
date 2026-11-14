@@ -1364,11 +1364,8 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
 // ▲▲▲ FIM [M.29-B] ───
 
 // ▼▼▼ [M.30-B] INÍCIO — Hall da Fama Independente da Maratona ───
-(function maratonaHallIndependente() {
-  if (window.__maratonaHallIndependenteOK) return;
-  window.__maratonaHallIndependenteOK = true;
 
-async function renderizarHallMaratona(container, app) {
+export async function renderizarHallDaFama(container, app) {
     try {
       const snapEv = await app.database.ref('copa_maratona/eventos').once('value');
       const eventos = snapEv.val() || {};
@@ -1428,7 +1425,7 @@ async function renderizarHallMaratona(container, app) {
           }
           
           const blocosFeitos = partida.blocosCompletos || (partida.status === 'completo' ? 4 : 0);
-          totalAcertos[key] += (blocosFeitos * PERGUNTAS_POR_BLOCO);
+          totalAcertos[key] += (blocosFeitos * 10); // PERGUNTAS_POR_BLOCO = 10
 
           if (partida.status === 'completo') {
             contagemCompletos[key] = (contagemCompletos[key] || 0) + 1;
@@ -1656,7 +1653,7 @@ async function renderizarHallMaratona(container, app) {
         </div>
       `;
 
-      // 9. TEMPO FANTASMA + RECORDISTAS DE BLOCOS (NOVO CARD INTEGRADO)
+      // 9. TEMPO FANTASMA + RECORDISTAS DE BLOCOS
       html += `
         <div class="maratona-hall-card" style="background: linear-gradient(160deg, rgba(34, 211, 238, 0.1) 0%, rgba(15, 35, 64, 0.95) 100%); border-color: rgba(34, 211, 238, 0.5);">
           <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">👻</span><h4 class="maratona-hall-card-title" style="color: var(--neon-cyan);">Tempo Fantasma</h4></div>
@@ -1700,9 +1697,6 @@ async function renderizarHallMaratona(container, app) {
       container.innerHTML = `<div class="maratona-rank-empty">Erro ao carregar as conquistas da maratona.</div>`;
     }
 }
-
-window.renderizarHallMaratona = renderizarHallMaratona;
-})();
 // ▲▲▲ FIM [M.30-B]
 
 
