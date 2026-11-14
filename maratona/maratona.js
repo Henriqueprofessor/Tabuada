@@ -1204,3 +1204,163 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
   setInterval(sincronizar, 1000);
 })();
 // ▲▲▲ FIM [M.22-B]
+
+// ▼▼▼ [M.29-B] INÍCIO — Ferramenta de Comparação (Duelo de Tempos) ───
+(function maratonaDueloTempos() {
+  if (window.__maratonaDueloTemposOK) return;
+  window.__maratonaDueloTemposOK = true;
+
+  // Escuta cliques em qualquer lugar da página
+  document.body.addEventListener('click', async function(e) {
+    // Verifica se o clique foi em uma linha da tabela de ranking
+    const tr = e.target.closest('.maratona-tabela-rank tbody tr');
+    if (!tr) return;
+
+    const app = window.copaApp;
+    if (!app || !app.database) return;
+
+    // Extrai as colunas (Nome e Turma) da linha clicada
+    const tds = tr.querySelectorAll('td');
+    if (tds.length < 3) return;
+
+    // Pega o nome antes do (turma) - usando childNodes para pegar só o texto principal
+    const nomeTarget = tds[1].childNodes[0].textContent.trim();
+    const turmaTarget = tds[2].textContent.trim();
+
+    const meuNome = app.obterNomeAluno();
+    const minhaTurma = app.obterTurmaAluno();
+
+    // REGRA DO RESULTADO NULO: Bloqueia se clicar em si mesmo
+    if (nomeTarget === meuNome && turmaTarget === minhaTurma) {
+      alert("Você não pode comparar com você mesmo! (Resultado Nulo)");
+      return;
+    }
+
+    // Cria o modal com tela de carregamento
+    const overlay = document.createElement('div');
+    overlay.className = 'maratona-modal-compare';
+    overlay.innerHTML = `
+      <div class="maratona-modal-card">
+        <div class="maratona-modal-header">
+          <h3>⚔️ Duelo de Tempos</h3>
+          <button class="maratona-modal-close">&times;</button>
+        </div>
+        <div class="maratona-modal-body">
+          <div class="maratona-ranking-loading">⏳ Buscando tempos no Firebase...</div>
+        </div>
+      </div>
+    `;
+    
+    // Função para fechar o modal
+    const fecharModal = () => overlay.remove();
+    overlay.querySelector('.maratona-modal-close').onclick = fecharModal;
+    overlay.onclick = (ev) => { if (ev.target === overlay) fecharModal(); };
+
+    document.body.appendChild(overlay);
+
+    try {
+      // 1. Descobre qual é o evento ativo
+      const snapEv = await app.database.ref('copa_maratona/eventos').once('value');
+      const eventos = snapEv.val() || {};
+      let eventoId = null;
+      let maxTs = 0;
+      
+      for (const [id, dados] of Object.entries(eventos)) {
+        const meta = dados && dados.meta;
+        if (!meta) continue;
+        if (meta.ativo === true) { eventoId = id; break; }
+        const ts = meta.criadoEm || 0;
+        if (ts > maxTs) { maxTs = ts; eventoId = id; }
+      }
+      if (!eventoId) throw new Error("Evento não encontrado.");
+
+      // 2. Busca os tempos dos dois alunos no Firebase
+      const chaveMeu = app.chaveAluno(meuNome, minhaTurma);
+      const chaveTarget = app.chaveAluno(nomeTarget, turmaTarget);
+      
+      const [snapMeu, snapTarget] = await Promise.all([
+        app.database.ref(`copa_maratona/eventos/${eventoId}/tempos/${chaveMeu}`).once('value'),
+        app.database.ref(`copa_maratona/eventos/${eventoId}/tempos/${chaveTarget}`).once('value')
+      ]);
+      
+      const dadosMeu = snapMeu.val();
+      const dadosTarget = snapTarget.val();
+
+      if (!dadosMeu || !dadosTarget) throw new Error("Dados de tempo incompletos.");
+
+      // 3. Monta a tabela comparativa
+      let htmlRows = '';
+      const blocos = [0, 1, 2, 3];
+
+      blocos.forEach(i => {
+        const tMeu = dadosMeu.temposBlocos ? dadosMeu.temposBlocos[i] : null;
+        const tTarget = dadosTarget.temposBlocos ? dadosTarget.temposBlocos[i] : null;
+
+        if (tMeu == null || tTarget == null) {
+          htmlRows += `<tr><td>Bloco ${i+1}</td><td colspan="3" style="text-align:center; color:#94a3b8;">Sem dados</td></tr>`;
+          return;
+        }
+
+        // Cálculo da diferença (Target - Meu)
+        // Se positivo, o Target demorou mais (Eu sou mais rápido)
+        const diff = tTarget - tMeu;
+        const diffSegundos = Math.abs(diff / 1000).toFixed(2);
+        let diffHtml = '';
+
+        if (diff > 0) diffHtml = `<span style="color:#10b981; font-weight:bold;">+${diffSegundos}s</span>`;
+        else if (diff < 0) diffHtml = `<span style="color:#ef4444; font-weight:bold;">-${diffSegundos}s</span>`;
+        else diffHtml = `<span style="color:#fbbf24; font-weight:bold;">Empate</span>`;
+
+        htmlRows += `<tr>
+          <td>Bloco ${i+1}</td>
+          <td>${(tMeu / 1000).toFixed(2)}s</td>
+          <td>${(tTarget / 1000).toFixed(2)}s</td>
+          <td>${diffHtml}</td>
+        </tr>`;
+      });
+
+      // 4. Cálculo do Total
+      const totalMeu = dadosMeu.tempoTotal || 0;
+      const totalTarget = dadosTarget.tempoTotal || 0;
+      const diffTotal = totalTarget - totalMeu;
+      const diffTotalSeg = Math.abs(diffTotal / 1000).toFixed(2);
+      
+      let totalHtml = '';
+      if (diffTotal > 0) totalHtml = `<span style="color:#10b981; font-weight:bold;">+${diffTotalSeg}s</span>`;
+      else if (diffTotal < 0) totalHtml = `<span style="color:#ef4444; font-weight:bold;">-${diffTotalSeg}s</span>`;
+      else totalHtml = `<span style="color:#fbbf24; font-weight:bold;">Empate</span>`;
+
+      htmlRows += `<tr style="background:rgba(255,215,0,0.1); font-weight:bold; border-top: 2px solid rgba(255,215,0,0.3);">
+        <td>TOTAL</td>
+        <td>${(totalMeu / 1000).toFixed(2)}s</td>
+        <td>${(totalTarget / 1000).toFixed(2)}s</td>
+        <td>${totalHtml}</td>
+      </tr>`;
+
+      // 5. Atualiza o HTML do Modal
+      overlay.querySelector('.maratona-modal-body').innerHTML = `
+        <p style="text-align:center; margin-top:0; margin-bottom:16px; font-size:14px; color:#e2e8f0;">
+          Você 🆚 <strong style="color:#22d3ee;">${_escapeHtml(nomeTarget)}</strong>
+        </p>
+        <table class="maratona-tabela-compare">
+          <thead>
+            <tr>
+              <th>Bloco</th>
+              <th>Você</th>
+              <th>${_escapeHtml(nomeTarget.split(' ')[0])}</th>
+              <th>Diferença</th>
+            </tr>
+          </thead>
+          <tbody>${htmlRows}</tbody>
+        </table>
+      `;
+
+    } catch (err) {
+      console.warn("[Duelo] Erro:", err);
+      overlay.querySelector('.maratona-modal-body').innerHTML = `
+        <p style="color:#ef4444; font-weight:bold; text-align:center;">Erro ao carregar os dados.</p>
+      `;
+    }
+  });
+})();
+// ▲▲▲ FIM [M.29-B] ───
