@@ -1691,18 +1691,27 @@ window.renderizarHallMaratona = renderizarHallMaratona;
 // ▼▼▼ [M.31] Álbum da Maratona ────────────────────────────── INÍCIO ───
 
 const MEDALHAS_MARATONA = [
+    // Primeiros Passos
     { id: "m_estreia", nome: "Estreia", icone: "🆕", secao: "primeiros_passos", raridade: "comum", requisito: "Entrar na pista pela primeira vez.", condicao: d => d.totalPartidas >= 1 },
     { id: "m_primeira_barreira", nome: "Primeira Barreira", icone: "🚧", secao: "primeiros_passos", raridade: "comum", requisito: "Completar o Bloco 1.", condicao: d => d.blocosCompletos >= 1 },
     { id: "m_maratonista", nome: "Maratonista", icone: "🏁", secao: "primeiros_passos", raridade: "incomum", requisito: "Completar os 4 blocos.", condicao: d => d.partidasCompletas >= 1 },
+    
+    // Velocidade
     { id: "m_velocista_b1", nome: "Velocista B1", icone: "⚡", secao: "velocidade", raridade: "comum", requisito: "Completar o Bloco 1 em menos de 15s.", condicao: d => d.melhorTempoB1 > 0 && d.melhorTempoB1 <= 15000 },
     { id: "m_velocista_b2", nome: "Velocista B2", icone: "💨", secao: "velocidade", raridade: "incomum", requisito: "Completar o Bloco 2 em menos de 20s.", condicao: d => d.melhorTempoB2 > 0 && d.melhorTempoB2 <= 20000 },
     { id: "m_velocista_b3", nome: "Velocista B3", icone: "🚀", secao: "velocidade", raridade: "raro", requisito: "Completar o Bloco 3 em menos de 25s.", condicao: d => d.melhorTempoB3 > 0 && d.melhorTempoB3 <= 25000 },
     { id: "m_velocista_b4", nome: "Velocista B4", icone: "🔥", secao: "velocidade", raridade: "epico", requisito: "Completar o Bloco 4 em menos de 30s.", condicao: d => d.melhorTempoB4 > 0 && d.melhorTempoB4 <= 30000 },
+
+    // Precisão
     { id: "m_sem_tropeco", nome: "Sem Tropeço", icone: "🎯", secao: "precisao", raridade: "raro", requisito: "Completar uma maratona sem errar nenhuma conta.", condicao: d => d.partidasPerfeitas >= 1 },
     { id: "m_impecavel", nome: "Impecável", icone: "💎", secao: "precisao", raridade: "lendario", requisito: "Completar 3 maratonas sem errar.", condicao: d => d.partidasPerfeitas >= 3 },
+
+    // Dedicação
     { id: "m_volta_amanha", nome: "Volta Amanhã", icone: "🌅", secao: "dedicacao", raridade: "comum", requisito: "Jogar em 2 dias diferentes.", condicao: d => d.diasDistintos >= 2 },
     { id: "m_maratonista_nato", nome: "Maratonista Nato", icone: "🏃", secao: "dedicacao", raridade: "raro", requisito: "Completar 5 maratonas.", condicao: d => d.partidasCompletas >= 5 },
     { id: "m_sobrevivente", nome: "Sobrevivente", icone: "🛡️", secao: "dedicacao", raridade: "epico", requisito: "Entrar na pista 10 vezes.", condicao: d => d.totalPartidas >= 10 },
+
+    // Recordes
     { id: "m_recorde_pessoal", nome: "Superação", icone: "📈", secao: "recordes", raridade: "incomum", requisito: "Bater seu próprio recorde de tempo total.", condicao: d => d.bateuRecordePessoal },
     { id: "m_cacador_podio", nome: "Caçador de Pódios", icone: "👑", secao: "recordes", raridade: "lendario", requisito: "Ficar no Top 3 Geral da maratona.", condicao: d => d.melhorPosicaoGlobal > 0 && d.melhorPosicaoGlobal <= 3 }
 ];
@@ -1926,14 +1935,16 @@ window.abrirAlbumMaratonaModal = async function() {
         meds.forEach(m => {
             const colada = !!medalhasSalvas[m.id];
             const rar = RARIDADES_MARATONA[m.raridade];
-            const cls = colada ? `colada ${m.raridade}` : '';
+            
+            // ⚠️ CORREÇÃO: Adicionado o 'r-' antes da raridade para o CSS achar a cor
+            const cls = colada ? `colada r-${m.raridade}` : `vazia r-${m.raridade}`;
             
             html += `
-                <div class="album-figurinha ${cls}" style="cursor: pointer; position: relative; padding: 14px 10px; border-radius: 12px; border: 2px solid ${colada ? '#10b981' : '#334155'}; background: ${colada ? 'linear-gradient(160deg, #064e3b 0%, #022c22 100%)' : 'linear-gradient(160deg, #1e293b 0%, #0f172a 100%)'}; text-align: center;" onclick="alert('${_escapeHtml(m.requisito)}')">
-                    <span style="position: absolute; top: 6px; right: 6px; font-size: 10px; opacity: 0.8;">${rar.emoji}</span>
-                    <span style="font-size: 32px; display: block; margin-bottom: 8px; filter: ${colada ? 'none' : 'grayscale(1) opacity(0.3)'};">${colada ? m.icone : '❓'}</span>
-                    <span style="font-size: 12px; font-weight: 800; color: ${colada ? '#fff' : '#cbd5e1'}; display: block; margin-bottom: 4px;">${colada ? _escapeHtml(m.nome) : 'Bloqueada'}</span>
-                    <span style="font-size: 10.5px; font-weight: 700; color: ${colada ? '#6ee7b7' : '#94a3b8'};">${colada ? '✅ Conquistada' : '🔒 ' + _escapeHtml(m.requisito)}</span>
+                <div class="album-figurinha ${cls}" style="cursor: pointer; position: relative; padding: 14px 10px; border-radius: 12px; text-align: center;" onclick="alert('${_escapeHtml(m.requisito)}')">
+                    <span style="position: absolute; top: 6px; right: 6px; font-size: 10px; opacity: 0.8; z-index:2;">${rar.emoji}</span>
+                    <span class="album-figurinha-icone" style="font-size: 32px; display: block; margin-bottom: 8px; ${colada ? '' : 'filter: grayscale(1) opacity(0.3);'}">${colada ? m.icone : '❓'}</span>
+                    <span class="album-figurinha-nome" style="font-size: 12px; font-weight: 800; display: block; margin-bottom: 4px;">${colada ? _escapeHtml(m.nome) : 'Bloqueada'}</span>
+                    <span class="album-figurinha-desc" style="font-size: 10.5px; font-weight: 700;">${colada ? '✅ Conquistada' : '🔒 ' + _escapeHtml(m.requisito)}</span>
                 </div>
             `;
         });
