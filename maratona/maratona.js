@@ -1409,11 +1409,19 @@ export async function renderizarHallDaFama(container, app) {
       const totalAcertos = {};
       const maxSequencia = {};
 
-      // ⚠️ CORREÇÃO: Transformar os valores de cada aluno em um array antes do forEach
+      // ⚠️ CORREÇÃO DEFINITIVA: Achata o objeto de histórico em um único array de partidas
+      const todasPartidasHist = [];
       Object.values(historico).forEach(alunoHist => {
-        Object.values(alunoHist || {}).forEach(partida => {
-          if (!partida || !partida.nome) return;
-          
+          if (alunoHist && typeof alunoHist === 'object') {
+              Object.values(alunoHist).forEach(partida => {
+                  if (partida && typeof partida === 'object' && partida.nome) {
+                      todasPartidasHist.push(partida);
+                  }
+              });
+          }
+      });
+
+      todasPartidasHist.forEach(partida => {
           const key = partida.nome + '|' + partida.turma;
           
           if (!totalErros[key]) totalErros[key] = 0;
@@ -1434,7 +1442,6 @@ export async function renderizarHallDaFama(container, app) {
             contagemCompletos[key] = (contagemCompletos[key] || 0) + 1;
             somaTempos[key] += (partida.tempoTotal || 0);
           }
-        });
       });
 
       const maratonistas = Object.entries(contagemCompletos)
@@ -1475,7 +1482,7 @@ export async function renderizarHallDaFama(container, app) {
               if (s.tentativas >= 5 && s.taxa >= 0.90) verdes++;
           });
           
-          const partidaRef = Object.values(historico).flatMap(h => Object.values(h || {})).find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
+          const partidaRef = todasPartidasHist.find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
           const nomeReal = partidaRef ? partidaRef.nome : key.split('_')[0];
           const turmaReal = partidaRef ? partidaRef.turma : '?';
           
@@ -1485,7 +1492,7 @@ export async function renderizarHallDaFama(container, app) {
       // 4. Colecionador de Elite
       const colecionadores = Object.entries(medalhas).map(([key, meds]) => {
           const qtd = Object.keys(meds || {}).length;
-          const partidaRef = Object.values(historico).flatMap(h => Object.values(h || {})).find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
+          const partidaRef = todasPartidasHist.find(p => p.nome && app.chaveAluno(p.nome, p.turma) === key);
           const nomeReal = partidaRef ? partidaRef.nome : key.split('_')[0];
           const turmaReal = partidaRef ? partidaRef.turma : '?';
           return { nome: nomeReal, turma: turmaReal, qtd };
