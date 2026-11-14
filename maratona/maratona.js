@@ -1,13 +1,13 @@
 /**
  * maratona/maratona.js
  * Copa da Tabuada CEIB 2026 · Módulo "Maratona com Barreiras"
- * Versão do módulo: 1.0.3 (Definitiva - Mapa, Álbum, 10 Cards e Checkpoints Seguros)
+ * Versão do módulo: 1.0.4 (Correção Crítica de Progresso de Blocos)
  */
 
 // ▼▼▼ [M.01] Núcleo: constantes, helpers, validação ─────────────── INÍCIO ───
 
 const MODULO_NOME = "Maratona com Barreiras";
-const MODULO_VERSAO = "1.0.3";
+const MODULO_VERSAO = "1.0.4";
 
 const BLOCO_FATORES = [2, 3, 4, 5];
 const MULTIPLICADORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -465,7 +465,8 @@ function _abrirModalSair(S) {
     temposBlocos[S.blocoAtual] = tempoAtualBloco;
     const tempoTotal = temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0);
 
-    _salvarResultadoFirebase(S, temposBlocos, tempoTotal, "dnf", "saiu").finally(() => {
+    // Passa explicitamente que o número de blocos completos é o índice atual (0 = nenhum completo)
+    _salvarResultadoFirebase(S, temposBlocos, tempoTotal, "dnf", "saiu", S.blocoAtual).finally(() => {
         if (S.opts.onSair) { try { S.opts.onSair(); } catch (e) {} }
         try { S.controller.destroy(); } catch (e) {}
     });
@@ -489,7 +490,7 @@ function _sairDoCheckpointParaRanking(S) {
     if (b4Feito) { _sairDoResultadoParaRanking(S); return; }
 
     const numBloco = S.blocoAtual + 1;
-    const blocosConcluidos = S.blocoAtual + 1; // Correção: conta o bloco que acabou de ser feito
+    const blocosConcluidos = S.blocoAtual + 1;
     const ok = window.confirm(`Ver o ranking completo do Bloco ${numBloco}?\n\n⚠️ Você vai SAIR da maratona agora.\n✅ Os ${blocosConcluidos} bloco(s) já concluído(s) foram salvos.\n❌ O Bloco ${numBloco} não será completado (a corrida conta como DNF).`);
     if (!ok) return;
 
@@ -498,7 +499,8 @@ function _sairDoCheckpointParaRanking(S) {
     const temposBlocos = [...S.temposBlocos];
     const tempoTotal = temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0);
 
-    _salvarResultadoFirebase(S, temposBlocos, tempoTotal, "dnf", "ver_ranking").finally(() => {
+    // Passa que ele concluiu o bloco atual (blocoAtual + 1)
+    _salvarResultadoFirebase(S, temposBlocos, tempoTotal, "dnf", "ver_ranking", S.blocoAtual + 1).finally(() => {
         _acionarVerRankingCompleto(S, { escopo: "geral", metrica: "barreira", bloco: `b${numBloco}` });
         try { S.controller.destroy(); } catch(e) {}
     });
@@ -738,7 +740,8 @@ async function _renderizarResultado(S) {
     const btnVerRanking = container.querySelector("[data-btn-ver-ranking]");
     if (btnVerRanking) btnVerRanking.addEventListener("click", () => _sairDoResultadoParaRanking(S));
 
-    await _salvarResultadoFirebase(S, S.temposBlocos, tempoTotal, "completo");
+    // Passa TOTAL_BLOCOS explicitamente
+    await _salvarResultadoFirebase(S, S.temposBlocos, tempoTotal, "completo", null, TOTAL_BLOCOS);
     _buscarRankingGeral(S, tempoTotal);
     _buscarPosicoesBlocos(S);
 }
@@ -834,7 +837,7 @@ async function _buscarRankingGeral(S, tempoTotal) {
 
 
 // ▼▼▼ [M.09] Persistência com compare-before-set ─────── INÍCIO ───
-async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, motivoDnf = null) {
+async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, motivoDnf = null, blocosCompletos = 0) {
     const app = S.copaApp;
     if (!app || !app.database) return;
     const nome = app.obterNomeAluno();
@@ -845,12 +848,6 @@ async function _salvarResultadoFirebase(S, temposBlocos, tempoTotal, status, mot
 
     const eventoId = S.opts.eventoId;
     const basePath = `copa_maratona/eventos/${eventoId}`;
-    
-    // Conta blocos válidos em vez de usar o index atual (garante que checkpoint salve de forma segura)
-    let blocosCompletos = 0;
-    for (let i = 0; i < TOTAL_BLOCOS; i++) {
-        if (Number(temposBlocos[i]) > 0) blocosCompletos++;
-    }
 
     const promises = [];
 
@@ -1430,7 +1427,6 @@ async function renderizarHallMaratona(container, app) {
               totalErros[key] += partida.errosTropecos.length;
           }
           
-          // Correção da outra IA: Conta acertos baseado nos blocos realmente completados
           const blocosFeitos = partida.blocosCompletos || (partida.status === 'completo' ? 4 : 0);
           totalAcertos[key] += (blocosFeitos * PERGUNTAS_POR_BLOCO);
 
@@ -1736,11 +1732,16 @@ function _compilarDadosAlbum(historicoObj, temposObj, nome, turma) {
     let melhorTempoB1 = Infinity, melhorTempoB2 = Infinity, melhorTempoB3 = Infinity, melhorTempoB4 = Infinity;
     let melhorTempoTotal = Infinity;
     let bateuRecordePessoal = false;
+    let maxBlocosCompletos = 0;
 
     partidas.sort((a, b) => new Date(a.data) - new Date(b.data));
     let recordeAtual = Infinity;
 
     partidas.forEach(p => {
+        if (p.blocosCompletos > maxBlocosCompletos) {
+            maxBlocosCompletos = p.blocosCompletos || 0;
+        }
+        
         if (p.status === 'completo') {
             partidasCompletas++;
             if (p.temposBlocos) {
@@ -1776,12 +1777,7 @@ function _compilarDadosAlbum(historicoObj, temposObj, nome, turma) {
         if (idx !== -1) melhorPosicaoGlobal = idx + 1;
     }
 
-    let blocosCompletos = 0;
-    if (partidasCompletas > 0) blocosCompletos = 4;
-    else if (totalPartidas > 0) {
-        const ultima = partidas[partidas.length - 1];
-        blocosCompletos = ultima.blocosCompletos || 0;
-    }
+    let blocosCompletos = partidasCompletas > 0 ? 4 : maxBlocosCompletos;
 
     return {
         totalPartidas, partidasCompletas, partidasPerfeitas, blocosCompletos, diasDistintos: diasDistintos.size,
