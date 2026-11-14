@@ -1,7 +1,7 @@
 /**
  * maratona/maratona.js
  * Copa da Tabuada CEIB 2026 · Módulo "Maratona com Barreiras"
- * Versão do módulo: 1.0.1 (Estável - Sem piscar)
+ * Versão do módulo: 1.0.1 (Estável - Sem piscar e com Trava de Segurança)
  */
 
 // ▼▼▼ [M.01] Núcleo: constantes, helpers, validação ─────────────── INÍCIO ───
@@ -173,6 +173,12 @@ function _gerarDistratores(fA, fB, resposta, quantidade = 3) {
 // ▼▼▼ [M.04] render() + controller + esqueleto + erro ─ INÍCIO ───
 export function render(hostElement, opts) {
     if (!hostElement || !(hostElement instanceof Element)) throw new Error("render() exige um Element DOM como host.");
+
+    // 🛑 TRAVA DE SEGURANÇA: Impede que o app principal recarregue e faça a tela piscar
+    if (hostElement.querySelector('.maratona-app')) {
+        console.warn("[Maratona] Bloqueado: o módulo já está sendo exibido na tela. Ignorando re-renderização para evitar piscadas.");
+        return { destroy: () => {}, obterEstado: () => ({ vivo: true, tela: 'ativa' }) };
+    }
 
     let optsValidos;
     try { optsValidos = _validarOpts(opts); } catch (e) {
@@ -603,14 +609,12 @@ async function _buscarRankingBloco(S, blocoId, novoTempo, numBloco) {
     const chaveAluno = app.chaveAluno(nome, turma);
 
     try {
-        // Busca os dados corretos no Firebase
         const snap = await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/marcos/${blocoId}`).once('value');
         if (!S.vivo) return;
 
         const marcos = snap.val() || {};
         let lista = Object.values(marcos).filter(x => x.tempo != null);
         
-        // Adiciona o tempo do aluno atual
         lista = lista.filter(x => !(x.nome === nome && x.turma === turma));
         lista.push({ nome, turma, tempo: novoTempo });
         lista.sort((a, b) => a.tempo - b.tempo);
@@ -624,10 +628,8 @@ async function _buscarRankingBloco(S, blocoId, novoTempo, numBloco) {
             if (window.maratonaDispararFogos) window.maratonaDispararFogos(3);
         }
 
-        // Filtra lista da turma
         let listaTurma = lista.filter(x => x.turma === turma);
 
-        // Função helper para gerar HTML dos rankings
         const gerarRankingHTML = (arr, titulo) => {
             if (arr.length === 0) return '';
             let html = `<div class="top5-turma-injetado"><div class="top5-turma-header">${titulo}</div><div class="top5-turma-list">`;
@@ -672,7 +674,7 @@ async function _renderizarResultado(S) {
     if (!container) return;
     
     _tocarSomCopaApp(S, "somConclusao");
-    if (window.maratonaDispararFogos) window.maratonaDispararFogos(5); // Fogos na vitória final
+    if (window.maratonaDispararFogos) window.maratonaDispararFogos(5);
 
     const tempoTotal = S.temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0);
     
@@ -764,7 +766,6 @@ async function _buscarRankingGeral(S, tempoTotal) {
         let lista = Object.values(tempos).filter(x => x.status === 'completo' && x.tempoTotal != null);
         lista.sort((a, b) => a.tempoTotal - b.tempoTotal);
         
-        // Filtra lista da turma
         let listaTurma = lista.filter(x => x.turma === turma);
 
         const gerarRankingHTML = (arr, titulo, isGeral) => {
@@ -1200,7 +1201,6 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     }
   }
 
-  // Checagem a cada 1 segundo (não usa MutationObserver, não causa loop)
   setInterval(sincronizar, 1000);
 })();
 // ▲▲▲ FIM [M.22-B]
