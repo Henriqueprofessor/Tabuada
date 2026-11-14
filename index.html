@@ -30420,6 +30420,10 @@ async function abrirRankingMaratona(opts = {}) {
     const container = document.getElementById("ranking-maratona-conteudo");
     const infoEl = document.getElementById("maratona-rank-evento-info");
     const infoTxt = document.getElementById("maratona-rank-evento-texto");
+    
+    // Remove o card de tempo ideal se estiver em outra tela
+    document.getElementById("maratona-tempo-ideal-container")?.remove();
+
     if (!container) return;
 
     // Reset de estado — COM overrides opcionais
@@ -30489,10 +30493,87 @@ async function abrirRankingMaratona(opts = {}) {
     _atualizarBotoesRankingMaratona();
     await _popularDropdownTurmasMaratona();
     
-    // M.16 - Carrega os recordes pessoais do aluno
+    // 1. Injeta o Card do Tempo Fantasma no topo
+    await renderizarTempoIdealMaratona(_eventoRankingMaratonaId);
+
+    // 2. Carrega os recordes pessoais
     carregarMeusRecordesMaratona();
     
+    // 3. Carrega a tabela de ranking
     carregarDadosRankingMaratona();
+}
+
+// NOVO: Função que constrói e injeta o card de Tempo Ideal
+async function renderizarTempoIdealMaratona(eventoId) {
+    let containerIdeal = document.getElementById("maratona-tempo-ideal-container");
+    if (!containerIdeal) {
+        containerIdeal = document.createElement("div");
+        containerIdeal.id = "maratona-tempo-ideal-container";
+        
+        // Injeta antes do seletor de abas (Geral, Turmas, Por Turma)
+        const escopoEl = document.querySelector(".maratona-escopo");
+        if (escopoEl && escopoEl.parentNode) {
+            escopoEl.parentNode.insertBefore(containerIdeal, escopoEl);
+        } else {
+            const conteudoEl = document.getElementById("ranking-maratona-conteudo");
+            if (conteudoEl && conteudoEl.parentNode) {
+                conteudoEl.parentNode.insertBefore(containerIdeal, conteudoEl);
+            }
+        }
+    }
+
+    containerIdeal.innerHTML = `<div class="maratona-loading" style="padding:20px; text-align:center; color:#94a3b8; font-size:13px;">⏳ Calculando Tempo Fantasma...</div>`;
+
+    try {
+        const [snapMarcos, snapTempos] = await Promise.all([
+            database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value'),
+            database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value')
+        ]);
+
+        const marcos = snapMarcos.val() || {};
+        const tempos = snapTempos.val() || {};
+
+        let b1 = Infinity, b2 = Infinity, b3 = Infinity, b4 = Infinity;
+        if (marcos.b1) Object.values(marcos.b1).forEach(m => { if (m.tempo > 0) b1 = Math.min(b1, m.tempo); });
+        if (marcos.b2) Object.values(marcos.b2).forEach(m => { if (m.tempo > 0) b2 = Math.min(b2, m.tempo); });
+        if (marcos.b3) Object.values(marcos.b3).forEach(m => { if (m.tempo > 0) b3 = Math.min(b3, m.tempo); });
+        if (marcos.b4) Object.values(marcos.b4).forEach(m => { if (m.tempo > 0) b4 = Math.min(b4, m.tempo); });
+
+        let somaIdeal = 0;
+        let temTodos = true;
+        if (b1 !== Infinity) somaIdeal += b1; else temTodos = false;
+        if (b2 !== Infinity) somaIdeal += b2; else temTodos = false;
+        if (b3 !== Infinity) somaIdeal += b3; else temTodos = false;
+        if (b4 !== Infinity) somaIdeal += b4; else temTodos = false;
+
+        let listaGeral = Object.values(tempos).filter(t => t && t.status === 'completo' && t.tempoTotal != null);
+        listaGeral.sort((a, b) => a.tempoTotal - b.tempoTotal);
+        const melhorHumano = listaGeral.length > 0 ? listaGeral[0] : null;
+
+        let html = `<div class="maratona-tempo-ideal-card">`;
+        html += `<div class="maratona-ideal-header"><span class="icone-ghost" aria-hidden="true">👻</span> Tempo Fantasma</div>`;
+        
+        if (temTodos) {
+            html += `<div class="maratona-ideal-tempo">${(somaIdeal / 1000).toFixed(2)}s</div>`;
+            html += `<div class="maratona-ideal-sub">A Corrida Perfeita (Soma dos recordes B1 + B2 + B3 + B4)</div>`;
+        } else {
+            html += `<div class="maratona-ideal-tempo" style="color:#64748b;">--</div>`;
+            html += `<div class="maratona-ideal-sub">Ainda faltam recordes em alguns blocos para calcular a soma ideal.</div>`;
+        }
+
+        if (melhorHumano) {
+            html += `<div class="maratona-ideal-humano">
+                🏆 O humano mais perto disso: <strong>${escaparHtml(melhorHumano.nome.split(' ')[0])} (${melhorHumano.turma})</strong> com ${(melhorHumano.tempoTotal / 1000).toFixed(2)}s
+            </div>`;
+        }
+
+        html += `</div>`;
+        containerIdeal.innerHTML = html;
+
+    } catch (e) {
+        console.warn("[Ranking Maratona] Falha ao calcular tempo ideal:", e);
+        containerIdeal.innerHTML = "";
+    }
 }
 
 async function _popularDropdownTurmasMaratona() {
@@ -30797,7 +30878,7 @@ async function _renderRankingTempoTotal(container) {
         const classeVoce = ehVoce ? "voce-linha" : "";
         const nomeExibicao = _obterNomeExibicaoRankingMaratona(r.nome, r.turma);
         
-        // ⚠️ M.17: O selo de recordista vai apenas para o 1º lugar
+        // O selo de recordista vai apenas para o 1º lugar
         const seloRecorde = pos === 1 ? `<span class="maratona-badge-recorde">👑 TOP 1</span>` : "";
 
         html += `<tr class="${classeLinha} ${classeVoce}">
@@ -30865,7 +30946,7 @@ async function _renderRankingBarreira(container) {
         const classeVoce = ehVoce ? "voce-linha" : "";
         const nomeExibicao = _obterNomeExibicaoRankingMaratona(r.nome, r.turma);
         
-        // ⚠️ M.17: O selo de recordista vai apenas para o 1º lugar
+        // O selo de recordista vai apenas para o 1º lugar
         const seloRecorde = pos === 1 ? `<span class="maratona-badge-recorde">👑 TOP 1</span>` : "";
 
         html += `<tr class="${classeLinha} ${classeVoce}">
