@@ -1,13 +1,13 @@
 /**
  * maratona/maratona.js
  * Copa da Tabuada CEIB 2026 · Módulo "Maratona com Barreiras"
- * Versão do módulo: 1.0.0
+ * Versão do módulo: 1.0.1 (Estável - Sem piscar)
  */
 
 // ▼▼▼ [M.01] Núcleo: constantes, helpers, validação ─────────────── INÍCIO ───
 
 const MODULO_NOME = "Maratona com Barreiras";
-const MODULO_VERSAO = "1.0.0";
+const MODULO_VERSAO = "1.0.1";
 
 const BLOCO_FATORES = [2, 3, 4, 5];
 const MULTIPLICADORES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -585,10 +585,10 @@ function _renderizarCheckpoint(S, tempo) {
     if (btn) btn.addEventListener("click", () => _continuarProximoBloco(S));
     if (btnVer) btnVer.addEventListener("click", () => _sairDoCheckpointParaRanking(S));
 
-    _buscarRankingBloco(S, blocoId, tempo);
+    _buscarRankingBloco(S, blocoId, tempo, numBloco);
 }
 
-async function _buscarRankingBloco(S, blocoId, novoTempo) {
+async function _buscarRankingBloco(S, blocoId, novoTempo, numBloco) {
     const container = S.host.querySelector("[data-checkpoint-ranking]");
     if (!container) return;
     const app = S.copaApp;
@@ -603,11 +603,14 @@ async function _buscarRankingBloco(S, blocoId, novoTempo) {
     const chaveAluno = app.chaveAluno(nome, turma);
 
     try {
+        // Busca os dados corretos no Firebase
         const snap = await app.database.ref(`copa_maratona/eventos/${S.opts.eventoId}/marcos/${blocoId}`).once('value');
         if (!S.vivo) return;
 
         const marcos = snap.val() || {};
         let lista = Object.values(marcos).filter(x => x.tempo != null);
+        
+        // Adiciona o tempo do aluno atual
         lista = lista.filter(x => !(x.nome === nome && x.turma === turma));
         lista.push({ nome, turma, tempo: novoTempo });
         lista.sort((a, b) => a.tempo - b.tempo);
@@ -616,17 +619,39 @@ async function _buscarRankingBloco(S, blocoId, novoTempo) {
         const recordeAntigo = marcos[chaveAluno] ? marcos[chaveAluno].tempo : null;
         const bateuRecorde = (recordeAntigo === null || novoTempo < recordeAntigo);
 
-        if (bateuRecorde) S.recordePessoalNovo[blocoId] = novoTempo;
-
-        let html = `<div class="maratona-ranking-box"><div class="maratona-ranking-titulo">🏆 Melhores tempos deste bloco</div>`;
-        lista.slice(0, 5).forEach((m, i) => {
-            const ehVoce = (m.nome === nome && m.turma === turma);
-            html += `<div class="maratona-ranking-linha ${ehVoce ? 'voce' : ''}"><span class="pos">${i + 1}º</span><span class="nome">${_escapeHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span><span class="tempo">${_formatarTempo(m.tempo)}</span></div>`;
-        });
-        if (index >= 5) {
-            html += `<div class="maratona-ranking-linha voce" style="margin-top:4px; border-top:1px dashed rgba(148,163,184,.3); border-radius:0; padding-top:8px;"><span class="pos">${index + 1}º</span><span class="nome">${_escapeHtml(nome.split(' ')[0])} <small>(${turma})</small></span><span class="tempo">${_formatarTempo(novoTempo)}</span></div>`;
+        if (bateuRecorde) {
+            S.recordePessoalNovo[blocoId] = novoTempo;
+            if (window.maratonaDispararFogos) window.maratonaDispararFogos(3);
         }
-        html += `</div>`;
+
+        // Filtra lista da turma
+        let listaTurma = lista.filter(x => x.turma === turma);
+
+        // Função helper para gerar HTML dos rankings
+        const gerarRankingHTML = (arr, titulo) => {
+            if (arr.length === 0) return '';
+            let html = `<div class="top5-turma-injetado"><div class="top5-turma-header">${titulo}</div><div class="top5-turma-list">`;
+            arr.slice(0, 5).forEach((m, i) => {
+                const ehVoce = (m.nome === nome && m.turma === turma);
+                const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
+                html += `<div class="top5-turma-item ${ehVoce ? 'minha-posicao' : ''}">
+                    <span>${medalha} ${_escapeHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span>
+                    <span class="top5-turma-tempo">${_formatarTempo(m.tempo)}</span>
+                </div>`;
+            });
+            if (arr.findIndex(x => x.nome === nome && x.turma === turma) >= 5) {
+                html += `<div class="top5-turma-item minha-posicao" style="border-top:1px dashed rgba(255,255,255,.2); border-radius:0; margin-top:4px;">
+                    <span>${index + 1}º ${_escapeHtml(nome.split(' ')[0])} <small>(${turma})</small></span>
+                    <span class="top5-turma-tempo">${_formatarTempo(novoTempo)}</span>
+                </div>`;
+            }
+            html += `</div></div>`;
+            return html;
+        };
+
+        let html = gerarRankingHTML(lista, `🏆 TOP 5 GERAL - BLOCO ${numBloco}`);
+        html += gerarRankingHTML(listaTurma, `🏫 TOP 5 DA SUA TURMA (${turma})`);
+
         if (bateuRecorde) {
             html += `<div class="maratona-ranking-posicao destaque" style="margin-top: 10px; background:rgba(16,185,129,0.15); border-color:#10b981; color:#6ee7b7;"><span class="maratona-ranking-icone">🔥</span><span>Novo Recorde Pessoal!</span></div>`;
         }
@@ -647,6 +672,8 @@ async function _renderizarResultado(S) {
     if (!container) return;
     
     _tocarSomCopaApp(S, "somConclusao");
+    if (window.maratonaDispararFogos) window.maratonaDispararFogos(5); // Fogos na vitória final
+
     const tempoTotal = S.temposBlocos.reduce((s, t) => s + (Number(t) || 0), 0);
     
     const btnVerRankingHtml = S.opts.onVerRanking ? `<button type="button" class="maratona-btn-ver-ranking-destaque" data-btn-ver-ranking>🏆 Ver ranking completo</button>` : "";
@@ -736,18 +763,35 @@ async function _buscarRankingGeral(S, tempoTotal) {
         const tempos = snap.val() || {};
         let lista = Object.values(tempos).filter(x => x.status === 'completo' && x.tempoTotal != null);
         lista.sort((a, b) => a.tempoTotal - b.tempoTotal);
-        const index = lista.findIndex(x => x.nome === nome && x.turma === turma);
         
-        let html = `<div class="maratona-ranking-box"><div class="maratona-ranking-titulo">🏆 Top 5 Geral da Maratona</div>`;
-        lista.slice(0, 5).forEach((m, i) => {
-            const ehVoce = (m.nome === nome && m.turma === turma);
-            const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
-            html += `<div class="maratona-ranking-linha ${ehVoce ? 'voce' : ''}"><span class="pos">${medalha}</span><span class="nome">${_escapeHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span><span class="tempo">${_formatarTempo(m.tempoTotal)}</span></div>`;
-        });
-        if (index >= 5) {
-            html += `<div class="maratona-ranking-linha voce" style="margin-top:4px; border-top:1px dashed rgba(148,163,184,.3); border-radius:0; padding-top:8px;"><span class="pos">${index + 1}º</span><span class="nome">${_escapeHtml(nome.split(' ')[0])} <small>(${turma})</small></span><span class="tempo">${_formatarTempo(tempoTotal)}</span></div>`;
-        }
-        html += `</div>`;
+        // Filtra lista da turma
+        let listaTurma = lista.filter(x => x.turma === turma);
+
+        const gerarRankingHTML = (arr, titulo, isGeral) => {
+            if (arr.length === 0) return '';
+            let html = `<div class="top5-turma-injetado"><div class="top5-turma-header">${titulo}</div><div class="top5-turma-list">`;
+            arr.slice(0, 5).forEach((m, i) => {
+                const ehVoce = (m.nome === nome && m.turma === turma);
+                const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
+                html += `<div class="top5-turma-item ${ehVoce ? 'minha-posicao' : ''}">
+                    <span>${medalha} ${_escapeHtml(m.nome.split(' ')[0])} <small>(${m.turma})</small> ${ehVoce ? '← Você' : ''}</span>
+                    <span class="top5-turma-tempo">${_formatarTempo(m.tempoTotal)}</span>
+                </div>`;
+            });
+            const index = arr.findIndex(x => x.nome === nome && x.turma === turma);
+            if (index >= 5) {
+                html += `<div class="top5-turma-item minha-posicao" style="border-top:1px dashed rgba(255,255,255,.2); border-radius:0; margin-top:4px;">
+                    <span>${index + 1}º ${_escapeHtml(nome.split(' ')[0])} <small>(${turma})</small></span>
+                    <span class="top5-turma-tempo">${_formatarTempo(tempoTotal)}</span>
+                </div>`;
+            }
+            html += `</div></div>`;
+            return html;
+        };
+
+        let html = gerarRankingHTML(lista, `🏆 TOP 5 GERAL DA MARATONA`, true);
+        html += gerarRankingHTML(listaTurma, `🏫 TOP 5 DA SUA TURMA (${turma})`, false);
+        
         container.innerHTML = html;
     } catch (e) {
         if (!S.vivo) return;
@@ -960,6 +1004,7 @@ export async function renderizarHallDaFama(container, app) {
 }
 // ▲▲▲ FIM [M.19.D]
 
+
 // ▼▼▼ [M.20] Estatísticas da Maratona no Painel ─── INÍCIO ───
 export async function renderizarEstatisticasMaratona(container, app, eventosCache) {
     if (!app || !app.database) {
@@ -968,7 +1013,6 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     }
 
     try {
-        // 1. Descobre qual evento usar (o ativo, ou o mais recente)
         let eventoId = null;
         let maxTs = 0;
         let nomeEvento = "Evento";
@@ -986,7 +1030,6 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
             return;
         }
 
-        // 2. Busca os dados de tempos e marcos
         const [snapTempos, snapMarcos] = await Promise.all([
             app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value'),
             app.database.ref(`copa_maratona/eventos/${eventoId}/marcos`).once('value')
@@ -995,7 +1038,6 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         const tempos = snapTempos.val() || {};
         const marcos = snapMarcos.val() || {};
 
-        // 3. Processa as métricas
         const totalAlunos = Object.keys(tempos).length;
         let completos = 0;
         let dnfs = 0;
@@ -1009,7 +1051,6 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         const pctCompleto = totalAlunos > 0 ? (completos / totalAlunos) * 100 : 0;
         const pctDnf = totalAlunos > 0 ? (dnfs / totalAlunos) * 100 : 0;
 
-        // 4. Pega os melhores tempos de cada bloco
         const melhoresBlocos = [];
         ['b1', 'b2', 'b3', 'b4'].forEach(b => {
             const alunosBloco = marcos[b] || {};
@@ -1022,7 +1063,6 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
             });
         });
 
-        // 5. Monta o HTML
         let html = `
             <div class="maratona-stats-wrap">
                 <div style="font-size:13px; font-weight:800; color:var(--neon-cyan); text-transform:uppercase; margin-bottom:-4px;">
@@ -1077,12 +1117,12 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
 }
 // ▲▲▲ FIM [M.20]
 
-// ▼▼▼ [M.21] INÍCIO — Polimento Visual ───
-(function maratonaPolimento() {
-  if (window.__maratonaPolimentoOK) return;
-  window.__maratonaPolimentoOK = true;
 
-  // ---------- FOGOS DE ARTIFÍCIO ----------
+// ▼▼▼ [M.21] Fogos de Artifício (Versão Segura) ─── INÍCIO ───
+(function maratonaFogos() {
+  if (window.__maratonaFogosOK) return;
+  window.__maratonaFogosOK = true;
+
   const coresFw = ['#FFD700','#FF3D00','#00E5FF','#76FF03','#E040FB','#FF4081','#FFEB3B'];
 
   function getCamada() {
@@ -1095,7 +1135,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     return l;
   }
 
-  function dispararFogos(centros) {
+  window.maratonaDispararFogos = function(centros) {
     centros = centros || 3;
     const camada = getCamada();
     for (let c = 0; c < centros; c++) {
@@ -1117,263 +1157,50 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         setTimeout(() => p.remove(), 1250);
       }
     }
-  }
-  window.maratonaDispararFogos = dispararFogos;
-
-  // ---------- DETECÇÃO AUTOMÁTICA DE RECORDE ----------
-  let ultimoFogo = 0;
-  const COOLDOWN_MS = 2500;
-
-  function pareceRecorde(txt) {
-    txt = (txt || '').toLowerCase();
-    return txt.includes('novo recorde')
-        || txt.includes('recorde novo')
-        || txt.includes('quebrou o recorde')
-        || txt.includes('🏆')
-        || txt.includes('🥇');
-  }
-
-  function dentroMaratona(node) {
-    return node.closest &&
-      node.closest('[id*="maratona" i], [class*="maratona" i]');
-  }
-
-  new MutationObserver((muts) => {
-    for (const m of muts) {
-      for (const n of m.addedNodes) {
-        if (n.nodeType !== 1) continue;
-        if (!dentroMaratona(n)) continue;
-        if (!pareceRecorde(n.textContent || '')) continue;
-        const agora = Date.now();
-        if (agora - ultimoFogo < COOLDOWN_MS) continue;
-        ultimoFogo = agora;
-        dispararFogos(4);
-      }
-    }
-  }).observe(document.body, { childList: true, subtree: true });
-
-  // ---------- TRANSIÇÃO SUAVE ENTRE BLOCOS ----------
-  new MutationObserver(() => {
-    document.querySelectorAll('[class*="maratona" i]').forEach((el) => {
-      if (el.offsetParent === null) return;
-      if (el.classList.contains('maratona-anim-bloco')) return;
-      const cls = (el.className || '').toString().toLowerCase();
-      if (!(cls.includes('tela') || cls.includes('bloco') || cls.includes('screen'))) return;
-      el.classList.add('maratona-anim-bloco');
-      setTimeout(() => el.classList.remove('maratona-anim-bloco'), 500);
-    });
-  }).observe(document.body, {
-    childList: true, subtree: true,
-    attributes: true, attributeFilter: ['class', 'style', 'hidden']
-  });
-
-  // ---------- GATILHO MANUAL (para uso futuro) ----------
-  document.addEventListener('maratona:recorde', () => dispararFogos(5));
+  };
 })();
-// ▲▲▲ FIM [M.21] ───
+// ▲▲▲ FIM [M.21]
 
-// ▼▼▼ [M.22-B] INÍCIO — Botão "Testar Fogos" no Painel ───
+
+// ▼▼▼ [M.22-B] Botão "Testar Fogos" no Painel ─── INÍCIO ───
 (function maratonaTestarFogos() {
   if (window.__maratonaTestarFogosOK) return;
   window.__maratonaTestarFogosOK = true;
 
-  // Procura o Painel do Professor na tela (por id ou classe).
-  var SELETOR_PAINEL =
-    '[id*="painel" i],[id*="professor" i],[class*="painel" i],' +
-    '[class*="professor" i],[id*="admin" i],[class*="admin" i]';
-
-  function painelVisivel() {
-    var lista = document.querySelectorAll(SELETOR_PAINEL);
-    for (var i = 0; i < lista.length; i++) {
-      var el = lista[i];
-      if (el.offsetParent === null) continue; // escondido
-      var r = el.getBoundingClientRect();
-      if (r.width < 200 || r.height < 120) continue; // pequeno demais
-      return el;
-    }
-    return null;
-  }
-
-  function criarBotao() {
-    var b = document.createElement('button');
-    b.id = 'maratona-btn-testar-fogos';
-    b.type = 'button';
-    b.textContent = '🧪 Testar Fogos';
-    b.style.cssText = [
-      'position:fixed',
-      'right:18px',
-      'bottom:18px',
-      'z-index:100000',
-      'padding:12px 18px',
-      'border-radius:999px',
-      'border:2px solid #FFD700',
-      'background:linear-gradient(135deg,#1a1a2e,#16213e)',
-      'color:#FFD700',
-      'font-weight:700',
-      'font-size:14px',
-      'cursor:pointer',
-      'box-shadow:0 6px 22px rgba(255,215,0,.35)',
-      'letter-spacing:.3px'
-    ].join(';');
-
-    b.addEventListener('click', function () {
-      if (typeof window.maratonaDispararFogos === 'function') {
-        window.maratonaDispararFogos(5);
-        b.textContent = '🎆 Fogos disparados!';
-        setTimeout(function () {
-          b.textContent = '🧪 Testar Fogos';
-        }, 1800);
-      } else {
-        alert(
-          'A função de fogos (M.21-B) não foi carregada.\n\n' +
-          'Cole o bloco M.21-B no FINAL do maratona.js e recarregue a página.'
-        );
-      }
-    });
-
-    return b;
-  }
+  var SELETOR_PAINEL = '[id*="painel" i],[id*="professor" i],[class*="painel" i],[class*="professor" i],[id*="admin" i],[class*="admin" i]';
 
   function sincronizar() {
-    var painel = painelVisivel();
-    var existente = document.getElementById('maratona-btn-testar-fogos');
-    if (painel && !existente) {
-      document.body.appendChild(criarBotao());
-    } else if (!painel && existente) {
-      existente.remove();
+    var painel = null;
+    var lista = document.querySelectorAll(SELETOR_PAINEL);
+    for (var i = 0; i < lista.length; i++) {
+      if (lista[i].offsetParent !== null && lista[i].getBoundingClientRect().width > 200) {
+        painel = lista[i];
+        break;
+      }
     }
-  }
-
-  // Verificação rápida sempre que a tela mudar.
-  new MutationObserver(sincronizar).observe(document.body, {
-    childList: true,
-    subtree: true
-  });
-
-  // Rede de segurança: checa a cada 1,2s (cobre abertura/fecho do Painel).
-  setInterval(sincronizar, 1200);
-
-  // Checagem inicial.
-  setTimeout(sincronizar, 400);
-})();
-// ▲▲▲ FIM [M.22-B] ───
-
-// ▼▼▼ [M.26-B] INÍCIO — Injeção Segura Top 5 (Sem piscar) ───
-(function maratonaTop5Seguro() {
-  if (window.__maratonaTop5SeguroOK) return;
-  window.__maratonaTop5SeguroOK = true;
-
-  let executando = false;
-
-  // Função para buscar todos os dados do ranking no Firebase
-  async function buscarTodoRanking() {
-    if (typeof firebase === 'undefined' || !firebase.database) return [];
-    const nodes = ['ranking', 'maratona/ranking', 'maratona_ranking', 'ranking_maratona'];
-    for (let node of nodes) {
-      try {
-        const snap = await firebase.database().ref(node).once('value');
-        const data = snap.val();
-        if (data) {
-          const alunos = Object.values(data);
-          if (alunos.length > 0 && alunos[0].tempos) return alunos;
+    
+    var btnExistente = document.getElementById('maratona-btn-testar-fogos');
+    
+    if (painel && !btnExistente) {
+      var b = document.createElement('button');
+      b.id = 'maratona-btn-testar-fogos';
+      b.type = 'button';
+      b.textContent = '🧪 Testar Fogos';
+      b.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:100000;padding:12px 18px;border-radius:999px;border:2px solid #FFD700;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#FFD700;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 6px 22px rgba(255,215,0,.35);';
+      b.onclick = function() {
+        if (typeof window.maratonaDispararFogos === 'function') {
+          window.maratonaDispararFogos(5);
+          b.textContent = '🎆 Fogos!';
+          setTimeout(function() { b.textContent = '🧪 Testar Fogos'; }, 1800);
         }
-      } catch (e) {}
+      };
+      document.body.appendChild(b);
+    } else if (!painel && btnExistente) {
+      btnExistente.remove();
     }
-    return [];
   }
 
-  function criarListaHTML(lista, titulo, blocoId) {
-    if (lista.length === 0) return '';
-    let html = `<div class="top5-turma-injetado">
-      <div class="top5-turma-header">${titulo}</div>
-      <div class="top5-turma-list">`;
-    
-    lista.slice(0, 5).forEach((aluno, index) => {
-      let pos = index + 1;
-      let medalha = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `${pos}º`;
-      let nome = aluno.nome || 'Aluno';
-      let tempo = parseFloat(aluno.tempos[blocoId]).toFixed(2) + 's';
-      
-      let isEu = false;
-      if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-        if (aluno.email === firebase.auth().currentUser.email) isEu = true;
-      }
-      if (nome.toLowerCase().includes('você') || nome.toLowerCase().includes('(você)')) isEu = true;
-
-      let classeItem = isEu ? 'top5-turma-item minha-posicao' : 'top5-turma-item';
-      
-      html += `<div class="${classeItem}">
-        <span>${medalha} ${nome}</span>
-        <span class="top5-turma-tempo">${tempo}</span>
-      </div>`;
-    });
-    
-    html += `</div></div>`;
-    return html;
-  }
-
-  async function tentarInjetar() {
-    // 1. Se já injetou, para.
-    if (document.querySelector('.top5-maratona-injetado')) return;
-    
-    // 2. Verifica se REALMENTE estamos na tela final (procura o botão de ranking)
-    let btnRanking = Array.from(document.querySelectorAll('button, a')).find(el => 
-      el.textContent.includes('Ver ranking completo') || el.textContent.includes('Ver ranking do Bloco')
-    );
-    
-    // Se não achou o botão, NÃO estamos na tela de vitória. Aborta e não faz nada.
-    if (!btnRanking) return;
-
-    // 3. Descobre qual bloco (pelo texto perto do botão ou da tela)
-    let textoNaTela = document.body.textContent;
-    let blocoId = 3; // Padrão: Bloco 4 (Geral)
-    let blocoNome = 'BLOCO 4 (GERAL)';
-    
-    if (textoNaTela.includes('Bloco 1') || textoNaTela.includes('B1')) { blocoId = 0; blocoNome = 'BLOCO 1'; }
-    else if (textoNaTela.includes('Bloco 2') || textoNaTela.includes('B2')) { blocoId = 1; blocoNome = 'BLOCO 2'; }
-    else if (textoNaTela.includes('Bloco 3') || textoNaTela.includes('B3')) { blocoId = 2; blocoNome = 'BLOCO 3'; }
-
-    if (executando) return;
-    executando = true;
-
-    try {
-      let turma = localStorage.getItem('turma') || localStorage.getItem('turma_aluno') || window.alunoTurma || 'Sem Turma';
-      let alunos = await buscarTodoRanking();
-      
-      if (alunos.length === 0) {
-        executando = false;
-        return;
-      }
-
-      let rankingGeral = alunos
-        .filter(a => a.tempos && a.tempos[blocoId] > 0)
-        .sort((a, b) => a.tempos[blocoId] - b.tempos[blocoId]);
-
-      let rankingTurma = rankingGeral.filter(a => a.turma === turma);
-
-      let htmlGeral = criarListaHTML(rankingGeral, `🏆 TOP 5 GERAL - ${blocoNome}`, blocoId);
-      let htmlTurma = criarListaHTML(rankingTurma, `🏫 TOP 5 DA SUA TURMA (${turma})`, blocoId);
-
-      let container = document.createElement('div');
-      container.className = 'top5-maratona-injetado';
-      container.innerHTML = htmlGeral + htmlTurma;
-
-      // A MÁGICA: Injeta EXATAMENTE acima do botão "Ver Ranking"
-      btnRanking.parentNode.insertBefore(container, btnRanking);
-
-    } catch (e) {
-      console.error('Erro ao injetar Top 5:', e);
-    }
-    
-    executando = false;
-  }
-
-  // Fica apenas escutando quando a tela final é desenhada
-  const observer = new MutationObserver(() => {
-    // Delay seguro para o React/Vue terminar de renderizar
-    setTimeout(tentarInjetar, 400); 
-  });
-  
-  observer.observe(document.body, { childList: true, subtree: true });
+  // Checagem a cada 1 segundo (não usa MutationObserver, não causa loop)
+  setInterval(sincronizar, 1000);
 })();
-// ▲▲▲ FIM [M.26-B] ───
+// ▲▲▲ FIM [M.22-B]
