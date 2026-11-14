@@ -1210,31 +1210,27 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
   if (window.__maratonaDueloTemposOK) return;
   window.__maratonaDueloTemposOK = true;
 
-  // Escuta cliques em qualquer lugar da página
   document.body.addEventListener('click', async function(e) {
-    // Verifica se o clique foi em uma linha da tabela de ranking
     const tr = e.target.closest('.maratona-tabela-rank tbody tr');
     if (!tr) return;
 
     const app = window.copaApp;
     if (!app || !app.database) return;
 
-    // Extrai as colunas (Nome e Turma) da linha clicada
     const tds = tr.querySelectorAll('td');
     if (tds.length < 3) return;
 
-    // Pega o nome antes do (turma) - usando childNodes para pegar só o texto principal
-    const nomeTarget = tds[1].childNodes[0].textContent.trim();
+    // 1. Extrai o nome (limpando emojis e textos da tabela) e a turma
+    let rawName = tds[1].textContent;
+    rawName = rawName.replace(/\(.*?\)/g, ''); // remove (3002)
+    rawName = rawName.replace('← Você', '').trim(); // remove seta
+    rawName = rawName.replace('👑', '').replace('TOP 1', '').trim(); // remove coroa
+    rawName = rawName.replace(/[🥇🥈🥉]/g, '').trim(); // remove medalhas
+    const nomeTarget = rawName;
     const turmaTarget = tds[2].textContent.trim();
 
     const meuNome = app.obterNomeAluno();
     const minhaTurma = app.obterTurmaAluno();
-
-    // REGRA DO RESULTADO NULO: Bloqueia se clicar em si mesmo
-    if (nomeTarget === meuNome && turmaTarget === minhaTurma) {
-      alert("Você não pode comparar com você mesmo! (Resultado Nulo)");
-      return;
-    }
 
     // Cria o modal com tela de carregamento
     const overlay = document.createElement('div');
@@ -1246,12 +1242,11 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
           <button class="maratona-modal-close">&times;</button>
         </div>
         <div class="maratona-modal-body">
-          <div class="maratona-ranking-loading">⏳ Buscando tempos no Firebase...</div>
+          <div class="maratona-ranking-loading">⏳ Cruzando dados e buscando posições...</div>
         </div>
       </div>
     `;
     
-    // Função para fechar o modal
     const fecharModal = () => overlay.remove();
     overlay.querySelector('.maratona-modal-close').onclick = fecharModal;
     overlay.onclick = (ev) => { if (ev.target === overlay) fecharModal(); };
@@ -1259,7 +1254,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     document.body.appendChild(overlay);
 
     try {
-      // 1. Descobre qual é o evento ativo
+      // 2. Descobre o evento ativo
       const snapEv = await app.database.ref('copa_maratona/eventos').once('value');
       const eventos = snapEv.val() || {};
       let eventoId = null;
@@ -1274,52 +1269,71 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
       }
       if (!eventoId) throw new Error("Evento não encontrado.");
 
-      // 2. Busca os tempos dos dois alunos no Firebase
-      const chaveMeu = app.chaveAluno(meuNome, minhaTurma);
-      const chaveTarget = app.chaveAluno(nomeTarget, turmaTarget);
-      
-      const [snapMeu, snapTarget] = await Promise.all([
-        app.database.ref(`copa_maratona/eventos/${eventoId}/tempos/${chaveMeu}`).once('value'),
-        app.database.ref(`copa_maratona/eventos/${eventoId}/tempos/${chaveTarget}`).once('value')
-      ]);
-      
-      const dadosMeu = snapMeu.val();
-      const dadosTarget = snapTarget.val();
+      // 3. Baixa a lista completa de tempos (MUITO mais seguro que buscar por chave)
+      const snapTempos = await app.database.ref(`copa_maratona/eventos/${eventoId}/tempos`).once('value');
+      const tempos = snapTempos.val() || {};
 
-      if (!dadosMeu || !dadosTarget) throw new Error("Dados de tempo incompletos.");
+      let dadosMeu = null;
+      let dadosTarget = null;
 
-      // 3. Monta a tabela comparativa
+      // 4. Procura os dados do Aluno Logado
+      for (const key in tempos) {
+        const t = tempos[key];
+        if (t.turma === minhaTurma && (t.nome === meuNome || meuNome.includes(t.nome) || t.nome.includes(meuNome))) {
+          dadosMeu = t;
+          break;
+        }
+      }
+
+      // 5. Procura os dados do Adversário
+      for (const key in tempos) {
+        const t = tempos[key];
+        if (t.turma === turmaTarget && (t.nome === nomeTarget || t.nome.startsWith(nomeTarget) || nomeTarget.startsWith(t.nome))) {
+          dadosTarget = t;
+          break;
+        }
+      }
+
+      if (!dadosMeu) throw new Error("Seus dados não foram encontrados no ranking.");
+      if (!dadosTarget) throw new Error(`Dados de ${nomeTarget} não encontrados.`);
+      
+      // Regra do Resultado Nulo (se clicou em si mesmo)
+      if (dadosMeu === dadosTarget) {
+        alert("Você não pode comparar com você mesmo! (Resultado Nulo)");
+        overlay.remove();
+        return;
+      }
+
+      // 6. Monta a tabela comparativa (Bloco a Bloco)
       let htmlRows = '';
       const blocos = [0, 1, 2, 3];
 
       blocos.forEach(i => {
-        const tMeu = dadosMeu.temposBlocos ? dadosMeu.temposBlocos[i] : null;
-        const tTarget = dadosTarget.temposBlocos ? dadosTarget.temposBlocos[i] : null;
+        const tMeu = (dadosMeu.temposBlocos && dadosMeu.temposBlocos[i] != null) ? dadosMeu.temposBlocos[i] : null;
+        const tTarget = (dadosTarget.temposBlocos && dadosTarget.temposBlocos[i] != null) ? dadosTarget.temposBlocos[i] : null;
 
-        if (tMeu == null || tTarget == null) {
-          htmlRows += `<tr><td>Bloco ${i+1}</td><td colspan="3" style="text-align:center; color:#94a3b8;">Sem dados</td></tr>`;
-          return;
+        const valMeu = tMeu != null ? (tMeu / 1000).toFixed(2) : '—';
+        const valTarget = tTarget != null ? (tTarget / 1000).toFixed(2) : '—';
+        
+        let diffHtml = '—';
+        if (tMeu != null && tTarget != null) {
+          const diff = tTarget - tMeu; // Positivo = Eu sou mais rápido
+          const diffSegundos = Math.abs(diff / 1000).toFixed(2);
+          
+          if (diff > 0) diffHtml = `<span style="color:#10b981; font-weight:bold;">+${diffSegundos}s</span>`;
+          else if (diff < 0) diffHtml = `<span style="color:#ef4444; font-weight:bold;">-${diffSegundos}s</span>`;
+          else diffHtml = `<span style="color:#fbbf24; font-weight:bold;">Empate</span>`;
         }
-
-        // Cálculo da diferença (Target - Meu)
-        // Se positivo, o Target demorou mais (Eu sou mais rápido)
-        const diff = tTarget - tMeu;
-        const diffSegundos = Math.abs(diff / 1000).toFixed(2);
-        let diffHtml = '';
-
-        if (diff > 0) diffHtml = `<span style="color:#10b981; font-weight:bold;">+${diffSegundos}s</span>`;
-        else if (diff < 0) diffHtml = `<span style="color:#ef4444; font-weight:bold;">-${diffSegundos}s</span>`;
-        else diffHtml = `<span style="color:#fbbf24; font-weight:bold;">Empate</span>`;
 
         htmlRows += `<tr>
           <td>Bloco ${i+1}</td>
-          <td>${(tMeu / 1000).toFixed(2)}s</td>
-          <td>${(tTarget / 1000).toFixed(2)}s</td>
+          <td>${valMeu === '—' ? '—' : valMeu + 's'}</td>
+          <td>${valTarget === '—' ? '—' : valTarget + 's'}</td>
           <td>${diffHtml}</td>
         </tr>`;
       });
 
-      // 4. Cálculo do Total
+      // 7. Cálculo do Total
       const totalMeu = dadosMeu.tempoTotal || 0;
       const totalTarget = dadosTarget.tempoTotal || 0;
       const diffTotal = totalTarget - totalMeu;
@@ -1337,17 +1351,17 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
         <td>${totalHtml}</td>
       </tr>`;
 
-      // 5. Atualiza o HTML do Modal
+      // 8. Atualiza a tela do modal
       overlay.querySelector('.maratona-modal-body').innerHTML = `
         <p style="text-align:center; margin-top:0; margin-bottom:16px; font-size:14px; color:#e2e8f0;">
-          Você 🆚 <strong style="color:#22d3ee;">${_escapeHtml(nomeTarget)}</strong>
+          Você 🆚 <strong style="color:#22d3ee;">${dadosTarget.nome}</strong>
         </p>
         <table class="maratona-tabela-compare">
           <thead>
             <tr>
               <th>Bloco</th>
               <th>Você</th>
-              <th>${_escapeHtml(nomeTarget.split(' ')[0])}</th>
+              <th>${dadosTarget.nome.split(' ')[0]}</th>
               <th>Diferença</th>
             </tr>
           </thead>
@@ -1358,7 +1372,7 @@ export async function renderizarEstatisticasMaratona(container, app, eventosCach
     } catch (err) {
       console.warn("[Duelo] Erro:", err);
       overlay.querySelector('.maratona-modal-body').innerHTML = `
-        <p style="color:#ef4444; font-weight:bold; text-align:center;">Erro ao carregar os dados.</p>
+        <p style="color:#ef4444; font-weight:bold; text-align:center;">Erro: ${err.message}</p>
       `;
     }
   });
