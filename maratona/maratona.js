@@ -1503,17 +1503,27 @@ async function renderizarHallMaratona(container, app) {
         .map(([key, qtd]) => ({ nome: key.split('|')[0], turma: key.split('|')[1], qtd }))
         .sort((a, b) => b.qtd - a.qtd);
 
-      // 6. Recordistas de Blocos
+      // 6. Recordistas de Blocos e Tempo Fantasma
       const recordesBloco = [];
+      let somaIdeal = 0;
+      let temTodos = true;
+
       ['b1', 'b2', 'b3', 'b4'].forEach(b => {
         const alunos = marcos[b] || {};
         const lista = Object.values(alunos).filter(m => m.tempo).sort((a, b) => a.tempo - b.tempo);
+        const top1 = lista[0];
+        
+        if (top1) somaIdeal += top1.tempo; else temTodos = false;
+
         recordesBloco.push({
           bloco: b.toUpperCase(),
-          nome: lista[0] ? lista[0].nome.split(' ')[0] : '—',
-          tempo: lista[0] ? (lista[0].tempo / 1000).toFixed(2) + 's' : '—'
+          nome: top1 ? top1.nome : '—',
+          turma: top1 ? top1.turma : '—',
+          tempo: top1 ? (top1.tempo / 1000).toFixed(2) + 's' : '—'
         });
       });
+
+      const tempoFantasma = temTodos ? (somaIdeal / 1000).toFixed(2) + 's' : '--';
 
       // --- Montagem do HTML ---
       let html = `<div class="maratona-hall-container-override">`;
@@ -1646,17 +1656,25 @@ async function renderizarHallMaratona(container, app) {
         </div>
       `;
 
-      // 9. Recordistas de Blocos
+      // 9. TEMPO FANTASMA + RECORDISTAS DE BLOCOS (NOVO CARD INTEGRADO)
       html += `
-        <div class="maratona-hall-card">
-          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">⏱️</span><h4 class="maratona-hall-card-title">Recordistas de Blocos</h4></div>
-          <p class="maratona-hall-card-desc">Os donos dos melhores tempos em cada barreira.</p>
+        <div class="maratona-hall-card" style="background: linear-gradient(160deg, rgba(34, 211, 238, 0.1) 0%, rgba(15, 35, 64, 0.95) 100%); border-color: rgba(34, 211, 238, 0.5);">
+          <div class="maratona-hall-card-header"><span class="maratona-hall-card-emoji">👻</span><h4 class="maratona-hall-card-title" style="color: var(--neon-cyan);">Tempo Fantasma</h4></div>
+          <p class="maratona-hall-card-desc">A soma dos melhores tempos de cada bloco. O limite teórico!</p>
+          
+          <div style="text-align: center; margin: 16px 0; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px dashed rgba(34,211,238,0.4);">
+              <div style="font-size: 11px; font-weight: 800; color: var(--neon-cyan); letter-spacing: 0.5px; margin-bottom: 4px;">TEMPO IDEAL (B1+B2+B3+B4)</div>
+              <div style="font-size: 32px; font-weight: 900; color: #fff; text-shadow: 0 0 15px rgba(34,211,238,0.5);">${tempoFantasma}</div>
+          </div>
+
           <div class="maratona-hall-blocos">
             ${recordesBloco.map(r => `
-              <div class="maratona-hall-bloco-mini">
-                <div class="titulo">${r.bloco}</div>
-                <div class="nome">${_escapeHtml(r.nome)}</div>
-                <div class="tempo">${r.tempo}</div>
+              <div class="maratona-hall-bloco-mini" style="text-align: left; display: flex; flex-direction: column; gap: 4px;">
+                <div class="titulo" style="display: flex; justify-content: space-between; width: 100%;">
+                  <span>${r.bloco}</span>
+                  <span style="color: var(--neon-gold);">${r.tempo}</span>
+                </div>
+                <div class="nome" style="font-size: 11.5px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${app.escaparHtml(r.nome)}</div>
               </div>
             `).join('')}
           </div>
